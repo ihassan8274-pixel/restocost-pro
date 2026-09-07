@@ -1,0 +1,21 @@
+{
+  "name": "restocost-pro-v7-backend",
+  "version": "7.0.0",
+  "private": true,
+  "description": "Local PostgreSQL backend for RestoCost Pro v7.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:migrate": "node migrate.js",
+    "db:seed": "node seed.js",
+    "check": "node --check server.js && node --check db.js && node --check migrate.js && node --check seed.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}

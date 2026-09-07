@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: restocost-db
+    environment:
+      POSTGRES_DB: restocost
+      POSTGRES_USER: restocost
+      POSTGRES_PASSWORD: restocost123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restocost -d restocost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: restocost-app
+    environment:
+      DATABASE_URL: postgresql://restocost:restocost123@postgres:5432/restocost
+      JWT_SECRET: dev-secret-change-in-production
+      CORS_ORIGIN: http://localhost:5173
+      NODE_ENV: development
+      PORT: 3032
+    ports:
+      - "3032:3032"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:

@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Logs
+npm-debug.log*
+*.log
+logs/
+server.log
+
+# Build outputs
+dist/
+build/
+client/dist/
+*.tsbuildinfo
+
+# IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+
+# Docker
+.docker/
+
+# Coverage
+coverage/
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Installer / packaging
+installer-output/
+RestoCostPro.iss
+install-windows.bat
+install-extensions.bat
+open-restocost.bat
+start-server.bat
+stop-server.bat
+uninstall-windows.bat
+RestoCostPro-Setup.bat
+
+# Dev scratch pages / scripts
+deepseek_html_*.html
+cover.html
+dashboard.html
+features.html
+implementation.html
+live_architecture.html
+roadmap.html
+why_v7.html
+workflow.html
+apply_enhancements.py
+check_html.py
+patch_backups.py
+patch_frontend_api.py
+repair_syntax.py
+pro-enhancements.txt
+html-syntax.md
+
+# Presentations
+*.pptx
