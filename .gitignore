@@ -31,6 +31,7 @@ server.log
 
 # deploy artifacts
 deploy-*.zip
+deploy_pkg/
 
 # debug probes / dumps
 dump_*.txt
