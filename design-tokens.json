@@ -1,0 +1,163 @@
+{
+  "name": "RestoCost Design System",
+  "version": "1.0.0",
+  "description": "Visual identity for RestoCost ERP — Golden/Amber on warm light, RTL-first, financial-grade",
+  "color": {
+    "primary": {
+      "50": "#fffbeb",
+      "100": "#fef3c7",
+      "200": "#fde68a",
+      "300": "#fcd34d",
+      "400": "#fbbf24",
+      "500": "#f59e0b",
+      "600": "#d97706",
+      "700": "#b45309",
+      "800": "#92400e",
+      "900": "#78350f",
+      "950": "#451a03",
+      "DEFAULT": "#d97706",
+      "foreground": "#1c1917"
+    },
+    "amber": {
+      "50": "#fffbeb",
+      "100": "#fef3c7",
+      "200": "#fde68a",
+      "300": "#fcd34d",
+      "400": "#fbbf24",
+      "500": "#f59e0b",
+      "600": "#d97706",
+      "700": "#b45309",
+      "800": "#92400e",
+      "900": "#78350f",
+      "950": "#451a03"
+    },
+    "neutral": {
+      "50": "#fafaf9",
+      "100": "#f5f5f4",
+      "200": "#e7e5e4",
+      "300": "#d6d3d1",
+      "400": "#a8a29e",
+      "500": "#78716c",
+      "600": "#57534e",
+      "700": "#44403c",
+      "800": "#292524",
+      "900": "#1c1917",
+      "950": "#0c0a09"
+    },
+    "warm": {
+      "50": "#fdf8f3",
+      "100": "#faefdf",
+      "200": "#f5dbbf",
+      "300": "#edc18f",
+      "400": "#e5a15d",
+      "500": "#dd8231",
+      "600": "#d1661f",
+      "700": "#ad4d18",
+      "800": "#8b3e17",
+      "900": "#713416"
+    },
+    "surface": {
+      "DEFAULT": "#ffffff",
+      "secondary": "#fafaf9",
+      "tertiary": "#f5f5f4",
+      "card": "#ffffff",
+      "cardHover": "#fafaf9"
+    },
+    "border": {
+      "DEFAULT": "#e7e5e4",
+      "strong": "#d6d3d1",
+      "focus": "#d97706"
+    },
+    "financial": {
+      "headerBg": "#f5f0e8",
+      "headerText": "#44403c",
+      "positive": "#166534",
+      "positiveBg": "#f0fdf4",
+      "negative": "#991b1b",
+      "negativeBg": "#fef2f2",
+      "zero": "#57534e"
+    },
+    "semantic": {
+      "success": { "DEFAULT": "#166534", "bg": "#f0fdf4", "border": "#bbf7d0" },
+      "warning": { "DEFAULT": "#b45309", "bg": "#fffbeb", "border": "#fde68a" },
+      "danger": { "DEFAULT": "#991b1b", "bg": "#fef2f2", "border": "#fecaca" },
+      "info": { "DEFAULT": "#1e40af", "bg": "#eff6ff", "border": "#bfdbfe" }
+    }
+  },
+  "font": {
+    "arabic": {
+      "family": "'IBM Plex Sans Arabic', system-ui, sans-serif",
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      },
+      "fallback": ["Noto Sans Arabic", "Tajawal", "Cairo", "system-ui"]
+    },
+    "latin": {
+      "family": "'IBM Plex Sans', system-ui, sans-serif",
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      }
+    },
+    "mono": {
+      "family": "'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace",
+      "weights": {
+        "regular": 400,
+        "medium": 500,
+        "semibold": 600
+      }
+    },
+    "numbers": {
+      "arabic": "'IBM Plex Sans Arabic', system-ui",
+      "latin": "'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace",
+      "tabular": "'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace"
+    }
+  },
+  "spacing": {
+    "base": 4,
+    "scale": [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64]
+  },
+  "radius": {
+    "none": "0",
+    "sm": "0.25rem",
+    "DEFAULT": "0.5rem",
+    "md": "0.75rem",
+    "lg": "1rem",
+    "xl": "1.5rem",
+    "2xl": "2rem",
+    "full": "9999px"
+  },
+  "shadow": {
+    "card": "0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05)",
+    "cardHover": "0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07)",
+    "dropdown": "0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07)",
+    "modal": "0 25px 50px -12px rgb(0 0 0 / 0.15)",
+    "focus": "0 0 0 3px rgb(217 119 6 / 0.3)"
+  },
+  "transition": {
+    "fast": "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+    "DEFAULT": "200ms cubic-bezier(0.4, 0, 0.2, 1)",
+    "slow": "300ms cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  "breakpoints": {
+    "xs": "320px",
+    "sm": "640px",
+    "md": "768px",
+    "lg": "1024px",
+    "xl": "1280px",
+    "2xl": "1536px"
+  },
+  "zIndex": {
+    "dropdown": 100,
+    "sticky": 200,
+    "modal": 300,
+    "popover": 400,
+    "tooltip": 500,
+    "toast": 600
+  }
+}

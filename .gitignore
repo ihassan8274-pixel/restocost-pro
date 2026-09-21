@@ -1,0 +1,50 @@
+# dependencies
+node_modules/
+server/node_modules/
+
+# build output
+dist/
+
+# environment & secrets
+.env
+.env.local
+server/.env
+server/secrets.key
+
+# runtime data (databases, settings, cache)
+*.db
+*.db-journal
+server/data/
+server/logs/
+server/backups/
+server/backup-archive/
+backup-archive/
+backups/
+backup7/
+
+# logs & crash dumps
+*.log
+err
+out
+build_log.txt
+server.log
+
+# deploy artifacts
+deploy-*.zip
+
+# debug probes / dumps
+dump_*.txt
+dump_branches.txt
+dl_names.txt
+downloads_list.txt
+xlsx_probe*.txt
+testsprite-*.html
+
+# per-machine runtime config
+server/host.txt
+server/port.txt
+server/instance.txt
+
+# portable node runtime (binary bundle)
+tools/node-portable/
+tools/node-portable.zip

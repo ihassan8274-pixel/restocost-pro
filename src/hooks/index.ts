@@ -1,0 +1,1 @@
+export { useAdminDelete, AdminDeleteModal } from './useAdminDelete';

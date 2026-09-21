@@ -1,0 +1,377 @@
+// Backup & restore subsystem lives here (settings, snapshot, backup CRUD,
+// verification, restore, auto-scheduler, destructive clears).
+import fs from 'node:fs';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import {
+  COLLECTION_KEYS, instanceId, readToken, sessionUser,
+} from '../core.mjs';
+import { store } from '../store.mjs';
+
+const { getKV, setKV, deleteKV, purgeAllSessions, createSession } = store;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// ---- Advanced Backup & Restore subsystem ----
+const BACKUP_VERSION = 1;
+// Backups live in a dedicated, easy-to-find folder inside the system files.
+const backupDir = path.join(__dirname, '..', 'backup-archive');
+fs.mkdirSync(backupDir, { recursive: true });
+// Migrate backups from the legacy server/backups location, if present.
+const legacyDir = path.join(__dirname, 'backups');
+try {
+  const legacy = fs.readdirSync(legacyDir).filter((f) => f.startsWith('backup_') && f.endsWith('.json'));
+  legacy.forEach((f) => {
+    const src = path.join(legacyDir, f);
+    const dst = path.join(backupDir, f);
+    if (!fs.existsSync(dst)) fs.renameSync(src, dst);
+  });
+} catch { /* no legacy folder */ }
+const BACKUP_SETTINGS_KEY = 'rcerp_backup_settings';
+const DEFAULT_BACKUP_SETTINGS = { enabled: true, intervalHours: 1, retention: 72, lastRunAt: null, nextRunAt: null, verifyAfterBackup: true };
+
+const readBackupSettings = () => ({ ...DEFAULT_BACKUP_SETTINGS, ...(getKV(BACKUP_SETTINGS_KEY) || {}) });
+const writeBackupSettings = (s) => setKV(BACKUP_SETTINGS_KEY, s);
+
+const VERIFY_LOG_KEY = 'rcerp_backup_verify_log';
+
+const snapshotAll = () => {
+  const data = {};
+  const counts = {};
+  COLLECTION_KEYS.forEach((key) => {
+    const v = getKV(key);
+    if (v !== null) { data[key] = v; counts[key] = Array.isArray(v) ? v.length : 1; }
+  });
+  return { data, counts };
+};
+
+const pad2 = (n) => String(n).padStart(2, '0');
+const backupFileName = (createdAt) => {
+  const d = new Date(createdAt);
+  return `backup_${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}_${String(d.getMilliseconds()).padStart(3, '0')}.json`;
+};
+
+const verifyBackup = (backupData, backupCounts) => {
+  const results = [];
+  let allMatch = true;
+  const liveSnap = snapshotAll();
+  const allKeys = new Set([...Object.keys(backupData), ...Object.keys(liveSnap.data)]);
+  for (const key of allKeys) {
+    const inBackup = key in backupData;
+    const inLive = key in liveSnap.data;
+    if (!inBackup && inLive) {
+      results.push({ key, status: 'missing_in_backup', backupRecords: 0, liveRecords: liveSnap.counts[key] || 0 });
+      allMatch = false;
+    } else if (inBackup && !inLive) {
+      results.push({ key, status: 'missing_in_live', backupRecords: backupCounts[key] || 0, liveRecords: 0 });
+      allMatch = false;
+    } else {
+      const backupLen = Array.isArray(backupData[key]) ? backupData[key].length : 1;
+      const liveLen = Array.isArray(liveSnap.data[key]) ? liveSnap.data[key].length : 1;
+      if (backupLen !== liveLen) {
+        results.push({ key, status: 'count_mismatch', backupRecords: backupLen, liveRecords: liveLen });
+        allMatch = false;
+      } else {
+        const backupStr = JSON.stringify(backupData[key]);
+        const liveStr = JSON.stringify(liveSnap.data[key]);
+        if (backupStr !== liveStr) {
+          results.push({ key, status: 'content_mismatch', backupRecords: backupLen, liveRecords: liveLen });
+          allMatch = false;
+        }
+      }
+    }
+  }
+  return { allMatch, results, verifiedAt: new Date().toISOString(), totalKeys: allKeys.size, mismatchedKeys: results.length };
+};
+
+const createBackup = (createdBy, type, label) => {
+  const snap = snapshotAll();
+  const createdAt = new Date().toISOString();
+  const payload = { version: BACKUP_VERSION, createdAt, createdBy, type, label: label || '', instanceId, counts: snap.counts, data: snap.data };
+  const fileName = backupFileName(createdAt);
+  fs.writeFileSync(path.join(backupDir, fileName), JSON.stringify(payload));
+  // Enforce retention policy
+  const settings = readBackupSettings();
+  const files = listBackups();
+  if (files.length > settings.retention) {
+    files.slice(settings.retention).forEach((f) => { try { fs.unlinkSync(path.join(backupDir, f.fileName)); } catch { /* ignore */ } });
+  }
+  // Verify backup matches live data
+  let verification = null;
+  if (settings.verifyAfterBackup !== false) {
+    verification = verifyBackup(snap.data, snap.counts);
+    const logEntry = { backupFile: fileName, createdAt, ...verification };
+    const log = getKV(VERIFY_LOG_KEY) || [];
+    log.unshift(logEntry);
+    if (log.length > 100) log.length = 100;
+    setKV(VERIFY_LOG_KEY, log);
+    if (!verification.allMatch) {
+      console.log(`[backup] WARNING: backup verification found ${verification.mismatchedKeys} mismatch(es) in ${fileName}`);
+    }
+  }
+  return { fileName, createdAt, type, label: payload.label, units: Object.keys(snap.counts).length, verification };
+};
+
+const listBackups = () => {
+  let files = [];
+  try { files = fs.readdirSync(backupDir).filter((f) => f.startsWith('backup_') && f.endsWith('.json')); } catch { return []; }
+  return files.map((f) => {
+    const full = path.join(backupDir, f);
+    let size = 0, meta = { createdAt: null, createdBy: null, type: 'unknown', label: '', counts: {} };
+    try { size = fs.statSync(full).size; } catch { return null; }
+    try {
+      const p = JSON.parse(fs.readFileSync(full, 'utf8'));
+      meta = { createdAt: p.createdAt, createdBy: p.createdBy, type: p.type || 'unknown', label: p.label || '', counts: p.counts || {} };
+    } catch { /* corrupt file - still listable */ }
+    const totalRecords = Object.values(meta.counts).reduce((s, c) => s + (Number(c) || 0), 0);
+    return {
+      id: f.replace(/^backup_/, '').replace(/\.json$/, ''),
+      fileName: f,
+      size,
+      createdAt: meta.createdAt,
+      createdBy: meta.createdBy,
+      type: meta.type,
+      label: meta.label,
+      units: Object.keys(meta.counts).length,
+      records: totalRecords,
+    };
+  }).filter(Boolean).sort((a, b) => String(b.fileName).localeCompare(String(a.fileName)));
+};
+
+const readBackupById = (id) => {
+  const fileName = `backup_${String(id || '').replace(/[^A-Za-z0-9_]/g, '')}.json`;
+  const full = path.join(backupDir, fileName);
+  if (!fs.existsSync(full)) return null;
+  try { return JSON.parse(fs.readFileSync(full, 'utf8')); } catch { return null; }
+};
+
+// Apply a validated snapshot to the DB; returns count of collections written.
+const applySnapshot = (data) => {
+  const keys = Object.keys(data);
+  COLLECTION_KEYS.forEach((key) => {
+    if (key in data) setKV(key, data[key]);
+    else deleteKV(key); // keys missing from the backup are cleared to avoid stale data
+  });
+  return keys.length;
+};
+
+// Keep the requesting admin logged in while signing out everyone else after a restore.
+const keepSessionAfterRestore = (req, user) => {
+  const token = readToken(req);
+  purgeAllSessions();
+  if (token && user) {
+    createSession(token, user.id);
+  }
+};
+
+// Create a restore-point of the CURRENT state before a destructive operation.
+const autoRestorePoint = (userName, cause) => {
+  try { createBackup(userName || 'النظام', 'restore_point', `نقطة استعادة قبل: ${cause}`); } catch { /* ignore */ }
+};
+
+export const registerBackup = (app) => {
+  // Live download of current data (kept for compatibility with the quick-export button).
+  app.get('/api/backup', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const snap = snapshotAll();
+    res.json({ ok: true, backup: { version: BACKUP_VERSION, createdAt: new Date().toISOString(), createdBy: user.name, instanceId, counts: snap.counts, data: snap.data } });
+  });
+
+  // List all stored backups (newest first).
+  app.get('/api/backups', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const backups = listBackups();
+    const sizeSum = backups.reduce((s, b) => s + b.size, 0);
+    res.json({ ok: true, backups, settings: readBackupSettings(), totalSize: sizeSum, storedCount: backups.length, dir: backupDir });
+  });
+
+  // Create a manual backup now.
+  app.post('/api/backups', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const label = String((req.body || {}).label || '').slice(0, 80);
+    const created = createBackup(user.name, 'manual', label);
+    res.json({ ok: true, backup: created });
+  });
+
+  // Restore from a stored backup. Creates a restore-point of current state first.
+  app.post('/api/backups/:id/restore', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const backup = readBackupById(req.params.id);
+    if (!backup) return res.status(404).json({ ok: false, error: 'النسخة غير موجودة' });
+    if (backup.version !== BACKUP_VERSION) return res.status(400).json({ ok: false, error: 'نسخة غير مدعومة من ملف النسخ الاحتياطي' });
+    autoRestorePoint(user.name, 'استعادة نسخة');
+    const restored = applySnapshot(backup.data);
+    keepSessionAfterRestore(req, user);
+    res.json({ ok: true, restored, createdAt: backup.createdAt });
+  });
+
+  // Delete a stored backup.
+  app.delete('/api/backups/:id', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const fileName = `backup_${String(req.params.id || '').replace(/[^A-Za-z0-9_]/g, '')}.json`;
+    const full = path.join(backupDir, fileName);
+    if (!fs.existsSync(full)) return res.status(404).json({ ok: false, error: 'النسخة غير موجودة' });
+    fs.unlinkSync(full);
+    res.json({ ok: true });
+  });
+
+  // Open the backup folder in Windows Explorer (this machine).
+  app.get('/api/backups/open-folder', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    try {
+      spawn('explorer.exe', [backupDir], { detached: true, stdio: 'ignore' }).unref();
+    } catch { /* ignore */ }
+    res.json({ ok: true, dir: backupDir });
+  });
+
+  // Read backup settings.
+  app.get('/api/backups/settings', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    res.json({ ok: true, settings: readBackupSettings() });
+  });
+
+  // Save backup settings (auto-backup schedule + retention policy).
+  app.post('/api/backups/settings', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const body = (req.body || {}).settings || {};
+    const current = readBackupSettings();
+    const intervalHours = Math.min(Math.max(Number(body.intervalHours) || 24, 1), 24 * 30);
+    const retention = Math.min(Math.max(Number(body.retention) || 30, 1), 500);
+    const settings = {
+      enabled: Boolean(body.enabled),
+      intervalHours,
+      retention,
+      verifyAfterBackup: body.verifyAfterBackup !== false,
+      lastRunAt: current.lastRunAt,
+      nextRunAt: current.nextRunAt,
+    };
+    if (!settings.lastRunAt) {
+      settings.lastRunAt = new Date().toISOString();
+      settings.nextRunAt = new Date(Date.now() + intervalHours * 3600 * 1000).toISOString();
+    } else if (current.intervalHours !== intervalHours && settings.nextRunAt) {
+      settings.nextRunAt = new Date(new Date(settings.lastRunAt).getTime() + intervalHours * 3600 * 1000).toISOString();
+    }
+    writeBackupSettings(settings);
+    res.json({ ok: true, settings });
+  });
+
+  // Read backup verification log.
+  app.get('/api/backups/verify-log', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const log = getKV(VERIFY_LOG_KEY) || [];
+    res.json({ ok: true, log: log.slice(0, 50) });
+  });
+
+  // Run on-demand verification of latest backup vs live data.
+  app.post('/api/backups/verify-now', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const files = listBackups();
+    if (!files.length) return res.status(404).json({ ok: false, error: 'لا توجد نسخ احتياطية' });
+    const latest = readBackupById(files[0].id);
+    if (!latest) return res.status(500).json({ ok: false, error: 'تعذر قراءة أحدث نسخة' });
+    const verification = verifyBackup(latest.data, latest.counts);
+    const logEntry = { backupFile: files[0].fileName, createdAt: latest.createdAt, ...verification };
+    const log = getKV(VERIFY_LOG_KEY) || [];
+    log.unshift(logEntry);
+    if (log.length > 100) log.length = 100;
+    setKV(VERIFY_LOG_KEY, log);
+    res.json({ ok: true, verification, backupFile: files[0].fileName });
+  });
+
+  // Uploaded-file restore (full snapshot from a downloaded JSON). Creates a restore-point first.
+  app.post('/api/restore', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const backup = (req.body || {}).backup;
+    if (!backup || typeof backup !== 'object' || !backup.data || typeof backup.data !== 'object') {
+      return res.status(400).json({ ok: false, error: 'ملف النسخ الاحتياطي غير صالح' });
+    }
+    if (backup.version !== BACKUP_VERSION) {
+      return res.status(400).json({ ok: false, error: `نسخة غير مدعومة من ملف النسخ الاحتياطي (المتوقع: ${BACKUP_VERSION})` });
+    }
+    const keys = Object.keys(backup.data);
+    const unknown = keys.filter((k) => !COLLECTION_KEYS.includes(k));
+    if (unknown.length) {
+      return res.status(400).json({ ok: false, error: `ملف يحتوي مفاتيح غير معروفة: ${unknown.slice(0, 3).join(', ')}` });
+    }
+    autoRestorePoint(user.name, 'استعادة من ملف');
+    const restored = applySnapshot(backup.data);
+    keepSessionAfterRestore(req, user);
+    res.json({ ok: true, restored, createdAt: backup.createdAt });
+  });
+
+  // Download a specific stored backup (full JSON). Registered after the static
+  // /open-folder, /settings and /verify-log routes so :id never swallows them.
+  app.get('/api/backups/:id', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const backup = readBackupById(req.params.id);
+    if (!backup) return res.status(404).json({ ok: false, error: 'النسخة غير موجودة' });
+    res.json({ ok: true, backup });
+  });
+
+  // Auto-backup scheduler: checks every minute whether a scheduled backup is due.
+  const runAutoBackup = () => {
+    const settings = readBackupSettings();
+    if (!settings.enabled) return;
+    const now = Date.now();
+    const intervalMs = (settings.intervalHours || 24) * 3600 * 1000;
+    const last = settings.lastRunAt ? new Date(settings.lastRunAt).getTime() : 0;
+    if (now - last >= intervalMs) {
+      try {
+        const created = createBackup('النظام (تلقائي)', 'auto', 'نسخة احتياطية تلقائية مجدولة');
+        settings.lastRunAt = created.createdAt;
+        settings.nextRunAt = new Date(new Date(created.createdAt).getTime() + intervalMs).toISOString();
+        writeBackupSettings(settings);
+        console.log(`[backup] auto backup created: ${created.fileName}`);
+      } catch (e) { console.log('[backup] auto backup failed:', e && e.message); }
+    }
+  };
+  setInterval(runAutoBackup, 60 * 1000);
+
+  // Destructive operations are now guarded by an automatic restore-point.
+  app.post('/api/clear', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    autoRestorePoint(user.name, 'تفريغ النظام');
+    COLLECTION_KEYS.filter((k) => k !== 'rcerp_users').forEach((key) => deleteKV(key));
+    res.json({ ok: true });
+  });
+
+  // Targeted bulk delete — clears only the collections the user selected.
+  app.post('/api/clear-collections', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const incoming = Array.isArray(req.body && req.body.collections) ? req.body.collections : [];
+    const keys = incoming.filter((k) => COLLECTION_KEYS.includes(k) && k !== 'rcerp_users');
+    if (keys.length === 0) return res.status(400).json({ ok: false, error: 'لم يتم تحديد أي جدول صالح' });
+    autoRestorePoint(user.name, `تفريغ بيانات محدد (${keys.length} جدول)`);
+    keys.forEach((key) => deleteKV(key));
+    res.json({ ok: true, cleared: keys });
+  });
+};

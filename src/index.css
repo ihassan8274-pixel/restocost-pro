@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* ربط متغير dark: بالكلاس على <html> بدل تفضيل نظام التشغيل */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ===== الألوان الأساسية (هوية معصوبي — ذهبي/عنبري) ===== */
+  --color-primary-50:  #fffbeb;
+  --color-primary-100: #fef3c7;
+  --color-primary-200: #fde68a;
+  --color-primary-300: #fcd34d;
+  --color-primary-400: #fbbf24;
+  --color-primary-500: #f59e0b;
+  --color-primary-600: #d97706;
+  --color-primary-700: #b45309;
+  --color-primary-800: #92400e;
+  --color-primary-900: #78350f;
+  --color-primary-950: #451a03;
+
+  --color-warm-50:  #fdf8f3;
+  --color-warm-100: #faefdf;
+  --color-warm-200: #f5dbbf;
+  --color-warm-800: #4a2c12;
+  --color-warm-900: #37200d;
+  --color-warm-950: #241503;
+
+  /* ===== الأسطح والحدود ===== */
+  --color-surface:      #ffffff;
+  --color-surface-sec:  #fafaf9;
+  --color-surface-ter:  #f5f5f4;
+  --color-line:         #e7e5e4;
+  --color-line-strong:  #d6d3d1;
+
+  /* ===== الجداول المالية ===== */
+  --color-fin-bg:   #f5f0e8;
+  --color-fin-txt:  #44403c;
+
+  /* ===== الخطوط ===== */
+  --font-sans: "IBM Plex Sans Arabic", "Cairo", "Tahoma", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", "Courier New", monospace;
+
+  /* ===== الظلال ===== */
+  --shadow-card:   0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-card-hover: 0 8px 24px -6px rgb(180 83 9 / 0.16), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  --shadow-focus: 0 0 0 3px rgb(217 119 6 / 0.28);
+}
+
+:root {
+  font-family: "IBM Plex Sans Arabic", "Cairo", "Tahoma", system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #fafaf9;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== كل الأرقام المالية: خط ثابت العرض ومحاذاة موحدة إلى اليسار داخل RTL ===== */
+.tnum {
+  font-family: "Cascadia Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: embed;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #fcd34d transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #fcd34d;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+/* Hide the up/down spinner arrows on number inputs; quantities are typed manually */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ============ DARK THEME ============ */
+.dark {
+  color-scheme: dark;
+}
+.dark body {
+  background-color: #1c1917;
+}
+.dark .bg-white { background-color: #292524; }
+.dark .bg-slate-50 { background-color: #292524; }
+.dark .bg-slate-100 { background-color: #1c1917; }
+.dark .bg-slate-200 { background-color: #44403c; }
+.dark .bg-slate-900 { background-color: #0c0a09; }
+.dark .bg-indigo-50 { background-color: #2a2342; }
+.dark .bg-amber-50 { background-color: #451a03; }
+.dark .bg-rose-50 { background-color: #351f2a; }
+.dark .bg-emerald-50 { background-color: #14302a; }
+.dark .bg-cyan-50 { background-color: #0f2b38; }
+.dark .bg-violet-50 { background-color: #2a2342; }
+.dark .text-slate-900 { color: #e2e8f0; }
+.dark .text-slate-800 { color: #d7dee8; }
+.dark .text-slate-700 { color: #cbd5e1; }
+.dark .text-slate-600 { color: #b3bdcb; }
+.dark .text-slate-500 { color: #94a3b8; }
+.dark .text-slate-400 { color: #7e8ca1; }
+.dark .border-slate-100 { border-color: #44403c; }
+.dark .border-slate-200 { border-color: #44403c; }
+.dark .border-slate-300 { border-color: #57534e; }
+.dark .bg-indigo-50\/30, .dark .bg-amber-50\/60, .dark .bg-rose-50\/60 { background-color: #292524; }
+.dark .bg-white\/70 { background-color: rgba(41, 37, 36, 0.85); }
+.dark .bg-white\/95 { background-color: rgba(28, 25, 23, 0.95); }
+.dark ::-webkit-scrollbar-thumb { background: #44403c; }
+
+@media print {
+  /* Force light colors on paper even in dark mode */
+  .dark *,
+  .dark body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+  }
+  .dark * { text-shadow: none !important; }
+  body { background: #ffffff !important; }
+  /* Hide app chrome: sidebar, header, modals, fixed layers, toolbars */
+  aside,
+  header,
+  .fixed,
+  .sticky,
+  .no-print,
+  .print\:hidden { display: none !important; }
+  /* Screens may provide a dedicated print area; otherwise main prints */
+  .print-area {
+    display: block !important;
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 16px !important;
+  }
+  .print-area.hidden { display: block !important; }
+  main { padding: 0 !important; margin: 0 !important; }
+}
+/* ===== تنسيق موحد للرسوم البيانية (recharts) ===== */
+.recharts-wrapper { font-family: inherit; }
+.recharts-wrapper .recharts-cartesian-axis-tick text,
+.recharts-radial-bar-sector text { font-size: 11px; font-weight: 600; fill: #44403c; }
+.recharts-default-legend { font-size: 10px !important; direction: rtl; line-height: 1.35 !important; }
+.recharts-default-legend .recharts-legend-item { margin-left: 10px !important; padding: 1px 3px !important; }
+.recharts-default-legend .recharts-legend-item-text { font-size: 10px !important; color: #44403c !important; }
+.recharts-default-legend svg { width: 9px; height: 9px; }
+.recharts-surface { overflow: visible; }
+.recharts-default-tooltip { border-radius: 12px !important; border-color: #fde68a !important; box-shadow: 0 10px 30px rgb(120 53 15 / 0.12) !important; }
+
+/* ===== تثبيت رأس الجدول أثناء تمرير الشاشة (كل الجداول في النظام) ===== */
+/* الحاوية تصبح قابلة للتمرير داخلياً بارتفاع مريح، وصف العناوين يبقى مثبتاً أعلاها */
+@media screen {
+  .overflow-x-auto:has(table) {
+    max-height: calc(100vh - 175px);
+    overflow-y: auto;
+  }
+  .overflow-x-auto:has(table) thead th {
+    position: sticky;
+    top: -1px;
+    z-index: 20;
+    box-shadow: inset 0 -1px 0 #fde68a;
+  }
+  /* رأس الصفحة الملتصق داخل البطاقات العادية أيضاً */
+  .overflow-y-auto:has(table) thead th {
+    position: sticky;
+    top: -1px;
+    z-index: 20;
+  }
+}
+
+/* ===== Accessibility: حلقة تركيز واضحة على كل العناصر التفاعلية (مفتاح Tab) ===== */
+:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+/* ===== Accessibility: احترام تفضيل تقليل الحركة ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== وضع الكثافة المضغوط (بند 18) ===== */
+:root.compact .p-3,
+:root.compact .p-4,
+:root.compact .p-5 {
+  padding: 0.5rem;
+}
+:root.compact .py-3 { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+:root.compact .py-4 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+:root.compact .py-5 { padding-top: 0.6rem; padding-bottom: 0.6rem; }
+:root.compact .gap-3 { gap: 0.55rem; }
+:root.compact .gap-4 { gap: 0.75rem; }
+:root.compact .text-xs { font-size: 0.68rem; line-height: 1.2; }
+:root.compact td,
+:root.compact th { padding-top: 0.35rem !important; padding-bottom: 0.35rem !important; }
+:root.compact table { line-height: 1.25; }

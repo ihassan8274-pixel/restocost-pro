@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// CORE KV STORE — نظام السجل الأساسي كما يستخدمه RestoCost.
+// المفتاح يحمل مجموعة JSON كاملة (نفس نموذج SQLite القديم)
+// لضمان التزامن مع الواجهة القائمة دون كسر أي شيء.
+// ============================================================
+
+model Kv {
+  key   String @id // مثل rcerp_branches
+  value Json   @default("{}") // JSONB
+ 
+  @@map("kv")
+}
+
+// ============================================================
+// SYSTEM MODULE
+// ============================================================
+
+model Session {
+  token     String   @id
+  userId    String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("sessions")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  ts        DateTime @default(now())
+  actorId   String?
+  actorEmail String?
+  action    String
+  targetId  String?
+  detail    String?
+
+  @@index([ts])
+  @@index([action])
+  @@index([actorId])
+  @@map("audit_log")
+}
+
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart BigInt   @default(0)
+  lockedUntil BigInt?
+
+  @@map("rate_limits")
+}
+
+// ============================================================
+// CDC — Change Data Capture: سجل كتابة تلوي لكل تغيير في Kv
+// بنسخة متزايدة (seq) ليستطيع الجهاز سحب "ما تغيّر فقط" منذ آخر
+// مزامنة بدل سحب كامل البيانات (تعويض الاعتماد على _mtime).
+// ============================================================
+
+model ChangeLog {
+  seq Int  @id @default(autoincrement())
+  key String
+  op  String // 'set' | 'del'
+  ts  DateTime @default(now())
+
+  @@index([key])
+  @@index([ts])
+  @@map("change_log")
+}
+
+// ============================================================
+// USERS — مرجع علائقي (يُملأ من rcerp_users)
+// ============================================================
+
+model User {
+  id           String   @id
+  name         String
+  email        String?
+  role         String
+  branchId     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime?
+  lastLogin    DateTime?
+  passwordHash String
+  totpEnabled  Boolean  @default(false)
+  sessions     Session[]
+
+  @@map("users")
+}
+
+// ============================================================
+// MASTER DATA
+// ============================================================
+
+model Branch {
+  id       String   @id
+  name     String
+  nameAr   String?
+  address  String?
+  phone    String?
+  isActive Boolean  @default(true)
+  createdAt DateTime?
+
+  @@map("branches")
+}
+
+model Supplier {
+  id           String   @id
+  code         String?
+  name         String
+  nameAr       String?
+  phone        String?
+  email        String?
+  contact      String?
+  address      String?
+  taxNo        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime?
+
+  @@map("suppliers")
+}
+
+model RawMaterial {
+  id          String   @id
+  nameAr      String
+  nameEn      String?
+  category    String?
+  categoryId  String?
+  unit        String
+  purchaseUnit String?
+  unitFactor  Float?
+  brand       String?
+  supplierId  String?
+  minStock    Float?
+  createdAt   DateTime?
+
+  @@map("raw_materials")
+}
+
+model Recipe {
+  id        String  @id
+  nameAr    String
+  nameEn    String?
+  category  String?
+  portions  Int?
+  totalCost Float?
+  createdAt DateTime?
+
+  @@map("recipes")
+}
+
+model InventoryItem {
+  id        String   @id
+  nameAr    String
+  nameEn    String?
+  category  String?
+  unit      String
+  branchId  String?
+  quantity  Float?
+  cost      Float?
+  createdAt DateTime?
+
+  @@map("inventory_items")
+}
+
+// جداول بيانات الملفات السابقة (عند الحاجة لاحقاً) تُضاف بنفس النمط.
+
+// ============================================================
+// STORE-FACING SUMMARY VIEWS (اختياري للمرحلة اللاحقة)
+// ============================================================
+
+model DocumentNr {
+  id      String @id
+  docType String @unique
+  next    Int    @default(1)
+
+  @@map("document_nr")
+}

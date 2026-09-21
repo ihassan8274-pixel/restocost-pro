@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RestoCost ERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --p50:#fffbeb; --p100:#fef3c7; --p200:#fde68a; --p300:#fcd34d;
+    --p400:#fbbf24; --p500:#f59e0b; --p600:#d97706; --p700:#b45309;
+    --p800:#92400e; --p900:#78350f;
+    --n50:#fafaf9; --n100:#f5f5f4; --n200:#e7e5e4; --n300:#d6d3d1;
+    --n400:#a8a29e; --n500:#78716c; --n600:#57534e; --n700:#44403c;
+    --n800:#292524; --n900:#1c1917;
+    --surface:#ffffff; --sec:#fafaf9; --ter:#f5f5f4;
+    --border:#e7e5e4; --border-strong:#d6d3d1;
+    --fin-bg:#f5f0e8; --fin-txt:#44403c;
+    --pos:#166534; --pos-bg:#f0fdf4; --neg:#991b1b; --neg-bg:#fef2f2;
+    --font-ar:"IBM Plex Sans Arabic","Noto Sans Arabic",system-ui,sans-serif;
+    --font-la:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","SF Mono","Fira Code",monospace;
+    --sh-card:0 1px 3px 0 rgb(0 0 0/.05),0 1px 2px -1px rgb(0 0 0/.05);
+    --sh-hop:0 8px 24px -4px rgb(180 83 9/.15),0 4px 8px -4px rgb(0 0 0/.06);
+    --sh-pop:0 16px 40px -8px rgb(0 0 0/.14);
+    --r-sm:8px; --r-md:14px; --r-lg:20px;
+    --amber-grad:linear-gradient(135deg,#fbbf24 0%,#f59e0b 45%,#d97706 100%);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:var(--font-ar);
+    background:var(--n100); color:var(--n900);
+    display:flex; min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.en{font-family:var(--font-la)}
+  body:has(input.numArabic:checked){--num-style:arabic}
+  .tnum{font-family:var(--mono); font-variant-numeric:tabular-nums}
+  body.lang-ar .tnum[data-ar="1"]{font-family:var(--font-ar)}
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    width:256px; flex-shrink:0; background:var(--surface);
+    border-inline-end:1px solid var(--border);
+    display:flex; flex-direction:column;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{display:flex; align-items:center; gap:11px; padding:18px 18px 14px}
+  .brand-logo{
+    width:40px;height:40px;border-radius:12px;background:var(--amber-grad);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:17px;box-shadow:var(--sh-hop);
+  }
+  .brand-name{font-size:15px;font-weight:700;color:var(--p800)}
+  .brand-sub{font-size:11px;color:var(--n400)}
+
+  .nav-group{padding:0 12px;margin-top:4px}
+  .nav-title{
+    font-size:11px;font-weight:600;color:var(--n400);
+    letter-spacing:.03em; padding:10px 10px 6px;
+    display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+    user-select:none;
+  }
+  .nav-title .chev{transition:transform .2s;font-size:9px}
+  .nav-group.collapsed .nav-items{display:none}
+  .nav-group.collapsed .chev{transform:rotate(-90deg)}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:9px 11px;
+    border-radius:10px;font-size:13.5px;color:var(--n600);
+    cursor:pointer;margin-bottom:2px;transition:all .15s;position:relative;
+  }
+  .nav-item i{font-style:normal;font-size:15px;width:20px;text-align:center;opacity:.9}
+  .nav-item:hover{background:var(--n100);color:var(--n800)}
+  .nav-item.active{background:var(--p50);color:var(--p700);font-weight:600}
+  .nav-item.active::before{
+    content:"";position:absolute;inset-inline-start:-12px;top:8px;bottom:8px;
+    width:3px;border-radius:99px;background:var(--p600);
+  }
+  .nav-badge{margin-inline-start:auto;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600}
+  .nav-badge.p{background:var(--p100);color:var(--p700)}
+  .nav-badge.or{background:#fde68a;color:var(--p800)}
+
+  .side-foot{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+  .user-chip{display:flex;align-items:center;gap:10px}
+  .user-ava{width:34px;height:34px;border-radius:50%;background:var(--amber-grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .user-name{font-size:13px;font-weight:600;color:var(--n800)}
+  .user-role{font-size:11px;color:var(--n400)}
+
+  /* ============ MAIN ============ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:14px;padding:12px 26px;
+    background:rgba(255,255,255,.9);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .search{
+    flex:1;max-width:420px;display:flex;align-items:center;gap:9px;
+    background:var(--n100);border:1px solid transparent;border-radius:99px;
+    padding:8px 16px;transition:all .15s;
+  }
+  .search:focus-within{background:var(--surface);border-color:var(--p400);box-shadow:0 0 0 3px rgb(217 119 6/.18)}
+  .search input{flex:1;border:none;outline:none;background:transparent;font-family:inherit;font-size:13.5px;color:var(--n800)}
+  .search .kbd{font-family:var(--mono);font-size:10px;color:var(--n400);border:1px solid var(--border);border-radius:4px;padding:1px 6px}
+
+  .icon-btn{
+    width:38px;height:38px;border-radius:12px;border:1px solid var(--border);
+    background:var(--surface);color:var(--n600);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;
+  }
+  .icon-btn:hover{border-color:var(--p400);color:var(--p700);box-shadow:var(--sh-card)}
+  .icon-btn .dot{position:absolute;top:9px;inset-inline-end:9px;width:6px;height:6px;border-radius:50%;background:var(--neg);border:1.5px solid #fff}
+  .pos-rel{position:relative}
+
+  .lang-btn{
+    display:flex;align-items:center;gap:8px;padding:8px 15px;
+    border:1px solid var(--border-strong);border-radius:99px;background:var(--surface);
+    font-family:inherit;font-size:13px;font-weight:600;color:var(--n700);cursor:pointer;transition:all .15s;
+  }
+  .lang-btn:hover{border-color:var(--p500);color:var(--p700)}
+
+  .content{padding:26px;max-width:1440px;width:100%}
+
+  /* ============ HEAD ============ */
+  .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .page-title{font-size:24px;font-weight:700;color:var(--n900)}
+  .page-sub{font-size:13px;color:var(--n500);margin-top:4px}
+  .head-actions{display:flex;gap:10px;align-items:center}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:10px 17px;border-radius:11px;font-family:inherit;font-size:13.5px;font-weight:600;
+    cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap;
+  }
+  .btn-primary{background:var(--p600);color:#fff;box-shadow:0 2px 6px -2px rgb(217 119 6/.5)}
+  .btn-primary:hover{background:var(--p700)}
+  .btn-outline{background:var(--surface);border-color:var(--border-strong);color:var(--n700)}
+  .btn-outline:hover{border-color:var(--p500);color:var(--p700)}
+
+  /* ============ KPI ============ */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+  .kpi{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+    padding:18px 20px;position:relative;overflow:hidden;transition:all .2s;
+  }
+  .kpi:hover{box-shadow:var(--sh-hop);transform:translateY(-2px)}
+  .kpi::after{
+    content:"";position:absolute;inset-block-start:0;inset-inline-end:0;
+    width:64px;height:64px;border-radius:0 0 0 64px;
+    background:linear-gradient(135deg,transparent 40%,rgb(251 191 36/.14));
+  }
+  .kpi-icon{
+    width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-size:17px;margin-bottom:12px;
+  }
+  .kpi-icon.gold{background:var(--p100);color:var(--p700)}
+  .kpi-icon.green{background:var(--pos-bg);color:var(--pos)}
+  .kpi-icon.red{background:var(--neg-bg);color:var(--neg)}
+  .kpi-icon.blue{background:#eff6ff;color:#1e40af}
+  .kpi-label{font-size:12.5px;color:var(--n500);margin-bottom:6px}
+  .kpi-value{font-size:25px;font-weight:700;color:var(--n900);letter-spacing:-.4px}
+  .kpi-foot{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px}
+  .trend{display:inline-flex;align-items:center;gap:4px;font-weight:600;padding:2px 8px;border-radius:99px;font-size:11px}
+  .trend.up{background:var(--pos-bg);color:var(--pos)}
+  .trend.down{background:var(--neg-bg);color:var(--neg)}
+  .trend.flat{background:var(--n100);color:var(--n500)}
+
+  /* ============ GRID LAYOUT ============ */
+  .dash-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+    padding:20px;transition:box-shadow .2s;
+  }
+  .card-hover:hover{box-shadow:var(--sh-hop)}
+  .span-8{grid-column:span 8}
+  .span-4{grid-column:span 4}
+  @media(max-width:1100px){.span-8,.span-4{grid-column:span 12}}
+
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .card-title{font-size:15px;font-weight:700;color:var(--n800)}
+  .card-link{font-size:12.5px;color:var(--p700);font-weight:600;cursor:pointer}
+  .card-link:hover{text-decoration:underline}
+
+  /* ============ CHART ============ */
+  .chart-wrap{position:relative}
+  .area-chart{width:100%;height:auto;display:block}
+  .chart-tooltip{
+    position:absolute;pointer-events:none;background:var(--n900);color:#fff;
+    font-size:11px;font-family:var(--mono);padding:5px 9px;border-radius:8px;opacity:0;transition:opacity .15s;
+    transform:translate(-50%,-120%);white-space:nowrap;z-index:10;
+  }
+  .legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--n500)}
+  .legend-dot{width:9px;height:9px;border-radius:3px}
+
+  /* ============ TABLE ============ */
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{
+    background:var(--fin-bg);color:var(--fin-txt);font-weight:600;text-align:right;
+    padding:11px 14px;border-bottom:1px solid var(--border);white-space:nowrap;font-size:12.5px;
+  }
+  tbody tr{border-bottom:1px solid rgb(231 229 228/.55)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--p50)}
+  tbody td{padding:11px 14px;color:var(--n700)}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:left;direction:ltr}
+  th.num{text-align:left}
+  .cell-pos{color:var(--pos);font-weight:600}
+  .cell-neg{color:var(--neg);font-weight:600}
+  .cell-bold{color:var(--n900);font-weight:600}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+  .badge.ok{background:var(--pos-bg);color:var(--pos)}
+  .badge.warn{background:var(--p100);color:var(--p700)}
+  .badge.err{background:var(--neg-bg);color:var(--neg)}
+  .badge.mut{background:var(--n100);color:var(--n500)}
+
+  /* ============ LIST ITEMS ============ */
+  .mini-list{display:flex;flex-direction:column;gap:2px}
+  .mini-item{display:flex;align-items:center;gap:12px;padding:9px 8px;border-radius:10px;transition:background .15s;cursor:pointer}
+  .mini-item:hover{background:var(--n100)}
+  .mini-ico{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .mini-ico.a{background:var(--p100);color:var(--p700)}
+  .mini-ico.b{background:#eef2ff;color:#4338ca}
+  .mini-ico.c{background:var(--pos-bg);color:var(--pos)}
+  .mini-main{flex:1;min-width:0}
+  .mini-title{font-size:13px;font-weight:600;color:var(--n800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini-sub{font-size:11.5px;color:var(--n400);margin-top:2px}
+  .mini-side{text-align:left;font-size:12px;color:var(--n500);white-space:nowrap;font-family:var(--mono)}
+
+  /* ============ BAR CHART (mini) ============ */
+  .bars{display:flex;align-items:flex-end;gap:10px;height:130px;padding:6px 4px 0}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+  .bar{
+    width:100%;max-width:34px;border-radius:7px 7px 4px 4px;
+    background:linear-gradient(180deg,var(--p400),var(--p600));
+    min-height:4px;transition:height .5s;position:relative;
+  }
+  .bar.mut{background:var(--n200)}
+  .bar-label{font-size:11px;color:var(--n500)}
+
+  /* ============ SETTINGS MODAL ============ */
+  .overlay{
+    position:fixed;inset:0;background:rgb(28 25 23/.38);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:200;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    width:min(560px,92vw);background:var(--surface);border-radius:20px;
+    box-shadow:var(--sh-pop);padding:0;max-height:88vh;overflow:auto;
+    animation:pop .25s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 22px;border-bottom:1px solid var(--border);
+  }
+  .modal-title{font-size:16px;font-weight:700;color:var(--n900)}
+  .modal-close{width:32px;height:32px;border-radius:9px;border:none;background:var(--n100);font-size:15px;cursor:pointer;color:var(--n500)}
+  .modal-close:hover{background:var(--n200);color:var(--n800)}
+  .modal-body{padding:20px 22px}
+  .modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid var(--n100)}
+  .setting-row:last-child{border-bottom:none}
+  .setting-label{font-size:13.5px;font-weight:600;color:var(--n800)}
+  .setting-desc{font-size:12px;color:var(--n400);margin-top:3px}
+
+  /* toggle */
+  .toggle{position:relative;width:46px;height:26px;flex-shrink:0}
+  .toggle input{opacity:0;width:0;height:0}
+  .toggle .slider{
+    position:absolute;inset:0;border-radius:99px;background:var(--n300);cursor:pointer;transition:.2s;
+  }
+  .toggle .slider::before{
+    content:"";position:absolute;width:20px;height:20px;border-radius:50%;
+    background:#fff;top:3px;inset-inline-start:3px;transition:.2s;box-shadow:0 1px 3px rgb(0 0 0/.25);
+  }
+  .toggle input:checked+.slider{background:var(--p600)}
+  .toggle input:checked+.slider::before{transform:translateX(20px)}
+  body.en .toggle input:checked+.slider::before{transform:translateX(-20px)}
+
+  /* segmented */
+  .seg{display:flex;background:var(--n100);border-radius:11px;padding:3px;flex-shrink:0}
+  .seg button{
+    border:none;background:transparent;padding:6px 14px;border-radius:8px;
+    font-family:inherit;font-size:12.5px;font-weight:500;color:var(--n500);cursor:pointer;transition:all .15s;
+  }
+  .seg button.on{background:var(--surface);color:var(--p700);font-weight:600;box-shadow:var(--sh-card)}
+
+  /* ============ TOAST ============ */
+  .toast{
+    position:fixed;bottom:24px;inset-inline-start:50%;transform:translateX(-50%) translateY(80px);
+    background:var(--n900);color:#fff;padding:11px 20px;border-radius:12px;font-size:13.5px;
+    box-shadow:var(--sh-pop);opacity:0;transition:all .3s;z-index:300;display:flex;gap:10px;align-items:center;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast i{font-style:normal;color:var(--p300);font-size:15px}
+
+  @media(max-width:900px){
+    .sidebar{display:none}
+    .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+  }
+</style>
+</head>
+<body lang="ar" dir="rtl">
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo" data-i18n="logoText">م</div>
+    <div>
+      <div class="brand-name">RestoCost ERP</div>
+      <div class="brand-sub" data-i18n="brandSub">نظام إدارة المخزون والمشتريات</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-group">
+      <div class="nav-title" onclick="this.parentNode.classList.toggle('collapsed')">
+        <span data-i18n="navMain">الرئيسية</span><span class="chev">▼</span>
+      </div>
+      <div class="nav-items">
+        <div class="nav-item active" data-i18n="navDash">📊 لوحة المعلومات</div>
+        <div class="nav-item" data-i18n="navAlerts">🔔 التنبيهات</div>
+        <div class="nav-item" data-i18n="navReports">📈 التقارير</div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-title" onclick="this.parentNode.classList.toggle('collapsed')">
+        <span data-i18n="navOps">العمليات</span><span class="chev">▼</span>
+      </div>
+      <div class="nav-items">
+        <div class="nav-item" data-i18n="navPO">🛒 أوامر الشراء <span class="nav-badge p" data-i18n="b3">3</span></div>
+        <div class="nav-item" data-i18n="navGRN">📥 استلامات البضاعة</div>
+        <div class="nav-item" data-i18n="navTransfer">🔄 النقل بين المخازن</div>
+        <div class="nav-item" data-i18n="navUsage">🍽️ مصروف الأصناف</div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-title" onclick="this.parentNode.classList.toggle('collapsed')">
+        <span data-i18n="navInventory">المخزون والجرد</span><span class="chev">▼</span>
+      </div>
+      <div class="nav-items">
+        <div class="nav-item" data-i18n="navStock">📦 حالة المخزون</div>
+        <div class="nav-item" data-i18n="navCount">📋 الجرد الدوري <span class="nav-badge or" data-i18n="b1">1</span></div>
+        <div class="nav-item" data-i18n="navExpiry">⏳ صلاحية الأصناف</div>
+        <div class="nav-item" data-i18n="navCosting">💰 التكلفة والربحية</div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-title" onclick="this.parentNode.classList.toggle('collapsed')">
+        <span data-i18n="navData">البيانات الأساسية</span><span class="chev">▼</span>
+      </div>
+      <div class="nav-items">
+        <div class="nav-item" data-i18n="navSuppliers">🏭 الموردون</div>
+        <div class="nav-item" data-i18n="navArticles">📦 الأصناف</div>
+        <div class="nav-item" data-i18n="navRecipes">📖 الوصفات</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="side-foot">
+    <div class="user-chip">
+      <div class="user-ava" data-i18n="userInit">م</div>
+      <div>
+        <div class="user-name" data-i18n="userName">مدير المخزون</div>
+        <div class="user-role" data-i18n="userRole">فرع معصوبي الرئيسي</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<div class="main">
+  <header class="topbar">
+    <div class="search">
+      <span style="font-size:14px">🔍</span>
+      <input id="searchInput" type="text" data-i18n-ph="searchPh" placeholder="ابحث عن صنف، استلام، أمر شراء..." />
+      <span class="kbd">Ctrl K</span>
+    </div>
+    <div class="pos-rel">
+      <button class="icon-btn" onclick="toast()">🔔<span class="dot"></span></button>
+    </div>
+    <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+    <button class="lang-btn" onclick="toggleLang()">
+      <span id="langLabel">English</span> 🌐
+    </button>
+  </header>
+
+  <div class="content">
+    <!-- ============ PAGE HEAD ============ -->
+    <div class="page-head">
+      <div>
+        <div class="page-title" data-i18n="dashTitle">لوحة المعلومات</div>
+        <div class="page-sub" data-i18n="dashSub">الخميس 18 سبتمبر 2026 — نظرة عامة على المخزون والمشتريات</div>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-outline" onclick="openSettings()">📅 <span data-i18n="range">اليوم</span></button>
+        <button class="btn btn-primary" data-i18n="newGRN">+ استلام جديد</button>
+      </div>
+    </div>
+
+    <!-- ============ KPI CARDS ============ -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-icon gold">💰</div>
+        <div class="kpi-label" data-i18n="kpiInv">قيمة المخزون الحالي</div>
+        <div class="kpi-value tnum">1,845,290.75</div>
+        <div class="kpi-foot"><span class="trend up">▲ 3.2%</span><span data-i18n="kpiInvSub">مقارنة بالشهر الماضي</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon green">📥</div>
+        <div class="kpi-label" data-i18n="kpiGRN">استلامات هذا الشهر</div>
+        <div class="kpi-value tnum">127</div>
+        <div class="kpi-foot"><span class="trend up">+8</span><span data-i18n="kpiGRNSub">عن الشهر السابق</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon blue">🛒</div>
+        <div class="kpi-label" data-i18n="kpiPO">أوامر شراء معلّقة</div>
+        <div class="kpi-value tnum">23</div>
+        <div class="kpi-foot"><span class="trend flat" data-i18n="kpiPOSub">بقيمة 492,300 ر.س</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon red">⏳</div>
+        <div class="kpi-label" data-i18n="kpiExp">أصناف تنتهي قريباً</div>
+        <div class="kpi-value tnum" style="color:var(--neg)">14</div>
+        <div class="kpi-foot"><span class="trend down" data-i18n="kpiExpSub">خلال 7 أيام</span></div>
+      </div>
+    </div>
+
+    <!-- ============ DASH GRID ============ -->
+    <div class="dash-grid">
+      <!-- Area chart -->
+      <div class="card card-hover span-8">
+        <div class="card-head">
+          <div>
+            <div class="card-title" data-i18n="chartTitle">اتجاه المخزون والمشتريات</div>
+            <div class="page-sub" data-i18n="chartSub">آخر 8 أسابيع</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--p600)"></span><span data-i18n="lgStock">قيمة المخزون</span></div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--n300)"></span><span data-i18n="lgPO">أوامر الشراء</span></div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg class="area-chart" id="areaChart" viewBox="0 0 760 220" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity=".28"/>
+                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g id="chartGrid"></g>
+          </svg>
+          <div class="chart-tooltip" id="tooltip"></div>
+        </div>
+      </div>
+
+      <!-- Top suppliers -->
+      <div class="card card-hover span-4">
+        <div class="card-head">
+          <div class="card-title" data-i18n="supTitle">أكثر الموردين توريداً</div>
+          <div class="card-link" data-i18n="viewAll">عرض الكل</div>
+        </div>
+        <div class="mini-list">
+          <div class="mini-item">
+            <div class="mini-ico a">🏭</div>
+            <div class="mini-main"><div class="mini-title">مؤسسة معصوبي للأغذية</div><div class="mini-sub" data-i18n="deliveries">18 توريد</div></div>
+            <div class="mini-side tnum">285,400</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico b">🥛</div>
+            <div class="mini-main"><div class="mini-title">شركة الألبان المتحدة</div><div class="mini-sub" data-i18n="deliveries">12 توريد</div></div>
+            <div class="mini-side tnum">142,750</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico c">🌾</div>
+            <div class="mini-main"><div class="mini-title">مطاحن الدقيق السعودية</div><div class="mini-sub" data-i18n="deliveries">9 توريد</div></div>
+            <div class="mini-side tnum">98,320</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico a">🐔</div>
+            <div class="mini-main"><div class="mini-title">مزرعة الوفاء للدواجن</div><div class="mini-sub" data-i18n="deliveries">7 توريد</div></div>
+            <div class="mini-side tnum">76,900</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico b">🍚</div>
+            <div class="mini-main"><div class="mini-title">التموين الغذائي المتكامل</div><div class="mini-sub" data-i18n="deliveries">6 توريد</div></div>
+            <div class="mini-side tnum">51,430</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRN table -->
+      <div class="card card-hover span-8">
+        <div class="card-head">
+          <div class="card-title" data-i18n="grnTitle">أحدث استلامات البضاعة</div>
+          <div class="card-link" data-i18n="viewAll">عرض الكل</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="thNum">رقم الاستلام</th>
+                <th data-i18n="thDate">التاريخ</th>
+                <th data-i18n="thSupplier">المورد</th>
+                <th data-i18n="thQty">الكمية</th>
+                <th data-i18n="thTotal">الإجمالي (ر.س)</th>
+                <th data-i18n="thStatus">الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="cell-bold tnum">GRN-2026-0164</td><td class="tnum">2026-09-17</td><td>مؤسسة معصوبي للأغذية</td><td class="num">1,847</td><td class="num cell-bold">120,055.00</td><td><span class="badge ok" data-i18n="stComplete">مكتمل</span></td></tr>
+              <tr><td class="cell-bold tnum">GRN-2026-0163</td><td class="tnum">2026-09-16</td><td>مطاحن الدقيق السعودية</td><td class="num">540</td><td class="num cell-bold">53,190.00</td><td><span class="badge warn" data-i18n="stOpen">مفتوح</span></td></tr>
+              <tr><td class="cell-bold tnum">GRN-2026-0162</td><td class="tnum">2026-09-15</td><td>شركة الألبان المتحدة</td><td class="num">2,310</td><td class="num cell-bold">8,662.50</td><td><span class="badge err" data-i18n="stDiff">فروق جرد</span></td></tr>
+              <tr><td class="cell-bold tnum">GRN-2026-0161</td><td class="tnum">2026-09-14</td><td>مزرعة الوفاء للدواجن</td><td class="num">900</td><td class="num cell-bold">11,610.00</td><td><span class="badge ok" data-i18n="stComplete">مكتمل</span></td></tr>
+              <tr><td class="cell-bold tnum">GRN-2026-0160</td><td class="tnum">2026-09-13</td><td>التموين الغذائي المتكامل</td><td class="num">3,105</td><td class="num cell-bold">13,041.00</td><td><span class="badge err" data-i18n="stDiff">فروق جرد</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Alerts / low stock -->
+      <div class="card card-hover span-4">
+        <div class="card-head">
+          <div class="card-title" data-i18n="alertTitle">تنبيهات تحتاج إجراء</div>
+        </div>
+        <div class="mini-list">
+          <div class="mini-item">
+            <div class="mini-ico c">⏳</div>
+            <div class="mini-main"><div class="mini-title" data-i18n="expTitle">صيانة الحليب — تنتهي قريباً</div><div class="mini-sub" data-i18n="expSub">تنتهي الصلاحية خلال 3 أيام</div></div>
+            <div class="mini-side cell-neg">−1,240</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico b">📋</div>
+            <div class="mini-main"><div class="mini-title" data-i18n="countTitle">جرد دوري — المستودع الرئيسي</div><div class="mini-sub" data-i18n="countSub">مفتوح منذ 20 ساعة</div></div>
+            <div class="mini-side badge warn" data-i18n="stOpen">مفتوح</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico a">🛒</div>
+            <div class="mini-main"><div class="mini-title" data-i18n="lowTitle">أصناف تحت حد الطلب</div><div class="mini-sub" data-i18n="lowSub">6 أصناف بلغت الحد الأدنى</div></div>
+            <div class="mini-side cell-neg">6</div>
+          </div>
+          <div class="mini-item">
+            <div class="mini-ico c">🧾</div>
+            <div class="mini-main"><div class="mini-title" data-i18n="posTitle">أمر شراء بانتظار الموافقة</div><div class="mini-sub" data-i18n="posSub">PO-2026-0234 بقيمة 84,200 ر.س</div></div>
+            <div class="mini-side badge warn">2</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly deliveries bar chart -->
+      <div class="card card-hover span-4">
+        <div class="card-head">
+          <div class="card-title" data-i18n="barTitle">الاستلامات الأسبوعية</div>
+          <div class="card-link" data-i18n="viewAll">عرض الكل</div>
+        </div>
+        <div class="bars" id="bars">
+          <div class="bar-col"><div class="bar" style="height:34%"></div><div class="bar-label">W1</div></div>
+          <div class="bar-col"><div class="bar" style="height:48%"></div><div class="bar-label">W2</div></div>
+          <div class="bar-col"><div class="bar" style="height:42%"></div><div class="bar-label">W3</div></div>
+          <div class="bar-col"><div class="bar" style="height:66%"></div><div class="bar-label">W4</div></div>
+          <div class="bar-col"><div class="bar" style="height:58%"></div><div class="bar-label">W5</div></div>
+          <div class="bar-col"><div class="bar" style="height:82%"></div><div class="bar-label">W6</div></div>
+          <div class="bar-col"><div class="bar mut" style="height:71%"></div><div class="bar-label">W7</div></div>
+          <div class="bar-col"><div class="bar" style="height:94%"></div><div class="bar-label">W8</div></div>
+        </div>
+      </div>
+
+      <!-- Expiring soon table -->
+      <div class="card card-hover span-8">
+        <div class="card-head">
+          <div class="card-title" data-i18n="expTableTitle">أصناف تنتهي صلاحيتها خلال 14 يوماً</div>
+          <div class="card-link" data-i18n="viewAll">عرض الكل</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="thArt">الصنف</th>
+                <th data-i18n="thBatch">الدفعة</th>
+                <th data-i18n="thExpiry">تاريخ الانتهاء</th>
+                <th data-i18n="thQty">الكمية</th>
+                <th data-i18n="thValue">القيمة (ر.س)</th>
+                <th data-i18n="thAction">الإجراء</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="cell-bold">حليب طازج كامل الدسم</td><td class="tnum">B-2411</td><td class="tnum cell-neg">2026-09-21</td><td class="num">356</td><td class="num cell-bold">1,335.00</td><td><span class="badge err" data-i18n="actUrgent">عاجل</span></td></tr>
+              <tr><td class="cell-bold">لبن رائب 250 مل</td><td class="tnum">B-2415</td><td class="tnum cell-neg">2026-09-24</td><td class="num">720</td><td class="num cell-bold">1,188.00</td><td><span class="badge err" data-i18n="actUrgent">عاجل</span></td></tr>
+              <tr><td class="cell-bold">خبز برجر طازج</td><td class="tnum">B-2388</td><td class="tnum">2026-09-28</td><td class="num">410</td><td class="num cell-bold">1,640.00</td><td><span class="badge warn" data-i18n="actSoon">قريباً</span></td></tr>
+              <tr><td class="cell-bold">عصير برتقال طازج</td><td class="tnum">B-2419</td><td class="tnum">2026-10-01</td><td class="num">264</td><td class="num cell-bold">1,848.00</td><td><span class="badge warn" data-i18n="actSoon">قريباً</span></td></tr>
+              <tr><td class="cell-bold">جبنة كريمي 500غ</td><td class="tnum">B-2390</td><td class="tnum">2026-10-02</td><td class="num">188</td><td class="num cell-bold">1,410.00</td><td><span class="badge warn" data-i18n="actSoon">قريباً</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SETTINGS MODAL ==================== -->
+<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" data-i18n="setTitle">الضبط</div>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-row">
+        <div>
+          <div class="setting-label" data-i18n="setNumHead">نظام الأرقام</div>
+          <div class="setting-desc" data-i18n="setNumDesc">الافتراضي: أرقام إنجليزية (1234) في كل نقاط النظام</div>
+        </div>
+        <div class="seg" id="numSeg">
+          <button class="on" data-numVal="en" onclick="setNumStyle('en')">1234</button>
+          <button data-numVal="ar" onclick="setNumStyle('ar')">١٢٣٤</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label" data-i18n="setLocHead">اللغة</div>
+          <div class="setting-desc" data-i18n="setLocDesc">اختر لغة الواجهة</div>
+        </div>
+        <div class="seg" id="langSeg">
+          <button class="on" data-langVal="ar" onclick="setLang('ar')">العربية</button>
+          <button data-langVal="en" onclick="setLang('en')">English</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label" data-i18n="setThemeHead">الوضع الداكن</div>
+          <div class="setting-desc" data-i18n="setThemeDesc">تفعيل الوضع الداكن للواجهة</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="themeToggle" onchange="setTheme(this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label" data-i18n="setNotifHead">الإشعارات</div>
+          <div class="setting-desc" data-i18n="setNotifDesc">تنبيهات الصلاحية والجرد المتأخر</div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeSettings()" data-i18n="cancel">إغلاق</button>
+      <button class="btn btn-primary" onclick="closeSettings()" data-i18n="saveSet">حفظ التغييرات</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i>✓</i><span data-i18n="toastMsg">تم حفظ الإعدادات بنجاح</span></div>
+
+<script>
+/* ================= I18N DICTIONARY ================= */
+const dict = {
+  ar: {
+    logoText:'م', brandSub:'نظام إدارة المخزون والمشتريات',
+    userInit:'م', userName:'مدير المخزون', userRole:'فرع معصوبي الرئيسي',
+    navMain:'الرئيسية', navDash:'📊 لوحة المعلومات', navAlerts:'🔔 التنبيهات', navReports:'📈 التقارير',
+    navOps:'العمليات', navPO:'🛒 أوامر الشراء', navGRN:'📥 استلامات البضاعة', navTransfer:'🔄 النقل بين المخازن', navUsage:'🍽️ مصروف الأصناف',
+    navInventory:'المخزون والجرد', navStock:'📦 حالة المخزون', navCount:'📋 الجرد الدوري', navExpiry:'⏳ صلاحية الأصناف', navCosting:'💰 التكلفة والربحية',
+    navData:'البيانات الأساسية', navSuppliers:'🏭 الموردون', navArticles:'📦 الأصناف', navRecipes:'📖 الوصفات',
+    b1:'1', b3:'3',
+    searchPh:'ابحث عن صنف، استلام، أمر شراء...',
+    dashTitle:'لوحة المعلومات', dashSub:'الخميس 18 سبتمبر 2026 — نظرة عامة على المخزون والمشتريات',
+    range:'اليوم', newGRN:'+ استلام جديد',
+    kpiInv:'قيمة المخزون الحالي', kpiInvSub:'مقارنة بالشهر الماضي',
+    kpiGRN:'استلامات هذا الشهر', kpiGRNSub:'عن الشهر السابق',
+    kpiPO:'أوامر شراء معلّقة', kpiPOSub:'بقيمة 492,300 ر.س',
+    kpiExp:'أصناف تنتهي قريباً', kpiExpSub:'خلال 7 أيام',
+    chartTitle:'اتجاه المخزون والمشتريات', chartSub:'آخر 8 أسابيع',
+    lgStock:'قيمة المخزون', lgPO:'أوامر الشراء',
+    supTitle:'أكثر الموردين توريداً', viewAll:'عرض الكل', deliveries:'توريد',
+    grnTitle:'أحدث استلامات البضاعة',
+    thNum:'رقم الاستلام', thDate:'التاريخ', thSupplier:'المورد', thQty:'الكمية', thTotal:'الإجمالي (ر.س)', thStatus:'الحالة',
+    stComplete:'مكتمل', stOpen:'مفتوح', stDiff:'فروق جرد',
+    alertTitle:'تنبيهات تحتاج إجراء',
+    expTitle:'صيانة الحليب — تنتهي قريباً', expSub:'تنتهي الصلاحية خلال 3 أيام',
+    countTitle:'جرد دوري — المستودع الرئيسي', countSub:'مفتوح منذ 20 ساعة',
+    lowTitle:'أصناف تحت حد الطلب', lowSub:'6 أصناف بلغت الحد الأدنى',
+    posTitle:'أمر شراء بانتظار الموافقة', posSub:'PO-2026-0234 بقيمة 84,200 ر.س',
+    barTitle:'الاستلامات الأسبوعية',
+    expTableTitle:'أصناف تنتهي صلاحيتها خلال 14 يوماً',
+    thArt:'الصنف', thBatch:'الدفعة', thExpiry:'تاريخ الانتهاء', thValue:'القيمة (ر.س)', thAction:'الإجراء',
+    actUrgent:'عاجل', actSoon:'قريباً',
+    setTitle:'الضبط',
+    setNumHead:'نظام الأرقام', setNumDesc:'الافتراضي: أرقام إنجليزية (1234) في كل نقاط النظام',
+    setLocHead:'اللغة', setLocDesc:'اختر لغة الواجهة',
+    setThemeHead:'الوضع الداكن', setThemeDesc:'تفعيل الوضع الداكن للواجهة',
+    setNotifHead:'الإشعارات', setNotifDesc:'تنبيهات الصلاحية والجرد المتأخر',
+    cancel:'إغلاق', saveSet:'حفظ التغييرات', toastMsg:'تم حفظ الإعدادات بنجاح'
+  },
+  en: {
+    logoText:'R', brandSub:'Inventory & Purchasing System',
+    userInit:'I', userName:'Inventory Manager', userRole:'Main Masoubi Branch',
+    navMain:'Main', navDash:'📊 Dashboard', navAlerts:'🔔 Alerts', navReports:'📈 Reports',
+    navOps:'Operations', navPO:'🛒 Purchase Orders', navGRN:'📥 Goods Receipt', navTransfer:'🔄 Transfers', navUsage:'🍽️ Item Usage',
+    navInventory:'Inventory & Counts', navStock:'📦 Stock Status', navCount:'📋 Cycle Counts', navExpiry:'⏳ Expiry Tracking', navCosting:'💰 Costing & Profit',
+    navData:'Master Data', navSuppliers:'🏭 Suppliers', navArticles:'📦 Articles', navRecipes:'📖 Recipes',
+    b1:'1', b3:'3',
+    searchPh:'Search articles, receipts, purchase orders...',
+    dashTitle:'Dashboard', dashSub:'Thursday, September 18, 2026 — Inventory & Purchasing overview',
+    range:'Today', newGRN:'+ New Receipt',
+    kpiInv:'Current Inventory Value', kpiInvSub:'vs last month',
+    kpiGRN:'Receipts this Month', kpiGRNSub:'vs last month',
+    kpiPO:'Pending Purchase Orders', kpiPOSub:'worth 492,300 SAR',
+    kpiExp:'Items Expiring Soon', kpiExpSub:'within 7 days',
+    chartTitle:'Inventory & Purchasing Trend', chartSub:'Last 8 weeks',
+    lgStock:'Inventory value', lgPO:'Purchase orders',
+    supTitle:'Top Suppliers', viewAll:'View all', deliveries:'deliveries',
+    grnTitle:'Latest Goods Receipts',
+    thNum:'Receipt No', thDate:'Date', thSupplier:'Supplier', thQty:'Qty', thTotal:'Total (SAR)', thStatus:'Status',
+    stComplete:'Completed', stOpen:'Open', stDiff:'Count Diff',
+    alertTitle:'Alerts Requiring Action',
+    expTitle:'Fresh Milk — Expiring Soon', expSub:'Expires in 3 days',
+    countTitle:'Cycle Count — Main Warehouse', countSub:'Open for 20 hours',
+    lowTitle:'Items Below Reorder Level', lowSub:'6 items reached minimum level',
+    posTitle:'PO Awaiting Approval', posSub:'PO-2026-0234 worth 84,200 SAR',
+    barTitle:'Weekly Receipts',
+    expTableTitle:'Items Expiring within 14 Days',
+    thArt:'Article', thBatch:'Batch', thExpiry:'Expiry Date', thValue:'Value (SAR)', thAction:'Action',
+    actUrgent:'Urgent', actSoon:'Soon',
+    setTitle:'Settings',
+    setNumHead:'Number format', setNumDesc:'Default: English numerals (1234) across the system',
+    setLocHead:'Language', setLocDesc:'Select interface language',
+    setThemeHead:'Dark mode', setThemeDesc:'Enable dark mode for the interface',
+    setNotifHead:'Notifications', setNotifDesc:'Expiry & overdue count alerts',
+    cancel:'Close', saveSet:'Save changes', toastMsg:'Settings saved successfully'
+  }
+};
+
+let state = { lang:'ar', dir:'rtl', numStyle:'en', dark:false };
+
+/* ================= LANGUAGE ================= */
+function setLang(lang){
+  state.lang = lang;
+  state.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', state.dir);
+  document.body.classList.toggle('en', lang === 'en');
+  document.getElementById('langLabel').textContent = lang === 'ar' ? 'English' : 'العربية';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if(dict[lang][key]) el.textContent = dict[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.placeholder = dict[lang][el.dataset.i18nPh] || '';
+  });
+  document.querySelectorAll('#langSeg button').forEach(b => b.classList.toggle('on', b.dataset.langVal === lang));
+  renderNumbers();
+}
+
+function toggleLang(){ setLang(state.lang === 'ar' ? 'en' : 'ar'); }
+
+/* ================= NUMBERS =================
+   Default: English (en-US) in BOTH languages.
+   If user enables Arabic numerals in settings, only then convert. */
+function renderNumbers(){
+  const useAr = state.numStyle === 'ar';
+  const locale = useAr ? 'ar-EG' : 'en-US';
+  const fmt = new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  document.querySelectorAll('.kpi-value.tnum').forEach(el => {
+    const raw = el.dataset.raw || (el.dataset.raw = el.textContent.replace(/,/g,''));
+    el.textContent = fmt.format(parseFloat(raw));
+  });
+  document.querySelectorAll('td.num').forEach(el => {
+    const raw = el.dataset.raw || (el.dataset.raw = el.textContent.replace(/,/g,''));
+    el.textContent = fmt.format(parseFloat(raw));
+  });
+  document.querySelectorAll('.mini-side.tnum').forEach(el => {
+    const raw = el.dataset.raw || (el.dataset.raw = el.textContent.replace(/,/g,''));
+    el.textContent = fmt.format(parseFloat(raw));
+  });
+}
+
+function setNumStyle(v){
+  state.numStyle = v;
+  document.querySelectorAll('#numSeg button').forEach(b => b.classList.toggle('on', b.dataset.numVal === v));
+  renderNumbers();
+}
+
+/* ================= THEME ================= */
+function setTheme(dark){
+  state.dark = dark;
+  const r = document.documentElement.style;
+  if(dark){
+    r.setProperty('--n100','#292524'); r.setProperty('--surface','#1c1917');
+    r.setProperty('--sec','#292524');  r.setProperty('--ter','#44403c');
+    r.setProperty('--border','#44403c'); r.setProperty('--border-strong','#57534e');
+    r.setProperty('--fin-bg','#322c26'); r.setProperty('--fin-txt','#f5f0e8');
+    r.setProperty('--n900','#f5f5f4'); r.setProperty('--n700','#d6d3d1');
+    r.setProperty('--n400','#a8a29e'); r.setProperty('--n500','#a8a29e');
+    r.setProperty('--n600','#d6d3d1'); r.setProperty('--n800','#f5f5f4');
+  } else {
+    r.setProperty('--n100','#f5f5f4'); r.setProperty('--surface','#ffffff');
+    r.setProperty('--sec','#fafaf9');  r.setProperty('--ter','#f5f5f4');
+    r.setProperty('--border','#e7e5e4'); r.setProperty('--border-strong','#d6d3d1');
+    r.setProperty('--fin-bg','#f5f0e8'); r.setProperty('--fin-txt','#44403c');
+    r.setProperty('--n900','#1c1917'); r.setProperty('--n700','#44403c');
+    r.setProperty('--n400','#a8a29e'); r.setProperty('--n500','#78716c');
+    r.setProperty('--n600','#57534e'); r.setProperty('--n800','#292524');
+  }
+}
+
+/* ================= SETTINGS ================= */
+function openSettings(){ document.getElementById('settingsOverlay').classList.add('open'); }
+function closeSettings(){
+  document.getElementById('settingsOverlay').classList.remove('open');
+  toast();
+}
+function toast(){
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ================= SVG CHART ================= */
+(function buildChart(){
+  const stock = [128,142,139,151,168,160,175,184];
+  const po    = [82,95,88,102,97,118,110,127];
+  const svg = document.getElementById('areaChart');
+  const W=760,H=220,padL=16,padR=16,padT=14,padB=26;
+  const w=W-padL-padR, h=H-padT-padB;
+  const maxV=Math.ceil(Math.max(...stock.map(v=>v*1.2),...po)*10)/10;
+
+  const g = svg.querySelector('#chartGrid');
+  for(let i=0;i<=4;i++){
+    const y=padT+i*h/4;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',padL);line.setAttribute('y1',y);
+    line.setAttribute('x2',W-padR);line.setAttribute('y2',y);
+    line.setAttribute('stroke','#e7e5e4');line.setAttribute('stroke-width','1');
+    g.appendChild(line);
+  }
+
+  function path(arr,scaled){
+    return arr.map((v,i)=>{
+      const x=padL+i*(w/(arr.length-1));
+      const y=padT+h-(v/maxV)*h;
+      return `${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+  function area(arr){
+    const base=`${padL+w},${padT+h} ${padL},${padT+h}`;
+    return `${path(arr)} L${padL+w},${padT+h} Z`;
+  }
+
+  const ns='http://www.w3.org/2000/svg';
+  const a=document.createElementNS(ns,'path');
+  a.setAttribute('d',area(stock));a.setAttribute('fill','url(#gGold)');
+  const l1=document.createElementNS(ns,'path');
+  l1.setAttribute('d',path(stock));l1.setAttribute('fill','none');
+  l1.setAttribute('stroke','#d97706');l1.setAttribute('stroke-width','2.5');
+  l1.setAttribute('stroke-linecap','round');
+  const l2=document.createElementNS(ns,'path');
+  l2.setAttribute('d',path(po));l2.setAttribute('fill','none');
+  l2.setAttribute('stroke','#a8a29e');l2.setAttribute('stroke-width','2');
+  l2.setAttribute('stroke-dasharray','5 5');l2.setAttribute('stroke-linecap','round');
+
+  // dots
+  const dots=stock.map((v,i)=>{
+    const x=padL+i*(w/(stock.length-1)); const y=padT+h-(v/maxV)*h;
+    const c=document.createElementNS(ns,'circle');
+    c.setAttribute('cx',x);c.setAttribute('cy',y);c.setAttribute('r','4.5');
+    c.setAttribute('fill','#fff');c.setAttribute('stroke','#d97706');c.setAttribute('stroke-width','2.5');
+    c.addEventListener('mouseenter',()=>{
+      const t=document.getElementById('tooltip');
+      t.style.opacity='1';
+      t.style.left=(x/W*100)+'%';
+      t.style.top=((y/H)*100)+'%';
+      t.textContent=(stock[i]).toFixed(2)+'K';
+    });
+    c.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.opacity='0'});
+    return c;
+  });
+  // x labels
+  const weeks=['W1','W2','W3','W4','W5','W6','W7','W8'];
+  const lbls=weeks.map((t,i)=>{
+    const x=padL+i*(w/(weeks.length-1));
+    const tEl=document.createElementNS(ns,'text');
+    tEl.setAttribute('x',x);tEl.setAttribute('y',H-6);tEl.setAttribute('text-anchor','middle');
+    tEl.setAttribute('font-size','10');tEl.setAttribute('fill','#a8a29e');tEl.setAttribute('font-family','IBM Plex Mono');
+    tEl.textContent=t;
+    return tEl;
+  });
+  [a,l1,l2,...dots,...lbls].forEach(n=>svg.appendChild(n));
+})();
+
+/* ================= INIT ================= */
+document.getElementById('themeToggle').addEventListener('change', ()=>{
+  requestAnimationFrame(()=>{ closeSettingsBtn:null });
+});
+setLang('ar');
+setNumStyle('en');
+</script>
+</body>
+</html>

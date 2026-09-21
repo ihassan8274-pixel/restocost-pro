@@ -1,0 +1,16 @@
+{
+  "name": "restocost-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "RestoCost ERP Pro server — يضيف محرك jsreport لتوليد تقارير PDF/Word/Excel دون المساس بواجهة المكدس الحالية",
+  "scripts": {
+    "postinstall": "node _patch-yargs.mjs"
+  },
+  "dependencies": {
+    "jsreport": "^3.11.0"
+  },
+  "allowScripts": {
+    "puppeteer@20.7.1": true
+  }
+}
