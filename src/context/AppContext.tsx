@@ -35,7 +35,7 @@ import { vatSplit } from '../utils/vat';
 import { averageUnitCostFromReceipts, movingWeightedAverage } from '../business/costs';
 import { stockLevelsFor } from '../business/stock';
 import { computeRecipeCosts, recipeUsesAnyMaterial } from '../business/recipes';
-import { tradeToStock, stockPerPurchase } from '../business/units';
+import { stockPerPurchase } from '../business/units';
 import { buildPreliminaryPOs, lowestPrice30Days, lastSupplierIdFor } from '../business/purchaseRequests';
 import { nextDocSequence } from '../business/docNumbers';
 import type { NumeralSystem } from '../utils/helpers';
@@ -49,6 +49,7 @@ import { useTasks } from './useTasks';
 import { useHaccp } from './useHaccp';
 import { useCustomerOrders } from './useCustomerOrders';
 import { useUnitsAndBarcodes } from './useUnitsAndBarcodes';
+import { useInventoryCore } from './useInventoryCore';
 
 const loadState = <T,>(_key: string, fallback: T): T => fallback;
 
@@ -519,14 +520,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [recipes, setRecipes] = useState<StandardRecipe[]>(() => healSeed(loadState('rcerp_recipes', INITIAL_RECIPES), INITIAL_RECIPES, ['nameAr', 'nameEn', 'description']));
   // أقسام مخصصة لكل تصنيف (هوية افتراضية من DEFAULT_RECIPE_SECTIONS وتُتعدّل من شاشة الوصفات)
   const [recipeSections, setRecipeSections] = useState<Record<string, string[]>>(() => loadState('rcerp_recipe_sections', DEFAULT_RECIPE_SECTIONS));
-  const [inventory, setInventory] = useState<InventoryRecord[]>(() => loadState('rcerp_inventory', INITIAL_INVENTORY));
-  const [inventoryBatches, setInventoryBatches] = useState<InventoryBatch[]>(() => loadState<InventoryBatch[]>('rcerp_inventory_batches', []));
   const [grnNotes, setGrnNotes] = useState<GoodsReceiptNote[]>(() => loadState('rcerp_grn', INITIAL_GRN_NOTES));
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(() => loadState('rcerp_purchase_orders', INITIAL_PURCHASE_ORDERS));
   const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>(() => loadState('rcerp_purchase_requests', []));
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(() => loadState('rcerp_work_orders', INITIAL_WORK_ORDERS));
   const [wastageLogs, setWastageLogs] = useState<WastageLog[]>(() => loadState('rcerp_wastage', INITIAL_WASTAGE_LOGS));
-  const [inventoryMovements, setInventoryMovements] = useState<InventoryMovementLog[]>(() => loadState<InventoryMovementLog[]>('rcerp_inventory_movements', []));
   const [closedDays, setClosedDays] = useState<string[]>(() => loadState<string[]>('rcerp_closed_days', []));
   const [customReports, setCustomReports] = useState<CustomReport[]>(() => loadState<CustomReport[]>('rcerp_custom_reports', []));
   const [employees, setEmployees] = useState<Employee[]>(() => loadState('rcerp_employees', INITIAL_EMPLOYEES));
@@ -1034,6 +1032,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ---- كبسولة الوحدات والباركود (useUnitsAndBarcodes) ----
   const { unitsOfMeasure, setUnitsOfMeasure, materialBarcodes, setMaterialBarcodes, addMaterialBarcode, updateMaterialBarcode, deleteMaterialBarcode, barcodesForMaterial, findByBarcode, addUnitOfMeasure, updateUnitOfMeasure, deleteUnitOfMeasure } = useUnitsAndBarcodes({ logAudit, pushSnap, getRawMaterialName, rawMaterials });
+  // ---- كبسولة المخزون الأساسي (useInventoryCore: رصيد المخزون + دفعات FEFO + الحركات) ----
+  const { inventory, setInventory, inventoryBatches, setInventoryBatches, inventoryMovements, setInventoryMovements, adjustInventory, recipeStockQty, addInventoryBatches, consumeInventoryBatch, getFefoBatches, expiringBatches } = useInventoryCore({ rawMaterials });
 
   // كتابة الحالة إلى طابور الحفظ: تأثير واحد لجميع المجموعات — نفس سلوك الجدار السابق
   // (persist يرفض أي قيمة لم يتغيّر مرجعها)، وفي الاعتماديات كل القيم المعنية.
@@ -1266,95 +1266,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // ---- Inventory mutation helpers ----
-  const adjustInventory = (branchId: string, rawMaterialId: string, delta: number, batchInfo?: { batchNumber?: string; expiryDate?: string }, reason?: { type: string; ref?: string }) => {
-    // FEFO: أي خصم يُستهلك من الدُفعات الأقرب انتهاء صلاحية تلقائياً (إرشاد الاستهلاك)
-    if (delta < 0) {
-      const qty = -delta;
-      setInventoryBatches((prev) => {
-        const lots = prev
-          .filter((b) => b.branchId === branchId && b.rawMaterialId === rawMaterialId && b.remainingQty > 1e-9 && (!batchInfo?.batchNumber || b.batchNumber === batchInfo.batchNumber))
-          .sort((a, b) => (a.expiryDate || '9999').localeCompare(b.expiryDate || '9999') || (a.receivedAt || '').localeCompare(b.receivedAt || ''));
-        if (lots.length === 0) return prev;
-        let remaining = qty;
-        return prev.map((b) => {
-          if (remaining <= 1e-9) return b;
-          const lot = lots.find((l) => l.id === b.id);
-          if (!lot) return b;
-          const take = Math.min(remaining, lot.remainingQty);
-          remaining -= take;
-          return { ...b, remainingQty: Math.max(0, Number((b.remainingQty - take).toFixed(4))) };
-        });
-      });
-    }
-    setInventory((prev) => {
-      const idx = prev.findIndex((i) => i.branchId === branchId && i.rawMaterialId === rawMaterialId);
-      const next = [...prev];
-      if (idx >= 0) {
-        next[idx] = { ...next[idx], quantity: next[idx].quantity + delta, lastUpdated: today(), ...(batchInfo?.batchNumber ? { batchNumber: batchInfo.batchNumber } : {}), ...(batchInfo?.expiryDate ? { expiryDate: batchInfo.expiryDate } : {}) };
-      } else {
-        next.push({ id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, branchId, rawMaterialId, quantity: delta, lastUpdated: today(), batchNumber: batchInfo?.batchNumber, expiryDate: batchInfo?.expiryDate });
-      }
-      return next;
-    });
-    if (Math.abs(delta) > 1e-9) {
-      setInventoryMovements((prev) => [
-        { id: `mv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, date: new Date().toISOString(), branchId, rawMaterialId, delta: Math.round(delta * 10000) / 10000, type: reason?.type || 'تسوية', ref: reason?.ref },
-        ...prev,
-      ].slice(0, 5000));
-    }
-  };
-
-  // كمية مكوّن وصفة (بوحدة التداول: لتر/كغم...) محوَّلة إلى وحدات المخزون الفعلية قبل الخصم
-  const recipeStockQty = (matId: string, tradeQty: number) => tradeToStock(tradeQty, rawMaterials.find((m) => m.id === matId));
-
-  // ---- دفعات الاستلام وترتيب الاستهلاك FEFO (الأقرب صلاحية أولاً) ----
-  const addInventoryBatches = (grnId: string, branchId: string, items: GoodsReceiptItem[]) => {
-    setInventoryBatches((prev) => {
-      const next = [...prev];
-      items.forEach((item) => {
-        if (!item.batchNumber) return;
-        next.push({
-          id: `batch-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          batchNumber: item.batchNumber,
-          expiryDate: item.expiryDate,
-          rawMaterialId: item.rawMaterialId,
-          branchId,
-          grnId,
-          receivedQty: item.quantityReceived,
-          remainingQty: item.quantityReceived,
-          receivedAt: new Date().toISOString(),
-          unitPrice: item.unitPrice,
-        });
-      });
-      return next;
-    });
-  };
-
-  // استهلاك دفعة (خصم من الرصيد المتبقي) — يُستخدم عند السحب من دفعة محددة
-  const consumeInventoryBatch = (batchId: string, qty: number) => {
-    setInventoryBatches((prev) => prev.map((b) => (b.id === batchId ? { ...b, remainingQty: Math.max(0, Number((b.remainingQty - qty).toFixed(4))) } : b)));
-  };
-
-  // دفع المواد الفعّالة فقط (باقي كمية > 0) لمنطقة/صنف، مرتبة FEFO: الأقرب انتهاء صلاحية
-  const getFefoBatches = (branchId?: string, rawMaterialId?: string): InventoryBatch[] =>
-    inventoryBatches
-      .filter((b) => b.remainingQty > 1e-9 && (!branchId || b.branchId === branchId) && (!rawMaterialId || b.rawMaterialId === rawMaterialId))
-      .sort((a, b) => (a.expiryDate || '9999').localeCompare(b.expiryDate || '9999') || (a.receivedAt || '').localeCompare(b.receivedAt || ''));
-
-  // تنبيه الصلاحية: دفعات تنتهي خلال n أيام، والدُفعات منتهية الصلاحية (لم تُستهلك)
-  const expiringBatches = (days: number): { expired: InventoryBatch[]; soon: InventoryBatch[] } => {
-    const now = Date.now();
-    const d = days * 86400000;
-    const soon: InventoryBatch[] = [];
-    const expired: InventoryBatch[] = [];
-    inventoryBatches.forEach((b) => {
-      if (b.remainingQty <= 1e-9 || !b.expiryDate) return;
-      const diff = new Date(b.expiryDate).getTime() - now;
-      if (diff < 0) expired.push(b);
-      else if (diff <= d) soon.push(b);
-    });
-    return { expired, soon };
-  };
+  // ---- (رصيد المخزون / الدفعات / الحركات استُخرجت إلى useInventoryCore.ts) ----
 
   const monthOfKey = (date: string) => date.slice(0, 7);
   const isMonthClosed = (monthKey: string) => closedMonths.includes(monthKey);
