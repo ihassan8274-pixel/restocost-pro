@@ -49,3 +49,5 @@ server/instance.txt
 # portable node runtime (binary bundle)
 tools/node-portable/
 tools/node-portable.zip
+# AppContext slice backups
+src/context/*.bak-*

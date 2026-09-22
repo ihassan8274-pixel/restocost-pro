@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { runFlushQueue, sortEntriesBySize } from './syncEngine';
+﻿import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   User, UserRole, Permission, Branch, RawMaterial, Supplier, StandardRecipe, InventoryRecord,
   GoodsReceiptNote, WorkOrder, WastageLog, Employee, LaborShift, POSOrder, POSOrderItem, StockTransfer,
@@ -13,7 +12,7 @@ import {
   AccessRole, InventoryMovementLog, CustomerOrder, CustomerOrderStatus, MenuPlan,
   AttendanceRecord, PayrollPeriod, PayrollLine, ButcherTest, MaterialCategoryDef,
   UnitOfMeasure, Distribution, PurchaseRequest, IntakeInboxEntry, RecipeCostHistoryEntry, Task,
-  InventoryBatch, GoodsReceiptItem, TempLogEntry, HaccpInspection, tempStatusOf,
+  InventoryBatch, GoodsReceiptItem, TempLogEntry, HaccpInspection,
   CustomReport, EodClosure, SupplierQuoteVersion, MaterialBarcode,
 } from '../types';
 import { ROLE_PERMISSIONS } from '../types';
@@ -44,6 +43,12 @@ import { hashPassword, verifyPassword } from './appAuth';
 import { useAISettings, type AISettings } from './useAISettings';
 import { usePreferences } from './usePreferences';
 import { useToasts, type ToastEntry } from './useToasts';
+import { useSyncCore } from './useSyncCore';
+import { useAuthCore } from './useAuthCore';
+import { useTasks } from './useTasks';
+import { useHaccp } from './useHaccp';
+import { useCustomerOrders } from './useCustomerOrders';
+import { useUnitsAndBarcodes } from './useUnitsAndBarcodes';
 
 const loadState = <T,>(_key: string, fallback: T): T => fallback;
 
@@ -453,15 +458,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// طابور الحفظ الدائم: يُستعاد من المتصفح عند كل فتح للنظام حتى لا تُفقد التعديلات المعلّقة
-const PENDING_SAVES_KEY = 'rcerp_pending_saves';
-const hydratePendingSaves = (): Map<string, unknown> => {
-  try {
-    const raw = localStorage.getItem(PENDING_SAVES_KEY);
-    if (raw) return new Map(JSON.parse(raw) as [string, unknown][]);
-  } catch { /* تجاهل التالف */ }
-  return new Map();
-};
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // ==== AI settings — نماذج متعددة (لكل نموذج إعداداته المستقلة) + نموذج نشط افتراضي ====
@@ -520,12 +516,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [branches, setBranches] = useState<Branch[]>(() => loadState('rcerp_branches', INITIAL_BRANCHES));
   const [suppliers, setSuppliers] = useState<Supplier[]>(() => healSeed(loadState('rcerp_suppliers', INITIAL_SUPPLIERS), INITIAL_SUPPLIERS, ['name', 'contactPerson']));
   const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>(() => healSeed(loadState('rcerp_raw_materials', INITIAL_RAW_MATERIALS), INITIAL_RAW_MATERIALS, ['nameAr', 'nameEn']));
-  const [materialBarcodes, setMaterialBarcodes] = useState<MaterialBarcode[]>(() => loadState<MaterialBarcode[]>('rcerp_material_barcodes', []));
-  const [unitsOfMeasure, setUnitsOfMeasure] = useState<UnitOfMeasure[]>(() => {
-    const existing = loadState<UnitOfMeasure[]>('rcerp_units', INITIAL_UNITS);
-    if (!existing || existing.length === 0) return INITIAL_UNITS;
-    return existing;
-  });
   const [recipes, setRecipes] = useState<StandardRecipe[]>(() => healSeed(loadState('rcerp_recipes', INITIAL_RECIPES), INITIAL_RECIPES, ['nameAr', 'nameEn', 'description']));
   // أقسام مخصصة لكل تصنيف (هوية افتراضية من DEFAULT_RECIPE_SECTIONS وتُتعدّل من شاشة الوصفات)
   const [recipeSections, setRecipeSections] = useState<Record<string, string[]>>(() => loadState('rcerp_recipe_sections', DEFAULT_RECIPE_SECTIONS));
@@ -538,11 +528,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [wastageLogs, setWastageLogs] = useState<WastageLog[]>(() => loadState('rcerp_wastage', INITIAL_WASTAGE_LOGS));
   const [inventoryMovements, setInventoryMovements] = useState<InventoryMovementLog[]>(() => loadState<InventoryMovementLog[]>('rcerp_inventory_movements', []));
   const [closedDays, setClosedDays] = useState<string[]>(() => loadState<string[]>('rcerp_closed_days', []));
-  const [tasks, setTasks] = useState<Task[]>(() => loadState<Task[]>('rcerp_tasks', []));
-  const [tempLogs, setTempLogs] = useState<TempLogEntry[]>(() => loadState<TempLogEntry[]>('rcerp_temp_logs', []));
-  const [haccpInspections, setHaccpInspections] = useState<HaccpInspection[]>(() => loadState<HaccpInspection[]>('rcerp_haccp_inspections', []));
   const [customReports, setCustomReports] = useState<CustomReport[]>(() => loadState<CustomReport[]>('rcerp_custom_reports', []));
-  const [customerOrders, setCustomerOrders] = useState<CustomerOrder[]>(() => loadState<CustomerOrder[]>('rcerp_customer_orders', []));
   const [employees, setEmployees] = useState<Employee[]>(() => loadState('rcerp_employees', INITIAL_EMPLOYEES));
   const [customRoles, setCustomRoles] = useState<string[]>(() => loadState('rcerp_custom_roles', Object.values(EMPLOYEE_ROLE_LABELS)));
   const [accessRoles, setAccessRoles] = useState<AccessRole[]>(() => loadState('rcerp_access_roles', []));
@@ -972,113 +958,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
-  // ---- موثوقية الحفظ: طابور دائم في المتصفح ----
-  // أي تعديل لم يصل للخادم (انقطاع شبكة / انتهاء جلسة / إغلاق سريع للصفحة) يُخزَّن مؤقتاً
-  // على الجهاز نفسه ويُرسل تلقائياً عند عودة الاتصال أو إعادة تسجيل الدخول — لا ضياع بيانات.
-  const [saveFailed, setSaveFailed] = useState(false);
-  const [authExpired, setAuthExpired] = useState(false);
-  const [saveErrorDetail, setSaveErrorDetail] = useState('');
-  const [pendingSavesCount, setPendingSavesCount] = useState<number>(() => hydratePendingSaves().size);
-  const [pendingSaves] = useState<Map<string, unknown>>(hydratePendingSaves);
-  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const flushingRef = useRef(false);
-
-  const snapshotPending = () => {
-    try { localStorage.setItem(PENDING_SAVES_KEY, JSON.stringify(Array.from(pendingSaves.entries()))); } catch { /* تجاهل */ }
-  };
-
-  const flushSaves = async () => {
-    if (flushingRef.current) return;
-    if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
-    if (pendingSaves.size === 0) { setSaveFailed(false); setAuthExpired(false); setSaveErrorDetail(''); return; }
-    flushingRef.current = true;
-    let gotAuthError = false;
-    let hadFailures = false;
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      // منطق الإرسال (ترتيب المفاتيح، المهلة، تصنيف 2xx/409/401/غيرها، إعادة المحاولة)
-      // مستخرج في syncEngine و يبقى السلوك مطابقاً للأصل.
-      const failures: string[] = [];
-      const entries = sortEntriesBySize(Array.from(pendingSaves.entries(), ([key, value]) => ({ key, value })));
-      const result = await runFlushQueue(entries, {
-        send(key, value, signal) {
-          return fetch(`/api/collections/${encodeURIComponent(key)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            body: JSON.stringify(value),
-            signal,
-          }).then((res) => res.status);
-        },
-        onSaved(key) {
-          pendingSaves.delete(key);
-          setPendingSavesCount(pendingSaves.size);
-        },
-        async onShrinkRejected(key) {
-          // الحماية من استبدال بيانات العرض: الخادم رفض الكتابة لأن بياناته الحقيقية
-          // أكبر بكثير من هذه. نقبل رأي الخادم (هو مصدر الحقيقة) ونتجاهل هذا الحفظ
-          // ثم نعيد تحميل البيانات الحقيقية من الخادم فوراً.
-          pendingSaves.delete(key);
-          setPendingSavesCount(pendingSaves.size);
-          try {
-            const b = await fetch('/api/bootstrap', {
-              headers: token ? { Authorization: `Bearer ${token}` } : {},
-            }).then((r) => r.json());
-            if (b && b.ok && b.data) {
-              const ignored = key;
-              applyData(b.data);
-              serverFpRef.current = fpOf(b.data);
-              localStorage.setItem('rcerp_offline_cache', JSON.stringify({ savedAt: new Date().toISOString(), data: b.data }));
-              setOffline(false);
-              setOfflineSince('');
-              failures.push(`→تم استرجاع البيانات الحقيقية (${ignored})`);
-            }
-          } catch { /* تجاهل */ }
-        },
-      }, { failures });
-      gotAuthError = result.gotAuthError;
-      hadFailures = result.hadFailures;
-      if (failures.length) console.warn('[RestoCost] إخفاق حفظ:', failures.join(' · '), '| المتبقي:', pendingSaves.size);
-      snapshotPending();
-      setSaveFailed(pendingSaves.size > 0);
-      setAuthExpired(gotAuthError && pendingSaves.size > 0);
-      setSaveErrorDetail(failures.slice(-3).join(' · '));
-    } finally {
-      flushingRef.current = false;
-    }
-    if (pendingSaves.size > 0 && !flushTimerRef.current) {
-      flushTimerRef.current = setTimeout(flushSaves, gotAuthError ? 60000 : hadFailures ? 6000 : 600);
-    }
-  };
-
-  // إعادة تطبيق التعديلات المحلية المعلّقة فوق بيانات الخادم بعد التحميل.
-  // تُستدعى بعد applyData: الخادم قاعدة ثم المحلي (الذي لم يصل بعد) يعلوه — حتى لا
-  // تُطمس بيانات الخادم القديمة حذفاً/تعديلاً محلياً جديداً (لا "يعود" المحذوف بعد التحديث).
-  const reapplyPending = () => {
-    for (const [key, value] of Array.from(pendingSaves.entries())) {
-      const setter = COLLECTION_SETTERS[key];
-      if (setter) setter(value);
-      pendingSaves.set(key, value);
-    setPendingSavesCount(pendingSaves.size);
-    }
-    snapshotPending();
-    if (pendingSaves.size > 0 && !flushTimerRef.current && !authExpired) {
-      flushTimerRef.current = setTimeout(flushSaves, 100);
-    }
-  };
-
-  // مزامنة فورية: تُجبر إرسال كل التعديلات المعلَّقة للخادم الآن وتعود بنتيجة الإرسال
-  const syncNow = async (key?: string): Promise<boolean> => {
-    if (!ready || !currentUser) return false;
-    if (flushTimerRef.current) { clearTimeout(flushTimerRef.current); flushTimerRef.current = null; }
-    // انتظر انعكاس آخر تعديل في طابور الحفظ قبل إرساله (التأثيرات تُنفَّذ بعد الالتزام)
-    for (let i = 0; i < 20; i++) {
-      if (pendingSaves.size > 0 && (!key || pendingSaves.has(key))) break;
-      await new Promise((r) => setTimeout(r, 25));
-    }
-    await flushSaves();
-    return pendingSaves.size === 0;
-  };
-
+  // ---- موثوقية الحفظ + التزامن: طابور دائم في المتصفح + استطلاع الخادم (useSyncCore) ----
+  const {
+    saveFailed, authExpired, saveErrorDetail, pendingSavesCount, pendingSaves,
+    setAuthExpired, persist, flushSaves, reapplyPending, syncNow,
+  } = useSyncCore({
+    ready, currentUser, booting, setCurrentUser,
+    applyData, fpOf, serverFpRef, appliedRefsRef, COLLECTION_SETTERS,
+    setOffline, setOfflineSince,
+  });
   const upsertAccessRole = (role: AccessRole) =>
     setAccessRoles((prev) => (prev.some((r) => r.id === role.id) ? prev.map((r) => (r.id === role.id ? role : r)) : [...prev, role]));
   const removeAccessRole = (id: string) => setAccessRoles((prev) => prev.filter((r) => r.id !== id));
@@ -1107,223 +995,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const baseOk = !!navPerm && ((ROLE_PERMISSIONS[role.baseRole] || []) as string[]).includes(navPerm);
     return baseOk && action === 'view';
   };
-
-  // ختم زمني للتعديلات المحلية: كل سجل غُيّر/أُنشئ محلياً (مقارنةً بآخر ما استُورد
-  // من الخادم) يُختم بـ _mtime — يعتمد عليه الخادم في دمج الأجهزة بالأحدثية:
-  // سجل الاعتماد الجديد أعلى _mtime، فلا يرجع "للمراجعة" عندما يدفع تبويب/جهاز
-  // قديم نسخته الكاملة فوق الاعتماد الموثّق.
-  const stampLocalMtime = (key: string, value: unknown): unknown => {
-    if (!Array.isArray(value)) return value;
-    const applied = appliedRefsRef.current.get(key);
-    if (!Array.isArray(applied)) return value;
-    const appliedById = new Map<string, unknown>();
-    applied.forEach((r) => { if (r && typeof r === 'object' && (r as { id?: unknown }).id !== undefined) appliedById.set(String((r as { id: unknown }).id), r); });
-    const now = Date.now();
-    return value.map((r) => {
-      if (!r || typeof r !== 'object' || (r as { id?: unknown }).id === undefined) return r;
-      const rec = r as Record<string, unknown>;
-      const prev = appliedById.get(String(rec.id));
-      if (prev === r) return r;
-      if (prev === undefined || JSON.stringify(prev) !== JSON.stringify(r)) return { ...rec, _mtime: now };
-      return r;
-    });
-  };
-  const persist = (key: string, value: unknown) => {
-    if (!ready) return;
-    // نفس المرجع الذي استُورد من الخادم (وليس تعديلاً محلياً جديداً) — لا نعيد رفعه
-    if (appliedRefsRef.current.get(key) === value) return;
-    pendingSaves.set(key, stampLocalMtime(key, value));
-    setPendingSavesCount(pendingSaves.size);
-    snapshotPending();
-    if (!flushTimerRef.current && !authExpired) flushTimerRef.current = setTimeout(flushSaves, 600);
-  };
-  useEffect(() => { persist('rcerp_branches', branches); }, [branches, ready]);
-  useEffect(() => { persist('rcerp_suppliers', suppliers); }, [suppliers, ready]);
-  useEffect(() => { persist('rcerp_raw_materials', rawMaterials); }, [rawMaterials, ready]);
-  useEffect(() => { persist('rcerp_material_barcodes', materialBarcodes); }, [materialBarcodes, ready]);
-  useEffect(() => { if (unitsOfMeasure && unitsOfMeasure.length) persist('rcerp_units', unitsOfMeasure); }, [unitsOfMeasure, ready]);
-  useEffect(() => { persist('rcerp_recipes', recipes); }, [recipes, ready]);
-  useEffect(() => { persist('rcerp_recipe_sections', recipeSections); }, [recipeSections, ready]);
-  useEffect(() => { persist('rcerp_inventory', inventory); }, [inventory, ready]);
-  useEffect(() => { persist('rcerp_inventory_batches', inventoryBatches); }, [inventoryBatches, ready]);
-  useEffect(() => { persist('rcerp_grn', grnNotes); }, [grnNotes, ready]);
-  useEffect(() => { persist('rcerp_purchase_orders', purchaseOrders); }, [purchaseOrders, ready]);
-  useEffect(() => { persist('rcerp_purchase_requests', purchaseRequests); }, [purchaseRequests, ready]);
-  useEffect(() => { persist('rcerp_work_orders', workOrders); }, [workOrders, ready]);
-  useEffect(() => { persist('rcerp_wastage', wastageLogs); }, [wastageLogs, ready]);
-  useEffect(() => { persist('rcerp_inventory_movements', inventoryMovements); }, [inventoryMovements, ready]);
-  useEffect(() => { persist('rcerp_closed_days', closedDays); }, [closedDays, ready]);
-  useEffect(() => { persist('rcerp_tasks', tasks); }, [tasks, ready]);
-  useEffect(() => { persist('rcerp_temp_logs', tempLogs); }, [tempLogs, ready]);
-  useEffect(() => { persist('rcerp_haccp_inspections', haccpInspections); }, [haccpInspections, ready]);
-  useEffect(() => { persist('rcerp_custom_reports', customReports); }, [customReports, ready]);
-  useEffect(() => { persist('rcerp_customer_orders', customerOrders); }, [customerOrders, ready]);
-  useEffect(() => { persist('rcerp_employees', employees); }, [employees, ready]);
-  useEffect(() => { persist('rcerp_custom_roles', customRoles); }, [customRoles, ready]);
-  useEffect(() => { persist('rcerp_access_roles', accessRoles); }, [accessRoles, ready]);
-  useEffect(() => { persist('rcerp_shifts', shifts); }, [shifts, ready]);
-  useEffect(() => { persist('rcerp_attendance', attendance); }, [attendance, ready]);
-  useEffect(() => { persist('rcerp_payroll', payrollPeriods); }, [payrollPeriods, ready]);
-  useEffect(() => { persist('rcerp_pos_orders', posOrders); }, [posOrders, ready]);
-  useEffect(() => { persist('rcerp_stock_transfers', stockTransfers); }, [stockTransfers, ready]);
-  useEffect(() => { persist('rcerp_recipe_inventory', recipeInventory); }, [recipeInventory, ready]);
-  useEffect(() => { persist('rcerp_accounts', accounts); }, [accounts, ready]);
-  useEffect(() => { persist('rcerp_journal', journalEntries); }, [journalEntries, ready]);
-  useEffect(() => { persist('rcerp_pos_returns', posReturns); }, [posReturns, ready]);
-  useEffect(() => { persist('rcerp_fixed_assets', fixedAssets); }, [fixedAssets, ready]);
-  useEffect(() => { persist('rcerp_scheduled_reports', scheduledReports); }, [scheduledReports, ready]);
-  useEffect(() => { persist('rcerp_automation_rules', automationRules); }, [automationRules, ready]);
-  useEffect(() => { persist('rcerp_physical_counts', physicalCounts); }, [physicalCounts, ready]);
-  useEffect(() => { persist('rcerp_daily_counts', dailyCounts); }, [dailyCounts, ready]);
-  useEffect(() => { persist('rcerp_distributions', distributions); }, [distributions, ready]);
-  useEffect(() => { persist('rcerp_intake_inbox', intakeInbox); }, [intakeInbox, ready]);
-  useEffect(() => { persist('rcerp_opening_balances', openingBalances); }, [openingBalances, ready]);
-  useEffect(() => { persist('rcerp_employee_meals', employeeMeals); }, [employeeMeals, ready]);
-  useEffect(() => { persist('rcerp_butcher_tests', butcherTests); }, [butcherTests, ready]);
-  useEffect(() => { persist('rcerp_material_categories', materialCategories); }, [materialCategories, ready]);
-  useEffect(() => { persist('rcerp_production_runs', productionRuns); }, [productionRuns, ready]);
-  useEffect(() => { persist('rcerp_supplier_quotes', supplierQuotes); }, [supplierQuotes, ready]);
-  useEffect(() => { persist('rcerp_supplier_returns', supplierReturns); }, [supplierReturns, ready]);
-  useEffect(() => { persist('rcerp_monthly_inventory', monthlyInventory); }, [monthlyInventory, ready]);
-  useEffect(() => { persist('rcerp_closed_months', closedMonths); }, [closedMonths, ready]);
-  useEffect(() => { persist('rcerp_eod_closures', eodClosures); }, [eodClosures, ready]);
-  useEffect(() => { persist('rcerp_pl_summaries', plSummaries); }, [plSummaries, ready]);
-  useEffect(() => { persist('rcerp_categories', customCategories); }, [customCategories, ready]);
-  useEffect(() => { persist('rcerp_food_menus', foodMenus); }, [foodMenus, ready]);
-  useEffect(() => { persist('rcerp_menu_plans', menuPlans); }, [menuPlans, ready]);
-  useEffect(() => { persist('rcerp_batch_sales', batchSalesRecords); }, [batchSalesRecords, ready]);
-  useEffect(() => { persist('rcerp_operating_expenses', operatingExpenses); }, [operatingExpenses, ready]);
-  useEffect(() => { persist('rcerp_expense_budgets', expenseBudgets); }, [expenseBudgets, ready]);
-  useEffect(() => { persist('rcerp_customers', customers); }, [customers, ready]);
-  useEffect(() => { persist('rcerp_reservations', reservations); }, [reservations, ready]);
-  useEffect(() => { persist('rcerp_invoices', invoices); }, [invoices, ready]);
-  useEffect(() => { persist('rcerp_audit', auditLogs); }, [auditLogs, ready]);
-  useEffect(() => { persist('rcerp_target_margin', globalTargetMarginPercent); }, [globalTargetMarginPercent, ready]);
-  useEffect(() => { persist('rcerp_vat_percent', vatPercent); }, [vatPercent, ready]);
-  useEffect(() => { persist('rcerp_vat_inclusive', vatInclusive); }, [vatInclusive, ready]);
-  useEffect(() => { persist('rcerp_deduct_sales', deductSalesFromInventory); }, [deductSalesFromInventory, ready]);
-  useEffect(() => { persist('rcerp_ack_alerts', acknowledgedAlertIds); }, [acknowledgedAlertIds, ready]);
-  useEffect(() => { persist('rcerp_currencies', currencies); }, [currencies, ready]);
-  useEffect(() => { persist('rcerp_companies', companies); }, [companies, ready]);
-  useEffect(() => { persist('rcerp_deleted_ids', deletedIds); }, [deletedIds, ready]);
-  useEffect(() => { persist('rcerp_requisitions', requisitions); }, [requisitions, ready]);
-  useEffect(() => { persist('rcerp_delivery_apps', deliveryApps); }, [deliveryApps, ready]);
-  useEffect(() => { persist('rcerp_delivery_sales', deliverySales); }, [deliverySales, ready]);
-  useEffect(() => { persist('rcerp_branch_stock_limits', branchStockLimits); }, [branchStockLimits, ready]);
-
-  // عودة الاتصال بالإنترنت → حاول الإرسال فوراً
-  useEffect(() => {
-    const onOnline = () => { flushSaves(); };
-    window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // شبكة أمان: محاولة مزامنة دورية كل 45 ثانية إن وُجدت تعديلات معلّقة —
-  // تغطي حالات لا يُطلق فيها حدث 'online' (سكون/إيقاظ الجهاز، تبديل شبكات، انقطاعات صامتة)
-  useEffect(() => {
-    const iv = setInterval(() => {
-      if (!flushingRef.current && pendingSaves.size > 0 && navigator.onLine) flushSaves();
-    }, 45000);
-    return () => clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // بعد تسجيل الدخول من جديد → أرسل كل ما تعلّق أثناء انتهاء الجلسة
-  useEffect(() => {
-    if (ready && currentUser) { flushSaves(); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, currentUser?.id]);
-
-  // عند إغلاق/تحديث الصفحة: محاولة أخيرة بإرسال مباشر (keepalive) لما يتسع له الطلب
-  useEffect(() => {
-    const onPageHide = () => {
-      if (pendingSaves.size === 0) return;
-      const token = localStorage.getItem('rcerp_token');
-      pendingSaves.forEach((value, key) => {
-        try {
-          const body = JSON.stringify(value);
-          if (body.length > 55000) return; // أكبر من حد keepalive — يغطيه الطابور الدائم بعد العودة
-          fetch(`/api/collections/${encodeURIComponent(key)}`, {
-            method: 'POST', keepalive: true,
-            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            body,
-          }).catch(() => {});
-        } catch { /* تجاهل */ }
-      });
-    };
-    window.addEventListener('pagehide', onPageHide);
-    return () => window.removeEventListener('pagehide', onPageHide);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // تحميل أحدث البيانات من الخادم (تعديلات الأجهزة الأخرى) بدون إجبار المستخدم على
-  // تحديث الصفحة يدوياً: عند عودة التبويب للواجهة + تكرار دوري خفيف (30 ثانية).
-  // تُطبَّق البيانات فقط إذا تغيّرت فعلاً (بصمة) — وأبداً لا تُطمس تعديلات محلية معلّقة.
-  // بصمة مراجعة الخادم (rev+boot) — للكشف عن تغيّر البيانات دون تنزيلها.
-  const revRef = useRef<{ rev: number; boot: number } | null>(null);
-
-  // تحديث الصفحة يدوياً: عند عودة التبويب للواجهة + دوري خفيف جداً (5 ثوانٍ).
-  // نفحص /api/sync-state (بضعة بايتات) ثم نسحب كامل البيانات فقط إذا تغيّرت فعلاً —
-  // المزامنة شبه اللحظية بين الأجهزة بلا حمولة ثقيلة وبلا تطميس للتعديلات المعلّقة.
-  const pollServerState = async () => {
-    if (booting || !ready || !currentUser) return;
-    if (pendingSaves.size > 0 || flushingRef.current) return;
-    if (!navigator.onLine) return;
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-      const res = await fetch('/api/sync-state', { headers: token ? { Authorization: `Bearer ${token}` } : {}, signal: ctrl.signal });
-      clearTimeout(timer);
-      if (!res.ok) return;
-      const st = await res.json();
-      if (!st || !st.ok) return;
-      const cur = revRef.current;
-      if (cur && cur.boot === st.boot && cur.rev === st.rev) return;
-      revRef.current = { rev: st.rev, boot: st.boot };
-      await tryPullFresh();
-    } catch { /* صامت — سيُعاد في الدورة القادمة */ }
-  };
-  const tryPullFresh = async () => {
-    if (booting || !ready || !currentUser) return;
-    if (pendingSaves.size > 0 || flushingRef.current) return;
-    if (!navigator.onLine) return;
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 15000);
-      const res = await fetch('/api/bootstrap', { headers: token ? { Authorization: `Bearer ${token}` } : {}, signal: ctrl.signal });
-      clearTimeout(timer);
-      if (!res.ok) return;
-      const json = await res.json();
-      if (!json || !json.ok || !json.data) return;
-      const d: Record<string, unknown> = json.data;
-      const fp = fpOf(d);
-      if (serverFpRef.current === fp) return;
-      serverFpRef.current = fp;
-      applyData(d);
-      localStorage.setItem('rcerp_offline_cache', JSON.stringify({ savedAt: new Date().toISOString(), data: d }));
-      setOffline(false);
-      setOfflineSince('');
-      if (json.user) setCurrentUser(json.user);
-    } catch { /* صامت — سيُعاد في الدورة القادمة */ }
-  };
-  useEffect(() => {
-    const onFocus = () => { pollServerState(); };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onFocus);
-    const iv = setInterval(() => { if (document.visibilityState === 'visible' && navigator.onLine) pollServerState(); }, 5000);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
-      clearInterval(iv);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, currentUser?.id]);
-  useEffect(() => { persist('rcerp_logo', { v: logo }); }, [logo, ready]);
-  useEffect(() => { persist('rcerp_ai_settings', aiSettings); }, [aiSettings, ready]);
-
   const logAudit = useCallback((action: string, module: string, details?: string, entity?: { type: string; id: string }) => {
     if (!currentUser) return;
     const entry: AuditLogEntry = {
@@ -1340,200 +1011,109 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuditLogs((prev) => [entry, ...prev].slice(0, 500));
   }, [currentUser]);
 
-  // ---- Auth ----
-  const login = async (email: string, password: string, totpCode?: string) => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, totpCode }),
-      });
-      const json = await res.json();
-      if (!json.ok) {
-        if (json.totpRequired) return { ok: false as const, totpRequired: true };
-        return { ok: false as const, error: json.error || 'تعذر تسجيل الدخول' };
-      }
-      localStorage.setItem('rcerp_token', json.token);
-      setCurrentUser(json.user);
-      setUsers((prev) => prev.map((u) => (u.id === json.user.id ? { ...u, ...json.user } : u)));
-      if (json.mustChangePassword) setMustChangePassword(true);
-      // بعد تسجيل دخول ناجح بالتوكن الجديد: ألغِ حالة "انتهت الجلسة" وأعد إرسال أي تعديلات محلية معلّقة
-      // حتى لا تعلق الرسالة "انتهت الجلسة" وتضيع التغييرات.
-      setAuthExpired(false);
-      if (pendingSaves.size > 0) flushSaves();
-      // أعد التحميل الكامل من الخادم بالتوكن الجديد — الشرط قبل هذا (pendingSaves>0) كان
-      // يعرض الكاش القديم بدل بيانات الخادم الحية بعد كل إعادة دخول.
-      retryBootstrap();
-      return { ok: true };
-    } catch {
-      // Server unreachable — fall back to local verification
-      const user = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (!user) return { ok: false, error: 'البريد الإلكتروني غير مسجل في النظام' };
-      if (user.needsActivation) return { ok: false, error: 'حسابك في انتظار تفعيل مسؤول النظام' };
-      if (!user.isActive) return { ok: false, error: 'هذا الحساب موقوف، تواصل مع مدير النظام' };
-      const valid = await verifyPassword(password, user.passwordHash);
-      if (!valid) return { ok: false, error: 'كلمة المرور غير صحيحة' };
-      setCurrentUser(user);
-      return { ok: true };
-    }
+  // ---- Auth (useAuthCore: login/logout/password/TOTP + إدارة المستخدمين) ----
+  const { login, register, logout, changePassword, updateUser, deleteUser, revokeSessions, totpSetup, totpEnable, totpDisable } = useAuthCore({
+    users, setUsers, currentUser, setCurrentUser, setMustChangePassword, setAuthExpired, pendingSaves, flushSaves, retryBootstrap,
+  });
+
+  // ---- كبسولات مكتفية ذاتياً: المهام / سلامة الغذاء / طلبات العميل ----
+  const { tasks, setTasks, addTask, updateTask, completeTask, reopenTask, cancelTask, deleteTask } = useTasks({ currentUser, logAudit, showToast });
+  const { tempLogs, setTempLogs, haccpInspections, setHaccpInspections, addTempLog, addHaccpInspection, deleteTempLog } = useHaccp({ currentUser, logAudit, showToast });
+  const { customerOrders, setCustomerOrders, addCustomerOrder, updateCustomerOrderStatus } = useCustomerOrders({ logAudit });
+
+  const getRawMaterialName = (id: string) => rawMaterials.find((m) => m.id === id)?.nameAr || id;
+
+  // ---- سجل تراجع/إعادة (Undo/Redo): جذور البيانات الأساس + أرضية كبسولة الوحدات والباركود ----
+  const [undoStack, setUndoStack] = useState<{ snap: ModelSnapshot; label: string }[]>([]);
+  const [redoStack, setRedoStack] = useState<{ snap: ModelSnapshot; label: string }[]>([]);
+  const captureSnap = (): ModelSnapshot => ({ recipes, rawMaterials, suppliers, branches, unitsOfMeasure });
+  const pushSnap = (label: string) => {
+    setUndoStack((prev) => [...prev.slice(-49), { snap: captureSnap(), label }]);
+    setRedoStack([]);
   };
 
-  const register = async (name: string, email: string, password: string, role: UserRole, branchId: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ name, email, password, role, branchId }),
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false, error: json.error || 'تعذر إنشاء الحساب' };
-      if (json.pending) {
-        // التسجيل الذاتي: الحساب بانتظار تفعيل مسؤول النظام — لا جلسة ولا دخول
-        return { ok: true, pending: true };
-      }
-      if (token) {
-        // authenticated creation (e.g. admin panel): keep the caller's session intact
-        setUsers((prev) => [...prev, json.user]);
-      } else {
-        // anonymous first-run: log the new account in
-        localStorage.setItem('rcerp_token', json.token);
-        setCurrentUser(json.user);
-        setUsers((prev) => [...prev, json.user]);
-      }
-      return { ok: true };
-    } catch {
-      return { ok: false, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
+  // ---- كبسولة الوحدات والباركود (useUnitsAndBarcodes) ----
+  const { unitsOfMeasure, setUnitsOfMeasure, materialBarcodes, setMaterialBarcodes, addMaterialBarcode, updateMaterialBarcode, deleteMaterialBarcode, barcodesForMaterial, findByBarcode, addUnitOfMeasure, updateUnitOfMeasure, deleteUnitOfMeasure } = useUnitsAndBarcodes({ logAudit, pushSnap, getRawMaterialName, rawMaterials });
 
-  const logout = () => {
-    const token = localStorage.getItem('rcerp_token');
-    if (token) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
-    }
-    localStorage.removeItem('rcerp_token');
-    setCurrentUser(null);
-    setMustChangePassword(false);
-  };
-
-  const changePassword = async (oldPassword: string, newPassword: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch('/api/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ oldPassword, newPassword }),
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر تغيير كلمة المرور' };
-      setMustChangePassword(false);
-      return { ok: true as const };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
-
-  const updateUser = async (id: string, data: Partial<User>, opts?: { resetPassword?: string }) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch(`/api/users/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ ...data, password: opts?.resetPassword }),
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر تحديث المستخدم' };
-      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...json.user } : u)));
-      if (json.user && currentUser && json.user.id === currentUser.id) setCurrentUser((c) => (c ? { ...c, ...json.user } : c));
-      return { ok: true as const };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
-
-  const deleteUser = async (id: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch(`/api/users/${id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر حذف المستخدم' };
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      return { ok: true as const };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
-
-  const revokeSessions = async (id: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch(`/api/users/${id}/revoke-sessions`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر إلغاء الجلسات' };
-      return { ok: true as const };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
-
-  const totpSetup = async () => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch('/api/auth/totp/setup', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر إعداد التحقق' };
-      return { ok: true as const, secret: json.secret, otpauthUrl: json.otpauthUrl, enabled: !!json.enabled };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
-
-  const totpEnable = async (code: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch('/api/auth/totp/enable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ code }),
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر تفعيل التحقق' };
-      setCurrentUser((c) => (c ? { ...c, totpEnabled: true } : c));
-      return { ok: true as const };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
-
-  const totpDisable = async (code: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const res = await fetch('/api/auth/totp/disable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ code }),
-      });
-      const json = await res.json();
-      if (!json.ok) return { ok: false as const, error: json.error || 'تعذر إيقاف التحقق' };
-      setCurrentUser((c) => (c ? { ...c, totpEnabled: false } : c));
-      return { ok: true as const };
-    } catch {
-      return { ok: false as const, error: 'تعذر الاتصال بالخادم' };
-    }
-  };
+  // كتابة الحالة إلى طابور الحفظ: تأثير واحد لجميع المجموعات — نفس سلوك الجدار السابق
+  // (persist يرفض أي قيمة لم يتغيّر مرجعها)، وفي الاعتماديات كل القيم المعنية.
+  useEffect(() => {
+    persist('rcerp_branches', branches);
+    persist('rcerp_suppliers', suppliers);
+    persist('rcerp_raw_materials', rawMaterials);
+    persist('rcerp_material_barcodes', materialBarcodes);
+    if (unitsOfMeasure && unitsOfMeasure.length) persist('rcerp_units', unitsOfMeasure);
+    persist('rcerp_recipes', recipes);
+    persist('rcerp_recipe_sections', recipeSections);
+    persist('rcerp_inventory', inventory);
+    persist('rcerp_inventory_batches', inventoryBatches);
+    persist('rcerp_grn', grnNotes);
+    persist('rcerp_purchase_orders', purchaseOrders);
+    persist('rcerp_purchase_requests', purchaseRequests);
+    persist('rcerp_work_orders', workOrders);
+    persist('rcerp_wastage', wastageLogs);
+    persist('rcerp_inventory_movements', inventoryMovements);
+    persist('rcerp_closed_days', closedDays);
+    persist('rcerp_tasks', tasks);
+    persist('rcerp_temp_logs', tempLogs);
+    persist('rcerp_haccp_inspections', haccpInspections);
+    persist('rcerp_custom_reports', customReports);
+    persist('rcerp_customer_orders', customerOrders);
+    persist('rcerp_employees', employees);
+    persist('rcerp_custom_roles', customRoles);
+    persist('rcerp_access_roles', accessRoles);
+    persist('rcerp_shifts', shifts);
+    persist('rcerp_attendance', attendance);
+    persist('rcerp_payroll', payrollPeriods);
+    persist('rcerp_pos_orders', posOrders);
+    persist('rcerp_stock_transfers', stockTransfers);
+    persist('rcerp_recipe_inventory', recipeInventory);
+    persist('rcerp_accounts', accounts);
+    persist('rcerp_journal', journalEntries);
+    persist('rcerp_pos_returns', posReturns);
+    persist('rcerp_fixed_assets', fixedAssets);
+    persist('rcerp_scheduled_reports', scheduledReports);
+    persist('rcerp_automation_rules', automationRules);
+    persist('rcerp_physical_counts', physicalCounts);
+    persist('rcerp_daily_counts', dailyCounts);
+    persist('rcerp_distributions', distributions);
+    persist('rcerp_intake_inbox', intakeInbox);
+    persist('rcerp_opening_balances', openingBalances);
+    persist('rcerp_employee_meals', employeeMeals);
+    persist('rcerp_butcher_tests', butcherTests);
+    persist('rcerp_material_categories', materialCategories);
+    persist('rcerp_production_runs', productionRuns);
+    persist('rcerp_supplier_quotes', supplierQuotes);
+    persist('rcerp_supplier_returns', supplierReturns);
+    persist('rcerp_monthly_inventory', monthlyInventory);
+    persist('rcerp_closed_months', closedMonths);
+    persist('rcerp_eod_closures', eodClosures);
+    persist('rcerp_pl_summaries', plSummaries);
+    persist('rcerp_categories', customCategories);
+    persist('rcerp_food_menus', foodMenus);
+    persist('rcerp_menu_plans', menuPlans);
+    persist('rcerp_batch_sales', batchSalesRecords);
+    persist('rcerp_operating_expenses', operatingExpenses);
+    persist('rcerp_expense_budgets', expenseBudgets);
+    persist('rcerp_customers', customers);
+    persist('rcerp_reservations', reservations);
+    persist('rcerp_invoices', invoices);
+    persist('rcerp_audit', auditLogs);
+    persist('rcerp_target_margin', globalTargetMarginPercent);
+    persist('rcerp_vat_percent', vatPercent);
+    persist('rcerp_vat_inclusive', vatInclusive);
+    persist('rcerp_deduct_sales', deductSalesFromInventory);
+    persist('rcerp_ack_alerts', acknowledgedAlertIds);
+    persist('rcerp_currencies', currencies);
+    persist('rcerp_companies', companies);
+    persist('rcerp_deleted_ids', deletedIds);
+    persist('rcerp_requisitions', requisitions);
+    persist('rcerp_delivery_apps', deliveryApps);
+    persist('rcerp_delivery_sales', deliverySales);
+    persist('rcerp_branch_stock_limits', branchStockLimits);
+    persist('rcerp_logo', { v: logo });
+    persist('rcerp_ai_settings', aiSettings);
+  }, [ready, branches, suppliers, rawMaterials, materialBarcodes, unitsOfMeasure, recipes, recipeSections, inventory, inventoryBatches, grnNotes, purchaseOrders, purchaseRequests, workOrders, wastageLogs, inventoryMovements, closedDays, tasks, tempLogs, haccpInspections, customReports, customerOrders, employees, customRoles, accessRoles, shifts, attendance, payrollPeriods, posOrders, stockTransfers, recipeInventory, accounts, journalEntries, posReturns, fixedAssets, scheduledReports, automationRules, physicalCounts, dailyCounts, distributions, intakeInbox, openingBalances, employeeMeals, butcherTests, materialCategories, productionRuns, supplierQuotes, supplierReturns, monthlyInventory, closedMonths, eodClosures, plSummaries, customCategories, foodMenus, menuPlans, batchSalesRecords, operatingExpenses, expenseBudgets, customers, reservations, invoices, auditLogs, globalTargetMarginPercent, vatPercent, vatInclusive, deductSalesFromInventory, acknowledgedAlertIds, currencies, companies, deletedIds, requisitions, deliveryApps, deliverySales, branchStockLimits, logo, aiSettings]);
 
   // ---- Permissions ----
   const can = useCallback((permission: Permission): boolean => {
@@ -1559,7 +1139,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return branches.find((b) => b.id === id)?.nameAr || id;
   };
 
-  const getRawMaterialName = (id: string) => rawMaterials.find((m) => m.id === id)?.nameAr || id;
   const getRawMaterialUnitCost = (id: string) => rawMaterials.find((m) => m.id === id)?.standardPrice || 0;
 
   const getAverageUnitCost = (id: string) => averageUnitCostFromReceipts(grnNotes, id, getRawMaterialUnitCost(id));
@@ -1829,76 +1408,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast(`أُعيد فتح يوم ${d}`);
   };
 
-  // ---- المهام والتكليفات (اعتماد، جرد، مراجعة) ----
-  const addTask = (data: Omit<Task, 'id' | 'createdAt' | 'status' | 'assignedBy'>) => {
-    const t: Task = {
-      ...data,
-      id: `task-${Date.now()}`,
-      assignedBy: currentUser?.name || 'النظام',
-      status: 'open',
-      createdAt: new Date().toISOString(),
-    };
-    setTasks((prev) => [t, ...prev]);
-    logAudit('إنشاء مهمة', 'المهام', t.title);
-    showToast(`أُسندت مهمة «${t.title}»${t.assigneeIds.length ? ' إلى ' + t.assigneeIds.length + ' مستخدم' : ''}`);
-  };
-  const updateTask = (id: string, data: Partial<Task>) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...data } : t)));
-    logAudit('تعديل مهمة', 'المهام', id);
-  };
-  const completeTask = (id: string) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'done', completedAt: new Date().toISOString() } : t)));
-    logAudit('إنجاز مهمة', 'المهام', id);
-    showToast('أُنجزت المهمة ✓');
-  };
-  const reopenTask = (id: string) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'open', completedAt: undefined } : t)));
-    logAudit('إعادة فتح مهمة', 'المهام', id);
-  };
-  const cancelTask = (id: string) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'cancelled' } : t)));
-    logAudit('إلغاء مهمة', 'المهام', id);
-  };
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-    logAudit('حذف مهمة', 'المهام', id);
-  };
-
-  // ---- HACCP: سجل درجات الحرارة + تقارير التفتيش ----
-  const addTempLog = (data: Omit<TempLogEntry, 'id' | 'recordedBy'>) => {
-    const entry: TempLogEntry = { ...data, id: `temp-${Date.now()}`, recordedBy: currentUser?.name || 'المستخدم' };
-    setTempLogs((prev) => [entry, ...prev].sort((a, b) => b.date.localeCompare(a.date)));
-    const st = tempStatusOf(entry);
-    if (st === 'critical') showToast('انحراف حرج في الحرارة — يجب معالجة فورية وتوثيق الإجراء');
-    else if (st === 'warning') showToast('تحذير — درجة حرارة فوق النطاق الآمن');
-    logAudit('تسجيل درجة حرارة', 'سلامة الغذاء', `${data.location} ${data.temperature}°`);
-  };
-
-  const addHaccpInspection = (data: Omit<HaccpInspection, 'id' | 'createdAt'>) => {
-    const rec: HaccpInspection = { ...data, id: `insp-${Date.now()}`, createdAt: new Date().toISOString() };
-    setHaccpInspections((prev) => [rec, ...prev]);
-    logAudit('تقرير تفتيش سلامة غذاء', 'سلامة الغذاء', data.overallPassed ? 'ناجح' : 'به ملاحظات');
-    showToast(data.overallPassed ? 'سجّل التفتيش (ناجح) ✓' : 'سُجّل التفتيش مع ملاحظات — راجعها');
-  };
-  const deleteTempLog = (id: string) => setTempLogs((prev) => prev.filter((x) => x.id !== id));
-
-  // ---- طلبات العميل الذاتية (كشك الطلب) ----
-  const addCustomerOrder = (o: Omit<CustomerOrder, 'id' | 'orderNumber' | 'createdAt' | 'status'>): CustomerOrder => {
-    const rec: CustomerOrder = {
-      ...o,
-      id: `co-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      orderNumber: nextDocSequence('ORD', { existing: customerOrders.map((o) => o.orderNumber) }),
-      status: 'new',
-      createdAt: new Date().toISOString(),
-    };
-    setCustomerOrders((prev) => [rec, ...prev]);
-    logAudit('طلب عميل جديد', 'الطلبات', `${rec.orderNumber} — ${rec.branchName}`);
-    return rec;
-  };
-  const updateCustomerOrderStatus = (id: string, status: CustomerOrderStatus, paymentMethod?: string) => {
-    setCustomerOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status, paymentMethod: paymentMethod ?? o.paymentMethod } : o)));
-    logAudit('تحديث حالة طلب عميل', 'الطلبات', id);
-  };
+  // ---- (كبسولات المهام / سلامة الغذاء / طلبات العميل استُخرجت إلى useTasks / useHaccp / useCustomerOrders) ----
 
   // ---- Monthly inventory (Oracle Material Control month-end) ----
   const startMonthlyInventory = (branchId: string, monthKey: string) => {
@@ -2096,43 +1606,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { ok: true };
   };
 
-  const addMaterialBarcode = (data: Omit<MaterialBarcode, 'id'>) => {
-    pushSnap('إضافة باركود');
-    setMaterialBarcodes((prev) => [...prev, { ...data, id: `mb-${Date.now()}` }]);
-    logAudit('إضافة باركود مادة', 'المخزون', `${getRawMaterialName(data.rawMaterialId)} — ${data.barcode}`);
-  };
-  const updateMaterialBarcode = (id: string, data: Partial<MaterialBarcode>) => {
-    pushSnap('تعديل باركود');
-    setMaterialBarcodes((prev) => prev.map((b) => (b.id === id ? { ...b, ...data } : b)));
-  };
-  const deleteMaterialBarcode = (id: string) => {
-    pushSnap('حذف باركود');
-    setMaterialBarcodes((prev) => prev.filter((b) => b.id !== id));
-  };
-  const barcodesForMaterial = (rawMaterialId: string) => materialBarcodes.filter((b) => b.rawMaterialId === rawMaterialId);
-  const findByBarcode = (code: string) => {
-    const trimmed = String(code || '').trim();
-    if (!trimmed) return undefined;
-    return materialBarcodes.find((b) => b.barcode === trimmed);
-  };
-
-  const addUnitOfMeasure = (data: Omit<UnitOfMeasure, 'id'>) => {
-    pushSnap('إضافة وحدة قياس');
-    setUnitsOfMeasure((prev) => [...prev, { ...data, id: `uom-${Date.now()}` }]);
-    logAudit('إضافة وحدة قياس', 'وحدات القياس', data.nameAr);
-  };
-  const updateUnitOfMeasure = (id: string, data: Partial<UnitOfMeasure>) => {
-    pushSnap('تعديل وحدة قياس');
-    setUnitsOfMeasure((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
-  };
-  const deleteUnitOfMeasure = (id: string): { ok: boolean; error?: string } => {
-    const usedBy = rawMaterials.some((m) => m.tradeUomId === id);
-    if (usedBy) return { ok: false, error: 'لا يمكن الحذف — الوحدة مستخدمة بوحدة تداول لمادة خام واحدة على الأقل.' };
-    pushSnap('حذف وحدة قياس');
-    setUnitsOfMeasure((prev) => prev.filter((u) => u.id !== id));
-    logAudit('حذف وحدة قياس', 'وحدات القياس', id);
-    return { ok: true };
-  };
+  // ---- (كبسولة الوحدات والباركود استُخرجت إلى useUnitsAndBarcodes.ts) ----
 
   const importRawMaterials = (records: Record<string, unknown>[]): { added: number; updated: number } => {
     let added = 0, updated = 0;
@@ -2766,13 +2240,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     branches: Branch[];
     unitsOfMeasure: UnitOfMeasure[];
   }
-  const [undoStack, setUndoStack] = useState<{ snap: ModelSnapshot; label: string }[]>([]);
-  const [redoStack, setRedoStack] = useState<{ snap: ModelSnapshot; label: string }[]>([]);
-  const captureSnap = (): ModelSnapshot => ({ recipes, rawMaterials, suppliers, branches, unitsOfMeasure });
-  const pushSnap = (label: string) => {
-    setUndoStack((prev) => [...prev.slice(-49), { snap: captureSnap(), label }]);
-    setRedoStack([]);
-  };
+  // (جذور captureSnap / pushSnap انتقلت لموقع مبكر قبل كبسولة الوحدات والباركود)
   const applySnap = (snap: ModelSnapshot) => {
     setRecipes(snap.recipes);
     setRawMaterials(snap.rawMaterials);

@@ -622,14 +622,16 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             <section className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
               <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-indigo-600" /> بيانات الإشعار</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Field label="المورد *" required>
-                  <div className="flex gap-2 lg:col-span-2">
-                    <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={inputCls + ' flex-1'}>
-                      {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                    <Btn type="button" tone="ghost" onClick={() => fillFromSupplierHistory(supplierId)} disabled={!supplierId} className="text-xs px-3 py-2 whitespace-nowrap shrink-0"><History className="w-3.5 h-3.5" /> تعبئة أصناف سابقة</Btn>
-                  </div>
-                </Field>
+                <div className="lg:col-span-2">
+                  <Field label="المورد *" required>
+                    <div className="flex gap-2">
+                      <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={inputCls + ' flex-1'}>
+                        {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                      <Btn type="button" tone="ghost" onClick={() => fillFromSupplierHistory(supplierId)} disabled={!supplierId} className="text-xs px-3 py-2 whitespace-nowrap shrink-0"><History className="w-3.5 h-3.5" /> تعبئة أصناف سابقة</Btn>
+                    </div>
+                  </Field>
+                </div>
                 <Field label="الفرع *" required>
                   <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={inputCls}>
                     {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
@@ -676,7 +678,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                 <span className="col-span-3">الصنف</span>
                 <span className="col-span-1 text-center">الكمية<br/><span className="text-[9px] text-amber-600">(وحدة التخزين)</span></span>
                 <span className="col-span-1 text-center">سعر الوحدة</span>
-                <span className="col-span-1 text-center">الإجمالي</span>
+                <span className="col-span-2 text-center">الإجمالي</span>
                 <span className="col-span-1 text-center">تاريخ الانتهاء</span>
                 <span className="col-span-1 text-center">الدفعة</span>
                 <span className="col-span-1 text-center">انتهاء</span>
@@ -746,8 +748,8 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                         />
                       </div>
                       
-                      {/* Line Total - col-span-1 (editable: enter total → calculates unit price) */}
-                      <div className="col-span-1">
+                      {/* Line Total - col-span-2 (editable: enter total → calculates unit price) */}
+                      <div className="col-span-2">
                         <input
                           type="text" inputMode="decimal" data-nav autoComplete="off"
                           value={draftVal(totalKey(rowKeys[idx] ?? idx), item.lineTotal && item.lineTotal > 0 ? fmtPrice(item.lineTotal) : '')}
@@ -1019,11 +1021,13 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             <section className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
               <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Pencil className="w-4 h-4 text-amber-600" /> بيانات الإشعار</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Field label="المورد *" required>
-                  <select value={editGrn?.supplierId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { supplierId: e.target.value, supplierName: suppliers.find((s) => s.id === e.target.value)?.name || '' })} disabled={editGrn?.status !== 'draft'} className={inputCls}>
-                    {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </Field>
+                <div className="lg:col-span-2">
+                  <Field label="المورد *" required>
+                    <select value={editGrn?.supplierId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { supplierId: e.target.value, supplierName: suppliers.find((s) => s.id === e.target.value)?.name || '' })} disabled={editGrn?.status !== 'draft'} className={inputCls}>
+                      {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </Field>
+                </div>
                 <Field label="الفرع *" required>
                   <select value={editGrn?.branchId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { branchId: e.target.value })} disabled={editGrn?.status !== 'draft'} className={inputCls}>
                     {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
@@ -1051,7 +1055,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                 <span className="col-span-3">الصنف</span>
                 <span className="col-span-1 text-center">الكمية<br/><span className="text-[9px] text-amber-600">(وحدة التخزين)</span></span>
                 <span className="col-span-1 text-center">سعر الوحدة</span>
-                <span className="col-span-1 text-center">الإجمالي</span>
+                <span className="col-span-2 text-center">الإجمالي</span>
                 <span className="col-span-1 text-center">تاريخ الانتهاء</span>
                 <span className="col-span-1 text-center">الدفعة</span>
                 <span className="col-span-1 text-center">انتهاء</span>
@@ -1120,8 +1124,8 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                         />
                       </div>
                       
-                      {/* Line Total - col-span-1 (editable: enter total → calculates unit price) */}
-                      <div className="col-span-1">
+                      {/* Line Total - col-span-2 (editable: enter total → calculates unit price) */}
+                      <div className="col-span-2">
                         <input
                           type="text" inputMode="decimal" data-nav autoComplete="off"
                           value={draftVal(totalKey(editKeys[idx] ?? idx) + 'e', item.lineTotal && item.lineTotal > 0 ? fmtPrice(item.lineTotal) : '')}
