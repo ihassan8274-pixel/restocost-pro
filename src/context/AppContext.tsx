@@ -1,4 +1,5 @@
-﻿import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { DomainBridge } from './domainBridge';
 import {
   User, UserRole, Permission, Branch, RawMaterial, Supplier, StandardRecipe, InventoryRecord,
   GoodsReceiptNote, WorkOrder, WastageLog, Employee, LaborShift, POSOrder, POSOrderItem, StockTransfer,
@@ -18,7 +19,7 @@ import {
 import { ROLE_PERMISSIONS } from '../types';
 import { getNavItem } from '../navigation';
 import {
-  DEMO_CREDENTIALS, INITIAL_CATEGORIES, INITIAL_BRANCHES, INITIAL_SUPPLIERS, INITIAL_RAW_MATERIALS,
+  INITIAL_CATEGORIES, INITIAL_BRANCHES, INITIAL_SUPPLIERS, INITIAL_RAW_MATERIALS,
   INITIAL_RECIPES, INITIAL_INVENTORY, INITIAL_GRN_NOTES, INITIAL_PURCHASE_ORDERS, INITIAL_WORK_ORDERS,
   INITIAL_WASTAGE_LOGS, INITIAL_EMPLOYEES, INITIAL_LABOR_SHIFTS, INITIAL_POS_ORDERS, INITIAL_STOCK_TRANSFERS,
   INITIAL_PL_SUMMARIES, INITIAL_FOOD_MENUS, INITIAL_BATCH_SALES, INITIAL_OPERATING_EXPENSES,
@@ -32,14 +33,34 @@ import { normalizeAISettings, type AIModelConfig } from '../utils/ai';
 import { buildPLSummaries, monthLabelFor } from '../utils/financials';
 import { EMPLOYEE_ROLE_LABELS, VAT_RATE, netOfGross, fmtMoney } from '../utils/helpers';
 import { vatSplit } from '../utils/vat';
-import { averageUnitCostFromReceipts, movingWeightedAverage } from '../business/costs';
-import { stockLevelsFor } from '../business/stock';
-import { computeRecipeCosts, recipeUsesAnyMaterial } from '../business/recipes';
+import { recipeUsesAnyMaterial } from '../business/recipes';
+import { computeRecipeCosts } from '../business/recipes';
+import { averageUnitCostFromReceipts } from '../business/costs';
+import {
+  calculateRecipeCosts as calcRecipeCosts,
+  computeFoodCostAlerts,
+  convertToBase as convertAmountToBase,
+  getAverageUnitCost as getAvgCost,
+  getBranchAverageUnitCost as getBranchAvgCost,
+  getBranchName as getBranchNameSel,
+  getCompanyName as getCompanyNameSel,
+  getCurrencyRate as getCurrencyRateSel,
+  getDeliveryAppName as getDeliveryAppNameSel,
+  getLastPurchaseCost as getLastPurchCost,
+  getMonthlyDepreciation as getMonthlyDepSel,
+  getQuotePrice as getQuotePriceSel,
+  getRawMaterialUnitCost as getRawMatCost,
+  getRecipeStock as getRecipeStockSel,
+  getReturnedQtyForGrn as getReturnedQtyForGrnSel,
+  getStockLevelsFor as getStockLevelsForSel,
+  isDateClosed as isDateClosedSel,
+  isMonthClosed as isMonthClosedSel,
+  monthOfKey as monthOfKeySel,
+} from './selectors';
 import { stockPerPurchase } from '../business/units';
 import { buildPreliminaryPOs, lowestPrice30Days, lastSupplierIdFor } from '../business/purchaseRequests';
 import { nextDocSequence } from '../business/docNumbers';
 import type { NumeralSystem } from '../utils/helpers';
-import { hashPassword, verifyPassword } from './appAuth';
 import { useAISettings, type AISettings } from './useAISettings';
 import { usePreferences } from './usePreferences';
 import { useToasts, type ToastEntry } from './useToasts';
@@ -50,6 +71,7 @@ import { useHaccp } from './useHaccp';
 import { useCustomerOrders } from './useCustomerOrders';
 import { useUnitsAndBarcodes } from './useUnitsAndBarcodes';
 import { useInventoryCore } from './useInventoryCore';
+import { useTransfersCore } from './useTransfersCore';
 
 const loadState = <T,>(_key: string, fallback: T): T => fallback;
 
@@ -317,7 +339,6 @@ interface AppContextType {
   toast: ToastEntry | null;
   showToast: (message: string, opts?: Partial<Omit<ToastEntry, 'message'>>) => void;
   verifyAdminPassword: (password: string) => Promise<boolean>;
-  ADMIN_PASSWORD: string;
   recordPhysicalCount: (c: Omit<PhysicalStockCount, 'id' | 'date'>) => void;
   addOperatingExpense: (e: Omit<OperatingExpense, 'id' | 'expenseNumber' | 'createdAt'>) => void;
   updateOperatingExpense: (id: string, e: Partial<OperatingExpense>) => void;
@@ -468,7 +489,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [users, setUsers] = useState<User[]>(() => loadState<User[]>('rcerp_users', []));
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [mustChangePassword, setMustChangePassword] = useState(false);
-  const [seeding, setSeeding] = useState(false);
   const serverUsersLoadedRef = useRef(false);
   const [booting, setBooting] = useState(true);
   const [ready, setReady] = useState(false);
@@ -565,13 +585,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [eodClosures, setEodClosures] = useState<EodClosure[]>(() => loadState('rcerp_eod_closures', []));
   const { toast, showToast } = useToasts();
 
-  const ADMIN_PASSWORD = 'admin123';
-
-  // يتحقق من كلمة مرور المسؤول: كلمة مرور الحساب الحالي المسجّل دخوله (عبر الخادم)،
-  // أو كلمة مرور النظام الأساسية، أو التحقق المحلي عند عدم توفر الخادم.
+  // يتحقق من كلمة مرور المسؤول عبر الخادم فقط — لا عبر الشبكة العمومية
+  // ولا بكلمة مرور مشفرة في كود الواجهة (أُزيل المقطع المحلي والتوكن الافتراضي).
   const verifyAdminPassword = async (password: string): Promise<boolean> => {
     if (!password) return false;
-    if (password === ADMIN_PASSWORD) return true;
     try {
       const token = localStorage.getItem('rcerp_token');
       const res = await fetch('/api/auth/verify-password', {
@@ -580,14 +597,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         body: JSON.stringify({ password }),
       });
       const json = await res.json();
-      if (json.ok) return true;
+      return Boolean(json.ok);
     } catch {
-      // الخادم غير متاح — تحقق محلي من كلمة مرور المستخدم
+      // الخادم غير متاح — لا يوجد تحقق محلي (قرار أمني).
+      return false;
     }
-    if (currentUser && currentUser.passwordHash) {
-      return verifyPassword(password, currentUser.passwordHash);
-    }
-    return false;
   };
 
   const [operatingExpenses, setOperatingExpenses] = useState<OperatingExpense[]>(() => loadState('rcerp_operating_expenses', INITIAL_OPERATING_EXPENSES));
@@ -618,34 +632,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [attendance, setAttendance] = useState<AttendanceRecord[]>(() => loadState('rcerp_attendance', []));
   const [payrollPeriods, setPayrollPeriods] = useState<PayrollPeriod[]>(() => loadState('rcerp_payroll', []));
 
-  // Seed demo users on first run (server DB is empty on very first boot).
-  // Uses a ref so a slow bootstrap that loads REAL server users is never
-  // overwritten by this async seed (which would replace the real users —
-  // and thus the logged-in identity — with demo users).
-  useEffect(() => {
-    if (serverUsersLoadedRef.current) return;
-    if (users.length === 0 && !seeding) {
-      setSeeding(true);
-      (async () => {
-        const seeded: User[] = [];
-        for (const cred of DEMO_CREDENTIALS) {
-          seeded.push({
-            id: `user-${cred.email.split('@')[0]}`,
-            name: cred.name,
-            email: cred.email,
-            passwordHash: await hashPassword(cred.password),
-            role: cred.role,
-            branchId: cred.branchId,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-          });
-        }
-        if (serverUsersLoadedRef.current) { setSeeding(false); return; }
-        setUsers((prev) => (serverUsersLoadedRef.current || prev.length > 0 ? prev : seeded));
-        setSeeding(false);
-      })();
-    }
-  }, [users, seeding]);
 
   // Load everything from the server (SQLite) on mount; fall back to the last synced
   // snapshot (offline cache) if the server is unreachable, and cache on every success.
@@ -893,6 +879,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         clearTimeout(timer);
       }
     };
+
+    const loadLazyCollections = async () => {
+      const token = localStorage.getItem('rcerp_token');
+      if (!token) return;
+      const LAZY = [
+        'rcerp_inventory_movements',
+        'rcerp_audit',
+        'rcerp_journal',
+        'rcerp_batch_sales',
+        'rcerp_grn',
+        'rcerp_inventory',
+        'rcerp_recipe_sections',
+        'rcerp_inventory_batches',
+        'rcerp_temp_logs',
+        'rcerp_haccp_inspections',
+        'rcerp_tasks',
+        'rcerp_custom_reports',
+        'rcerp_eod_closures',
+      ];
+      for (const key of LAZY) {
+        if (cancelled) break;
+        try {
+          const res = await fetch(`/api/collections/${key}/paginated?limit=500`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.ok && Array.isArray(json.items)) {
+              applyData({ [key]: json.items });
+            }
+          }
+        } catch { /* ignore individual failures */ }
+      }
+    };
     (async () => {
       let r = await loadFromServer();
       let ok = r.ok;
@@ -939,6 +959,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (!cancelled) {
         setReady(true);
         setBooting(false);
+        loadLazyCollections();
       }
     })();
     return () => { cancelled = true; if (pollTimer) clearTimeout(pollTimer); };
@@ -1134,35 +1155,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentUser, branches]);
 
   // ---- Helpers ----
-  const getBranchName = (id: string) => {
-    if (id === 'all') return 'جميع الفروع';
-    return branches.find((b) => b.id === id)?.nameAr || id;
-  };
-
-  const getRawMaterialUnitCost = (id: string) => rawMaterials.find((m) => m.id === id)?.standardPrice || 0;
-
-  const getAverageUnitCost = (id: string) => averageUnitCostFromReceipts(grnNotes, id, getRawMaterialUnitCost(id));
-
+  const getBranchName = (id: string) => getBranchNameSel(branches, id);
+  const getRawMaterialUnitCost = (id: string) => getRawMatCost(rawMaterials, id);
+  const getAverageUnitCost = (id: string) => getAvgCost(grnNotes, rawMaterials, id);
   const getBranchAverageUnitCost = (branchId: string, id: string, asOf?: string) =>
-    movingWeightedAverage(openingBalances, grnNotes, stockTransfers, branchId, id, asOf, getRawMaterialUnitCost(id));
-
+    getBranchAvgCost(openingBalances, grnNotes, stockTransfers, rawMaterials, branchId, id, asOf);
   // آخر سعر شراء فعلي للصنف في الفرع (أحدث استلام معتمد) — يتوافق مع الخادم
-  const getLastPurchaseCost = (branchId: string, id: string): number => {
-    const approved = grnNotes
-      .filter((g) => g.status === 'approved' && g.branchId === branchId)
-      .slice()
-      .sort((a, b) => String(b.date).localeCompare(String(a.date)));
-    for (const g of approved) {
-      const item = g.items.find((i) => i.rawMaterialId === id && Number(i.quantityReceived) > 0 && Number(i.unitPrice) > 0);
-      if (item) return Number(item.unitPrice);
-    }
-    return getRawMaterialUnitCost(id);
-  };
+  const getLastPurchaseCost = (branchId: string, id: string): number =>
+    getLastPurchCost(grnNotes, rawMaterials, branchId, id);
 
   // ---- حدود المخزون لكل فرع (Min/Max per branch) ----
   // تعيد الحدود الفعلية للصنف في الفرع: المخصص للفرع إن وجد وإلا الافتراضي العام
   const getStockLevelsFor = (rawMaterialId: string, branchId: string): StockLevels =>
-    stockLevelsFor(rawMaterials, branchStockLimits, rawMaterialId, branchId);
+    getStockLevelsForSel(rawMaterials, branchStockLimits, rawMaterialId, branchId);
 
   const upsertBranchStockLimit = (branchId: string, rawMaterialId: string, data: Partial<Omit<BranchStockLimit, 'id' | 'branchId' | 'rawMaterialId'>>) => {
     setBranchStockLimits((prev) => {
@@ -1188,7 +1193,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const calculateRecipeCosts = (ingredients: StandardRecipe['ingredients'], directLabor: number, packaging: number, subPrep?: SubPrepIngredient[], yieldPieces?: number, _depth = 0) =>
-    computeRecipeCosts(rawMaterials, recipes, ingredients, directLabor, packaging, subPrep, yieldPieces, _depth, (id) => getAverageUnitCost(id));
+    calcRecipeCosts(rawMaterials, recipes, ingredients, directLabor, packaging, subPrep, yieldPieces, _depth, (id) => getAverageUnitCost(id));
 
   // إعادة احتساب تكاليف الوصفات المتأثرة تلقائياً عند تغيّر السعر (اعتماد GRN / تعديل سعر مادة / استيراد /
   // تحميل النظام). يُمرَّر قائمتا المواد والاستلامات الفعليتان (بعد التغيير مباشرة) فيُحسب المتوسط منها لحظياً —
@@ -1233,44 +1238,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshRecipesCosts(grnNotes, rawMaterials, [], 'مزامنة تلقائية بعد التحميل');
   }, [ready, grnNotes, rawMaterials]);
 
-  const getFoodCostAlerts = (): FoodCostAlert[] => {
-    const alerts: FoodCostAlert[] = [];
-    recipes.forEach((recipe) => {
-      if (!recipe.actualMenuPrice || recipe.actualMenuPrice <= 0 || recipe.isCentralKitchenPrep || !recipe.isActive) return;
-      const costs = calculateRecipeCosts(recipe.ingredients, recipe.directLaborCost, recipe.packagingCost, recipe.subPrepIngredients, recipe.yieldPieces);
-      const targetMargin = recipe.targetMarginPercent ?? globalTargetMarginPercent;
-      const targetFoodCost = recipe.targetFoodCostPercent ?? (100 - targetMargin);
-      const actualFoodCostPercent = Number(((costs.foodCost / recipe.actualMenuPrice) * 100).toFixed(1));
-      const actualMarginPercent = Number((((recipe.actualMenuPrice - costs.totalCost) / recipe.actualMenuPrice) * 100).toFixed(1));
-      if (actualFoodCostPercent > targetFoodCost || actualMarginPercent < targetMargin) {
-        const excessCostPercent = Number((actualFoodCostPercent - targetFoodCost).toFixed(1));
-        const maxAllowedFoodCost = recipe.actualMenuPrice * (targetFoodCost / 100);
-        alerts.push({
-          recipeId: recipe.id, recipeCode: recipe.code, recipeNameAr: recipe.nameAr, category: recipe.category,
-          actualMenuPrice: recipe.actualMenuPrice, totalCost: costs.totalCost, foodCostOnly: costs.foodCost,
-          actualFoodCostPercent, targetFoodCostPercent: targetFoodCost, actualMarginPercent, targetMarginPercent: targetMargin,
-          excessCostPercent,
-          excessCostPerPortion: Number((costs.foodCost - maxAllowedFoodCost).toFixed(2)),
-          suggestedPriceForTarget: Number((costs.foodCost / (targetFoodCost / 100)).toFixed(2)),
-          severity: excessCostPercent >= 5 ? 'critical' : 'warning',
-          isAcknowledged: acknowledgedAlertIds.includes(recipe.id),
-          dateTriggered: today(),
-        });
-      }
-    });
-    return alerts.sort((a, b) => {
-      if (a.isAcknowledged !== b.isAcknowledged) return a.isAcknowledged ? 1 : -1;
-      if (a.severity !== b.severity) return a.severity === 'critical' ? -1 : 1;
-      return b.excessCostPercent - a.excessCostPercent;
-    });
-  };
+  const getFoodCostAlerts = (): FoodCostAlert[] =>
+    computeFoodCostAlerts(recipes, acknowledgedAlertIds, globalTargetMarginPercent, rawMaterials, grnNotes, today());
 
   // ---- Inventory mutation helpers ----
   // ---- (رصيد المخزون / الدفعات / الحركات استُخرجت إلى useInventoryCore.ts) ----
 
-  const monthOfKey = (date: string) => date.slice(0, 7);
-  const isMonthClosed = (monthKey: string) => closedMonths.includes(monthKey);
-  const isDateClosed = (date: string) => closedMonths.includes(monthOfKey(date)) || closedDays.includes((date || '').slice(0, 10));
+  const monthOfKey = (date: string) => monthOfKeySel(date);
+  const isMonthClosed = (monthKey: string) => isMonthClosedSel(closedMonths, monthKey);
+  const isDateClosed = (date: string) => isDateClosedSel(closedMonths, closedDays, date);
 
   const closeDay = (date: string) => {
     const d = (date || '').slice(0, 10);
@@ -1872,13 +1848,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { ...q, ...data, updatedAt: new Date().toISOString(), updatedBy: currentUser?.name || '—', history: [...hist, version].slice(-50) };
     }));
   const deleteSupplierQuote = (id: string) => setSupplierQuotes((prev) => prev.filter((q) => q.id !== id));
-  const getQuotePrice = (supplierId: string, rawMaterialId: string) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const q = supplierQuotes
-      .filter((x) => x.supplierId === supplierId && x.rawMaterialId === rawMaterialId && (!x.validTo || x.validTo >= today))
-      .sort((a, b) => (b.validFrom || '').localeCompare(a.validFrom || ''))[0];
-    return q?.price;
-  };
+  const getQuotePrice = (supplierId: string, rawMaterialId: string) =>
+    getQuotePriceSel(supplierQuotes, supplierId, rawMaterialId);
 
   const addSupplierReturn = (data: Omit<SupplierReturn, 'id' | 'returnNumber'>) => {
     if (isDateClosed(data.date || new Date().toISOString())) { showToast('شهر مقفل — لا يمكن إنشاء مذكرة إرجاع في شهر مغلق'); return; }
@@ -1918,9 +1889,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const getReturnedQtyForGrn = (grnId: string, rawMaterialId: string) =>
-    supplierReturns
-      .filter((r) => r.sourceGrnId === grnId && r.status === 'approved')
-      .reduce((s, r) => s + r.items.filter((i) => i.rawMaterialId === rawMaterialId).reduce((si, i) => si + i.quantity, 0), 0);
+    getReturnedQtyForGrnSel(supplierReturns, grnId, rawMaterialId);
 
   const reprocessSupplierReturn = (id: string) => {
     const r0 = supplierReturns.find((r) => r.id === id);
@@ -2749,6 +2718,7 @@ transferNumber: nextTransferNumbers(1)[0],
       id: `ret-${Date.now()}`, returnNumber: nextDocSequence('RET', { existing: posReturns.map((r) => r.returnNumber) }),
       orderId: order.id, orderNumber: order.orderNumber, branchId: order.branchId, date: today(),
       items: returnItems, subtotal: net, vatAmount: vat, totalAmount: total, totalCost, reason: reason || 'مرتجع من العملاء', refundedBy: 'المستخدم',
+      status: 'draft',
     };
     setPosReturns((prev) => [newReturn, ...prev]);
     returnItems.forEach((i) => {
@@ -2782,7 +2752,7 @@ transferNumber: nextTransferNumbers(1)[0],
     });
   };
 
-  const getRecipeStock = (branchId: string, recipeId: string) => recipeInventory.find((r) => r.branchId === branchId && r.recipeId === recipeId)?.quantity || 0;
+  const getRecipeStock = (branchId: string, recipeId: string) => getRecipeStockSel(recipeInventory, branchId, recipeId);
 
   // Set exact opening stock quantities for a branch (upsert by branch+rawMaterial) and record a dated history entry
   const setOpeningBalances = (branchId: string, quantities: Record<string, number>) => {
@@ -2854,11 +2824,11 @@ transferNumber: nextTransferNumbers(1)[0],
     });
     // overdue invoices
     invoices.filter((inv) => inv.type === 'sales' && inv.status === 'overdue').forEach((inv) => {
-      notes.push({ id: `ov-${inv.id}`, type: 'overdue_invoice', severity: 'critical', title: `فاتورة متأخرة: ${inv.partyName}`, description: `${inv.invoiceNumber} — متبقي ${(inv.totalAmount - inv.paidAmount).toFixed(2)} ر.س`, tab: 'invoices' });
+      notes.push({ id: `ov-${inv.id}`, type: 'overdue_invoice', severity: 'critical', title: `فاتورة متأخرة: ${inv.partyName}`, description: `${inv.invoiceNumber} — متبقي ${(inv.totalAmount - inv.paidAmount).toFixed(2)} ر.س`, tab: 'cash_flow' });
     });
     // unpaid / overdue operating expenses
     operatingExpenses.filter((e) => e.paymentStatus === 'overdue').forEach((e) => {
-      notes.push({ id: `ed-${e.id}`, type: 'expense_due', severity: 'warning', title: `مصروف متأخر: ${e.description}`, description: `${branchName(e.branchId)} — ${e.amount.toFixed(2)} ر.س (${e.dueDate})`, tab: 'operating_expenses' });
+      notes.push({ id: `ed-${e.id}`, type: 'expense_due', severity: 'warning', title: `مصروف متأخر: ${e.description}`, description: `${branchName(e.branchId)} — ${e.amount.toFixed(2)} ر.س (${e.dueDate})`, tab: 'cash_flow' });
     });
     // cost alerts (unacknowledged critical)
     getFoodCostAlerts().filter((a) => !a.isAcknowledged && a.severity === 'critical').forEach((a) => {
@@ -2898,10 +2868,7 @@ transferNumber: nextTransferNumbers(1)[0],
   };
 
   // ---- Fixed assets & depreciation ----
-  const getMonthlyDepreciation = (a: FixedAsset) => {
-    const base = Math.max(0, a.purchaseCost - a.salvageValue);
-    return a.usefulLifeYears > 0 ? Number((base / (a.usefulLifeYears * 12)).toFixed(2)) : 0;
-  };
+  const getMonthlyDepreciation = (a: FixedAsset) => getMonthlyDepSel(a);
 
   const addFixedAsset = (data: Omit<FixedAsset, 'id' | 'code'>) => {
     const asset: FixedAsset = { ...data, id: `fa-${Date.now()}`, code: `FA-${Math.floor(100 + Math.random() * 900)}` };
@@ -3084,177 +3051,10 @@ transferNumber: nextTransferNumbers(1)[0],
     return { ok: true, message: results.join(' · ') || 'لا توجد قواعد أتمتة مفعّلة' };
   };
 
-  const addStockTransfer = (data: Omit<StockTransfer, 'id' | 'transferNumber' | 'date' | 'status'>) => {
-    if (isDateClosed(today())) { showToast('شهر مقفل — لا يمكن تحويل أصناف في شهر مغلق'); return; }
-    const newTransfer: StockTransfer = { ...data, id: `trf-${Date.now()}`, transferNumber: nextTransferNumbers(1)[0], date: today(), status: 'draft' };
-    setStockTransfers((prev) => [newTransfer, ...prev]);
-    logAudit('إنشاء إذن تحويل بين الفروع', 'المخزون', `${newTransfer.transferNumber}: ${newTransfer.items.length} صنف (مسودة)`, { type: 'stockTransfer', id: newTransfer.id });
-  };
-
-  // تحديث بيانات إذن التحويل (تعديل الأصناف/الكميات/الأسعار) — للمسودات والمراجع المرفوضة
-  const updateStockTransfer = (id: string, data: Partial<StockTransfer>) => {
-    setStockTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, ...data } : t)));
-    logAudit('تعديل إذن تحويل', 'المخزون', id, { type: 'stockTransfer', id });
-  };
-
-  // إرسال الإذن للاعتماد (مسودة → مقدَّم)
-  const submitStockTransfer = (id: string) => {
-    setStockTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'submitted' } : t)));
-    logAudit('إرسال إذن تحويل للاعتماد', 'المخزون', id, { type: 'stockTransfer', id });
-  };
-
-  // اعتماد الإذن: تطبيق حركة المخزون على الفرعين + قيد محاسبي
-  const approveStockTransfer = (id: string) => {
-    const target = stockTransfers.find((t) => t.id === id);
-    if (!target || target.status !== 'submitted') return;
-    if (isDateClosed(target.date)) { showToast('شهر مقفل — لا يمكن اعتماد تحويل في شهر مغلق'); return; }
-    target.items.forEach((item) => {
-      if (item.itemType === 'recipe' && item.recipeId) {
-        adjustRecipeInventory(target.fromBranchId, item.recipeId, -item.quantity);
-        adjustRecipeInventory(target.toBranchId, item.recipeId, item.quantity);
-      } else {
-        adjustInventory(target.fromBranchId, item.rawMaterialId!, -item.quantity, undefined, { type: 'تحويل صادر', ref: target.id });
-        adjustInventory(target.toBranchId, item.rawMaterialId!, item.quantity, undefined, { type: 'تحويل وارد', ref: target.id });
-      }
-    });
-    setStockTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'approved', approvedBy: currentUser?.name || 'المستخدم', approvedAt: new Date().toISOString() } : t)));
-    logAudit('اعتماد إذن تحويل', 'المخزون', `${target.transferNumber}`, { type: 'stockTransfer', id: target.id });
-  };
-
-  // رفض الإذن
-  const rejectStockTransfer = (id: string, reason: string) =>
-    setStockTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'rejected', rejectReason: reason } : t)));
-
-  // حذف سجل تحويل نهائياً (سجلات خاطئة/شركات محذوفة)
-  const deleteStockTransfer = (id: string) => {
-    const target = stockTransfers.find((t) => t.id === id);
-    setStockTransfers((prev) => prev.filter((t) => t.id !== id));
-    if (target) logAudit('حذف إذن تحويل نهائي', 'المخزون', target.transferNumber, { type: 'stockTransfer', id: target.id });
-  };
-
-  // اعتماد توزيع ورد من البوت: إنشاء إذن تحويل لكل هدف (فرع) من نفس المصدر والصنف
-  const approveDistribution = (id: string) => {
-    const dist = distributions.find((d) => d.id === id);
-    if (!dist || dist.status !== 'pending') return;
-    if (isDateClosed(dist.date || today())) { showToast('شهر مقفل — لا يمكن اعتماد توزيع في شهر مغلق'); return; }
-    if (dist.multiSource && dist.multiSource.length >= 2) { showToast('توزيع متعدد المصادر — أنشئ التحويلات يدويًا من شاشة التحويلات'); return; }
-    if (!dist.fromBranchId) { showToast('حدد فرع المصدر (من) قبل الاعتماد'); return; }
-    if (!dist.rawMaterialId) { showToast('حدد الصنف قبل الاعتماد'); return; }
-    const validRows = dist.rows.filter((r) => r.toBranchId);
-    if (!validRows.length) { showToast('لا أهداف صالحة للاعتماد — حدّد أهدافًا قبل الاعتماد'); return; }
-    const draftNumbers = nextTransferNumbers(validRows.length);
-    let draftIdx = 0;
-    validRows.forEach((row) => {
-      const newTransfer: StockTransfer = {
-        id: `trf-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        transferNumber: draftNumbers[draftIdx++],
-        fromBranchId: dist.fromBranchId,
-        toBranchId: row.toBranchId,
-        date: dist.date || today(),
-        status: 'draft',
-        items: [{
-          itemType: 'raw_material',
-          rawMaterialId: dist.rawMaterialId,
-          itemName: dist.itemName,
-          quantity: row.inventoryQty ?? row.qty,
-          unit: row.unit || '',
-          unitCost: row.unitCost || 0,
-          purchaseUnit: row.purchaseUnit || undefined,
-          purchaseUnitQty: row.inventoryQty ? row.qty : undefined,
-        }],
-        requestedBy: currentUser?.name || 'توزيع واتس/بوت',
-      };
-      setStockTransfers((prev) => [newTransfer, ...prev]);
-    });
-    setDistributions((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'approved', convertedAt: new Date().toISOString() } : d)));
-    logAudit('اعتماد توزيع ورد من البوت', 'المخزون', `${dist.itemName}: ${validRows.length} تحويل من ${dist.fromBranchName}`);
-    showToast(`تم إنشاء ${validRows.length} تحويل مخزني — راجعها واعتمدها من شاشة التحويلات`);
-  };
-
-  const rejectDistribution = (id: string) =>
-    setDistributions((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'rejected' } : d)));
-
-  // تعديل مسودة وردت من البوت (الصنف/المصدر/الإجماليات) قبل الاعتماد
-  const updateDistribution = (id: string, data: Partial<Distribution>) =>
-    setDistributions((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)));
-
-  // ---- صندوق التحقق قبل الرفع ----
-  const raiseInboxItem = async (id: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const r = await fetch(`/api/intake-inbox/${encodeURIComponent(id)}/raise`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      });
-      const j = await r.json();
-      if (j.ok) {
-        setIntakeInbox((prev) => prev.map((e) => e.id === id ? { ...e, status: 'raised' as const, raisedAt: new Date().toISOString(), raisedDistId: j.distId } : e));
-        showToast(`تم الرفع — التوزيعة ${j.distId?.replace('dist-', '') || ''} و${j.transferNumbers?.length || 0} تحويلات مسودّة`);
-      } else showToast(j.error || 'فشل الرفع');
-    } catch { showToast('تعذر الاتصال بالخادم'); }
-  };
-
-  const rejectInboxItem = async (id: string) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const r = await fetch(`/api/intake-inbox/${encodeURIComponent(id)}/reject`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      });
-      const j = await r.json();
-      if (j.ok) setIntakeInbox((prev) => prev.map((e) => e.id === id ? { ...e, status: 'rejected' as const, rejectedAt: new Date().toISOString() } : e));
-      else showToast(j.error || 'فشل الرفض');
-    } catch { showToast('تعذر الاتصال بالخادم'); }
-  };
-
-  const raiseAllMatchedInbox = async (): Promise<number> => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const r = await fetch('/api/intake-inbox/raise-all-matched', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      });
-      const j = await r.json();
-      if (j.ok && j.raised > 0) {
-        showToast(`تم رفع ${j.raised} رسالة متطابقة تلقائياً`);
-        setIntakeInbox((prev) => prev.map((e) => e.status === 'pending' && e.quality?.score === 100 ? { ...e, status: 'raised' as const, raisedAt: new Date().toISOString() } : e));
-        return j.raised;
-      }
-    } catch { /* noop */ }
-    return 0;
-  };
-
-  const bindAndRaiseInboxItem = async (id: string, body: { itemId?: string; fromId?: string; targets?: { index: number; toBranchId: string }[] }) => {
-    try {
-      const token = localStorage.getItem('rcerp_token');
-      const r = await fetch(`/api/intake-inbox/${encodeURIComponent(id)}/bind-raise`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(body),
-      });
-      const j = await r.json();
-      if (j.ok) {
-        setIntakeInbox((prev) => prev.map((e) => e.id === id ? { ...e, status: 'raised' as const, raisedAt: new Date().toISOString(), raisedDistId: j.distId } : e));
-        const learnMsg = j.learned ? ` + ${j.learned} مرادف جديد` : '';
-        showToast(`تم الربط والرفع — ${j.transferNumbers?.length || 0} تحويلات مسودّة${learnMsg}`);
-      } else showToast(j.error || 'فشل الربط والرفع');
-      return j;
-    } catch { showToast('تعذر الاتصال بالخادم'); return { ok: false }; }
-  };
-
-  // إرجاع الإذن المعتمد إلى مسودة: عكس حركة المخزون + قيد محاسبي عكسي
-  const revertStockTransferToDraft = (id: string) => {
-    const target = stockTransfers.find((t) => t.id === id);
-    if (!target || target.status !== 'approved') return;
-    if (isDateClosed(target.date)) { showToast('شهر مقفل — لا يمكن إرجاع تحويل معتمد في شهر مغلق'); return; }
-    target.items.forEach((item) => {
-      if (item.itemType === 'recipe' && item.recipeId) {
-        adjustRecipeInventory(target.fromBranchId, item.recipeId, item.quantity);
-        adjustRecipeInventory(target.toBranchId, item.recipeId, -item.quantity);
-      } else {
-        adjustInventory(target.fromBranchId, item.rawMaterialId!, item.quantity, undefined, { type: 'إلغاء تحويل', ref: target.id });
-        adjustInventory(target.toBranchId, item.rawMaterialId!, -item.quantity, undefined, { type: 'إلغاء تحويل', ref: target.id });
-      }
-    });
-    setStockTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'draft', approvedBy: undefined } : t)));
-    logAudit('إرجاع إذن تحويل معتمد للمسودة', 'المخزون', target.transferNumber, { type: 'stockTransfer', id: target.id });
-  };
+  const { addStockTransfer, updateStockTransfer, submitStockTransfer, approveStockTransfer, rejectStockTransfer, deleteStockTransfer, revertStockTransferToDraft, approveDistribution, rejectDistribution, updateDistribution, raiseInboxItem, rejectInboxItem, raiseAllMatchedInbox, bindAndRaiseInboxItem } = useTransfersCore({
+    stockTransfers, setStockTransfers, distributions, setDistributions, setIntakeInbox,
+    currentUser, adjustInventory, adjustRecipeInventory, isDateClosed, today, nextTransferNumbers, showToast, logAudit,
+  });
 
   const addAccount = (data: Omit<Account, 'id'>) => {
     setAccounts((prev) => [{ ...data, id: `acc-${Date.now()}`, isActive: data.isActive ?? true }, ...prev]);
@@ -3541,7 +3341,7 @@ transferNumber: nextTransferNumbers(1)[0],
     }
   };
   const deleteDeliveryApp = (id: string) => setDeliveryApps((prev) => prev.filter((a) => a.id !== id));
-  const getDeliveryAppName = (id: string) => deliveryApps.find((a) => a.id === id)?.name || id;
+  const getDeliveryAppName = (id: string) => getDeliveryAppNameSel(deliveryApps, id);
 
   const addDeliverySale = (data: Omit<DeliverySale, 'id'>) => setDeliverySales((prev) => [{ ...data, id: `dsale-${Date.now()}` }, ...prev]);
   const updateDeliverySale = (id: string, data: Partial<DeliverySale>) => setDeliverySales((prev) => prev.map((s) => (s.id === id ? { ...s, ...data } : s)));
@@ -3664,11 +3464,8 @@ transferNumber: nextTransferNumbers(1)[0],
   const deleteCategory = (id: string) => setCustomCategories((prev) => prev.filter((c) => c.id !== id));
 
   // ---- Multi-currency ----
-  const getCurrencyRate = (code: string) => {
-    if (!code || code === 'SAR') return 1;
-    return currencies.find((c) => c.code === code)?.rateToBase ?? 1;
-  };
-  const convertToBase = (amount: number, code: string) => amount * getCurrencyRate(code);
+  const getCurrencyRate = (code: string) => getCurrencyRateSel(currencies, code);
+  const convertToBase = (amount: number, code: string) => convertAmountToBase(currencies, amount, code);
   const addCurrency = (c: { code: string; nameAr: string; symbol: string; rateToBase: number; isActive: boolean }) => {
     if (!c.code.trim()) return;
     const code = c.code.trim().toUpperCase();
@@ -3684,7 +3481,7 @@ transferNumber: nextTransferNumbers(1)[0],
   };
 
   // ---- Companies ----
-  const getCompanyName = (id: string) => companies.find((c) => c.id === id)?.nameAr || id;
+  const getCompanyName = (id: string) => getCompanyNameSel(companies, id);
   const addCompany = (data: Omit<Company, 'id' | 'code'>) => {
     const newCompany: Company = { ...data, id: `co-${Date.now()}`, code: `CO-${Math.floor(100 + Math.random() * 900)}` };
     setCompanies((prev) => [newCompany, ...prev]);
@@ -3864,7 +3661,7 @@ raiseAllMatchedInbox, bindAndRaiseInboxItem,
     attendance, addAttendance, updateAttendance, deleteAttendance, payrollPeriods, generatePayroll, confirmPayroll, deletePayrollPeriod,
     setOpeningBalances,
     addOpeningBalance, updateOpeningBalance, deleteOpeningBalance, openingBalances,
-    addPOSReturn, getNotifications, toast, showToast, verifyAdminPassword, ADMIN_PASSWORD,
+    addPOSReturn, getNotifications, toast, showToast, verifyAdminPassword,
     recordPhysicalCount, addOperatingExpense,
     dailyCounts, addDailyCount, updateDailyCount, deleteDailyCount, employeeMeals, addEmployeeMeal, deleteEmployeeMeal,
     butcherTests, addButcherTest, updateButcherTest, deleteButcherTest, postButcherTest,
@@ -3897,7 +3694,7 @@ raiseAllMatchedInbox, bindAndRaiseInboxItem,
     recipeSections, updateRecipeSections,
   };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={value}><DomainBridge>{children}</DomainBridge></AppContext.Provider>;
 };
 
 export const useApp = () => {

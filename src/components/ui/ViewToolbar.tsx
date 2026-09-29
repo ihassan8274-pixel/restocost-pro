@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileSpreadsheet, Printer, Upload } from 'lucide-react';
-import { exportExcel, exportStyledReport, ExcelSheet, StyledReportSheet } from '../../utils/excel';
+import { exportStyledReport, sheetsToStyledReport, cellDisplay, type ExcelCellValue, type ExcelSheet, type StyledReportSheet } from '../../utils/excel';
 import { captureCharts, openPrintWindow } from '../../utils/print';
 
 interface ViewToolbarProps {
@@ -14,9 +14,10 @@ interface ViewToolbarProps {
 const btnCls = 'flex items-center gap-1.5 font-bold px-3 py-2 rounded-xl text-xs shadow-xs border transition-colors';
 
 // توحيد عرض الكسور العشرية: تقريب أي قيمة رقمية إلى منزلتين قبل الطباعة أو التصدير
-export const roundCell = (v: string | number): string | number => {
-  if (typeof v !== 'number' || !Number.isFinite(v)) return v;
-  const r = Math.round(v * 100) / 100;
+export const roundCell = (v: ExcelCellValue): string | number => {
+  const s = cellDisplay(v);
+  if (typeof s !== 'number' || !Number.isFinite(s)) return s;
+  const r = Math.round(s * 100) / 100;
   return Number.isInteger(r) ? r : r.toFixed(2);
 };
 
@@ -28,7 +29,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({ sheets, styled, filena
           if (styled?.length) {
             await exportStyledReport(filename || styled[0]?.name || 'تقرير', styled);
           } else if (sheets?.length) {
-            await exportExcel(filename || sheets[0]?.name || 'تقرير', sheets);
+            await exportStyledReport(filename || sheets[0]?.name || 'تقرير', sheetsToStyledReport(sheets));
           }
         } catch (e) { alert(`فشل تصدير Excel: ${(e as Error)?.message || e}`); }
       })(); }}

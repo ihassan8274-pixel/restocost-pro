@@ -3,7 +3,7 @@
 // Excel + CSV + طباعة/PDF من نتيجة ReportResult مباشرة.
 // يتجنب تكرار كود التصدير في كل تقرير.
 // ==========================================================
-import { exportExcel } from '../../../utils/excel';
+import { exportStyledReport, sheetsToStyledReport } from '../../../utils/excel';
 import { downloadCSV } from '../../../utils/helpers';
 import { openPrintWindow, captureCharts } from '../../../utils/print';
 import { roundCell } from '../../ui/ViewToolbar';
@@ -27,7 +27,7 @@ const toExcelSheets = (sheets: ReportSheet[]): { name: string; header: string[];
 export class ReportExporter {
   static excel(report: ReportResult, filename?: string): void {
     if (!report.exportSheets.length) return;
-    void exportExcel(filename || safeName(report.title), toExcelSheets(report.exportSheets)).catch((e) => alert(`فشل تصدير Excel: ${(e as Error)?.message || e}`));
+    void exportStyledReport(filename || safeName(report.title), sheetsToStyledReport(toExcelSheets(report.exportSheets))).catch((e) => alert(`فشل تصدير Excel: ${(e as Error)?.message || e}`));
   }
 
   static csv(report: ReportResult, filename?: string): void {

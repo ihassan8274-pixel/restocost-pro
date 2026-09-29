@@ -5,17 +5,104 @@ import type ExcelJS from 'exceljs';
 let exceljsPromise: Promise<typeof import('exceljs')> | null = null;
 const importExcelJS = () => (exceljsPromise ??= import('exceljs').then((m: any) => ((m.default ?? m) as typeof import('exceljs'))));
 
+// خلية تحمل صيغة Excel (مثل =SUM(...)) تُكتب كصيغة حقيقية داخل الملف ويُحفظ ناتجها
+// المُخزَّن (result) حتى تُعرض القيمة فوراً حتى لو لم يحسب البرنامج الصيغ عند الفتح.
+// تدعم الصيغ رموزاً تحلّها الأداة عند التصدير:
+//   {r}      = رقم صف الخلية نفسها في الورقة
+//   {first}  = أول صف بيانات في أول جدول
+//   {t1}     = أول صف بيانات في الجدول الثاني (إن وُجد)
+//   {last}   = أول صف بيانات في آخر جدول
+//   {b}      = أول صف من شريط الإجماليات (totals)
+//   بمعامل إزاحة: {r+1}، {first+N}، {last-1} ...
+export interface ExcelFormula {
+  formula: string;
+  result?: string | number;
+  numFmt?: string;
+}
+
+export type ExcelCellValue = string | number | ExcelFormula;
+
+export const isFormula = (v: unknown): v is ExcelFormula =>
+  !!v && typeof v === 'object' && typeof (v as ExcelFormula).formula === 'string';
+
+// القيمة القابلة للكتابة في الخلية (نص/رقم فقط) — تُستخدم في addRow ولحساب العرض
+export const cellDisplay = (v: ExcelCellValue | null | undefined): string | number => {
+  if (v === null || v === undefined) return '';
+  if (isFormula(v)) return typeof v.result === 'number' ? v.result : typeof v.result === 'string' ? v.result : '';
+  return v;
+};
+
+// استبدال رموز الصفوف داخل نص صيغة بأرقام الصفوف المطلقة للورقة
+export const resolveExcelFormula = (formula: string, ctx: Record<string, number>): string =>
+  formula.replace(/\{([a-zA-Z]+)([+-]\d+)?\}/g, (_m, key: string, off?: string) => {
+    const base = ctx[key];
+    if (base === undefined) return `{${key}${off ?? ''}}`;
+    return String(base + (off ? parseInt(off, 10) : 0));
+  });
+
+// اسم ورقة آمن داخل الملف (نفس التنظيف الذي تطبقه المصدرة)
+export const excelSheetName = (name: string): string =>
+  (name || 'Sheet').replace(/[\\/?*[\]]/g, '_').slice(0, 31) || 'Sheet';
+
+// نموذج تخطيط ورقة تقرير منسّق — نفس خوارزمية المصدرة بالضبط، محسوبة رقميّاً حتى
+// يتمكن المتصل من بناء صيغ مرجعية بين الأوراق (مثل ربط الملخص بخلايا إجماليات الوصفة).
+export interface StyledSheetModel {
+  nCols: number;
+  metaCount: number;
+  metaRows: number[];
+  blockRows: number[];
+  headerRows: number[];
+  tableEntries: { headerRow: number; dataStart: number; dataEnd: number }[];
+  totalsStart: number;
+  totalRows: number;
+  footerRow: number;
+  rowCount: number;
+}
+
+export const styledSheetModel = (s: StyledReportSheet): StyledSheetModel => {
+  const tables: StyledReportTable[] = (s.tables && s.tables.length > 0)
+    ? s.tables.map((t) => ({ ...t, dense: t.dense ?? s.dense }))
+    : [{ header: s.header ?? [], rows: s.rows ?? [], colWidths: s.colWidths, dense: s.dense }];
+  const metaCount = s.meta?.length ?? 0;
+  const nCols = Math.max(1, ...tables.map((t) => t.header.length));
+  let i = 0;
+  i += 3; // شريط الهوية: سطران + سطر فارغ
+  i += 1; // الترويسة العنوان
+  if (s.subtitle) i += 1;
+  i += 1; // سطر فارغ بعد الترويسة/الفرعي
+  const metaRows: number[] = [];
+  for (let m = 0; m < metaCount; m++) { metaRows.push(i); i += 1; }
+  if (metaCount) i += 1; // سطر فارغ بعد مربعات المؤشرات
+  const blockRows: number[] = [];
+  const headerRows: number[] = [];
+  const tableEntries: { headerRow: number; dataStart: number; dataEnd: number }[] = [];
+  tables.forEach((t) => {
+    if (t.title) { blockRows.push(i); i += 1; } else blockRows.push(-1);
+    headerRows.push(i);
+    i += 1;
+    const dataStart = i;
+    i += t.rows.length;
+    tableEntries.push({ headerRow: headerRows[headerRows.length - 1], dataStart, dataEnd: i });
+  });
+  const totalsStart = i;
+  const totalRows = s.totals?.length ?? 0;
+  i += totalRows;
+  const footerRow = s.footer ? i : -1;
+  if (s.footer) i += 1;
+  return { nCols, metaCount, metaRows, blockRows, headerRows, tableEntries, totalsStart, totalRows, footerRow, rowCount: i };
+};
+
 export interface ExcelSheet {
   name: string;
   header: string[];
-  rows: (string | number)[][];
+  rows: ExcelCellValue[][];
 }
 
 // جدول منسّق داخل ورقة تقرير
 export interface StyledReportTable {
   title?: string;
   header: string[];
-  rows: (string | number)[][];
+  rows: ExcelCellValue[][];
   colWidths?: number[];
   dense?: boolean;
 }
@@ -25,12 +112,12 @@ export interface StyledReportSheet {
   name: string;
   title: string;
   subtitle?: string;
-  meta?: [string, string][];
+  meta?: [string, ExcelCellValue][];
   // جداول متعددة بالتسلسل (مثل بطاقة وصفة كاملة) — أو جدول واحد عبر header/rows
   tables?: StyledReportTable[];
   header?: string[];
-  rows?: (string | number)[][];
-  totals?: [string, string][];
+  rows?: ExcelCellValue[][];
+  totals?: [string, ExcelCellValue][];
   footer?: string;
   colWidths?: number[];
   dense?: boolean;
@@ -68,12 +155,22 @@ export const exportExcel = async (filename: string, sheets: ExcelSheet[]) => {
   for (const s of sheets) {
     const ws = wb.addWorksheet((s.name || 'Sheet').replace(/[\\/?*[\]]/g, '_').slice(0, 31) || 'Sheet', { views: [{ rightToLeft: true, state: 'frozen', ySplit: 1 }] });
     ws.addRow(s.header);
-    s.rows.forEach((row) => ws.addRow(row));
+    s.rows.forEach((row) => ws.addRow(row.map((v) => cellDisplay(v))));
+    // كتابة خلايا الصيغ (تُكتب بعد addRow لضمان تحديد الصف في الورقة)
+    s.rows.forEach((row, ri) => {
+      row.forEach((v, ci) => {
+        if (isFormula(v)) {
+          const cell = ws.getCell(ri + 2, ci + 1);
+          cell.value = { formula: resolveExcelFormula(v.formula, { r: ri + 2 }), result: v.result };
+          cell.numFmt = v.numFmt || (typeof v.result === 'number' && !Number.isInteger(v.result) ? '#,##0.00' : 'General');
+        }
+      });
+    });
     // طول تلقائي للأعمدة (حد أقصى 40 حرفاً حتى لا يتمدد الجدول)
     s.header.forEach((_, ci) => {
       let max = Math.max(10, (s.header[ci] || '').length + 2);
       for (const row of s.rows) {
-        const len = String(row[ci] ?? '').length;
+        const len = String(cellDisplay(row[ci] ?? '')).length;
         if (len + 2 > max) max = Math.min(len + 3, 40);
         if (max >= 40) break;
       }
@@ -115,11 +212,8 @@ type ExStyle = {
   alignment?: Partial<ExcelJS.Alignment>;
 };
 
-// تصدير تقارير بنفس تصميم الطباعة (RTL، هوية، ترويسة، مربعات مؤشرات، جداول ملونة، شريط إجماليات)
-export const exportStyledReport = async (filename: string, sheets: StyledReportSheet[]) => {
-  const ExcelJSClass = await importExcelJS();
-  const wb = new ExcelJSClass.Workbook();
-  wb.created = new Date();
+// بناء أوراق تقرير منسّق فوق مصنف جاهز (منفصلة عن الحفظ حتى يمكن اختبارها بدون DOM/تنزيل)
+export const applyStyledSheets = (wb: ExcelJS.Workbook, sheets: StyledReportSheet[]) => {
   for (const s of sheets) {
     const tables: StyledReportTable[] = (s.tables && s.tables.length > 0)
       ? s.tables.map((t) => ({ ...t, dense: t.dense ?? s.dense }))
@@ -129,7 +223,7 @@ export const exportStyledReport = async (filename: string, sheets: StyledReportS
     const today = new Date().toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const safeName = (s.name || 'Sheet').replace(/[\\/?*[\]]/g, '_').slice(0, 31) || 'Sheet';
     const ws = wb.addWorksheet(safeName, { views: [{ rightToLeft: true }] });
-    const rows: (string | number)[][] = [];
+    const rows: (string | ExcelCellValue)[][] = [];
     // شريط الهوية (مثل .brand في الطباعة)
     rows.push(['نظام إدارة المطاعم RestoCost']);
     rows.push(['إدارة التكاليف · المخزون · المبيعات · الأرباح']);
@@ -168,7 +262,24 @@ export const exportStyledReport = async (filename: string, sheets: StyledReportS
 
     ws.views = [{ rightToLeft: true, state: 'frozen', ySplit: (headerRows[0] ?? 0) + 1 }];
 
-    rows.forEach((row) => ws.addRow(row));
+    // كتابة القيم العددية/النصية كما هي، ثم إيداع الصيغ بعد ضبط الصفوف
+    rows.forEach((row) => ws.addRow(row.map((v) => cellDisplay(v as ExcelCellValue))));
+    const model = styledSheetModel(s);
+    const firstDataRow = (model.tableEntries[0]?.dataStart ?? model.rowCount) + 1;
+    const lastDataRow = (model.tableEntries[model.tableEntries.length - 1]?.dataStart ?? model.rowCount) + 1;
+    const t1DataRow = (model.tableEntries[1]?.dataStart ?? model.rowCount) + 1;
+    const totalsBandRow = model.totalsStart + 1;
+    rows.forEach((row, ri) => {
+      if (!Array.isArray(row)) return;
+      row.forEach((v, ci) => {
+        if (isFormula(v)) {
+          const cell = ws.getCell(ri + 1, ci + 1);
+          const formula = resolveExcelFormula(v.formula, { r: ri + 1, first: firstDataRow, last: lastDataRow, t1: t1DataRow, b: totalsBandRow });
+          cell.value = { formula, result: v.result };
+          cell.numFmt = v.numFmt || (typeof v.result === 'number' && !Number.isInteger(v.result) ? '#,##0.00' : 'General');
+        }
+      });
+    });
 
     // الروابط الداخلية (مثال: من الملخص إلى ورقة بطاقة الوصفة) — row نسبي لصفوف الجدول الأول
     s.hyperlinks?.forEach((h) => {
@@ -203,7 +314,7 @@ export const exportStyledReport = async (filename: string, sheets: StyledReportS
     metaRows.forEach((mr, i) => {
       const [, v] = s.meta![i];
       styleCell(mr, 0, { font: { bold: true, size: 8.5, color: { argb: 'FFA97912' } }, fill: fillSolid('FFF7DF'), border: thinBorder('E9D493'), alignment: { vertical: 'middle', wrapText: true } });
-      if (String(v ?? '').length > 0) styleCell(mr, 1, { font: { bold: true, size: 9.5, color: { argb: 'FF172033' } }, fill: fillSolid('FFFFFF'), border: thinBorder('E9D493'), alignment: { vertical: 'middle', wrapText: true } });
+      if (String(cellDisplay(v) ?? '').length > 0) styleCell(mr, 1, { font: { bold: true, size: 9.5, color: { argb: 'FF172033' } }, fill: fillSolid('FFFFFF'), border: thinBorder('E9D493'), alignment: { vertical: 'middle', wrapText: true } });
     });
     // الجداول: عنوان القسم (بلوحة ذهبية) + الرأس + الصفوف
     tables.forEach((t, ti) => {
@@ -233,7 +344,7 @@ export const exportStyledReport = async (filename: string, sheets: StyledReportS
       s.totals.forEach((_, i) => {
         const tr = totalsRowStart + i;
         styleCell(tr, 0, { font: { bold: true, size: 9, color: { argb: 'FFA97912' } }, fill: fillSolid('FFF7DF'), border: thinBorder('D7A928'), alignment: { vertical: 'middle', wrapText: true } });
-        if (String(s.totals![i][1] ?? '').length > 0) styleCell(tr, 1, { font: { bold: true, size: 9, color: { argb: 'FF172033' } }, fill: fillSolid('FFFFFF'), border: thinBorder('D7A928'), alignment: { vertical: 'middle', wrapText: true } });
+        if (String(cellDisplay(s.totals![i][1]) ?? '').length > 0) styleCell(tr, 1, { font: { bold: true, size: 9, color: { argb: 'FF172033' } }, fill: fillSolid('FFFFFF'), border: thinBorder('D7A928'), alignment: { vertical: 'middle', wrapText: true } });
       });
     }
     // تذييل
@@ -264,7 +375,7 @@ export const exportStyledReport = async (filename: string, sheets: StyledReportS
           widths[ci] = Math.max(widths[ci] ?? 10, h.length + 2);
         });
         t.rows.forEach((row) => row.forEach((v, ci) => {
-          const len = String(v ?? '').length + 2;
+          const len = String(cellDisplay(v as ExcelCellValue) ?? '').length + 2;
           if (len > (widths[ci] ?? 0)) widths[ci] = Math.min(len + 1, 40);
         }));
       });
@@ -292,8 +403,29 @@ export const exportStyledReport = async (filename: string, sheets: StyledReportS
     ws.pageSetup.fitToWidth = 1;
     ws.pageSetup.fitToHeight = 0;
   }
+};
+
+// تصدير تقارير بنفس تصميم الطباعة (RTL، هوية، ترويسة، مربعات مؤشرات، جداول ملونة، شريط إجماليات)
+export const exportStyledReport = async (filename: string, sheets: StyledReportSheet[]) => {
+  const ExcelJSClass = await importExcelJS();
+  const wb = new ExcelJSClass.Workbook();
+  wb.created = new Date();
+  applyStyledSheets(wb, sheets);
   await saveWorkbook(wb, filename);
 };
+
+// تحويل أوراق التصدير البسيطة (sheets) إلى تقرير منسّق موحّد — نفس نمط تصدير الوصفات
+// مسار مركزي: أي شاشة تصدّر عبر sheets تحصل على نفس الشكل المنسّق تلقائيًا
+export const sheetsToStyledReport = (sheets: ExcelSheet[]): StyledReportSheet[] =>
+  sheets.map((s) => ({
+    name: s.name,
+    title: s.name,
+    meta: [['عدد السجلات', s.rows.length]],
+    header: s.header,
+    rows: s.rows,
+    dense: true,
+    footer: 'تقرير ' + s.name + ' - RestoCost ERP',
+  }));
 
 // Parse an uploaded Excel/CSV file into rows keyed by header (Arabic headers supported)
 export const readExcelFile = (file: File): Promise<ParsedExcel[]> =>

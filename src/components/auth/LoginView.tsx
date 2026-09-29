@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   UtensilsCrossed, Lock, Mail, User as UserIcon, Eye, EyeOff, ShieldCheck, KeyRound,
-  Sparkles, TrendingUp, ChefHat, Boxes, LayoutDashboard, CheckCircle2, Hourglass,
+  TrendingUp, ChefHat, Boxes, LayoutDashboard, CheckCircle2, Hourglass,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole, ROLE_LABELS } from '../../types';
@@ -48,22 +48,6 @@ export const LoginView: React.FC = () => {
     }
     setBusy(false);
   };
-
-  const fillDemo = (mail: string, pass: string) => {
-    setMode('login');
-    setEmail(mail);
-    setPassword(pass);
-    setError('');
-    setNotice('');
-  };
-
-  const demoAccounts = [
-    { label: 'مسؤول النظام', email: 'admin@restocost.com', pass: 'admin123' },
-    { label: 'محاسب التكاليف', email: 'cost@restocost.com', pass: 'cost123' },
-    { label: 'مدير فرع', email: 'saud@restocost.com', pass: 'saud123' },
-    { label: 'الشيف', email: 'chef@restocost.com', pass: 'chef123' },
-    { label: 'أمين المخزن', email: 'store@restocost.com', pass: 'store123' },
-  ];
 
   const features = [
     { icon: <TrendingUp className="w-4 h-4" />, label: 'تتبع محاسبة التكاليف' },
@@ -230,19 +214,6 @@ export const LoginView: React.FC = () => {
               </button>
             </form>
 
-            <div className="pt-2 border-t border-stone-100">
-              <p className="text-[11px] font-bold text-stone-500 text-center mb-2 flex items-center justify-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> دخول سريع — حسابات تجريبية
-              </p>
-              <div className="flex flex-wrap gap-1.5 justify-center">
-                {demoAccounts.map((acc) => (
-                  <button key={acc.email} onClick={() => fillDemo(acc.email, acc.pass)}
-                    className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 hover:border-amber-300 transition-colors">
-                    {acc.label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           <p className="text-center text-[11px] text-amber-200/70 mt-4 flex items-center justify-center gap-1">

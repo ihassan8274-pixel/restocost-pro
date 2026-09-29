@@ -6,15 +6,6 @@ import {
   FixedAsset, ScheduledReport, AutomationRule, Currency, Company, UnitOfMeasure,
 } from './types';
 
-export const DEMO_CREDENTIALS: { email: string; password: string; name: string; role: 'admin' | 'executive' | 'branch_manager' | 'cost_controller' | 'chef' | 'storekeeper' | 'waiter'; branchId: string }[] = [
-  { email: 'admin@restocost.com', password: 'admin123', name: 'مدير النظام', role: 'admin', branchId: 'all' },
-  { email: 'ceo@restocost.com', password: 'ceo123', name: 'أحمد السفير', role: 'executive', branchId: 'all' },
-  { email: 'cost@restocost.com', password: 'cost123', name: 'طارق عبدالمقصود', role: 'cost_controller', branchId: 'all' },
-  { email: 'saud@restocost.com', password: 'saud123', name: 'سعود المطيري', role: 'branch_manager', branchId: 'b-01' },
-  { email: 'chef@restocost.com', password: 'chef123', name: 'إبراهيم العلي', role: 'chef', branchId: 'b-ck' },
-  { email: 'store@restocost.com', password: 'store123', name: 'علي الشمري', role: 'storekeeper', branchId: 'b-ck' },
-];
-
 export const INITIAL_CATEGORIES: CustomCategory[] = [
   { id: 'cat-01', nameAr: 'لحوم ودواجن طازجة', nameEn: 'Meat & Poultry', type: 'raw_material' },
   { id: 'cat-02', nameAr: 'أسماك ومأكولات بحرية', nameEn: 'Seafood', type: 'raw_material' },
