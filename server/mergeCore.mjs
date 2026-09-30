@@ -10,10 +10,29 @@ export const mtimeOf = (r) =>
 //   نسخة قديمة من جهاز/تبويب آخر لا تعيد الاعتماد (إلى "قيد المراجعة") بعد وصولها.
 // - عند تساوي/غياب _mtime يُحافظ على سلوك "الوارد يفوز" السابق (توافق مع البيانات القديمة).
 // - يحترم شواهد الحذف: سجل مُحذف نهائياً لا يعود مهما حاول أي جهاز دفعه.
+const isPrimitive = (v) => v === null || (typeof v !== 'object' && typeof v !== 'function');
+
+// مصفوفات القيم البدائية (أشهر/أيام الإغلاق وغيرها): تُدمج بالاتحاد (union) —
+// تضاف الجديدة فقط ولا يُحذف شيء (حذفها عبر rcerp_deleted_ids).
+// كانت السلاسل تُسقط صامتاً (mergeById يسقط من لا يحمل id) فكان الإغلاق
+// لا يصل الخادم إطلاقاً — أصل عطل قفل الفترات عبر الأجهزة.
 export const mergeById = (existing, incoming, tombstones = new Set()) => {
+  const ex = existing || [];
+  const inc = incoming || [];
+  if ((ex.length === 0 || ex.every(isPrimitive)) && inc.every(isPrimitive)) {
+    const out = [];
+    const seen = new Set();
+    for (const v of [...ex, ...inc]) {
+      if (v === null) continue;
+      if (seen.has(v)) continue;
+      seen.add(v);
+      out.push(v);
+    }
+    return out;
+  }
   const merged = new Map();
-  (existing || []).forEach((r) => { if (r && r.id !== undefined) merged.set(r.id, r); });
-  (incoming || []).forEach((r) => {
+  (ex).forEach((r) => { if (r && r.id !== undefined) merged.set(r.id, r); });
+  (inc).forEach((r) => {
     if (!r || r.id === undefined) return;
     const cur = merged.get(r.id);
     if (!cur) { merged.set(r.id, r); return; }

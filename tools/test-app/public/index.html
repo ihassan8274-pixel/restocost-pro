@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test App — Endpoint Tester</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #111; background: #fdfdfd; }
+  main { max-width: 940px; margin: 0 auto; padding: 24px 16px 72px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #555; margin: 0 0 20px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 12px 0; }
+  input[type=text], input[type=number], select { font: inherit; padding: 6px 8px; border: 1px solid #999; background: #fff; }
+  input[type=text] { flex: 1 1 320px; min-width: 220px; }
+  button { font: inherit; padding: 6px 14px; border: 1px solid #333; background: #fff; cursor: pointer; }
+  button:hover { background: #f0f0f0; }
+  button:disabled { color: #888; cursor: default; }
+  #message { min-height: 20px; margin: 10px 0; }
+  #message .ok { color: #14532d; }
+  #message .err { color: #7f1d1d; }
+  .toolbar { display: flex; gap: 12px; align-items: center; margin: 14px 0 8px; flex-wrap: wrap; }
+  .toolbar .count { color: #555; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #555; }
+  td.mono, .mono { font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 12.5px; }
+  tr.row { cursor: pointer; }
+  tr.row:hover { background: #f4f4f4; }
+  .chip { font-size: 12px; padding: 1px 6px; border: 1px solid; }
+  .chip.success { color: #14532d; border-color: #14532d; }
+  .chip.failed { color: #7f1d1d; border-color: #7f1d1d; }
+  #detail { margin-top: 16px; border: 1px solid #ccc; padding: 12px; display: none; }
+  #detail pre { white-space: pre-wrap; word-break: break-word; margin: 6px 0; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+  a { color: #0000EE; }
+  .muted { color: #555; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Test App — Endpoint Tester</h1>
+  <p class="sub">Send an HTTP request to any URL; every run is stored and reviewable below. <span class="muted">(v0.1 · local tool · zero dependencies)</span></p>
+
+  <form id="runForm">
+    <input type="text" id="url" value="http://127.0.0.1:3099/health" placeholder="http://127.0.0.1:3099/health" aria-label="URL">
+    <select id="method" aria-label="Method"><option>GET</option><option>POST</option><option>HEAD</option></select>
+    <input type="number" id="expected" placeholder="expected status (optional)" min="100" max="599" style="width: 200px" aria-label="Expected status">
+    <button type="submit" id="submitBtn">Run test</button>
+  </form>
+
+  <div id="message" role="status"></div>
+
+  <div class="toolbar">
+    <label>Filter
+      <select id="filter"><option value="">all</option><option value="success">success</option><option value="failed">failed</option></select>
+    </label>
+    <label>Search <input type="text" id="q" placeholder="url contains…" style="width: 190px"></label>
+    <label>Sort <select id="sort"><option value="desc">newest first</option><option value="asc">oldest first</option></select></label>
+    <button type="button" id="refreshBtn">Refresh</button>
+    <span class="count" id="count"></span>
+  </div>
+
+  <table>
+    <thead><tr><th>When</th><th>Status</th><th>Method</th><th>URL</th><th>Code</th><th>ms</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
+  </table>
+
+  <div id="detail"></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtTime = (iso) => { try { return new Date(iso).toLocaleString(); } catch { return iso; } };
+
+  async function loadRuns() {
+    const params = new URLSearchParams();
+    if ($('filter').value) params.set('status', $('filter').value);
+    if ($('q').value.trim()) params.set('q', $('q').value.trim());
+    params.set('sort', $('sort').value);
+    const data = await (await fetch('/api/runs?' + params.toString())).json();
+    const rows = $('rows');
+    if (!data.ok) { rows.innerHTML = '<tr><td colspan="6" class="err">Failed to load runs.</td></tr>'; return; }
+    $('count').textContent = data.count + ' run(s)';
+    if (data.runs.length === 0) { rows.innerHTML = '<tr><td colspan="6" class="muted">No runs yet — submit the form above.</td></tr>'; return; }
+    rows.innerHTML = data.runs.map((r) => `
+      <tr class="row" data-id="${esc(r.id)}">
+        <td class="mono">${esc(fmtTime(r.ts))}</td>
+        <td><span class="chip ${r.status === 'success' ? 'success' : 'failed'}">${esc(r.status)}</span></td>
+        <td class="mono">${esc(r.input?.method || '')}</td>
+        <td class="mono">${esc(r.input?.url || '')}</td>
+        <td class="mono">${r.result?.statusCode ?? ''}</td>
+        <td class="mono">${r.result?.latencyMs ?? ''}</td>
+      </tr>`).join('');
+  }
+
+  async function showRun(id) {
+    const data = await (await fetch('/api/runs/' + encodeURIComponent(id))).json();
+    const el = $('detail');
+    el.style.display = 'block';
+    if (!data.ok) { el.innerHTML = '<div class="err">Run not found.</div>'; return; }
+    const r = data.run;
+    el.innerHTML = `
+      <div><strong>Run</strong> <span class="mono">${esc(r.id)}</span> <span class="chip ${r.status === 'success' ? 'success' : 'failed'}">${esc(r.status)}</span></div>
+      <div class="muted mono">${esc(r.ts)}</div>
+      <div style="margin-top:6px"><strong>Input</strong> <span class="mono">${esc(r.input?.method)} ${esc(r.input?.url)}</span></div>
+      ${r.error ? `<div style="margin-top:6px"><strong>Error</strong> <span class="mono" style="color:#7f1d1d">${esc(r.error)}</span></div>` : ''}
+      ${r.result?.bodySnippet ? `<div style="margin-top:6px"><strong>Body snippet</strong><pre>${esc(r.result.bodySnippet)}</pre></div>` : ''}
+    `;
+  }
+
+  $('rows').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-id]'); if (tr) showRun(tr.dataset.id); });
+
+  $('runForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('message');
+    msg.textContent = 'Running…';
+    $('submitBtn').disabled = true;
+    try {
+      const payload = { url: $('url').value, method: $('method').value };
+      const exp = $('expected').value.trim();
+      if (exp) payload.expectedStatus = Number(exp);
+      const res = await fetch('/api/runs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (data.run && data.run.status === 'success') {
+        msg.innerHTML = '<span class="ok">Success: HTTP ' + esc(data.run.result?.statusCode) + ' (' + esc(data.run.result?.latencyMs) + ' ms)</span>'
+          + (data.run.result?.bodySnippet ? '<br><span class="mono muted">' + esc(data.run.result.bodySnippet) + '</span>' : '');
+      } else {
+        msg.innerHTML = '<span class="err">' + esc(data.error || data.run?.error || 'Run failed.') + '</span>';
+      }
+      await loadRuns();
+    } catch (err) {
+      msg.innerHTML = '<span class="err">Request error: ' + esc(err.message) + '</span>';
+    } finally { $('submitBtn').disabled = false; }
+  });
+
+  $('refreshBtn').addEventListener('click', loadRuns);
+  ['filter', 'sort'].forEach((id) => $(id).addEventListener('change', loadRuns));
+  $('q').addEventListener('input', () => { clearTimeout(window.__qT); window.__qT = setTimeout(loadRuns, 200); });
+  loadRuns();
+</script>
+</body>
+</html>

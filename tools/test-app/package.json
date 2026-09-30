@@ -1,0 +1,13 @@
+﻿{
+  "name": "test-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Test App â€” small self-contained endpoint tester with a persistent run log (zero dependencies).",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/app.test.mjs",
+    "reset": "node reset.mjs"
+  }
+}

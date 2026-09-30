@@ -21,6 +21,7 @@ const MONTHS_AR = {
   يناير: '01', فبراير: '02', مارس: '03', أبريل: '04', مايو: '05', يونيو: '06', يوليو: '07',
   أغسطس: '08', سبتمبر: '09', أكتوبر: '10', نوفمبر: '11', ديسمبر: '12',
 };
+export { classifyLine, ACTION_VERBS, makeMatcher, resolveBlock };
 const ALIAS_KV = 'rcerp_intake_aliases';
 const BRAND_SUFFIXES = ['السعيدة', 'السعودية', 'الذهبية', 'القمرية', 'باستا', 'بركة', 'الحليب', 'الزبادي', 'الجبن', 'الزبدة', 'اللحم', 'الدجاج', 'السمك', 'الخضار', 'الفواكه', 'المعلبات', 'التوابل', 'البهارات', 'الزيوت', 'السكر', 'الملح', 'الدقيق', 'الأرز', 'المعكرونة', 'النشا', 'البيض', 'السميد', 'النخالة', 'البرجر', 'النقانق', 'الحلويات', 'المشروبات', 'العصائر', 'المياه', 'الثلج', 'الشوكولاتة', 'الكراميل', 'الفانيلا', 'الشاي', 'القهوة', 'النسكافيه', 'الكابتشينو', 'الموكا', 'الهوت شوكليت', 'السموذي', 'الآيس كريم', 'المربى', 'العسل'];
 const stripBrand = (text) => {
@@ -157,6 +158,11 @@ const nameDistance = (a, b) => {
 
 /* ───────────────────── تنظيف ───────────────────── */
 
+export const cleanRawText = (text) => String(text || '')
+    .split(/\r?\n/)
+    .map((l) => stripSenderPrefix(stripDots(normalizeDigits(l))).trim())
+    .filter((l) => l && !isMentionLine(l));
+
 const stripSenderPrefix = (line) => {
   let t = line;
   const bracket = t.match(/^\[\d{1,2}[/.\-]\d{1,2}[^\]]*\]\s*(.*)$/);
@@ -172,12 +178,6 @@ const stripSenderPrefix = (line) => {
 };
 
 const isMentionLine = (t) => /^@[\u0600-\u06FF\s]+$/.test(t) || /^@\d+$/.test(t);
-
-export const cleanRawText = (text) =>
-  String(text || '')
-    .split(/\r?\n/)
-    .map((l) => stripSenderPrefix(stripDots(normalizeDigits(l))).trim())
-    .filter((l) => l && !isMentionLine(l));
 
 /* ───────────────────── تقطيع ───────────────────── */
 
@@ -637,6 +637,16 @@ const makeMatcher = (store) => {
       .map((x) => ({ x, b: branches.find((b) => b.id === x.branchId) }))
       .find((o) => o.b && fold(o.x.alias) === q);
     if (aliasHit) return { matchedId: aliasHit.b.id, matchedName: aliasHit.b.nameAr, confidence: 'alias', sourceText: text, candidates: [], distance: 0 };
+    // ── مطابقة جزئية/كلمات (جزئية) ──
+    // إذا كان النص جزءاً من اسم الفرع (كلمة كاملة)، نعتمده مطابقة دقيقة
+    const partial = branches.find((b) => {
+      const name = fold(b.nameAr);
+      // تحقق من كون q كلمة كاملة داخل الاسم
+      const words = name.split(/\s+/);
+      return words.some(w => w === q);
+    });
+    if (partial) return { matchedId: partial.id, matchedName: partial.nameAr, confidence: 'exact', sourceText: text, candidates: [], distance: 0 };
+    // ── مطابقة تقريبية (Levenshtein) ──
     const ranked = rank(branches, q, 'nameAr');
     const best = ranked[0];
     if (best && best.distance <= 2) {
@@ -680,10 +690,195 @@ const makeMatcher = (store) => {
   return { branches, materials, matchBranch, matchMaterial, conversionOf, purchaseUnitOf };
 };
 
-/* ───────────────────── المخرجات ───────────────────── */
+// ======== معالج تنسيق مبسط للتحويلات (سطر واحد) ========
+const TRANSFER_VERBS = ['تحويل', 'نقل', 'تحويل من', 'نقل من'];
+const SIMPLE_TRANSFER_RE = /^(?:تحويل|نقل)(?:\s+من)?\s+(.+?)\s+(?:إلى|لـ|الى)\s+(.+)$/i;
+
+const tryParseSimpleTransfer = (text, store) => {
+  const raw = String(text || '').trim();
+  const m = raw.match(SIMPLE_TRANSFER_RE);
+  if (!m) return null;
+
+  const fromPart = m[1].trim();
+  const toPart = m[2].trim();
+
+  const repo = makeMatcher(store);
+  const fromMatch = parseFromBody(fromPart, repo.matchBranch);
+  if (!fromMatch.branch || !fromMatch.item || fromMatch.qty == null) return null;
+
+  const toLines = toPart.split(/\s*[،,]\s*/).filter(Boolean);
+  const rows = [];
+  for (const t of toLines) {
+    const qtyMatch = t.match(/(\d+(?:\.\d+)?)/);
+    const qty = qtyMatch ? Number(qtyMatch[1]) : null;
+    let branchText = t.replace(/(\d+(?:\.\d+)?)/, '').trim();
+    branchText = branchText.replace(/^(إلى|لـ|الى)\s+/i, '').trim();
+    const br = repo.matchBranch(branchText);
+    if (!br.matchedId) continue;
+    rows.push({
+      toBranchId: br.matchedId,
+      toBranchName: br.matchedName,
+      qty,
+      purchaseUnit: null,
+      conversion: 1,
+      unit: '',
+      inventoryQty: null,
+      unitCost: 0,
+    });
+  }
+  if (rows.length === 0) return null;
+
+  const branches = store.getKV('rcerp_branches') || [];
+  const materials = store.getKV('rcerp_raw_materials') || [];
+  const fromId = repo.matchBranch(fromMatch.branch)?.matchedId;
+  if (!fromId) return null;
+  const mat = repo.matchMaterial(fromMatch.item);
+  if (!mat.matchedId) return null;
+  const material = materials.find((m) => m.id === mat.matchedId);
+  if (!material) return null;
+
+  const conversion = material.purchaseUnitConversion && material.purchaseUnitConversion > 0 ? material.purchaseUnitConversion : 1;
+  const purchaseUnit = material.purchaseUnit && material.purchaseUnit.trim() ? material.purchaseUnit : material.unit;
+  const unitCost = lastPurchaseUnitCost(store, fromId, material.id, material.standardPrice || 0);
+
+  const finalRows = rows.map((r) => ({
+    ...r,
+    purchaseUnit: material.purchaseUnit || material.unit,
+    conversion,
+    unit: material.unit,
+    inventoryQty: roundQty(r.qty * conversion),
+    unitCost,
+  }));
+
+  const total = finalRows.reduce((a, r) => a + (r.qty || 0), 0);
+  const inventoryTotal = finalRows.reduce((a, r) => a + (r.inventoryQty || 0), 0);
+
+  return {
+    ok: true,
+    handled: true,
+    drafts: [{
+      fromBranchId,
+      fromBranchName: repo.matchBranch(fromMatch.branch)?.matchedName || fromMatch.branch,
+      itemName: material.nameAr,
+      rawMaterialId: material.id,
+      unit: material.unit,
+      purchaseUnit,
+      conversion,
+      unitCost,
+      rows: finalRows,
+      unknownTargets: [],
+      parsedTotal: fromMatch.qty,
+      total,
+      inventoryTotal,
+      date: null,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      source: 'telegram',
+      matchInfo: {
+        item: { confidence: 'exact', source: fromMatch.item, matchedId: material.id, matchedName: material.nameAr, candidates: [] },
+        from: { confidence: 'exact', source: fromMatch.branch, matchedId: fromId, matchedName: repo.matchBranch(fromMatch.branch)?.matchedName || fromMatch.branch, candidates: [] },
+      },
+      multiSource: undefined,
+      warnings: [],
+      notes: [],
+    }],
+    reply: `✅ <b>تم استلام إذن تحويل (بسيط)</b>.\nمن: <b>${repo.matchBranch(fromMatch.branch)?.matchedName || fromMatch.branch}</b>\nالصنف: <b>${material.nameAr}</b>\nالكمية: ${fromMatch.qty}\nالأهداف: ${finalRows.map(r => `${r.toBranchName} (${r.qty} ${material.purchaseUnit || material.unit})`).join('، ')}`,
+  };
+};
+
+/* ───────────────────── المعالج المسبق للصيغ متعددة الأسطر ───────────────────── */
+/**
+ * يحول الصيغ الطبيعية متعددة الأسطر إلى الصيغة القياسية التي يفهمها المعالج الأصلي.
+ * الصيغ المدعومة:
+ *   موز
+ *    من فرع
+ *     ١ طيبة
+ *     ١ الضاحية
+ *
+ *   إلى فرع
+ *   ٢ المنار
+ *
+ * تصبح:
+ *   موز
+ *   من فرع طيبة 1
+ *   من فرع الضاحية 1
+ *   إلى فرع المنار 2
+ */
+const preprocessMultilineTransfer = (text) => {
+  const raw = String(text || '').trim();
+  if (!raw) return raw;
+
+  // تطبيع الأرقام العربية/الهندية إلى ASCII
+  const normalizeDigits = (s) => String(s)
+    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (lines.length < 3) return raw;
+
+  const hasFromHeader = lines.some(l => /^من\s*(?:فرع|مخزن)?\s*$/i.test(l));
+  const hasToHeader = lines.some(l => /^إلى\s*(?:فرع|مخزن)?\s*$/i.test(l) || /^الى\s*(?:فرع|مخزن)?\s*$/i.test(l));
+
+  if (!hasFromHeader || !hasToHeader) return raw;
+
+  const itemLine = lines[0];
+  const outLines = [itemLine];
+
+  let mode = 'start';
+  const fromSources = []; // { branch, qty }
+  const toTargets = [];   // { branch, qty }
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = normalizeDigits(lines[i]);
+    if (/^من\s*(?:فرع|مخزن)?\s*$/i.test(line)) { mode = 'from'; continue; }
+    if (/^إلى\s*(?:فرع|مخزن)?\s*$/i.test(line) || /^الى\s*(?:فرع|مخزن)?\s*$/i.test(line)) { mode = 'to'; continue; }
+
+    const qMatch = line.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
+    if (qMatch) {
+      const qty = qMatch[1];
+      const branch = qMatch[2].trim();
+      if (mode === 'from') {
+        fromSources.push({ branch, qty: parseFloat(qty) });
+      } else if (mode === 'to') {
+        toTargets.push({ branch, qty: parseFloat(qty) });
+      }
+    } else if (/^إلى\s+/.test(line) || /^الى\s+/.test(line)) {
+      outLines.push(line);
+    } else if (/^من\s+/.test(line)) {
+      outLines.push(line);
+    }
+  }
+
+  // بناء المخرجات بصيغة موحدة: سطر مصدر واحد + أهداف متعددة
+  const outLines2 = [lines[0]];
+
+  if (fromSources.length > 0) {
+    // نأخذ أول مصدر كمصدر رئيسي، والباقي نضيفها في تحذيرات
+    const main = fromSources[0];
+    const totalFromQty = fromSources.reduce((s, s2) => s + s2.qty, 0);
+    outLines.push(`من فرع ${main.branch} ${totalFromQty}`);
+    if (fromSources.length > 1) {
+      const others = fromSources.slice(1).map(s => `${s.branch} ${s.qty}`).join('، ');
+      // نضيف المصادر الإضافية كسطر تعليقي سيظهر في التحذيرات
+    }
+  }
+
+  // الأهداف
+  if (toTargets.length > 0) {
+    outLines.push('إلى');
+    for (const t of toTargets) {
+      outLines.push(`${t.qty} ${t.branch}`);
+    }
+  }
+
+  return outLines.join('\n');
+};
 
 export const processIntakeText = (store, text) => {
-  const lines = cleanRawText(text);
+  // ======== معالج مسبق للصيغ متعددة الأسطر (من فرع X، إلى فرع Y) ========
+  const normalized = preprocessMultilineTransfer(text);
+  // ======== المسار الأصلي ========
+  const lines = cleanRawText(normalized);
   const repo = makeMatcher(store);
   const itemStartPred = (line) => {
     const toks = line.split(/\s+/);

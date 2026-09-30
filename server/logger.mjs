@@ -15,6 +15,30 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataBase = process.env.BACKUP_DIR || __dirname;
 const logFile = path.join(dataBase, 'logs', 'access.log');
 
+// ---- Rotation (size + count bounded) ----
+// access.log grew to 20.5MB unserved. Rotate to access.log.<ts> once past
+// LOG_MAX_MB (default 10), keep the newest LOG_KEEP (default 5) archives.
+const LOG_MAX_BYTES = (() => { const n = Number(process.env.LOG_MAX_MB); return Number.isFinite(n) && n > 0 ? n * 1024 * 1024 : 10 * 1024 * 1024; })();
+const LOG_KEEP = (() => { const n = Number(process.env.LOG_KEEP); return Number.isFinite(n) && n > 0 ? n : 5; })();
+
+const rotateLogFile = () => {
+  try {
+    let st;
+    try { st = fs.statSync(logFile); } catch { return; }
+    if (!st || st.size < LOG_MAX_BYTES) return;
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const rotateTo = `${logFile}.${stamp}`;
+    fs.renameSync(logFile, rotateTo);
+    // prune old archives: keep newest LOG_KEEP
+    let arch;
+    try { arch = fs.readdirSync(path.dirname(logFile)).filter((f) => f.startsWith(path.basename(logFile) + '.')).sort().reverse(); } catch { arch = []; }
+    for (const old of arch.slice(LOG_KEEP)) {
+      try { fs.unlinkSync(path.join(path.dirname(logFile), old)); } catch { /* best-effort */ }
+    }
+    try { console.log(`[logger] rotated access.log → ${path.basename(rotateTo)}`); } catch { /* noop */ }
+  } catch { /* best-effort */ }
+};
+
 const esc = (v) => {
   if (v == null) return '-';
   const s = String(v);
@@ -49,6 +73,7 @@ export const writeLog = (entry = {}) => {
   } = entry;
   const line = `${new Date().toISOString()} | ${level} | ${pad(reqId)} | ${esc(action)} | ${esc(key)} | ${status} | ${ms}ms | ${esc(ip)} | ${esc(ua)}${msg ? ' | ' + esc(msg) : ''}`;
   ensureFile();
+  rotateLogFile();
   try {
     fs.appendFileSync(logFile, line + '\n', 'utf8');
   } catch { /* best-effort */ }

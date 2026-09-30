@@ -1,13 +1,13 @@
 import type { ComponentType } from 'react';
 import {
-  LayoutDashboard, ShoppingCart, Calculator, Utensils, Users, CalendarCheck, PackageSearch,
-  PackageCheck, Warehouse, Truck, ChefHat, Factory, Trash2, Briefcase, Wallet, PieChart,
+  LayoutDashboard, ShoppingCart, Calculator, Utensils, PackageSearch,
+  PackageCheck, Warehouse, Truck, ChefHat, Factory, Trash2, PieChart,
   TrendingUp, FileSpreadsheet, Compass, ShieldCheck, ScrollText, Sparkles, Printer, Crown,
-  ArrowRightLeft, BookOpenText, BarChart3, ShoppingBag, Building2, RotateCcw, Scale, Landmark, Zap, Inbox,
-  ClipboardList, UtensilsCrossed, Hammer, DatabaseBackup, Activity, BadgeCheck, BellRing, Layers, Network, Boxes, FileText, Lock, Coins, FileDown, Settings, MessageSquare, BadgeDollarSign,
+  ArrowRightLeft, BarChart3, ShoppingBag, Building2, RotateCcw, Scale, Zap, Inbox,
+  ClipboardList, Hammer, DatabaseBackup, Activity, BadgeCheck, BellRing, Layers, Network, Boxes, FileText, Lock, Coins, FileDown, Settings, MessageSquare, BadgeDollarSign,
   SlidersHorizontal, GitCompare, BrainCircuit, Bike, Smartphone, Gauge, CalendarDays, LayoutGrid, Scissors,
   Palette, BarChart2, Lock as LockIcon, Link2,
-  FileChartColumn, Ruler, ListChecks as ListChecks2, CalendarRange,
+  FileChartColumn, Ruler, ListChecks as ListChecks2,
   LayoutTemplate, Wand2,
 } from 'lucide-react';
 import { Permission } from './types';
@@ -52,8 +52,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'advanced_analytics', label: 'منصة التحليلات المتقدمة', icon: BarChart3, permission: 'view_reports', badge: 'جديد' },
       { id: 'sales_excel_import', label: 'استيراد المبيعات من Excel', icon: FileSpreadsheet, permission: 'manage_batch_sales', badge: 'جديد' },
       { id: 'menus', label: 'قوائم الطعام', icon: Utensils, permission: 'manage_menus' },
-      { id: 'customers', label: 'العملاء (CRM)', icon: Users, permission: 'manage_customers' },
-      { id: 'reservations', label: 'الحجوزات والطاولات', icon: CalendarCheck, permission: 'manage_reservations', badge: 'جديد' },
     ],
   },
   {
@@ -117,20 +115,11 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'butcher_tests', label: 'اختبارات الجزارة والانتاجية', icon: Scissors, permission: 'manage_inventory', badge: 'جديد' },
       { id: 'central_kitchen', label: 'المطبخ المركزي', icon: Factory, permission: 'manage_central_kitchen' },
       { id: 'wastage', label: 'الهوالك والفاقد', icon: Trash2, permission: 'manage_wastage' },
-      { id: 'employee_meals', label: 'وجبات العاملين', icon: UtensilsCrossed, permission: 'manage_labor', badge: 'جديد' },
-      { id: 'labor', label: 'تكلفة العمالة', icon: Briefcase, permission: 'manage_labor' },
-      { id: 'payroll', label: 'الرواتب والحضور', icon: BadgeDollarSign, permission: 'manage_labor', badge: 'جديد' },
     ],
   },
   {
     title: 'المصاريف والمالية',
     items: [
-      { id: 'branch_expenses', label: 'مصروفات الفروع', icon: Wallet, permission: 'manage_expenses', badge: 'جديد' },
-      { id: 'annual_budgets', label: 'الميزانيات السنوية للفروع', icon: CalendarRange, permission: 'manage_expenses', badge: 'جديد' },
-      { id: 'admin_expenses', label: 'مصروفات الإدارة', icon: Landmark, permission: 'manage_expenses', badge: 'جديد' },
-      { id: 'fixed_assets', label: 'الأصول الثابتة والاهتلاك', icon: Landmark, permission: 'manage_accounting', badge: 'جديد' },
-      { id: 'accounting', label: 'المحاسبة والقيود المالية', icon: BookOpenText, permission: 'view_accounting', badge: 'جديد' },
-      { id: 'invoices', label: 'الفواتير (مدفوعات/مستحقات)', icon: FileSpreadsheet, permission: 'manage_invoices', badge: 'جديد' },
       { id: 'currencies', label: 'العملات المتعددة', icon: Coins, permission: 'manage_accounting', badge: 'جديد' },
       { id: 'cash_flow', label: 'قائمة التدفقات النقدية', icon: ArrowRightLeft, permission: 'view_accounting', badge: 'جديد' },
     ],

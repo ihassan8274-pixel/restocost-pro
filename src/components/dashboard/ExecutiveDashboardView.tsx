@@ -121,7 +121,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
   const wastagePctOfFood = groupFood ? (totalWastage / groupFood) * 100 : 0;
   const costAlerts = [
     { key: 'fc', title: 'Food Cost مرتفعة', desc: `${foodPct.toFixed(2)}% من المبيعات (الحد 35%)`, active: foodPct > 35, nav: 'cost_reports' },
-    { key: 'labor', title: 'تكلفة العمالة مرتفعة', desc: `${laborPct.toFixed(2)}% من المبيعات (الحد 25%)`, active: laborPct > 25, nav: 'labor' },
+    { key: 'labor', title: 'تكلفة العمالة مرتفعة', desc: `${laborPct.toFixed(2)}% من المبيعات (الحد 25%)`, active: laborPct > 25, nav: 'reports_dashboard' },
     { key: 'wastage', title: 'الهالك فوق الحد', desc: `${wastagePctOfFood.toFixed(2)}% من تكلفة الطعام (الحد 5%)`, active: wastagePctOfFood > 5, nav: 'wastage' },
     { key: 'unack', title: 'تنبيهات تكلفة غير معترف بها', desc: `${unack.length} طبقاً فوق المستهدف`, active: unack.length > 0, nav: 'cost_analysis' },
     { key: 'budget', title: 'تجاوز موازنة', desc: `${overBudget.length} تصنيفاً تجاوز الموازنة`, active: overBudget.length > 0, nav: 'cost_centers' },
@@ -143,8 +143,8 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
   const followUps = [
     { id: 'lowstock', icon: <Boxes className="w-4 h-4" />, title: `${lowStockCount} صنف تحت الحد الأدنى`, desc: 'راجع المخزون وفعّل طلبات التجديد', nav: 'inventory', tone: lowStockCount > 0 ? 'rose' : 'emerald', badge: lowStockCount > 0 },
     { id: 'unack', icon: <AlertTriangle className="w-4 h-4" />, title: `${unack.length} تنبيه تكلفة غير معترف به`, desc: 'أطباق تتجاوز الهامش المستهدف', nav: 'cost_analysis', tone: unack.length > 0 ? 'rose' : 'emerald', badge: unack.length > 0 },
-    { id: 'cash', icon: <Wallet className="w-4 h-4" />, title: `مستحقات ${fmtMoney(receivables)} — التزامات ${fmtMoney(payables)}`, desc: `نقدية معرضة للخطر ${fmtMoney(cashAtRisk)}`, nav: 'invoices', tone: cashAtRisk > 0 ? 'amber' : 'emerald', badge: cashAtRisk > 0 },
-    { id: 'res', icon: <CalendarCheck className="w-4 h-4" />, title: `${todayReservations.length} حجز اليوم`, desc: 'تأكيد واستقبال الضيوف وتجهيز الجداول', nav: 'reservations', tone: todayReservations.length > 0 ? 'amber' : 'emerald', badge: todayReservations.length > 0 },
+    { id: 'cash', icon: <Wallet className="w-4 h-4" />, title: `مستحقات ${fmtMoney(receivables)} — التزامات ${fmtMoney(payables)}`, desc: `نقدية معرضة للخطر ${fmtMoney(cashAtRisk)}`, nav: 'cash_flow', tone: cashAtRisk > 0 ? 'amber' : 'emerald', badge: cashAtRisk > 0 },
+    { id: 'res', icon: <CalendarCheck className="w-4 h-4" />, title: `${todayReservations.length} حجز اليوم`, desc: 'حجوزات اليوم حسب السجلات', nav: 'eod_board', tone: todayReservations.length > 0 ? 'amber' : 'emerald', badge: todayReservations.length > 0 },
     { id: 'budget', icon: <TrendingUp className="w-4 h-4" />, title: `${overBudget.length} تصنيف تجاوز الموازنة`, desc: 'انحراف فعلي فوق الميزانية المعتمدة', nav: 'cost_centers', tone: overBudget.length > 0 ? 'amber' : 'emerald', badge: overBudget.length > 0 },
   ];
 
@@ -524,7 +524,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
               <span className="text-slate-600 font-bold">مستحقات موردين</span>
               <span className="font-mono font-extrabold text-slate-700">{fmt(payables)}</span>
             </div>
-            <button onClick={() => onNavigate('invoices')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">عرض الفواتير</button>
+            <button onClick={() => onNavigate('cash_flow')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">قائمة التدفقات النقدية</button>
           </div>
         </Card>
 
@@ -541,7 +541,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                 <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">{RESERVATION_STATUS_LABELS[r.status]}</span>
               </div>
             ))}
-            <button onClick={() => onNavigate('reservations')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">إدارة الحجوزات</button>
+            <button onClick={() => onNavigate('eod_board')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">لوحة الإقفال اليومي</button>
           </div>
         </Card>
 
@@ -581,7 +581,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
               <p className="text-slate-600 font-bold mb-1.5">قيمة الهالك ({wastageLogs.length} وقائع)</p>
               <p className="font-mono font-extrabold text-slate-800 text-sm">{fmt(totalWastage)} ر.س</p>
             </div>
-            <button onClick={() => onNavigate('customers')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">إدارة العملاء</button>
+            <button onClick={() => onNavigate('analytics')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">التحليلات والرسوم البيانية</button>
           </div>
         </Card>
       </div>

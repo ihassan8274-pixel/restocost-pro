@@ -39,7 +39,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
   const [editNotes, setEditNotes] = useState('');
 
   const [supplierId, setSupplierId] = useState(suppliers[0]?.id || '');
-  const [branchId, setBranchId] = useState(visibleBranchIds[0] || '');
+  const [branchId, setBranchId] = useState((visibleBranchIds || [])[0] || '');
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
   const [receivedBy, setReceivedBy] = useState('');
@@ -68,7 +68,8 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
   const keyCounterRef = useRef(0);
   const makeKey = () => `k${++keyCounterRef.current}`;
 
-  const visibleBranches = branches.filter((b) => visibleBranchIds.includes(b.id));
+  const safeVisibleBranchIds = visibleBranchIds || [];
+  const visibleBranches = branches.filter((b) => safeVisibleBranchIds.includes(b.id));
   const getBranchDisplayName = (branchId: string) => {
     if (branchId === 'b-ck') return 'المطبخ المركزي';
     const b = branches.find((br) => br.id === branchId);

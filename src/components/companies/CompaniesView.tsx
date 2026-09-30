@@ -38,7 +38,8 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     setLoading(true);
     setErr('');
     try {
-      const res = await fetch('/api/companies');
+      const token = localStorage.getItem('rcerp_token');
+      const res = await fetch('/api/companies', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
       const json = await res.json();
       if (json && json.ok) setInstances(json.companies || []);
       else setErr(json?.error || 'تعذر تحميل قائمة الشركات');
@@ -55,9 +56,10 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     setStarting(c.dir);
     setErr('');
     try {
+      const token = localStorage.getItem('rcerp_token');
       const res = await fetch('/api/start-company', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ dir: c.dir }),
       });
       const json = await res.json();

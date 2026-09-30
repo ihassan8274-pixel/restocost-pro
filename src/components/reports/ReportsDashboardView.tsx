@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import {
-  PiggyBank, DollarSign, Trash2, Wallet, Boxes, ShoppingCart, CircleDollarSign,
+  PiggyBank, DollarSign, Trash2, Wallet, Boxes, ShoppingCart,
   BarChart3, Activity, TrendingUp, FileSpreadsheet, Layers, Scale, ShoppingBag,
-  Gauge, Calculator, GitCompare, BrainCircuit, Landmark, Coins,
+  Gauge, Calculator, GitCompare, BrainCircuit, Coins,
   PieChart, Search, LayoutGrid, ArrowLeft,
 } from 'lucide-react';
 import { Card } from '../ui';
@@ -50,12 +50,10 @@ const REPORTS: ReportDef[] = [
   { id: 'supplier_scorecard', label: 'بطاقة أداء الموردين', description: 'تقييم أداء الموردين', category: 'المشتريات', icon: <ShoppingBag className="w-5 h-5" />, tab: 'supplier_scorecard' },
   { id: 'cashflow', label: 'التدفق النقدي', description: 'المقبوضات والمدفوعات شهرياً', category: 'المالية', icon: <Wallet className="w-5 h-5" />, tab: 'cashflow' },
   { id: 'pl_statement', label: 'القوائم المالية (P&L)', description: 'قائمة الدخل الشاملة', category: 'المالية', icon: <FileSpreadsheet className="w-5 h-5" />, tab: 'pl_statement' },
-  { id: 'fixed_assets', label: 'الأصول الثابتة', description: 'الأصول والاهتلاك', category: 'المالية', icon: <Landmark className="w-5 h-5" />, tab: 'fixed_assets' },
   { id: 'currencies', label: 'العملات المتعددة', description: 'تقارير أسعار الصرف', category: 'المالية', icon: <Coins className="w-5 h-5" />, tab: 'currencies' },
   { id: 'ratios', label: 'مؤشرات KPI', description: 'نسب الربحية ودوران المخزون', category: 'المؤشرات', icon: <Activity className="w-5 h-5" />, tab: 'ratios' },
   { id: 'management_ratios', label: 'مؤشرات إدارية', description: 'المؤشرات الإدارية الرئيسية (KPI)', category: 'المؤشرات', icon: <Activity className="w-5 h-5" />, tab: 'management_ratios' },
   { id: 'cost_center_comparison', label: 'مقارنة مراكز التكلفة', description: 'مقارنة تكاليف الفروع', category: 'المؤشرات', icon: <GitCompare className="w-5 h-5" />, tab: 'cost_center_comparison' },
-  { id: 'labor', label: 'تكلفة العمالة', description: 'تكلفة الورديات والموظفين', category: 'التشغيل', icon: <CircleDollarSign className="w-5 h-5" />, tab: 'labor' },
   { id: 'ops_control', label: 'الرقابة التشغيلية', description: 'مراقبة العمليات التشغيلية', category: 'التشغيل', icon: <Activity className="w-5 h-5" />, tab: 'ops_control' },
 ];
 

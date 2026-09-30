@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { decideFlush, runFlushQueue, sortEntriesBySize } from '../context/syncEngine';
+import { decideFlush, runFlushQueue, sortEntriesBySize, mergeByIdLocal } from '../context/syncEngine';
 import type { FlushHandlers } from '../context/syncEngine';
 
 describe('decideFlush', () => {
@@ -30,6 +30,40 @@ describe('sortEntriesBySize', () => {
     expect(sorted[0].key).toBe('small');
     expect(sorted[1].key).toBe('big');
     expect(entries[0].key).toBe('big'); // غير مهيأة مصدرية
+  });
+});
+
+describe('mergeByIdLocal', () => {
+  const rec = (id: string, m: number) => ({ id, _mtime: m, name: id });
+
+  it('يضيف سجلات جديدة من الخادم ولا يفقد المحلية', () => {
+    const out = mergeByIdLocal([rec('A', 10)], [rec('B', 20), rec('C', 30)]);
+    expect(out.map((r) => r.id).sort()).toEqual(['A', 'B', 'C']);
+  });
+
+  it('السجل الأحدث _mtime يفوز عند تعارض المعرّف', () => {
+    const out = mergeByIdLocal([rec('A', 50)], [rec('A', 10)]);
+    expect(out).toHaveLength(1);
+    expect(out[0]._mtime).toBe(50);
+  });
+
+  it('قائمة واردة فارغة [] لا تحذف أي سجل محلي', () => {
+    expect(mergeByIdLocal([rec('A', 10), rec('B', 20)], [])).toEqual([rec('A', 10), rec('B', 20)]);
+  });
+
+  it('قائمة واردة غير مصفوفة تعيد المحلية كما هي', () => {
+    expect(mergeByIdLocal([rec('A', 1)], ('x' as unknown))).toEqual([rec('A', 1)]);
+  });
+
+  it('سجلات بدون id تُتجاهل في الدمج', () => {
+    const out = mergeByIdLocal([{ name: 'no-id' } as { id?: unknown; _mtime?: number }], [{ id: 'X', _mtime: 1 }]);
+    expect(out.map((r) => r?.id)).toEqual(['X']);
+  });
+
+  it('سلوك الاستقرار: سجلات لا _mtime تُعامَل كأقدم (0)', () => {
+    const out = mergeByIdLocal([rec('A', 5)], [{ id: 'A' }]);
+    expect(out).toHaveLength(1);
+    expect(out[0]._mtime).toBe(5);
   });
 });
 

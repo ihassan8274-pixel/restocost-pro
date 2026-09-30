@@ -5,7 +5,7 @@
 import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
 
-export const BCRYPT_ROUNDS = 12;
+export const BCRYPT_ROUNDS = 10;
 export const LEGACY_SALT = '::restocost::salt';
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_HISTORY_SIZE = 5;

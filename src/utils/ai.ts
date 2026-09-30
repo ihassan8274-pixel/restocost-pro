@@ -300,9 +300,9 @@ const callOpenAICompat = async (url: string, key: string, model: string, systemP
 };
 
 const callGemini = async (key: string, model: string, systemPrompt: string, userPrompt: string): Promise<LLMResult> => {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -320,7 +320,7 @@ export const testAIKey = async (key: string, provider?: AIProvider): Promise<{ o
   try {
     if (p === 'local') return { ok: true };
     if (p === 'gemini') {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', { headers: { 'x-goog-api-key': key } });
       if (res.ok) return { ok: true };
       return { ok: false, error: res.status === 400 ? 'مفتاح Gemini غير صالح (400)' : `الخادم رفض الطلب (${res.status})` };
     }

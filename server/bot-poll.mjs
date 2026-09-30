@@ -20,7 +20,7 @@ let busy = false;
 
 const getToken = () => {
   const s = store.getKV('rcerp_telegram_settings');
-  const t = s && s.enabled ? decryptSecret(s.botToken || '') : '';
+  const t = s && s.enabled ? decryptSecret(s.botToken || '', 'tg:botToken') : '';
   return t ? t : null;
 };
 

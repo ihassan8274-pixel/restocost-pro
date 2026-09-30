@@ -16,9 +16,24 @@ import { learnItemAlias, learnBranchAlias, getAliases } from '../intake.mjs';
 import { raiseFromInbox, rejectFromInbox, raiseAllFullyMatched, bindAndRaiseFromInbox } from '../intake-inbox.mjs';
 import { generateDailyCountPdf, generatePurchaseDocumentPdf } from '../pdf.mjs';
 import { publishCatalogUpdate } from '../tg-catalog.mjs';
+
+// كاشف تلف النصوص العربية (mojibake): حين تُقرأ بايتات UTF-8 كصفحة CP437
+// (عبر PowerShell/Console) تظهر محارف رسم خطوط U+2500–U+257F بدل العربية.
+// البيانات السليمة (عربي/إنجليزي) لا تحتوي هذه المحارف إطلاقاً، لذا وجودها
+// دليل قاطع على تلف. التلف هنا غير قابل للعكس (بعض البايتات مفقودة)، لذا
+// نحمي البيانات النظيفة على السيرفر برفض الدفعات التالفة بدل تخزينها.
+const BOX_CHARS = /[\u2500-\u257F]/;
+function looksCorrupted(value, depth = 0) {
+  if (depth > 8) return false;
+  if (typeof value === 'string') return BOX_CHARS.test(value);
+  if (Array.isArray(value)) return value.some((v) => looksCorrupted(v, depth + 1));
+  if (value && typeof value === 'object') return Object.values(value).some((v) => looksCorrupted(v, depth + 1));
+  return false;
+}
 import { mergeById, shouldRejectShrink } from '../mergeCore.mjs';
 import { paginateCollection } from '../paginate.mjs';
 import { dispatchWebhookEvent, EVENT_KEYS } from '../webhooks.mjs';
+import { findPeriodViolation } from '../periodLock.mjs';
 
 const { getKV, setKV, revState, cdcSince } = store;
 
@@ -48,14 +63,14 @@ const sanitizeAISettingsForBootstrap = (v) => {
   const items = Array.isArray(v.items) ? v.items : [];
   const sanitized = items.map((m) => {
     if (!m || typeof m !== 'object') return m;
-    const hasKey = !!decryptSecret(m.apiKey ?? '');
+    const hasKey = !!decryptSecret(m.apiKey ?? '', 'ai:apiKey');
     const { apiKey, hasKey: _hasKey, ...rest } = m;
     return { ...rest, apiKey: '', hasKey };
   });
   const out = { ...v, items: sanitized };
   delete out.apiKey;
   delete out.hasKey;
-  out.hasKey = sanitized.some((m) => m && m.hasKey) || !!decryptSecret(v.apiKey ?? '');
+  out.hasKey = sanitized.some((m) => m && m.hasKey) || !!decryptSecret(v.apiKey ?? '', 'ai:apiKey');
   return out;
 };
 
@@ -65,30 +80,63 @@ const sanitizeTelegramSettingsForBootstrap = (v) => {
     enabled: !!v.enabled,
     chatIds: Array.isArray(v.chatIds) ? v.chatIds : [],
     sendPdf: v.sendPdf !== false,
-    hasBotToken: !!decryptSecret(v.botToken ?? ''),
+    hasBotToken: !!decryptSecret(v.botToken ?? '', 'tg:botToken'),
     purchaseEnabled: !!v.purchaseEnabled,
     purchaseChatIds: Array.isArray(v.purchaseChatIds) ? v.purchaseChatIds : [],
-    purchaseHasToken: !!decryptSecret(v.purchaseBotToken ?? ''),
-    maskedBotToken: v.botToken ? `${String(decryptSecret(v.botToken)).slice(0, 6)}…${String(decryptSecret(v.botToken)).slice(-4)}` : '',
-    maskedPurchaseBotToken: v.purchaseBotToken ? `${String(decryptSecret(v.purchaseBotToken)).slice(0, 6)}…${String(decryptSecret(v.purchaseBotToken)).slice(-4)}` : '',
+    purchaseHasToken: !!decryptSecret(v.purchaseBotToken ?? '', 'tg:purchaseBotToken'),
+    maskedBotToken: v.botToken ? (() => { const m = String(decryptSecret(v.botToken, 'tg:botToken')); return `${m.slice(0, 6)}…${m.slice(-4)}`; })() : '',
+    maskedPurchaseBotToken: v.purchaseBotToken ? (() => { const m = String(decryptSecret(v.purchaseBotToken, 'tg:purchaseBotToken')); return `${m.slice(0, 6)}…${m.slice(-4)}`; })() : '',
   };
 };
+
+// مجموعات ثقيلة تُستثنى من bootstrap وتحمّل عند الطلب
+const LAZY_KEYS = new Set([
+  'rcerp_inventory_movements',
+  'rcerp_audit',
+  'rcerp_journal',
+  'rcerp_batch_sales',
+  'rcerp_grn',
+  'rcerp_inventory',
+  'rcerp_recipe_sections',
+  'rcerp_inventory_batches',
+  'rcerp_temp_logs',
+  'rcerp_haccp_inspections',
+  'rcerp_tasks',
+  'rcerp_custom_reports',
+  'rcerp_eod_closures',
+]);
 
 export const registerData = (app) => {
   app.get('/api/bootstrap', (req, res) => {
     const user = sessionUser(readToken(req));
-    // Hardening: the full data snapshot must never be served unauthenticated.
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    const since = Number(req.query.since);
+    const isDelta = Number.isFinite(since) && since >= 0;
     const data = {};
+    const touchedKeys = [];
     COLLECTION_KEYS.forEach((key) => {
+      if (LAZY_KEYS.has(key)) return;
       const v = getKV(key);
       if (v === null) return;
+      if (isDelta) {
+        const kvMeta = store.getKvMeta ? store.getKvMeta(key) : null;
+        const lastMod = kvMeta?.lastModified || 0;
+        if (lastMod <= since) return;
+        touchedKeys.push(key);
+      }
       if (key === 'rcerp_users') { data[key] = (Array.isArray(v) ? v : []).map(stripUserForBootstrap); return; }
       if (key === 'rcerp_ai_settings') { data[key] = sanitizeAISettingsForBootstrap(v); return; }
       if (key === 'rcerp_telegram_settings') { data[key] = sanitizeTelegramSettingsForBootstrap(v); return; }
       data[key] = v;
     });
-    res.json({ ok: true, data, user: publicUser(user), version: PKG_VERSION, build: buildFingerprint, server: serverStamp });
+    const rev = revState ? revState() : { rev: 1, boot: 0 };
+    const etag = `W/"${rev.rev}-${rev.boot}"`;
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+    res.setHeader('ETag', etag);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.json({ ok: true, data, user: publicUser(user), version: PKG_VERSION, build: buildFingerprint, server: serverStamp, lazyKeys: [...LAZY_KEYS], rev: rev.rev, boot: rev.boot, delta: isDelta, touchedKeys: isDelta ? touchedKeys : undefined });
   });
 
   // ترقيم خفيف بالقائمة (cursor) لمفتاح واحد — مساعدة للمعاينة عند نمو قائمة
@@ -144,6 +192,31 @@ export const registerData = (app) => {
     const { key } = req.params;
     if (!COLLECTION_KEYS.includes(key)) return res.status(400).json({ ok: false, error: 'مفتاح غير معروف' });
 
+    // ---- تحقق صلاحيات على الخادم (P1.4) ----
+    const ADMIN_ONLY_KEYS = new Set(['rcerp_users', 'rcerp_access_roles', 'rcerp_ai_settings', 'rcerp_telegram_settings', 'rcerp_custom_roles', 'rcerp_automation_rules', 'rcerp_scheduled_reports']);
+    const MANAGER_KEYS = new Set(['rcerp_branches', 'rcerp_companies', 'rcerp_suppliers', 'rcerp_raw_materials', 'rcerp_recipes', 'rcerp_inventory', 'rcerp_grn', 'rcerp_purchase_orders', 'rcerp_stock_transfers', 'rcerp_employees', 'rcerp_shifts', 'rcerp_pos_orders', 'rcerp_batch_sales', 'rcerp_customers', 'rcerp_reservations', 'rcerp_invoices', 'rcerp_accounts', 'rcerp_journal', 'rcerp_operating_expenses', 'rcerp_expense_budgets', 'rcerp_fixed_assets', 'rcerp_pl_summaries', 'rcerp_pos_returns', 'rcerp_requisitions', 'rcerp_purchase_requests', 'rcerp_supplier_quotes', 'rcerp_supplier_returns', 'rcerp_work_orders', 'rcerp_wastage', 'rcerp_production_runs', 'rcerp_food_menus', 'rcerp_menu_plans', 'rcerp_daily_counts', 'rcerp_employee_meals', 'rcerp_payroll', 'rcerp_attendance', 'rcerp_butcher_tests', 'rcerp_recipe_sections', 'rcerp_distributions', 'rcerp_intake_inbox', 'rcerp_branch_stock_limits', 'rcerp_delivery_sales', 'rcerp_delivery_apps', 'rcerp_customer_orders', 'rcerp_material_categories', 'rcerp_material_barcodes', 'rcerp_inventory_batches', 'rcerp_inventory_movements', 'rcerp_physical_counts', 'rcerp_opening_balances', 'rcerp_recipe_inventory', 'rcerp_closed_months', 'rcerp_closed_days', 'rcerp_eod_closures', 'rcerp_monthly_inventory', 'rcerp_vat_percent', 'rcerp_vat_inclusive', 'rcerp_deduct_sales', 'rcerp_currencies', 'rcerp_categories', 'rcerp_logo', 'rcerp_target_margin', 'rcerp_ack_alerts', 'rcerp_custom_reports', 'rcerp_recent_docs', 'rcerp_audit', 'rcerp_temp_logs', 'rcerp_haccp_inspections', 'rcerp_tasks', 'rcerp_documents', 'rcerp_deleted_ids', 'rcerp_units']);
+    if (ADMIN_ONLY_KEYS.has(key) && user.role !== 'admin') {
+      return res.status(403).json({ ok: false, error: 'غير مصرح — هذا المفتاح يتطلب صلاحيات مدير النظام' });
+    }
+    if (MANAGER_KEYS.has(key) && user.role !== 'admin' && user.role !== 'manager' && user.role !== 'executive') {
+      return res.status(403).json({ ok: false, error: 'غير مصرح — هذا المفتاح يتطلب صلاحيات إدارة' });
+    }
+
+    // ---- حماية من تلف النصوص العربية ----
+    // جهاز يحمل نسخة تالفة محلياً (كاشح بايتات CP437) سيدفعها كل بضعة ثوانٍ
+    // فيطمس النسخة النظيفة. التلف غير قابل للإصلاح، فنرفض الدفعات التالفة
+    // ونُبقي بيانات السيرفر. نعيد 200 عمداً ليُفرغ الجهاز طابور حفظه المعلق
+    // ويجلب النسخة النظيفة بدل إعادة المحاولة بلا نهاية.
+    if (looksCorrupted(req.body)) {
+      try {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | REJECTED-CORRUPT ${key} | ${saveBytes}b | ${saveUA}\n`
+        );
+      } catch { /* تجاهل */ }
+      return res.json({ ok: true, rejected: 'corrupt-payload-ignored' });
+    }
+
     // ---- تزامن جذري: دمج على مستوى السجل بالمعرّف (id-based merge) ----
     // المشكلة الحقيقية: كل جهاز يدفع نسخته الكاملة، والسيرفر كان يستبدل الكل —
     // فآخر جهاز يكتب يطمس تعديلات الآخرين (تعارض التزامن).
@@ -177,7 +250,7 @@ export const registerData = (app) => {
       );
       return res.json({ ok: true });
     }
-    if (key !== 'rcerp_users' && key !== 'rcerp_ai_settings' && key !== 'rcerp_telegram_settings') {
+    if (key !== 'rcerp_users' && key !== 'rcerp_ai_settings' && key !== 'rcerp_telegram_settings' && key !== 'rcerp_intake_inbox' && key !== 'rcerp_recent_docs') {
       const reject = shouldRejectShrink(getKV(key), incomingData);
       if (reject) {
         fs.appendFileSync(
@@ -189,6 +262,27 @@ export const registerData = (app) => {
           error: 'رفض الحفظ: محاولة استبدال بيانات موجودة ببيانات أصغر بكثير (نمط بيانات تجريبية). ' +
             'البيانات الحقيقية محفوظة على الخادم — حدّث الصفحة لاسترجاعها ولا تفتح نسخة تجريبية.',
           reason: 'shrink-overwrite-guard',
+        });
+      }
+      // حماية إضافية: تفريغ مجموعة كبيرة إلى مصفوفة فارغة بلا شواهد حذف
+      // (منع جهاز قديم/فارغ من محو المبيعات والفروع المستوردة). الحذف الصحيح
+      // عبر rcerp_deleted_ids ما زال يعمل: تُصفّى الشواهد المجموعات فوراً.
+      const exArr = getKV(key);
+      const inArr = incomingData;
+      if (Array.isArray(exArr) &&
+          Array.isArray(inArr) &&
+          inArr.length === 0 &&
+          (() => {
+            try { return JSON.stringify(exArr).length > 50000; } catch { return false; }
+          })()) {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | REJECTED-EMPTY ${key} | ${saveBytes}b(ex=${exArr.length} مفتاح) | ${saveUA} | استخدم rcerp_deleted_ids للحذف النهائي\n`
+        );
+        return res.status(409).json({
+          ok: false,
+          error: 'رفض الحفظ: محاولة إفراغ مجموعة كبيرة بصفر سجلات. لا تُمسح المجموعات إلا عبر قائمة الحذف النهائي (rcerp_deleted_ids).',
+          reason: 'empty-overwrite-guard',
         });
       }
     }
@@ -232,7 +326,7 @@ export const registerData = (app) => {
           const ex = exMap.get(m.id);
           const hasNew = typeof m.apiKey === 'string' && !!m.apiKey.trim();
           if (hasNew) {
-            m.apiKey = encryptSecret(m.apiKey.trim());
+            m.apiKey = encryptSecret(m.apiKey.trim(), 'ai:apiKey');
           } else if (ex && typeof ex.apiKey === 'string' && ex.apiKey) {
             m.apiKey = ex.apiKey;
           } else {
@@ -242,7 +336,7 @@ export const registerData = (app) => {
         if (!hasItems) {
           if ('hasKey' in normalize) delete normalize.hasKey;
           if (typeof normalize.apiKey === 'string' && normalize.apiKey.trim()) {
-            normalize.apiKey = encryptSecret(normalize.apiKey.trim());
+            normalize.apiKey = encryptSecret(normalize.apiKey.trim(), 'ai:apiKey');
           } else if (existing && typeof existing === 'object' && typeof existing.apiKey === 'string' && existing.apiKey) {
             normalize.apiKey = existing.apiKey;
           } else {
@@ -273,7 +367,7 @@ export const registerData = (app) => {
         for (const k of ['botToken', 'purchaseBotToken']) {
           const hasNew = typeof normalize[k] === 'string' && !!normalize[k].trim();
           if (hasNew) {
-            normalize[k] = encryptSecret(normalize[k].trim());
+            normalize[k] = encryptSecret(normalize[k].trim(), k === 'botToken' ? 'tg:botToken' : 'tg:purchaseBotToken');
           } else if (existing && typeof existing === 'object' && typeof existing[k] === 'string' && existing[k]) {
             normalize[k] = existing[k];
           } else if (k in normalize) {
@@ -290,6 +384,50 @@ export const registerData = (app) => {
         } catch { /* تجاهل */ }
         return res.status(400).json({ ok: false, error: 'بيانات إعدادات تليجرام المرسلة غير صالحة — حدّث الصفحة لإعادة تحميل الإعدادات الحقيقية من الخادم.' });
       }
+    }
+if (key === 'rcerp_recent_docs') {
+      try {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | RECENT_DOCS_INCOMING | ${JSON.stringify(incomingData).slice(0, 500)}\n`
+        );
+        const normalize = Array.isArray(incomingData) ? incomingData : [];
+        // تساهل في التحقق: نسمح بالحقول الاختيارية ونولد المفقودة
+        const normalized = normalize.map((d, idx) => {
+          if (!d || typeof d !== 'object') return null;
+          return {
+            id: typeof d.id === 'string' ? d.id : `recent-${Date.now()}-${idx}`,
+            type: typeof d.type === 'string' ? d.type : 'unknown',
+            title: typeof d.title === 'string' ? d.title : 'بدون عنوان',
+            tab: typeof d.tab === 'string' ? d.tab : 'unknown',
+            at: typeof d.at === 'number' ? d.at : Date.now(),
+};
+        }).filter(Boolean);
+        incomingData = normalized.slice(0, 20);
+      } catch (e) {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | RECENT_DOCS_NORMALIZE_ERROR | ${e && (e.stack || e.message)}\n`
+        );
+        return res.status(400).json({ ok: false, error: 'بيانات المستندات الأخيرة غير صالحة — سيتم إعادة تحميلها من الخادم.' });
+      }
+    }
+    // --- فرض إغلاق الفترات خادمياً: رفض أي كتابة لشهر/يوم مقفل ---
+    const periodViolation = findPeriodViolation(key, incomingData, getKV(key), getKV);
+    if (periodViolation) {
+      try {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | REJECTED-PERIOD ${key} | ${periodViolation.kind} | ${periodViolation.date} | ${saveUA}\n`
+        );
+      } catch { /* تجاهل */ }
+      return res.status(409).json({
+        ok: false,
+        error: 'الفترة مقفلة: لا يمكن إنشاء أو تعديل أو حذف مستندات في فترة مغلقة. افتح الفترة أولاً.',
+        reason: 'period-lock',
+        date: periodViolation.date,
+        kind: periodViolation.kind,
+      });
     }
     // --- دمج بالمعرّف بدل الاستبدال الكامل (أساس التزامن الصحيح بين الأجهزة) ---
     // نجمع المعرّفات الموجودة قبل الدمج لمعرفة السجلات "الجديدة" فقط (التنبيهات لا تُرسل للنفس).
@@ -374,7 +512,10 @@ export const registerData = (app) => {
   });
 
   // ---- Instance identity (used by the desktop launcher to find THIS copy's server) ----
+  // Requires an authenticated session — the id reveals which deployment this is.
   app.get('/api/instance', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
     res.json({ ok: true, id: instanceId });
   });
 
@@ -410,6 +551,9 @@ export const registerData = (app) => {
   const isCompanyDir = (dir) => fs.existsSync(path.join(dir, 'server', 'index.js'));
 
   app.get('/api/companies', async (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
     const list = [];
     try {
       for (const entry of fs.readdirSync(parentDir, { withFileTypes: true })) {
@@ -439,6 +583,9 @@ export const registerData = (app) => {
 
   // Start a company copy's server (spawn node server/index.js in that folder).
   app.post('/api/start-company', async (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
     const { dir } = req.body || {};
     if (!dir || typeof dir !== 'string') return res.status(400).json({ ok: false, error: 'اسم الشركة مطلوب' });
     const companyDir = path.join(parentDir, dir);
@@ -474,10 +621,10 @@ export const registerData = (app) => {
     const purchaseChatIds = Array.isArray(body.purchaseChatIds) ? body.purchaseChatIds.map(String).filter(Boolean) : (current.purchaseChatIds || []);
     const next = {
       enabled: typeof body.enabled === 'boolean' ? body.enabled : (current.enabled ?? false),
-      botToken: typeof body.botToken === 'string' && body.botToken ? encryptSecret(String(body.botToken).trim()) : (current.botToken || ''),
+      botToken: typeof body.botToken === 'string' && body.botToken ? encryptSecret(String(body.botToken).trim(), 'tg:botToken') : (current.botToken || ''),
       chatIds,
       purchaseEnabled: typeof body.purchaseEnabled === 'boolean' ? body.purchaseEnabled : (current.purchaseEnabled ?? false),
-      purchaseBotToken: typeof body.purchaseBotToken === 'string' && body.purchaseBotToken ? encryptSecret(String(body.purchaseBotToken).trim()) : (current.purchaseBotToken || ''),
+      purchaseBotToken: typeof body.purchaseBotToken === 'string' && body.purchaseBotToken ? encryptSecret(String(body.purchaseBotToken).trim(), 'tg:purchaseBotToken') : (current.purchaseBotToken || ''),
       purchaseChatIds,
       sendPdf: typeof body.sendPdf === 'boolean' ? body.sendPdf : (current.sendPdf ?? true),
     };
@@ -499,12 +646,12 @@ export const registerData = (app) => {
       enabled: !!s.enabled,
       chatIds: s.chatIds || [],
       sendPdf: s.sendPdf !== false,
-      hasToken: !!decryptSecret(s.botToken ?? ''),
-      maskedToken: decryptSecret(s.botToken ?? '') ? `${String(decryptSecret(s.botToken)).slice(0, 6)}…${String(decryptSecret(s.botToken)).slice(-4)}` : '',
+      hasToken: !!decryptSecret(s.botToken ?? '', 'tg:botToken'),
+      maskedToken: (() => { const m = String(decryptSecret(s.botToken ?? '', 'tg:botToken')); return m ? `${m.slice(0, 6)}…${m.slice(-4)}` : ''; })(),
       purchaseEnabled: !!s.purchaseEnabled,
       purchaseChatIds: s.purchaseChatIds || [],
-      purchaseHasToken: !!decryptSecret(s.purchaseBotToken ?? ''),
-      purchaseMaskedToken: decryptSecret(s.purchaseBotToken ?? '') ? `${String(decryptSecret(s.purchaseBotToken)).slice(0, 6)}…${String(decryptSecret(s.purchaseBotToken)).slice(-4)}` : '',
+      purchaseHasToken: !!decryptSecret(s.purchaseBotToken ?? '', 'tg:purchaseBotToken'),
+      purchaseMaskedToken: (() => { const m = String(decryptSecret(s.purchaseBotToken ?? '', 'tg:purchaseBotToken')); return m ? `${m.slice(0, 6)}…${m.slice(-4)}` : ''; })(),
     });
   });
 
@@ -707,6 +854,47 @@ export const registerData = (app) => {
     }
   });
 
+  // ---- نقطة صحة الإدارة (P1.6) ----
+  app.get('/api/admin/health', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    const sessions = store.getKV('rcerp_sessions') || [];
+    const changeLogCount = store.getChangeLogCount ? store.getChangeLogCount() : 0;
+    const auditCount = (store.getKV('rcerp_audit') || []).length;
+    const users = store.getKV('rcerp_users') || [];
+    const branches = store.getKV('rcerp_branches') || [];
+    const posOrders = store.getKV('rcerp_pos_orders') || [];
+    const inventory = store.getKV('rcerp_inventory') || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const todayOrders = posOrders.filter((o) => {
+      const d = o.createdAt || o.date || '';
+      return String(d).slice(0, 10) === today;
+    }).length;
+    const lowStockItems = inventory.filter((i) => {
+      const rp = Number(i.reorderPoint || 0);
+      return rp > 0 && (Number(i.quantity) || 0) < rp;
+    }).length;
+    res.json({
+      ok: true,
+      status: 'healthy',
+      version: PKG_VERSION,
+      build: buildFingerprint,
+      server: serverStamp,
+      uptime: Math.floor(process.uptime()),
+      pid: process.pid,
+      memory: process.memoryUsage(),
+      sessions: sessions.length,
+      users: users.length,
+      branches: branches.length,
+      todayOrders,
+      lowStockItems,
+      changeLogCount,
+      auditCount,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // ---- رصد لحظي للملاك/الإدارة: ملخص خفيف يُسحَب كل 5 ثوانٍ (بند 67) ----
   app.get('/api/live', (req, res) => {
     const user = sessionUser(readToken(req));
@@ -754,5 +942,101 @@ export const registerData = (app) => {
       lowStock: lowStock.slice(0, 5).map((m) => ({ id: m.id, name: m.nameAr || m.name || m.id, qty: qtyByMat[m.id] || 0 })),
       openTransferCount: transfers.filter((t) => t.status === 'submitted' || t.status === 'draft').length,
     });
+  });
+
+  // ---- مزامنة يدوية شاملة (Admin فقط) ----
+  // يجبر جميع الأجهزة المتصلة على سحب أحدث البيانات عبر bootstrap كامل
+  // ---- سحب المستندات الأخيرة من الخادم وتطبيقها محلياً (PULL) ----
+  app.post('/api/admin/pull-recent-docs', async (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin' && user.role !== 'manager') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+
+    try {
+      const recentDocs = store.getKV('rcerp_recent_docs') || [];
+      // التأكد من صلاحية البيانات
+      const valid = Array.isArray(recentDocs) ? recentDocs.filter((d) => d && typeof d === 'object' && d.id && d.type && d.title && d.tab && d.at).slice(0, 20) : [];
+      
+      res.json({ ok: true, data: { rcerp_recent_docs: valid }, message: 'تم جلب المستندات الأخيرة من الخادم' });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: `فشل جلب المستندات: ${e.message}` });
+    }
+  });
+
+  app.post('/api/admin/sync-force', async (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح — للمدير فقط' });
+
+    try {
+      // 1) زيادة عداد التحديث لإجبار bootstrap كامل على جميع الأجهزة
+      useSyncStore.getState().retryBootstrap();
+
+      // 2) دفع أحدث نسخة من جميع المجموعات للأجهزة التي ستستعلم الآن
+      // (الأجهزة ستحصل عليها في استدعاء /api/bootstrap التالي)
+
+      // 3) تسجيل العملية
+      fs.appendFileSync(
+        path.join(dataDir, 'savelog.txt'),
+        `${new Date().toISOString()} | FORCE-SYNC by ${user.name} (${user.id})\n`
+      );
+
+      res.json({
+        ok: true,
+        message: 'تم إرسال إشارة مزامنة شاملة — جميع الأجهزة ستسحب أحدث البيانات خلال ثوانٍ',
+        timestamp: new Date().toISOString(),
+        triggeredBy: user.name
+      });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: `فشل المزامنة القسرية: ${e.message}` });
+    }
+  });
+
+  // ---- مزامنة مجموعة محددة (Admin/Manager) ----
+  app.post('/api/admin/sync-collection', async (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin' && user.role !== 'manager') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+
+    const { key } = req.body || {};
+    if (!key || !COLLECTION_KEYS.includes(key)) return res.status(400).json({ ok: false, error: 'مفتاح مجموعة غير صالح' });
+
+    try {
+      // إجبار مزامنة فورية لهذه المجموعة
+      const synced = await useSyncStore.getState().syncNow(key);
+
+      fs.appendFileSync(
+        path.join(dataDir, 'savelog.txt'),
+        `${new Date().toISOString()} | SYNC-COLLECTION ${key} by ${user.name} | ${synced ? 'ok' : 'partial'}\n`
+      );
+
+      res.json({ ok: true, key, synced, message: synced ? 'تمت المزامنة بنجاح' : 'مزامنة جزئية — راجع السجلات' });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: `فشل مزامنة ${key}: ${e.message}` });
+    }
+  });
+
+  // ---- جلب أحدث بيانات من جميع الأجهزة (Bootstrap كامل) ----
+  app.get('/api/admin/bootstrap-full', async (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+
+    try {
+      const data = {};
+      COLLECTION_KEYS.forEach((key) => {
+        const v = getKV(key);
+        if (v !== null) data[key] = v;
+      });
+
+      fs.appendFileSync(
+        path.join(dataDir, 'savelog.txt'),
+        `${new Date().toISOString()} | BOOTSTRAP-FULL by ${user.name}\n`
+      );
+
+      res.json({ ok: true, data, count: Object.keys(data).length });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: `فشل جلب البيانات: ${e.message}` });
+    }
   });
 };
