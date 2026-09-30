@@ -8,7 +8,7 @@
     "postinstall": "node _patch-yargs.mjs"
   },
   "dependencies": {
-    "jsreport": "^3.11.0"
+    "jsreport": "^4.14.2"
   },
   "allowScripts": {
     "puppeteer@20.7.1": true
