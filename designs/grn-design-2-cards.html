@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إشعار استلام جديد - تصميم 2</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 1100px; margin: 0 auto; }
+.header-card { background: #fff; border-radius: 16px; padding: 24px 32px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+.header-card h1 { font-size: 22px; color: #1e293b; }
+.header-card .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+.btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, #D7A928 0%, #b8941f 100%); color: #fff; box-shadow: 0 4px 12px rgba(215,169,40,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(215,169,40,0.4); }
+.btn-ghost { background: transparent; color: #64748b; }
+.btn-ghost:hover { background: #f1f5f9; }
+.card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.card-title { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.card-title::before { content: ''; width: 4px; height: 20px; background: #D7A928; border-radius: 2px; }
+.info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.info-item { background: #f8fafc; border-radius: 12px; padding: 16px; border: 1px solid #e2e8f0; }
+.info-item .label { font-size: 11px; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.info-item .value { font-size: 15px; font-weight: 600; color: #1e293b; }
+.info-item input, .info-item select { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; background: #fff; }
+.items-card { padding: 0; overflow: hidden; }
+.items-header { background: #f8fafc; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.items-header h3 { font-size: 15px; color: #1e293b; }
+.items-body { padding: 24px; }
+.item-row { display: grid; grid-template-columns: 40px 2fr 1fr 1fr 1fr 1fr 40px; gap: 12px; align-items: center; padding: 16px; background: #f8fafc; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
+.item-row .num { width: 32px; height: 32px; background: #D7A928; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.item-row input, .item-row select { padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #fff; }
+.item-row .total { font-weight: 700; color: #D7A928; font-size: 16px; }
+.item-row .delete { color: #ef4444; cursor: pointer; background: none; border: none; font-size: 20px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
+.item-row .delete:hover { background: #fef2f2; }
+.add-btn { width: 100%; padding: 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; cursor: pointer; color: #64748b; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+.add-btn:hover { border-color: #D7A928; color: #D7A928; background: #fffbeb; }
+.summary-card { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: #fff; border-radius: 16px; padding: 24px; }
+.summary-card h3 { font-size: 14px; color: #94a3b8; margin-bottom: 16px; }
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.summary-item { text-align: center; }
+.summary-item .amount { font-size: 28px; font-weight: 700; color: #D7A928; }
+.summary-item .label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+.summary-item.total .amount { font-size: 36px; color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header-card">
+    <div>
+      <h1>إشعار استلام جديد</h1>
+      <div class="subtitle">تسجيل استلام مواد خام من الموردين</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost">إلغاء</button>
+      <button class="btn btn-primary">حفظ الإشعار</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">معلومات الإشعار</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="label">رقم الإشعار</div>
+        <div class="value">GRN-2026-0049</div>
+      </div>
+      <div class="info-item">
+        <div class="label">التاريخ</div>
+        <input type="date" value="2026-09-30">
+      </div>
+      <div class="info-item">
+        <div class="label">الفرع</div>
+        <select><option>الفرع الأول - الرياض</option><option>الفرع الثاني - جدة</option></select>
+      </div>
+      <div class="info-item">
+        <div class="label">المورد</div>
+        <select><option>شركة الأغذية المتحدة</option><option>مؤسسة النور للتجارة</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="card items-card">
+    <div class="items-header">
+      <h3>بنود الإشعار</h3>
+      <span style="font-size:13px;color:#64748b;">2 بنود</span>
+    </div>
+    <div class="items-body">
+      <div class="item-row">
+        <div class="num">1</div>
+        <select><option>دقيق أبيض</option><option>زيت دوار</option><option>سكر ناعم</option></select>
+        <input type="number" value="50" placeholder="الكمية">
+        <input type="number" value="12.50" step="0.01" placeholder="السعر">
+        <div style="text-align:center;color:#64748b;font-size:13px;">كغ</div>
+        <div class="total">625.00</div>
+        <button class="delete">×</button>
+      </div>
+      <div class="item-row">
+        <div class="num">2</div>
+        <select><option>زيت دوار</option><option>دقيق أبيض</option><option>سكر ناعم</option></select>
+        <input type="number" value="20" placeholder="الكمية">
+        <input type="number" value="18.00" step="0.01" placeholder="السعر">
+        <div style="text-align:center;color:#64748b;font-size:13px;">لتر</div>
+        <div class="total">360.00</div>
+        <button class="delete">×</button>
+      </div>
+      <button class="add-btn">+ إضافة بند جديد</button>
+    </div>
+  </div>
+  <div class="summary-card">
+    <h3>ملخص الإشعار</h3>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="amount">985.00</div>
+        <div class="label">الإجمالي قبل الضريبة</div>
+      </div>
+      <div class="summary-item">
+        <div class="amount">147.75</div>
+        <div class="label">ضريبة القيمة المضافة</div>
+      </div>
+      <div class="summary-item total">
+        <div class="amount">1,132.75</div>
+        <div class="label">الإجمالي شامل الضريبة</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

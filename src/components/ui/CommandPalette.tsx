@@ -16,8 +16,7 @@ const NEW_IDS = [
   'purchase_orders', 'purchase_requests', 'preliminary_supply_orders', 'requisitions',
   'goods_receiving', 'supplier_returns', 'recipes', 'manufacturing', 'batch_sales',
   'menus', 'menu_planning', 'inventory', 'stock_transfers', 'daily_inventory',
-  'monthly_inventory', 'customers', 'reservations', 'suppliers', 'invoices',
-  'operating_expenses', 'wastage', 'labor', 'payroll', 'tasks',
+  'monthly_inventory', 'suppliers', 'wastage', 'tasks',
 ];
 
 const EXPORT_IDS = [

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إشعار استلام جديد - تصميم 4</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #fafafa; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.header h1 { font-size: 20px; color: #1e293b; font-weight: 600; }
+.header .actions { display: flex; gap: 8px; }
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.btn-primary { background: #1e293b; color: #fff; }
+.btn-outline { background: #fff; color: #64748b; border: 1px solid #e2e8f0; }
+.form-card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid #f1f5f9; }
+.form-card h3 { font-size: 14px; color: #1e293b; margin-bottom: 16px; font-weight: 600; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.field { display: flex; flex-direction: column; }
+.field label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 500; }
+.field input, .field select { padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; background: #fff; }
+.field input:focus, .field select:focus { outline: none; border-color: #1e293b; }
+.field input[readonly] { background: #f8fafc; color: #64748b; }
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table th { text-align: right; padding: 12px 8px; font-size: 11px; color: #94a3b8; font-weight: 600; border-bottom: 1px solid #f1f5f9; }
+.items-table td { padding: 8px; border-bottom: 1px solid #f8fafc; }
+.items-table input, .items-table select { width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; }
+.items-table input:focus, .items-table select:focus { outline: none; border-color: #1e293b; }
+.items-table .num { width: 30px; height: 30px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #64748b; }
+.items-table .delete { color: #ef4444; cursor: pointer; background: none; border: none; font-size: 16px; }
+.add-row { margin-top: 12px; padding: 10px; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 6px; cursor: pointer; color: #64748b; font-size: 13px; width: 100%; text-align: center; }
+.add-row:hover { border-color: #1e293b; color: #1e293b; }
+.total-section { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #f1f5f9; }
+.total-section h3 { font-size: 14px; color: #1e293b; margin-bottom: 16px; font-weight: 600; }
+.total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+.total-row.grand { border-top: 1px solid #f1f5f9; margin-top: 8px; padding-top: 16px; font-size: 18px; font-weight: 700; color: #1e293b; }
+.total-row .label { color: #64748b; }
+.total-row .value { font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>إشعار استلام جديد</h1>
+    <div class="actions">
+      <button class="btn btn-outline">إلغاء</button>
+      <button class="btn btn-primary">حفظ</button>
+    </div>
+  </div>
+  <div class="form-card">
+    <h3>معلومات الإشعار</h3>
+    <div class="grid-4">
+      <div class="field">
+        <label>رقم الإشعار</label>
+        <input type="text" value="GRN-2026-0049" readonly>
+      </div>
+      <div class="field">
+        <label>التاريخ</label>
+        <input type="date" value="2026-09-30">
+      </div>
+      <div class="field">
+        <label>الفرع</label>
+        <select><option>الفرع الأول - الرياض</option><option>الفرع الثاني - جدة</option></select>
+      </div>
+      <div class="field">
+        <label>المورد</label>
+        <select><option>شركة الأغذية المتحدة</option><option>مؤسسة النور للتجارة</option></select>
+      </div>
+    </div>
+  </div>
+  <div class="form-card">
+    <h3>بنود الإشعار</h3>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الصنف</th>
+          <th>الكمية</th>
+          <th>سعر الوحدة</th>
+          <th>الإجمالي</th>
+          <th>الدفعة</th>
+          <th>الانتهاء</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="num">1</div></td>
+          <td><select><option>دقيق أبيض</option><option>زيت دوار</option></select></td>
+          <td><input type="number" value="50"></td>
+          <td><input type="number" value="12.50" step="0.01"></td>
+          <td style="font-weight:600;">625.00</td>
+          <td><input type="text" value="B-001"></td>
+          <td><input type="date" value="2027-01-15"></td>
+          <td><button class="delete">×</button></td>
+        </tr>
+        <tr>
+          <td><div class="num">2</div></td>
+          <td><select><option>زيت دوار</option><option>دقيق أبيض</option></select></td>
+          <td><input type="number" value="20"></td>
+          <td><input type="number" value="18.00" step="0.01"></td>
+          <td style="font-weight:600;">360.00</td>
+          <td><input type="text" value="B-002"></td>
+          <td><input type="date" value="2026-12-01"></td>
+          <td><button class="delete">×</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="add-row">+ إضافة بند</button>
+  </div>
+  <div class="total-section">
+    <h3>ملخص</h3>
+    <div class="total-row">
+      <span class="label">الإجمالي قبل الضريبة</span>
+      <span class="value">985.00 ر.س</span>
+    </div>
+    <div class="total-row">
+      <span class="label">ضريبة القيمة المضافة (15%)</span>
+      <span class="value">147.75 ر.س</span>
+    </div>
+    <div class="total-row grand">
+      <span class="label">الإجمالي شامل الضريبة</span>
+      <span class="value">1,132.75 ر.س</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

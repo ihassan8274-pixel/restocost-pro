@@ -9,7 +9,7 @@ import {
 } from '../core.mjs';
 import { store } from '../store.mjs';
 
-const { getKV, setKV, deleteKV, purgeAllSessions, createSession } = store;
+const { getKV, setKV, deleteKV, setKVMany, purgeAllSessions, createSession } = store;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -146,14 +146,42 @@ const readBackupById = (id) => {
   try { return JSON.parse(fs.readFileSync(full, 'utf8')); } catch { return null; }
 };
 
-// Apply a validated snapshot to the DB; returns count of collections written.
-const applySnapshot = (data) => {
-  const keys = Object.keys(data);
-  COLLECTION_KEYS.forEach((key) => {
-    if (key in data) setKV(key, data[key]);
-    else deleteKV(key); // keys missing from the backup are cleared to avoid stale data
-  });
-  return keys.length;
+// Merge two arrays by id: backup takes precedence for matching ids, live-only
+// entries are preserved (a restore must never silently drop newer records).
+const mergeById = (liveArr, backupArr) => {
+  if (!Array.isArray(liveArr) || !Array.isArray(backupArr)) return backupArr;
+  // Primitive arrays (closedDays, deletedIds, ...) — union, never shrink.
+  const isPrimitive = (a) => a.every((x) => x === null || typeof x !== 'object');
+  if (isPrimitive(liveArr) || isPrimitive(backupArr)) {
+    const set = new Set([...(liveArr || []), ...(backupArr || [])].filter((x) => x !== undefined && x !== null));
+    return Array.from(set);
+  }
+  const byId = new Map((backupArr || []).map((x) => [x && x.id, x]));
+  const merged = (liveArr || []).map((x) => (x && x.id && byId.has(x.id) ? byId.get(x.id) : x));
+  for (const b of backupArr || []) {
+    if (b && b.id && !merged.some((x) => x && x.id === b.id)) merged.push(b);
+  }
+  return merged;
+};
+
+// Apply a validated snapshot to the DB. NON-DESTRUCTIVE: keys present in the
+// snapshot overwrite live data (merging collections by id so newer live records
+// survive), and keys ABSENT from the backup are LEFT UNTOUCHED. Restoring a
+// partial/corrupt backup (e.g. a 0-byte or truncated file) can therefore never
+// wipe collections it doesn't contain. Writes are batched atomically via setKVMany.
+const applySnapshot = (data = {}) => {
+  const keys = Object.keys(data).filter((k) => COLLECTION_KEYS.includes(k));
+  const entries = new Map();
+  for (const key of keys) {
+    const backupValue = data[key];
+    if (Array.isArray(backupValue)) {
+      entries.set(key, mergeById(getKV(key) || [], backupValue));
+    } else {
+      entries.set(key, backupValue);
+    }
+  }
+  if (entries.size) setKVMany(entries);
+  return entries.size;
 };
 
 // Keep the requesting admin logged in while signing out everyone else after a restore.

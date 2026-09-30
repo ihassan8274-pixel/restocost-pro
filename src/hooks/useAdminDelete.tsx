@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../stores/hooks/useAppCompat';
 
 export const useAdminDelete = () => {
   const { verifyAdminPassword, showToast } = useApp();

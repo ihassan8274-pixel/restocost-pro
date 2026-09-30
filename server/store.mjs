@@ -42,6 +42,8 @@ const num = (v, fallback) => { const n = Number(v); return Number.isFinite(n) &&
 export const SESSION_TTL_MS = num(process.env.SESSION_TTL_MS, 30 * 24 * 3600 * 1000); // sessions expire after 30 days of inactivity
 export const LOGIN_MAX_ATTEMPTS = num(process.env.LOGIN_MAX_ATTEMPTS, 5);              // lock an account after 5 failed logins
 export const LOGIN_LOCK_MS = num(process.env.LOGIN_LOCK_MS, 10 * 60 * 1000);            // ...for 10 minutes
+export const CHANGELOG_RETENTION_MS = num(process.env.CHANGELOG_RETENTION_DAYS, 7) * 24 * 3600 * 1000; // keep change_log rows for this long (configurable)
+const CHANGELOG_FLOOR = 5000; // never prune the most recent rows even if stale
 
 const hasPg = () => Boolean(process.env.DATABASE_URL);
 
@@ -114,6 +116,8 @@ const createPgStore = async (prisma) => {
     cdcNext = Number(last?._max?.seq ?? 0) + 1;
   } catch { /* tolerate */ }
   const cdcPush = (key, op) => {
+    // Skip CDC for high-frequency system keys to reduce DB writes
+    if (key.startsWith('rcerp_sessions') || key.startsWith('rcerp_rate_limits') || key.startsWith('rcerp_audit') || key.startsWith('rcerp_telegram_')) return;
     const seq = cdcNext++;
     cdc.push({ seq, key, op, ts: Date.now() });
     if (cdc.length > 5000) cdc.splice(0, cdc.length - 5000);
@@ -126,8 +130,10 @@ const createPgStore = async (prisma) => {
     return out;
   };
 
-  // ---- KV ----
-  const getKV = (key) => (kv.has(key) ? kv.get(key) : null);
+  function getKV(key) {
+    return kv.has(key) ? kv.get(key) : null;
+  }
+
   const persistKV = (key) => {
     const value = kv.get(key) ?? null;
     queue.push(() => prisma.kv.upsert({
@@ -136,7 +142,9 @@ const createPgStore = async (prisma) => {
       update: { value: value ?? {} },
     }));
   };
-  const setKV = (key, value) => { rev += 1; kv.set(key, value); persistKV(key); cdcPush(key, 'set'); };
+  const setKV = (key, value) => {
+    rev += 1; kv.set(key, value); persistKV(key); cdcPush(key, 'set');
+  };
   const deleteKV = (key) => { rev += 1; kv.delete(key); queue.push(() => prisma.kv.deleteMany({ where: { key } })); cdcPush(key, 'del'); };
   const setKVMany = (entries) => {
     if (entries.size === 0) return;
@@ -242,12 +250,30 @@ const createPgStore = async (prisma) => {
   };
   const getAuditLogs = (limit = 200) => Array.from(auditCache).reverse().slice(0, limit);
 
+  // ---- change_log pruning (bounded retention) ----
+  // يحذف الصفوف الأقدم من فترة الاحتفاظ، مع طابق seq (حد أدنى) كي لا تُمسح
+  // الأحداث الحديثة حتى لو مرّت فترة الاحتفاظ. يعتمد على فهرس ts القائم.
+  const pruneChangeLog = async () => {
+    try {
+      const cutoff = new Date(Date.now() - CHANGELOG_RETENTION_MS);
+      const max = await prisma.changeLog.aggregate({ _max: { seq: true } });
+      const maxSeq = Number(max?._max?.seq ?? 0);
+      const floor = Math.max(0, maxSeq - CHANGELOG_FLOOR);
+      const res = await prisma.changeLog.deleteMany({ where: { ts: { lt: cutoff }, seq: { lt: floor } } });
+      if (res.count > 0) console.log(`[store:pg] pruned ${res.count} change_log rows`);
+      return res.count;
+    } catch (e) {
+      try { console.error('[store:pg] pruneChangeLog error:', e && (e.message || e)); } catch { /* noop */ }
+      return 0;
+    }
+  };
+
   return {
     db: null, // مقروء من الكاش — لا اعتماد على SQLite
     backend: 'postgresql',
     pg: true,
     getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany,
-    cdcSince,
+    cdcSince, pruneChangeLog,
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
@@ -306,6 +332,7 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
   let cdcNext = 1;
   try { const row = db.prepare('SELECT COALESCE(MAX(seq),0) AS m FROM change_log').get(); cdcNext = (row ? Number(row.m) : 0) + 1; } catch { /* tolerate */ }
   const cdcPush = (key, op) => {
+    if (key.startsWith('rcerp_sessions') || key.startsWith('rcerp_rate_limits') || key.startsWith('rcerp_audit') || key.startsWith('rcerp_telegram_')) return;
     const seq = cdcNext++;
     const ts = new Date().toISOString();
     try { db.prepare('INSERT INTO change_log (seq, key, op, ts) VALUES (?, ?, ?, ?)').run(seq, key, op, ts); } catch { /* CDC must never break the app */ }
@@ -317,8 +344,15 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
     } catch { return []; }
   };
 
-  const getKV = (key) => { const row = db.prepare('SELECT value FROM kv WHERE key = ?').get(key); return row ? JSON.parse(row.value) : null; };
-  const setKV = (key, value) => { rev += 1; db.prepare('INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, JSON.stringify(value)); cdcPush(key, 'set'); };
+  // getKV must be defined before return object (hoisted function declaration)
+  function getKV(key) {
+    const row = db.prepare('SELECT value FROM kv WHERE key = ?').get(key);
+    return row ? JSON.parse(row.value) : null;
+  }
+
+  const setKV = (key, value) => {
+    rev += 1; db.prepare('INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(key, JSON.stringify(value)); cdcPush(key, 'set');
+  };
   const deleteKV = (key) => { db.prepare('DELETE FROM kv WHERE key = ?').run(key); cdcPush(key, 'del'); };
   const setKVMany = (entries) => {
     if (entries.size === 0) return;
@@ -362,11 +396,26 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
   const writeAudit = (actor, action, targetId = null, detail = '') => { try { db.prepare('INSERT INTO audit_log (ts, actorId, actorEmail, action, targetId, detail) VALUES (?, ?, ?, ?, ?, ?)').run(new Date().toISOString(), actor ? actor.id : null, actor ? actor.email : null, action, targetId || null, detail || null); } catch { /* audit must never break the app */ } };
   const getAuditLogs = (limit = 200) => db.prepare('SELECT * FROM audit_log ORDER BY ts DESC, id DESC LIMIT ?').all(limit);
 
+  const pruneChangeLog = () => {
+    try {
+      const cutoff = new Date(Date.now() - CHANGELOG_RETENTION_MS).toISOString();
+      const m = db.prepare('SELECT COALESCE(MAX(seq),0) AS m FROM change_log').get();
+      const maxSeq = Number(m ? m.m : 0);
+      const floor = Math.max(0, maxSeq - CHANGELOG_FLOOR);
+      const res = db.prepare('DELETE FROM change_log WHERE ts < ? AND seq < ?').run(cutoff, floor);
+      if (res.changes > 0) console.log(`[store:sqlite] pruned ${res.changes} change_log rows`);
+      return res.changes;
+    } catch (e) {
+      try { console.error('[store:sqlite] pruneChangeLog error:', e && (e.message || e)); } catch { /* noop */ }
+      return 0;
+    }
+  };
+
   return {
     db,
     backend: 'sqlite',
     pg: false,
-    getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany, cdcSince,
+    getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany, cdcSince, pruneChangeLog,
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
@@ -386,7 +435,7 @@ let backend = null; // set by init()
 
 const façade = {};
 const M = [
-  'getKV', 'setKV', 'deleteKV', 'kvKeysByPrefix', 'kvEntriesByPrefix', 'setKVMany', 'cdcSince',
+  'getKV', 'setKV', 'deleteKV', 'kvKeysByPrefix', 'kvEntriesByPrefix', 'setKVMany', 'cdcSince', 'pruneChangeLog',
   'createSession', 'deleteSession', 'deleteSessionsByUser', 'deleteOtherSessions',
   'purgeAllSessions', 'purgeExpiredSessions', 'sessionRow',
   'rateLimitGet', 'rateLimitRegisterFailure', 'rateLimitClear', 'purgeExpiredRateLimits',
@@ -403,8 +452,7 @@ export const ensureStore = async () => {
   if (backend) return backend;
   if (!hasPg()) { backend = createSqliteStore(); return backend; }
   try {
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
+    const { prisma } = await import('./lib/prisma.ts');
     const pg = await createPgStore(prisma);
     backend = pg;
     return backend;

@@ -20,7 +20,7 @@ const normalizeAiItem = (m) => ({
   id: m.id,
   name: m.name || 'ظ†ظ…ظˆط°ط¬',
   provider: VALID_PROVIDERS.includes(m.provider) ? m.provider : 'local',
-  apiKey: decryptSecret(m.apiKey ?? ''),
+  apiKey: decryptSecret(m.apiKey ?? '', 'ai:apiKey'),
   baseURL: typeof m.baseURL === 'string' && m.baseURL ? m.baseURL : undefined,
   model: m.model || '',
   enabled: m.enabled !== false,
@@ -37,7 +37,7 @@ export const resolveServerAIModel = (store, modelId) => {
     return {
       id: 'ai-default', name: 'ط§ظ„ظ†ظ…ظˆط°ط¬ ط§ظ„ط§ظپطھط±ط§ط¶ظٹ',
       provider: VALID_PROVIDERS.includes(s.provider) ? s.provider : 'local',
-      apiKey: decryptSecret(s.apiKey ?? ''),
+      apiKey: decryptSecret(s.apiKey ?? '', 'ai:apiKey'),
       baseURL: typeof s.baseURL === 'string' && s.baseURL ? s.baseURL : undefined,
       model: s.model || '',
       enabled: s.enabled !== false,

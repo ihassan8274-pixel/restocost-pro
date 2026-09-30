@@ -64,3 +64,23 @@ test('سجلات مجاورة غير متعارضة تُحفظ كما هي (لا
   const out = mergeById(serverHas, staleIncoming);
   assert.equal(out.find((r) => r.id === 'y').status, 'approved');
 });
+
+test('سلسلة تاريخية (أشهر الإغلاق): الوارد يُضاف بالاتحاد ولا يُحذف من الموجود', () => {
+  const out = mergeById(['2025-01', '2025-03'], ['2025-03', '2025-07']);
+  assert.deepEqual(out, ['2025-01', '2025-03', '2025-07']);
+});
+
+test('مصفوفة بدائية فارغة تتقبل الوارد (النشأة الأولى)', () => {
+  assert.deepEqual(mergeById([], ['2026-01']), ['2026-01']);
+  assert.deepEqual(mergeById(null, ['2026-01']), ['2026-01']);
+});
+
+test('سجلات كائنات لا تتأثر بمسار البدائي', () => {
+  const out = mergeById([grnApproved('a', 10)], [grnSubmitted('b', 5)]);
+  assert.equal(out.length, 2);
+  assert.equal(out.find((r) => r.id === 'b').status, 'submitted');
+});
+
+test('أرقام بدائية تُدمج بالاتحاد مع إزالة المكرر', () => {
+  assert.deepEqual(mergeById([1, 2, 3], [3, 4]), [1, 2, 3, 4]);
+});

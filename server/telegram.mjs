@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const tokenOf = (settings, purchase) => {
   if (!settings || typeof settings !== 'object') return '';
   const raw = purchase ? settings.purchaseBotToken : settings.botToken;
-  return decryptSecret(raw ?? '');
+  return decryptSecret(raw ?? '', 'tg:botToken');
 };
 
 /**

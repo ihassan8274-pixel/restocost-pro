@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { fileURLToPath, URL } from 'node:url';
 
 const VENDOR_GROUPS = new Map<string, string>([
   ['react', 'vendor-react'],
@@ -33,11 +34,17 @@ function manualChunks(id: string): string | undefined {
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@stores': fileURLToPath(new URL('./src/stores', import.meta.url)),
+    },
+  },
   server: {
-    port: 3002,
+    port: 5173,
     host: true,
     proxy: {
-      '/api': 'http://localhost:3002',
+      '/api': 'http://localhost:3001',
     },
   },
   build: {

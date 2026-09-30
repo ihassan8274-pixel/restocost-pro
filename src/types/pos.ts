@@ -89,6 +89,7 @@ export interface POSOrder {
   cashierName: string;
   customerId?: string;
   rawMaterialsDeducted?: boolean;
+  status: 'draft' | 'submitted' | 'approved' | 'partially_received' | 'received' | 'cancelled' | 'rejected';
 }
 
 export interface POSReturnItem {
@@ -114,6 +115,7 @@ export interface POSReturn {
   totalCost: number;
   reason: string;
   refundedBy: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
 }
 
 export interface BatchSalesItem {

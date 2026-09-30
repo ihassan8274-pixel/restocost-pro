@@ -74,7 +74,7 @@ export const POSView: React.FC = () => {
 
   const checkout = () => {
     if (cart.length === 0) return;
-    const res = addPOSOrder({ branchId, orderType, items: cart, cashierName: 'المستخدم' });
+    const res = addPOSOrder({ branchId, orderType, items: cart, cashierName: 'المستخدم', status: 'received' });
     if (res && res.autoSupplied.length > 0) {
       showToast(`تم التوريد التلقائي من المطبخ المركزي لتغطية: ${res.autoSupplied.slice(0, 5).join('، ')}${res.autoSupplied.length > 5 ? '…' : ''}`);
     }

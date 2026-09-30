@@ -24,12 +24,24 @@ export const registerAuth = (app) => {
     const { email, password, totpCode } = req.body || {};
     const users = getKV('rcerp_users') || [];
     const user = users.find((u) => u.email.toLowerCase() === String(email || '').trim().toLowerCase());
-    if (!user) return res.json({ ok: false, error: 'البريد الإلكتروني غير مسجل في النظام' });
+
+    // IP-based rate limiting (additional layer for unknown emails / brute force)
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const ipKey = 'login:ip:' + clientIp;
+    purgeExpiredRateLimits();
+    const ipRec = rateLimitGet(ipKey);
+    if (ipRec && ipRec.lockedUntil > Date.now()) {
+      return res.json({ ok: false, error: `محاولات كثيرة من هذا العنوان — أعد المحاولة بعد ${Math.ceil((ipRec.lockedUntil - Date.now()) / 60000)} دقيقة` });
+    }
+
+    if (!user) {
+      rateLimitRegisterFailure(ipKey);
+      return res.json({ ok: false, error: 'البريد الإلكتروني غير مسجل في النظام' });
+    }
     if (user.needsActivation) return res.json({ ok: false, error: 'حسابك في انتظار تفعيل مسؤول النظام — أعد المحاولة لاحقاً' });
     if (!user.isActive) return res.json({ ok: false, error: 'هذا الحساب موقوف، تواصل مع مدير النظام' });
 
     // Brute-force protection: lock the account after repeated failures (SQLite-backed).
-    purgeExpiredRateLimits();
     const rec = rateLimitGet(user.email);
     if (rec && rec.lockedUntil > Date.now()) {
       return res.json({ ok: false, error: `محاولات كثيرة — أعد المحاولة بعد ${Math.ceil((rec.lockedUntil - Date.now()) / 60000)} دقيقة` });
@@ -55,6 +67,7 @@ export const registerAuth = (app) => {
         // Count TOTP failures against the same per-account lockout counter so a
         // correct password alone can't be followed by unlimited OTP guesses.
         const r2 = rateLimitRegisterFailure(user.email);
+        rateLimitRegisterFailure(ipKey); // Also track IP
         writeAudit(user, 'LOGIN_2FA_FAILED', user.id);
         if (r2.lockedUntil) {
           return res.json({ ok: false, error: `محاولات كثيرة — تم قفل الحساب مؤقتاً. أعد المحاولة بعد ${Math.ceil((r2.lockedUntil - Date.now()) / 60000)} دقيقة` });
@@ -62,6 +75,7 @@ export const registerAuth = (app) => {
         return res.json({ ok: false, error: 'رمز التحقق غير صحيح' });
       }
       rateLimitClear(user.email);
+      rateLimitClear(ipKey);
     }
 
     // Upgrade legacy hash to bcrypt on successful login
@@ -72,6 +86,7 @@ export const registerAuth = (app) => {
     purgeExpiredSessions();
     user.lastLogin = new Date().toISOString();
     setKV('rcerp_users', users);
+    rateLimitClear(ipKey); // Clear IP rate limit on success
     const token = crypto.randomBytes(32).toString('hex');
     createSession(token, user.id);
     writeAudit(user, 'LOGIN_OK', user.id);

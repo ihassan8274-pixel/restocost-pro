@@ -54,8 +54,8 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
     const provider = aiForm.provider;
     if (provider !== 'local' && provider !== 'custom' && !aiForm.apiKey.trim() && !(aiEditingId && aiEditingHasKey)) { setAiErr('أدخل مفتاح API لهذا النموذج'); return; }
     const cfg = { name: aiForm.name.trim() || 'نموذج', provider, apiKey: aiForm.apiKey.trim(), baseURL: aiForm.baseURL.trim() || undefined, model: aiForm.model.trim(), enabled: aiForm.enabled };
-    if (aiEditingId) updateAIModel({ ...cfg, id: aiEditingId });
-    else addAIModel(cfg);
+    if (aiEditingId) updateAIModel(aiEditingId, { ...cfg });
+    else addAIModel({ ...cfg, id: `ai-${Date.now()}` });
     setAiModalOpen(false);
     setAiMsg('تم حفظ النموذج — ساري على جميع الأجهزة المتصلة');
   };
@@ -354,7 +354,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
   };
 
   const remove = () => {
-    setLogo(null);
+    setLogo('');
     setPreview(null);
     setSavedMsg('');
     setError('');

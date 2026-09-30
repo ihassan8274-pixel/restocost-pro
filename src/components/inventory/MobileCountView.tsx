@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Search, Save, CheckCircle2, Smartphone, RotateCcw, ClipboardCheck, History, Eye, Package, FileDown, MessageCircle, Printer, Filter, Download, Shield, Pencil, CalendarDays, Store, Plus, Minus, UserCircle2, Tablet, DownloadCloud, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useSyncStore } from '@stores/syncStore';
 import { stockPerPurchase, purchaseUnitName } from '../../business/units';
 import { CountEntry, blankCountEntry, cleanCountInput, countFilled, buildCountItems } from '../../business/counting';
 import { fmtMoney, downloadCSV } from '../../utils/helpers';
@@ -31,6 +32,7 @@ const fmtDateLong = (d: string) => {
 
 const MobileCountView: React.FC = () => {
   const { branches, rawMaterials, inventory, dailyCounts, addDailyCount, updateDailyCount, deleteDailyCount, getBranchName, currentUser, showToast, can, syncNow } = useApp();
+  const { saveErrorDetail } = useSyncStore();
   const adminDelete = useAdminDelete();
   const activeBranches = branches.filter((b) => b.isActive);
   const [branchId, setBranchId] = useState<string>(() => {
@@ -237,11 +239,17 @@ const MobileCountView: React.FC = () => {
     setCounts({});
     setEditingId(null);
     setTab('log');
-    // مزامنة فورية مع الخادم حتى تظهر البيانات على الأجهزة الأخرى حالاً
-    const synced = await syncNow('rcerp_daily_counts');
+    // مزامنة فورية مع الخادم مع إعادة محاولة
+    let synced = false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      synced = await syncNow('rcerp_daily_counts');
+      if (synced) break;
+      await new Promise(r => setTimeout(r, 1000 * attempt));
+    }
+    const saveError = saveErrorDetail;
     showToast(synced
       ? 'تم الحفظ والمزامنة مع الخادم ✓'
-      : 'حُفظ محلياً — المزامنة مستمرة تلقائياً…');
+      : `فشل المزامنة: ${saveError || 'غير معروف'} — اضغط "مزامنة الآن" في الشريط العلوي`);
   };
 
   const cancelEdit = () => {

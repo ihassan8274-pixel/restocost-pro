@@ -124,7 +124,7 @@ const deliver = async (token, chatId, text, createIfMissing = false) => {
 export const publishCatalogUpdate = async () => {
   try {
     const settings = store.getKV('rcerp_telegram_settings');
-    const token = settings && settings.enabled ? decryptSecret(settings.botToken || '') : '';
+    const token = settings && settings.enabled ? decryptSecret(settings.botToken || '', 'tg:botToken') : '';
     if (!settings || !settings.enabled || !token) return;
     const chatIds = Array.isArray(settings.chatIds) ? settings.chatIds : [];
     const text = formatCatalog(store);

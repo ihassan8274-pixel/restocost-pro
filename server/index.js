@@ -9,7 +9,7 @@ import http from 'node:http';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
-import { dataDir, readBindHost, portInUse, sessionUser, readToken } from './core.mjs';
+import { dataDir, readBindHost, portInUse, sessionUser, readToken, isLiveRestoServer, acquireInstanceLock, releaseInstanceLock } from './core.mjs';
 import { ensureStore, store, probeStore } from './store.mjs';
 import { requestLogger, writeLog } from './logger.mjs';
 import { PKG_VERSION, buildFingerprint, serverStamp } from './version.mjs';
@@ -88,16 +88,15 @@ app.use(requestLogger);
 
 // ---- Server-enforced must-change-password ----
 // Accounts seeded/recovered with a known default password are blocked from every
-// write (saves, users, backup, telegram, AI …) until they change it. Reads stay
-// open; auth/totp/change-password endpoints are exempt so the flow completes.
-const AUTH_EXEMPT_WRITES = new Set([
+// endpoint (including reads) until they change it.
+// Auth/totp/change-password endpoints are exempt so the flow completes.
+const AUTH_EXEMPT_ALL = new Set([
   '/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/auth/me',
   '/api/auth/verify-password', '/api/auth/change-password',
   '/api/auth/totp/setup', '/api/auth/totp/enable', '/api/auth/totp/disable',
 ]);
 app.use((req, res, next) => {
-  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
-  if (AUTH_EXEMPT_WRITES.has(req.path)) return next();
+  if (AUTH_EXEMPT_ALL.has(req.path)) return next();
   const u = sessionUser(readToken(req));
   if (!u) return next();
   const users = store.getKV('rcerp_users') || [];
@@ -141,29 +140,120 @@ registerWebhooksRoutes(app);
 registerAI(app);
 registerOpenApi(app);
 
+// ---- جسر منصة استخراج الفواتير (تطبيق مستقل على منفذ 3100) ----
+// يتيح الوصول إلى المنصة من نفس نطاق RestoCost: https://restocost.shop/invoice-platform
+const INVOICE_PLATFORM = 'http://127.0.0.1:3100';
+
+// تجميع الجسد الخام كاملاً قبل التمرير — يمنع قطع multipart على المنصة ("Unexpected end of form")
+const readRawBody = (req, limit) => new Promise((resolve, reject) => {
+  const chunks = [];
+  let total = 0;
+  req.on('data', (c) => {
+    total += c.length;
+    if (total > limit) { reject(new Error('الجسد أكبر من الحد المسموح')); req.destroy(); return; }
+    chunks.push(c);
+  });
+  req.on('end', () => resolve(Buffer.concat(chunks)));
+  req.on('error', reject);
+});
+
+async function proxyInvoicePlatform(req, res) {
+  const suffix = req.originalUrl.replace(/^\/invoice-platform/, '') || '/';
+  const target = INVOICE_PLATFORM + suffix;
+  const isGet = req.method === 'GET' || req.method === 'HEAD';
+  let body;
+  let headers = { accept: 'application/json, text/plain, */*' };
+  if (!isGet) {
+    const ct = String(req.headers['content-type'] || '');
+    if (ct.startsWith('multipart/form-data')) {
+      // نمرر المرفقات كاملة (حتى 100MB) بعد تجميعها — busboy على المنصة يستقبلها سليمة
+      body = await readRawBody(req, 100 * 1024 * 1024);
+      headers['content-type'] = ct;
+      headers['content-length'] = String(body.length);
+    } else if (req.body !== undefined) {
+      if (Buffer.isBuffer(req.body)) body = req.body;
+      else if (typeof req.body === 'object') body = Buffer.from(JSON.stringify(req.body), 'utf8');
+      else body = Buffer.from(String(req.body), 'utf8');
+      headers['content-type'] = ct || 'application/json';
+      headers['content-length'] = String(body.length);
+    }
+  }
+  try {
+    const r = await fetch(target, {
+      method: req.method,
+      headers,
+      body,
+      signal: AbortSignal.timeout(90000),
+    });
+    const buf = Buffer.from(await r.arrayBuffer());
+    res.status(r.status);
+    const ct = r.headers.get('content-type');
+    if (ct) res.set('content-type', ct);
+    const cd = r.headers.get('content-disposition');
+    if (cd) res.set('content-disposition', cd);
+    // منع Cloudflare من خزن الإصدارات القديمة (الوكيل لا يمّرر Cache-Control افتراضياً،
+    // و Cloudflare يخمّن max-age=14400 عند غيابه فيبقى نسخة قديمة من app.js والصفحة).
+    res.set('cache-control', 'no-cache, no-store, must-revalidate');
+    return res.send(buf);
+  } catch (e) {
+    return res.status(502).json({ ok: false, error: `منصة استخراج الفواتير غير متاحة — شغّلها على المنفذ 3100 ثم أعد المحاولة (${String(e.message || e)})` });
+  }
+}
+// حاجز مصادقة قبل الجسر: منع أي طلب غير مصادق من استخدام المنصة كأنه SSRF proxy مفتوح
+// (كانت أي جهة على الشبكة تستطيع استدعاء المنفذ 3100 باسم المضيف). الجسر يستخدم نفس
+// جلسة RestoCost — المتصفح يمرر الكوكي تلقائياً لكل الأصول تحت مسار الجسر.
+app.all('/invoice-platform*', (req, res, next) => {
+  const user = sessionUser(readToken(req));
+  if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+  next();
+}, proxyInvoicePlatform);
+
 // ---- Static (production build) ----
 const distDir = path.join(__dirname, '..', 'dist');
 if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
+  // index.html دائماً بدون تخزين (no-cache) ليتناول المتصفح أحدث الأسماء المhashed؛
+  // بينما ملفات assets (JS/CSS/خطوط/صور) أسماؤها مhashed فتُخزَّن طويلاً (immutable).
+  app.use(express.static(distDir, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.set('cache-control', 'no-cache, no-store, must-revalidate');
+      } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        res.set('cache-control', 'public, max-age=31536000, immutable');
+      }
+    },
+  }));
   app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api')) {
-      return res.sendFile(path.join(distDir, 'index.html'));
+    if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
+    // الملفات ذات التوسعة الناقصة (chunks قديمة من نسخ سابقة) يجب أن تعيد 404 صريحاً
+    // بدل index.html، لئلا يحاول المتصفح تنفيذ HTML كـ JS فيفشل الاستيراد الديناميكي.
+    if (/\.(js|css|woff2?|ttf|png|svg|ico|json|webp|jpg|jpeg)$/i.test(req.path)) {
+      return res.status(404).send('Not found');
     }
-    next();
+    res.set('cache-control', 'no-cache, no-store, must-revalidate');
+    return res.sendFile(path.join(distDir, 'index.html'));
   });
 }
 
 // ---- API 404 + global error handler (JSON contract instead of HTML) ----
 app.use('/api', (req, res) => {
-  res.status(404).json({ ok: false, error: 'المسار غير موجود' });
-});
+    res.status(404).json({ ok: false, error: 'المسار غير موجود' });
+  });
+  app.use((req, res) => {
+    // الملفات ذات التوسعة الناقصة (chunks قديمة) يجب أن تعيد 404 صريحاً —
+    // لا أن نريلها index.html لئلا يحاول المتصفح تنفيذ HTML كـ JS.
+    if (req.method === 'GET' && /\.(js|css|woff2?|ttf|png|svg|ico|json|webp|jpg|jpeg)$/i.test(req.path)) {
+      return res.status(404).json({ ok: false, error: 'الملف غير موجود' });
+    }
+    const msg = 'المسار غير موجود';
+    res.status(404).send(msg);
+  });
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   try { console.error('[routes] unhandled error:', err && (err.stack || err.message)); } catch { /* noop */ }
   if (res.headersSent) return next(err);
   const status = (err && (err.status || err.statusCode)) || 500;
   if (status >= 500) return res.status(500).json({ ok: false, error: 'خطأ داخلي في الخادم' });
-  res.status(status).json({ ok: false, error: 'بيانات الطلب غير صالحة' });
+  res.status(status).json({ ok: false, error: err?.message || 'بيانات الطلب غير صالحة' });
 });
 
 // ---- Graceful shutdown: drain the async write queue before exiting ----
@@ -176,6 +266,7 @@ const gracefulShutdown = (sig) => {
   (async () => {
     try { await store.flush(); } catch { /* ignore */ }
     clearTimeout(bail);
+    releaseInstanceLock();
     process.exit(0);
   })();
 };
@@ -183,10 +274,23 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 (async () => {
+  // --- Single-instance guard: only one live copy per data dir. Prevents the
+  // multi-instance clobbering of port.txt that caused the 2026-09-26 data loss. ---
+  const lock = acquireInstanceLock();
+  if (!lock.ok) {
+    console.error(`RestoCost ERP Pro: another instance is already running in this folder (PID ${lock.pid}). ` +
+      'Refusing to start a duplicate to protect the data store and port.txt.');
+    console.error('If you believe this is stale, delete server/instance.lock and try again.');
+    process.exit(3);
+  }
   // --- Database bootstrap: PostgreSQL (Prisma) if configured, else SQLite. ---
   const engine = await ensureStore();
   console.log(`RestoCost ERP Pro: دعم البيانات عبر ${engine.backend === 'postgresql' ? 'PostgreSQL (Prisma)' : 'SQLite (fallback)'}`);
   try { migrateSecretsAtRest(store); } catch (e) { console.error('[secrets] migrate failed:', e && (e.stack || e.message)); }
+  // --- change_log bounded retention: prune on boot, then every 6h. Keeps the
+  // CDC table from growing unbounded (49k+ rows / 9 days observed). ---
+  try { await store.pruneChangeLog(); } catch (e) { console.error('[store] initial prune failed:', e && (e.message || e)); }
+  setInterval(() => { try { store.pruneChangeLog(); } catch (e) { console.error('[store] periodic prune failed:', e && (e.message || e)); } }, 6 * 3600 * 1000).unref();
 
   const bindHost = readBindHost();
   let port = Number(process.env.PORT);
@@ -202,8 +306,23 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     }
     return true;
   };
-  while (!(await allFree(port)) && port < 3100) port += 1;
-  fs.writeFileSync(path.join(__dirname, 'port.txt'), String(port));
+  // Port escalation must never clobber a live RestoCost instance. If the intended
+  // port is already served by our app, REFUSE to start (this is the multi-instance
+  // guard). Only escalate when the port is held by some unrelated process.
+  if (!(await allFree(port))) {
+    // Hard port-conflict guard: never escalate to another port silently.
+    // External launchers may delete instance.lock before starting; without this
+    // guard a new process would quietly move to a sibling port and run a second
+    // instance against the same database. Single-instance protection wins.
+    const live = await isLiveRestoServer(port, hosts);
+    console.error(
+      live
+        ? `RestoCost ERP Pro: port ${port} is already served by a live RestoCost instance. Refusing to start a duplicate.`
+        : `RestoCost ERP Pro: port ${port} is already in use. Refusing to start (no port escalation).`
+    );
+    releaseInstanceLock();
+    process.exit(3);
+  }
   const results = await Promise.all(hosts.map((h) => new Promise((resolve) => {
     const s = http.createServer(app);
     s.once('error', (e) => resolve({ h, ok: false, error: e.message }));
@@ -213,8 +332,10 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   results.filter((r) => !r.ok).forEach((r) => console.log(`RestoCost ERP Pro: could not bind ${r.h}:${port} — ${r.error}`));
   if (bound === 0) {
     console.error('RestoCost ERP Pro: no address available to bind. Exiting.');
+    releaseInstanceLock();
     process.exit(1);
   }
+  fs.writeFileSync(path.join(__dirname, 'port.txt'), String(port));
   console.log(`RestoCost ERP Pro server running on ${hosts.map((h) => `http://${h}:${port}`).join(' , ')}`);
   console.log(`Backend: ${engine.backend === 'postgresql' ? 'PostgreSQL — restocost2 (Prisma)' : 'SQLite — ' + path.join(dataDir, 'restocost.db')}`);
   if (bindHost === '0.0.0.0') {

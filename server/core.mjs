@@ -55,6 +55,7 @@ export const COLLECTION_KEYS = [
   'rcerp_inventory_batches', 'rcerp_temp_logs', 'rcerp_haccp_inspections', 'rcerp_tasks', 'rcerp_custom_reports',
   'rcerp_eod_closures',
   'rcerp_material_barcodes',
+  'rcerp_recent_docs',
 ];
 
 export const publicUser = (u) => (u ? { id: u.id, name: u.name, email: u.email, role: u.role, branchId: u.branchId, isActive: u.isActive, createdAt: u.createdAt, lastLogin: u.lastLogin, totpEnabled: !!u.totpEnabled, needsActivation: !!u.needsActivation, requestedRole: u.requestedRole, requestedBranchId: u.requestedBranchId } : null);
@@ -112,6 +113,64 @@ export const portInUse = (port, host = '127.0.0.1') => new Promise((resolve) => 
   srv.once('listening', () => srv.close(() => resolve(false)));
   srv.listen(port, host);
 });
+
+// True when a live RestoCost server answers /health on the given port.
+// Used to distinguish "intended port busy by our own app" (→ refuse to start,
+// never clobber port.txt) from "busy by some other process" (→ safe to escalate).
+export const isLiveRestoServer = (port, hosts = ['::1', '127.0.0.1']) => new Promise((resolve) => {
+  let checked = 0;
+  let done = false;
+  const finish = (ok) => {
+    if (done) return;
+    done = true;
+    resolve(ok);
+  };
+  for (const h of hosts) {
+    const host = h === '0.0.0.0' ? '127.0.0.1' : h;
+    fetch(`http://${host.includes(':') ? `[${host}]` : host}:${port}/health`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(1200),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { checked += 1; if (j && j.server && j.build) finish(true); if (checked === hosts.length) finish(false); })
+      .catch(() => { checked += 1; if (checked === hosts.length) finish(false); });
+  }
+});
+
+// Per-directory single-instance lock: only one live server may own a company copy.
+// Stale locks (crashed PID) are automatically taken over.
+const LOCK_FILE = () => path.join(__dirname, 'instance.lock');
+const pidAlive = (pid) => {
+  try { process.kill(pid, 0); return true; }
+  catch (e) {
+    // EPERM/EACCES: process exists but we cannot signal it (e.g. a higher
+    // integrity-level process on Windows). Treat as ALIVE so we never start
+    // a duplicate that would clobber port.txt / the data store.
+    return !!(e && (e.code === 'EPERM' || e.code === 'EACCES'));
+  }
+};
+export const acquireInstanceLock = () => {
+  try {
+    const raw = fs.readFileSync(LOCK_FILE(), 'utf8');
+    const lock = JSON.parse(raw);
+    if (lock && lock.pid && pidAlive(lock.pid)) return { ok: false, pid: lock.pid, startedAt: lock.startedAt };
+  } catch { /* none or stale (bad JSON) */ }
+  try {
+    fs.writeFileSync(LOCK_FILE(), JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() }));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+};
+export const releaseInstanceLock = () => {
+  try {
+    const raw = fs.readFileSync(LOCK_FILE(), 'utf8');
+    if (raw) {
+      const lock = JSON.parse(raw);
+      if (lock.pid === process.pid) fs.writeFileSync(LOCK_FILE(), '');
+    }
+  } catch { /* ignore */ }
+};
 
 export const readBindHost = () => {
   if (process.env.HOST) return process.env.HOST;

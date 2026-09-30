@@ -2,7 +2,7 @@
 // Three-level toast — level drives shape/behavior, optional Undo action.
 import { useRef, useState } from 'react';
 
-export type ToastLevel = 'success' | 'info' | 'error';
+export type ToastLevel = 'success' | 'info' | 'error' | 'warning';
 export interface ToastEntry {
   message: string;
   level: ToastLevel;

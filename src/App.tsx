@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { AlertTriangle, AlertCircle, X, CheckCircle2, BellRing, ShieldAlert, Loader2, UtensilsCrossed, Undo2, Redo2 } from 'lucide-react';
-import { AppProvider, useApp } from './context/AppContext';
+import { AppProvider, useApp } from './stores/hooks/useAppCompat';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { SyncStrip } from './components/layout/SyncStrip';
@@ -20,12 +20,11 @@ const lazyNamed = (f: () => Promise<Record<string, any>>, name: string): React.L
 const lazyDefault = (f: () => Promise<{ default: React.ComponentType<any> }>): React.LazyExoticComponent<React.ComponentType<any>> =>
   React.lazy(() => f());
 
-const DashboardView = lazyNamed(() => import('./components/dashboard/DashboardView'), 'DashboardView');
+const DashboardView = lazyNamed(() => import('./components/dashboard/DashboardViewMigrated'), 'DashboardViewMigrated');
 const ExecutiveDashboardView = lazyNamed(() => import('./components/dashboard/ExecutiveDashboardView'), 'ExecutiveDashboardView');
 const POSView = lazyNamed(() => import('./components/pos/POSView'), 'POSView');
 const ReturnsView = lazyNamed(() => import('./components/pos/ReturnsView'), 'ReturnsView');
 const PurchaseVarianceView = lazyNamed(() => import('./components/procurement/PurchaseVarianceView'), 'PurchaseVarianceView');
-const FixedAssetsView = lazyNamed(() => import('./components/assets/FixedAssetsView'), 'FixedAssetsView');
 const AutomationView = lazyNamed(() => import('./components/automation/AutomationView'), 'AutomationView');
 const BatchSalesView = lazyNamed(() => import('./components/pos/BatchSalesView'), 'BatchSalesView');
 const BatchSalesEntryView = lazyNamed(() => import('./components/pos/BatchSalesEntryView'), 'BatchSalesEntryView');
@@ -84,7 +83,6 @@ const TrueCostView = lazyNamed(() => import('./components/reports/TrueCostView')
 const AdvancedReportingSystemView = lazyNamed(() => import('./components/advanced-reporting/AdvancedReportingSystemView'), 'AdvancedReportingSystemView');
 const AnalyticsView = lazyNamed(() => import('./components/analytics/AnalyticsView'), 'AnalyticsView');
 const WhatIfSimulationView = lazyNamed(() => import('./components/cost/WhatIfSimulationView'), 'WhatIfSimulationView');
-const AccountingView = lazyNamed(() => import('./components/accounting/AccountingView'), 'AccountingView');
 const PurchaseSuggestionsView = lazyNamed(() => import('./components/procurement/PurchaseSuggestionsView'), 'PurchaseSuggestionsView');
 const ThreeWayMatchView = lazyNamed(() => import('./components/procurement/ThreeWayMatchView'), 'ThreeWayMatchView');
 const SupplierScorecardView = lazyNamed(() => import('./components/procurement/SupplierScorecardView'), 'SupplierScorecardView');
@@ -96,8 +94,6 @@ const DetailedReportsView = lazyNamed(() => import('./components/reports/Detaile
 const ReportsCenterView = lazyNamed(() => import('./components/reports/ReportsCenterView'), 'ReportsCenterView');
 const ReportsDashboardView = lazyNamed(() => import('./components/reports/ReportsDashboardView'), 'ReportsDashboardView');
 const NotificationsView = lazyNamed(() => import('./components/notifications/NotificationsView'), 'NotificationsView');
-const OperatingExpensesView = lazyNamed(() => import('./components/expenses/OperatingExpensesView'), 'OperatingExpensesView');
-const AnnualBudgetView = lazyNamed(() => import('./components/expenses/AnnualBudgetView'), 'AnnualBudgetView');
 const GoodsReceivingView = lazyNamed(() => import('./components/procurement/GoodsReceivingView'), 'GoodsReceivingView');
 const PurchaseOrdersView = lazyNamed(() => import('./components/procurement/PurchaseOrdersView'), 'PurchaseOrdersView');
 const PurchaseRequestView = lazyNamed(() => import('./components/procurement/PurchaseRequestView'), 'PurchaseRequestView');
@@ -118,7 +114,6 @@ const BranchComparisonView = lazyNamed(() => import('./components/inventory/Bran
 const DailyInventoryView = lazyNamed(() => import('./components/inventory/DailyInventoryView'), 'DailyInventoryView');
 const MobileCountView = lazyDefault(() => import('./components/inventory/MobileCountView'));
 const OpeningBalancesView = lazyNamed(() => import('./components/inventory/OpeningBalancesView'), 'OpeningBalancesView');
-const EmployeeMealsView = lazyNamed(() => import('./components/labor/EmployeeMealsView'), 'EmployeeMealsView');
 const StockTransferView = lazyNamed(() => import('./components/inventory/StockTransferView'), 'StockTransferView');
 const DistributionReviewView = lazyNamed(() => import('./components/inventory/DistributionReviewView'), 'DistributionReviewView');
 const IntakeVerificationView = lazyNamed(() => import('./components/inventory/IntakeVerificationView'), 'IntakeVerificationView');
@@ -127,11 +122,6 @@ const CentralKitchenView = lazyNamed(() => import('./components/production/Centr
 const ManufacturingView = lazyNamed(() => import('./components/production/ManufacturingView'), 'ManufacturingView');
 const ButcherTestsView = lazyNamed(() => import('./components/inventory/ButcherTestsView'), 'ButcherTestsView');
 const WastageView = lazyNamed(() => import('./components/production/WastageView'), 'WastageView');
-const LaborView = lazyNamed(() => import('./components/labor/LaborView'), 'LaborView');
-const PayrollView = lazyNamed(() => import('./components/labor/PayrollView'), 'PayrollView');
-const CustomersView = lazyNamed(() => import('./components/customers/CustomersView'), 'CustomersView');
-const ReservationsView = lazyNamed(() => import('./components/customers/ReservationsView'), 'ReservationsView');
-const InvoicesView = lazyNamed(() => import('./components/invoices/InvoicesView'), 'InvoicesView');
 
 const LoadingScreen: React.FC<{ label?: string }> = ({ label = 'جارِ تحميل الشاشة...' }) => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
@@ -183,7 +173,7 @@ const Shell: React.FC = () => {
       executive: 'executive',
       admin: 'dashboard',
       branch_manager: 'dashboard',
-      cost_controller: 'accounting',
+      cost_controller: 'reports_dashboard',
       chef: 'recipes',
       storekeeper: 'inventory',
       waiter: 'pos',
@@ -208,6 +198,8 @@ const Shell: React.FC = () => {
     }
   }, [currentUser, activeTab]);
 
+  if (!currentUser) return <LoginView />;
+
   if (booting) {
     return (
       <div className="min-h-screen bg-warm-50 flex items-center justify-center">
@@ -223,8 +215,6 @@ const Shell: React.FC = () => {
       </div>
     );
   }
-
-  if (!currentUser) return <LoginView />;
 
   if (mustChangePassword) return <ForcePasswordChangeView />;
 
@@ -262,7 +252,6 @@ const Shell: React.FC = () => {
       case 'pos': return <POSView />;
       case 'returns': return <ReturnsView />;
       case 'purchase_variance': return <PurchaseVarianceView />;
-      case 'fixed_assets': return <FixedAssetsView />;
       case 'automation': return <AutomationView onNavigate={setActiveTab} />;
       case 'batch_sales': return <BatchSalesView onNavigate={setActiveTab} onStartEdit={(bid: string) => { setBatchSalesEditId(bid); setActiveTab('batch_sales_entry'); }} />;
       case 'batch_sales_entry': return <BatchSalesEntryView editId={batchSalesEditId} onDone={() => { setBatchSalesEditId(null); setActiveTab('batch_sales'); }} />;
@@ -272,8 +261,6 @@ const Shell: React.FC = () => {
       case 'foodics_integration': return <FoodicsIntegrationView />;
       case 'menus': return <MenusView />;
       case 'menu_planning': return <MenuPlanningView />;
-      case 'customers': return <CustomersView />;
-      case 'reservations': return <ReservationsView />;
       case 'purchase_orders': return <PurchaseOrdersView />;
       case 'purchase_requests': return <PurchaseRequestView />;
       case 'preliminary_supply_orders': return <PreliminarySupplyOrderView />;
@@ -303,25 +290,18 @@ const Shell: React.FC = () => {
       case 'daily_inventory': return <DailyInventoryView />;
       case 'mobile_count': return <MobileCountView />;
       case 'opening_balances': return <OpeningBalancesView />;
-      case 'employee_meals': return <EmployeeMealsView />;
       case 'suppliers': return <SuppliersView />;
       case 'supplier_scorecard': return <SupplierScorecardView />;
       case 'messages_center': return <MessagesCenterView />;
       case 'supplier_returns': return <SupplierReturnsView />;
       case 'analytics': return <AnalyticsView />;
       case 'notifications': return <NotificationsView onNavigate={setActiveTab} />;
-      case 'accounting': return <AccountingView />;
       case 'recipes': return <RecipesView />;
       case 'manufacturing': return <ManufacturingView />;
       case 'butcher_tests': return <ButcherTestsView />;
       case 'production_planning': return <ProductionPlanningView />;
       case 'central_kitchen': return <CentralKitchenView />;
       case 'wastage': return <WastageView />;
-      case 'labor': return <LaborView />;
-      case 'payroll': return <PayrollView />;
-      case 'operating_expenses': return <OperatingExpensesView />;
-      case 'annual_budgets': return <AnnualBudgetView />;
-      case 'invoices': return <InvoicesView />;
       case 'cost_reports': return <CostReportsView />;
       case 'reports_dashboard': return <ReportsDashboardView onNavigate={setActiveTab} />;
       case 'reports_center': return <ReportsCenterView />;

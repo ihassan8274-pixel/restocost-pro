@@ -198,3 +198,9 @@ export interface AutomationRule {
   enabled: boolean;
   config?: { daysBefore?: number };
 }
+
+export interface ToastEntry {
+  message: string;
+  level?: 'success' | 'error' | 'info' | 'warning';
+  undo?: () => void;
+}

@@ -5,7 +5,7 @@ import { Card, PageHeader, Btn, Modal, Field, inputCls, TabBar, AutocompleteSele
 import { fmt, downloadCSV, navOnEnter, netOfGross } from '../../utils/helpers';
 import { tradeUnitPrice } from '../../business/units';
 import { openPrintWindow, type PrintCard, type PrintTable } from '../../utils/print';
-import { exportStyledReport, type StyledReportSheet } from '../../utils/excel';
+import { exportStyledReport, styledSheetModel, excelSheetName, type ExcelCellValue, type ExcelFormula, type StyledReportSheet, type StyledReportTable } from '../../utils/excel';
 import { RecipeIngredient, SubPrepIngredient, StandardRecipe } from '../../types';
 
 type StandardRecipeCategory = StandardRecipe['category'];
@@ -14,6 +14,11 @@ import { ViewToolbar } from '../ui/ViewToolbar';
 // التكلفة المستهدفة في كامل النظام: 28% من سعر البيع الصافي
 const TARGET_FC_PCT = 28;
 const VAT_RATE = 0.15;
+
+// تنسيقات Excel وتقريب مشتركة لهذا المكوّن
+const MONEY_FMT = '#,##0.00';
+const PCT_FMT = '0.00"%"';
+const round2 = (n: number) => Number(n.toFixed(2));
 
 // السعر المقترح (شامل ضريبة) للوصول إلى نسبة التكلفة الإجمالية 28% — يُقرَّب لأعلى رقم صحيح
 const suggestedForTarget = (baseCost: number) => {
@@ -421,18 +426,158 @@ export const RecipesView: React.FC = () => {
   };
 
   // تصدير مكونات الوصفات المختارة إلى Excel بجدول منسق — مرتب حسب التصنيف ثم القسم
+  // تُصدَّر الكميات والمبالغ كأرقام حقيقية، ومعها صيغ Excel مرتبطة (BOM ← ملخص تكلفة ← إجماليات،
+  // وملخص رئيسي بمراجع بين الأوراق) بحيث أي تعديل للأرقام داخل Excel يعيد حساب التكاليف والنسب تلقائياً.
   const exportItemsToExcel = async (items: StandardRecipe[], groupLabel?: string) => {
     if (!items.length) return;
     const ordered = orderBySections(items);
-    const summaryRows = ordered.map((r) => {
-      const c = calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces);
-      const gross = r.actualMenuPrice || 0;
-      const net = gross ? netOfGross(gross) : 0;
-      const totalCostPct = net ? (c.totalCost / net) * 100 : 0;
-      // لا اقتراح لسعر جديد إن كانت النسبة الحالية ≤ 28% — نُبقي السعر الحالي
-      const sugg = effectiveSugg(gross, totalCostPct, c.totalCost);
-      return [r.code, r.nameAr, categoryLabel(r.category), r.section?.trim() || '—', c.foodCost, c.totalCost, gross, net, net ? `${(c.foodCost / net * 100).toFixed(2)}%` : '—', sugg.gross];
+
+    const recipeSheets: StyledReportSheet[] = [];
+    const usedNames = new Set<string>();
+    const nameOf = (r: StandardRecipe) => {
+      let n = (r.nameAr || r.code || 'وصفة').replace(/[\\/?*[\]]/g, '_').trim().slice(0, 25) || 'وصفة';
+      let candidate = n;
+      let i = 2;
+      while (usedNames.has(candidate)) candidate = `${n} ${i++}`.slice(0, 31);
+      usedNames.add(candidate);
+      return candidate;
+    };
+
+    ordered.forEach((r) => {
+      const costs = calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces);
+      const grossPrice = r.actualMenuPrice || 0;
+      const netPrice = grossPrice ? netOfGross(grossPrice) : 0;
+      const fcPct = netPrice ? (costs.foodCost / netPrice) * 100 : 0;
+      const totalCostPctOfNet = netPrice ? (costs.totalCost / netPrice) * 100 : 0;
+      const sugg = effectiveSugg(grossPrice, totalCostPctOfNet, costs.totalCost);
+      const yieldP = Number(r.yieldPieces) > 0 ? Number(r.yieldPieces) : 1;
+      const labor = Number(r.directLaborCost) || 0;
+      const nBom = r.ingredients.length;
+      const subps = r.subPrepIngredients || [];
+      const hasSub = subps.length > 0;
+
+      // جدول المكونات (BOM) — الكمية/السعر/الهدر أرقام، والتكلفة صيغة = كمية × سعر × (1 + هدر/100)
+      const bomRows: ExcelCellValue[][] = r.ingredients.map((ing, i) => {
+        const m = rawMaterials.find((x) => x.id === ing.rawMaterialId);
+        const ingUnit = m && m.tradeUomName && m.tradeUomName.trim() ? m.tradeUomName : m?.unit || '';
+        const unitPrice = round2(ingredientUnitCost(ing.rawMaterialId));
+        return [
+          i + 1,
+          m?.nameAr || ing.rawMaterialId,
+          Number(ing.quantity) || 0,
+          ingUnit,
+          unitPrice,
+          Number(ing.wastagePercent) || 0,
+          { formula: '=C{r}*E{r}*(1+F{r}/100)', result: round2(ingredientCost(ing)), numFmt: MONEY_FMT },
+        ];
+      });
+
+      const tables: StyledReportTable[] = [{
+        title: 'المكونات (BOM)',
+        dense: true,
+        header: ['#', 'المكون', 'الكمية', 'الوحدة', 'سعر الوحدة', 'الهدر %', 'التكلفة'],
+        rows: bomRows,
+      }];
+
+      if (hasSub) {
+        const subRows: ExcelCellValue[][] = subps.map((sp) => {
+          const sub = recipes.find((x) => x.id === sp.recipeId);
+          const pieces = sub ? (Number(sub.yieldPieces) > 0 ? Number(sub.yieldPieces) : (Number(sub.portionSize) > 0 ? Number(sub.portionSize) : 1)) : 1;
+          return [sub?.nameAr || sp.recipeId, Number(sp.quantity) || 0, pieces, round2(subPrepItemCost(sp))];
+        });
+        tables.push({
+          title: 'التحضيرات الأساسية المستهلكة',
+          dense: true,
+          header: ['التحضير', 'الكمية', 'عدد القطع (الدفعة)', 'التكلفة'],
+          rows: subRows,
+        });
+      }
+
+      // جدول ملخص التكلفة — القيمة والنسبة لكل بند صيغة مرتبطة بالجداول أعلاه
+      const foodOnly = costs.foodCost - costs.subPrepCost;
+      const pctCell = (result: number | null): ExcelCellValue => ({
+        formula: '=IF(B{last+3}=0,0,B{r}/B{last+3}*100)',
+        result: result === null ? 0 : Number(result.toFixed(1)),
+        numFmt: '0.0"%"',
+      });
+      const summaryRows: ExcelCellValue[][] = [
+        [
+          'تكلفة الطعام (المكونات + الهدر)',
+          nBom > 0 ? { formula: `=SUM(G{first}:G{first+${nBom - 1}})`, result: round2(foodOnly), numFmt: MONEY_FMT } : 0,
+          pctCell(costs.totalCost ? (foodOnly / costs.totalCost * 100) : null),
+        ],
+        [
+          'التحضيرات الأساسية المستهلكة',
+          hasSub ? { formula: `=SUM(D{t1}:D{t1+${subps.length - 1}})`, result: round2(costs.subPrepCost), numFmt: MONEY_FMT } : 0,
+          pctCell(costs.totalCost ? (costs.subPrepCost / costs.totalCost * 100) : null),
+        ],
+        ['التغليف', round2(Number(r.packagingCost) || 0), pctCell(costs.totalCost ? (Number(r.packagingCost) / costs.totalCost * 100) : null)],
+        [
+          'التكلفة الإجمالية للوصفة',
+          { formula: `=B{last}+B{last+1}+B{last+2}+${round2(labor)}`, result: round2(costs.totalCost), numFmt: MONEY_FMT },
+          { formula: '=100', result: 100, numFmt: '0"%"' },
+        ],
+        [`التكلفة للقطعة الواحدة (÷ ${yieldP} قطعة)`, { formula: `=B{last+3}/${yieldP}`, result: round2(costs.pieceCost), numFmt: MONEY_FMT }, 0],
+        ['سعر المنيو (شامل ضريبة)', grossPrice ? round2(grossPrice) : 0, 0],
+        ['سعر المنيو (صافي)', grossPrice ? { formula: '=B{last+5}/1.15', result: round2(netPrice), numFmt: MONEY_FMT } : 0, 0],
+      ];
+      tables.push({ title: 'ملخص التكلفة', dense: true, header: ['البند', 'القيمة', 'النسبة %'], rows: summaryRows });
+
+      // شريط الإجماليات — صيغ مرتبطة بجدول الملخص للإجمالي/الصافي/النسب/السعر المقترح
+      const totals: [string, ExcelCellValue][] = [
+        ['تكلفة الأغذية (تتضمن التحضيرات)', { formula: '=B{last}+B{last+1}', result: round2(costs.foodCost), numFmt: MONEY_FMT }],
+        ['إجمالي التكلفة', { formula: '=B{last+3}', result: round2(costs.totalCost), numFmt: MONEY_FMT }],
+        ['سعر البيع (شامل ضريبة)', grossPrice ? { formula: '=B{last+5}', result: round2(grossPrice), numFmt: MONEY_FMT } : 0],
+        ['سعر البيع (صافي)', netPrice ? { formula: '=B{last+6}', result: round2(netPrice), numFmt: MONEY_FMT } : 0],
+        ['Food Cost % (على صافي)', netPrice ? { formula: '=IF(B{b+3}=0,0,(B{last}+B{last+1})/B{b+3}*100)', result: Number(fcPct.toFixed(2)), numFmt: PCT_FMT } : 0],
+        ['نسبة التكلفة الكاملة (إجمالي/صافي)', netPrice ? { formula: '=IF(B{b+3}=0,0,B{last+3}/B{b+3}*100)', result: Number(totalCostPctOfNet.toFixed(2)), numFmt: PCT_FMT } : 0],
+        ['هامش الربح %', netPrice ? { formula: '=IF(B{b+3}=0,0,(B{b+3}-B{b+1})/B{b+3}*100)', result: Number((((netPrice - costs.totalCost) / netPrice) * 100).toFixed(2)), numFmt: PCT_FMT } : 0],
+        ['السعر المقترح (صافي لـ28%)', { formula: '=B{b+1}/0.28', result: sugg.net ? round2(sugg.net) : 0, numFmt: MONEY_FMT }],
+        ['السعر المقترح (شامل ضريبة)', { formula: '=B{b+1}/0.28*1.15', result: sugg.gross ? round2(sugg.gross) : 0, numFmt: MONEY_FMT }],
+        ['نسبة التكلفة بعد التعديل (28%)', 28],
+      ];
+
+      const meta: [string, ExcelCellValue][] = [
+        ['الكود', r.code], ['الاسم بالإنجليزي', r.nameEn || '—'], ['التصنيف', categoryLabel(r.category)], ['مقاس الحصة', r.portionSize || '—'],
+        ['عدد القطع الناتجة', yieldP], ['الهامش المستهدف', `${r.targetMarginPercent ?? globalTargetMarginPercent}%`],
+        ['Food Cost (على صافي)', netPrice ? Number(fcPct.toFixed(2)) : '—'],
+        ['نسبة التكلفة الإجمالية', netPrice ? Number(totalCostPctOfNet.toFixed(2)) : '—'],
+        ['الحالة', r.isActive ? 'نشط' : 'موقوف'],
+      ];
+
+      recipeSheets.push({
+        name: nameOf(r),
+        title: r.nameAr,
+        subtitle: `${r.code} — ${categoryLabel(r.category)}${r.section?.trim() ? ` — قسم: ${r.section.trim()}` : ''}${r.nameEn ? ` — ${r.nameEn}` : ''}`,
+        dense: true,
+        meta,
+        tables,
+        totals,
+        footer: 'بطاقة تكلفة وصفة معيارية — RestoCost ERP',
+      });
     });
+
+    // ورقة الملخص — أعمدة الأرقام صيغ مرجعية (بين الأوراق) إلى شريط إجماليات ورقة كل وصفة
+    const summaryRows: ExcelCellValue[][] = ordered.map((r, i) => {
+      const c = calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces);
+      const grossPrice = r.actualMenuPrice || 0;
+      const netPrice = grossPrice ? netOfGross(grossPrice) : 0;
+      const totalCostPct = netPrice ? (c.totalCost / netPrice) * 100 : 0;
+      const sugg = effectiveSugg(grossPrice, totalCostPct, c.totalCost);
+      const sheetRef = `'${excelSheetName(recipeSheets[i].name)}'`;
+      const ts = styledSheetModel(recipeSheets[i]).totalsStart + 1; // أول صف في شريط إجماليات ورقة الوصفة
+      const grab = (off: number): ExcelFormula => ({ formula: `${sheetRef}!B${ts + off}`, result: 0, numFmt: MONEY_FMT });
+      return [
+        r.code, r.nameAr, categoryLabel(r.category), r.section?.trim() || '—',
+        { ...grab(0), result: round2(c.foodCost) },
+        { ...grab(1), result: round2(c.totalCost) },
+        { ...grab(2), result: grossPrice ? round2(grossPrice) : 0 },
+        { ...grab(3), result: netPrice ? round2(netPrice) : 0 },
+        { ...grab(4), result: netPrice ? Number((c.foodCost / netPrice * 100).toFixed(2)) : 0, numFmt: PCT_FMT },
+        { ...grab(8), result: sugg.gross ? round2(sugg.gross) : 0 },
+      ];
+    });
+
     const summaryTotals = ordered.reduce((acc, r) => {
       const c = calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces);
       const gross = r.actualMenuPrice || 0;
@@ -449,62 +594,33 @@ export const RecipesView: React.FC = () => {
       }
       return acc;
     }, { foodCost: 0, totalCost: 0, gross: 0, net: 0, soldCount: 0, soldFoodCost: 0, soldTotalCost: 0, soldNet: 0 });
-    const sheets: StyledReportSheet[] = [
-      {
-        name: 'ملخص الوصفات',
-        title: 'ملخص الوصفات المعيارية',
-        subtitle: `الوصفات المستخرجة: ${items.length}${groupLabel ? ` — المجموعات: ${groupLabel}` : ''}`,
-        dense: true,
-        meta: [
-          ['الوصفات', `${items.length}`],
-          ['التكلفة المستهدفة', `${TARGET_FC_PCT}%`],
-          ['الضريبة', '15%'],
-          ['الإيراد', 'على الصافي'],
-        ],
-        header: ['الكود', 'الوصفة', 'التصنيف', 'القسم', 'تكلفة الأغذية', 'إجمالي التكلفة', 'سعر البيع (شامل ضريبة)', 'الصافي', 'نسبة تكلفة الأغذية %', 'السعر المقترح (28%)'],
-        rows: summaryRows,
-        totals: [
-          ['مجموع تكلفة الأغذية (الكل)', `${fmt(summaryTotals.foodCost, 2)} ر.س`],
-          ['منها: الأطباق المباعة', `${fmt(summaryTotals.soldFoodCost, 2)} ر.س`],
-          ['مجموع إجمالي التكلفة (الكل)', `${fmt(summaryTotals.totalCost, 2)} ر.س`],
-          ['مجموع سعر البيع', `${fmt(summaryTotals.gross, 2)} ر.س (${summaryTotals.soldCount} طبق)`],
-          ['مجموع الصافي', `${fmt(summaryTotals.net, 2)} ر.س`],
-          [`نسبة تكلفة الأغذية (الأطباق فقط)`, `${summaryTotals.soldNet ? (summaryTotals.soldFoodCost / summaryTotals.soldNet * 100).toFixed(2) : '—'}%`],
-        ],
-        colWidths: [24, 14, 14, 12, 12, 16, 10, 13, 12],
-        footer: 'ملخص الوصفات المعيارية — RestoCost ERP',
-      },
-    ];
-    // لكل صنف ورقة مستقلة بنفس تنسيق بطاقة الطباعة (بالترتيب نفسه: تصنيف ← قسم ← اسم)
-    const usedNames = new Set<string>();
-    const nameOf = (r: StandardRecipe) => {
-      let n = (r.nameAr || r.code || 'وصفة').replace(/[\\/?*[\]]/g, '_').trim().slice(0, 25) || 'وصفة';
-      let candidate = n;
-      let i = 2;
-      while (usedNames.has(candidate)) candidate = `${n} ${i++}`.slice(0, 31);
-      usedNames.add(candidate);
-      return candidate;
-    };
-    ordered.forEach((r) => {
-      const card = buildRecipeCard(r);
-      const name = nameOf(r);
-      sheets.push({
-        name,
-        title: r.nameAr,
-        subtitle: `${r.code} — ${categoryLabel(r.category)}${r.section?.trim() ? ` — قسم: ${r.section.trim()}` : ''}${r.nameEn ? ` — ${r.nameEn}` : ''}`,
-        dense: true,
-        meta: card.meta,
-        tables: card.tables.map((t) => ({ title: t.title, header: t.header, rows: t.rows, dense: true })),
-        totals: [
-          ...card.totals,
-          ['هامش الربح %', card.netPrice ? `${card.margin.toFixed(2)}%` : '—'],
-          ['السعر المقترح (صافي لـ28%)', card.sugg.net ? `${fmt(card.sugg.net, 2)} ر.س` : '—'],
-          ['السعر المقترح (شامل ضريبة)', card.sugg.gross ? `${fmt(card.sugg.gross, 0)} ر.س` : '—'],
-          ['نسبة التكلفة بعد التعديل (28%)', card.sugg.net ? `${(card.costs.totalCost / card.sugg.net * 100).toFixed(2)}%` : '—'],
-        ],
-        footer: 'بطاقة تكلفة وصفة معيارية — RestoCost ERP',
-      });
-    });
+
+    const n = ordered.length;
+    const sheets: StyledReportSheet[] = [{
+      name: 'ملخص الوصفات',
+      title: 'ملخص الوصفات المعيارية',
+      subtitle: `الوصفات المستخرجة: ${items.length}${groupLabel ? ` — المجموعات: ${groupLabel}` : ''}`,
+      dense: true,
+      meta: [
+        ['الوصفات', `${items.length}`],
+        ['التكلفة المستهدفة', `${TARGET_FC_PCT}%`],
+        ['الضريبة', '15%'],
+        ['الإيراد', 'على الصافي'],
+      ],
+      header: ['الكود', 'الوصفة', 'التصنيف', 'القسم', 'تكلفة الأغذية', 'إجمالي التكلفة', 'سعر البيع (شامل ضريبة)', 'الصافي', 'نسبة تكلفة الأغذية %', 'السعر المقترح (28%)'],
+      rows: summaryRows,
+      totals: [
+        ['مجموع تكلفة الأغذية (الكل)', { formula: `=SUM(E{first}:E{first+${n - 1}})`, result: round2(summaryTotals.foodCost), numFmt: MONEY_FMT }],
+        ['منها: الأطباق المباعة', { formula: `=SUMIF(G{first}:G{first+${n - 1}},">0",E{first}:E{first+${n - 1}})`, result: round2(summaryTotals.soldFoodCost), numFmt: MONEY_FMT }],
+        ['مجموع إجمالي التكلفة (الكل)', { formula: `=SUM(F{first}:F{first+${n - 1}})`, result: round2(summaryTotals.totalCost), numFmt: MONEY_FMT }],
+        [`مجموع سعر البيع (${summaryTotals.soldCount} طبق)`, { formula: `=SUM(G{first}:G{first+${n - 1}})`, result: round2(summaryTotals.gross), numFmt: MONEY_FMT }],
+        ['مجموع الصافي', { formula: `=SUM(H{first}:H{first+${n - 1}})`, result: round2(summaryTotals.net), numFmt: MONEY_FMT }],
+        ['نسبة تكلفة الأغذية (الأطباق فقط)', { formula: `=IF(SUM(H{first}:H{first+${n - 1}})=0,0,SUM(E{first}:E{first+${n - 1}})/SUM(H{first}:H{first+${n - 1}})*100)`, result: summaryTotals.soldNet ? Number((summaryTotals.soldFoodCost / summaryTotals.soldNet * 100).toFixed(2)) : 0, numFmt: PCT_FMT }],
+      ],
+      colWidths: [24, 14, 14, 12, 12, 16, 10, 13, 12],
+      footer: 'ملخص الوصفات المعيارية — RestoCost ERP',
+    }, ...recipeSheets];
+
     // ربط كل سطر في الملخص بورقة الوصفة الخاصة به (داخل الملف)
     sheets[0].hyperlinks = ordered.map((r, i) => {
       const t = sheets[i + 1] as StyledReportSheet | undefined;
@@ -706,20 +822,37 @@ export const RecipesView: React.FC = () => {
       ],
       header: ['الصنف', 'سعر البيع', 'الصافي', 'تكلفة الأغذية', 'التغليف', 'إجمالي التكلفة', 'نسبة تكلفة الأغذية %', 'نسبة التكلفة الإجمالية %', 'السعر المقترح (28%)', 'الصافي بعد التعديل', 'نسبة التكلفة بعد التعديل %'],
       rows: reportRows.map((row) => [
-        row.r.nameAr, row.gross, row.net, row.foodCost, row.packaging, row.totalCost,
-        row.net ? `${row.foodCostPct.toFixed(2)}%` : '—', row.net ? `${row.totalCostPct.toFixed(2)}%` : '—',
-        row.sugg.gross, row.sugg.net, row.sugg.net ? `${row.totalCostPctAfter.toFixed(2)}%` : '—',
+        row.r.nameAr,
+        row.gross || 0,
+        row.net ? { formula: '=B{r}/1.15', result: round2(row.net), numFmt: MONEY_FMT } : 0,
+        row.foodCost,
+        row.packaging,
+        row.totalCost,
+        row.net ? { formula: '=IF(C{r}=0,0,D{r}/C{r}*100)', result: Number(row.foodCostPct.toFixed(2)), numFmt: PCT_FMT } : 0,
+        row.net ? { formula: '=IF(C{r}=0,0,F{r}/C{r}*100)', result: Number(row.totalCostPct.toFixed(2)), numFmt: PCT_FMT } : 0,
+        row.sugg.gross ? { formula: '=IF(F{r}=0,0,F{r}/0.28*1.15)', result: round2(row.sugg.gross), numFmt: MONEY_FMT } : 0,
+        row.sugg.net ? { formula: '=IF(F{r}=0,0,F{r}/0.28)', result: round2(row.sugg.net), numFmt: MONEY_FMT } : 0,
+        row.sugg.net ? { formula: '=IF(J{r}=0,0,F{r}/J{r}*100)', result: Number(row.totalCostPctAfter.toFixed(2)), numFmt: PCT_FMT } : 0,
       ]),
       colWidths: [22, 10, 10, 12, 8, 13, 14, 14, 11, 12, 14],
       totals: [
-        ['مجموع سعر البيع', `${fmt(reportTotals.gross, 2)} ر.س`],
-        ['مجموع الصافي', `${fmt(reportTotals.net, 2)} ر.س`],
-        ['مجموع تكلفة الأغذية', `${fmt(reportTotals.foodCost, 2)} ر.س`],
-        ['مجموع التغليف', `${fmt(reportTotals.packaging, 2)} ر.س`],
-        ['مجموع إجمالي التكلفة', `${fmt(reportTotals.totalCost, 2)} ر.س`],
-        ['نسبة تكلفة الأغذية (إجمالي)', reportTotals.foodCostPct !== null ? `${reportTotals.foodCostPct.toFixed(2)}%` : '—'],
-        ['نسبة التكلفة الإجمالية (إجمالي)', reportTotals.totalCostPct !== null ? `${reportTotals.totalCostPct.toFixed(2)}%` : '—'],
-        ['نسبة التكلفة بعد التعديل (إجمالي)', reportTotals.totalCostPctAfter !== null ? `${reportTotals.totalCostPctAfter.toFixed(2)}%` : '—'],
+        ['مجموع سعر البيع', { formula: `=SUM(B{first}:B{first+${reportRows.length - 1}})`, result: round2(reportTotals.gross), numFmt: MONEY_FMT }],
+        ['مجموع الصافي', { formula: `=SUM(C{first}:C{first+${reportRows.length - 1}})`, result: round2(reportTotals.net), numFmt: MONEY_FMT }],
+        ['مجموع تكلفة الأغذية', { formula: `=SUM(D{first}:D{first+${reportRows.length - 1}})`, result: round2(reportTotals.foodCost), numFmt: MONEY_FMT }],
+        ['مجموع التغليف', { formula: `=SUM(E{first}:E{first+${reportRows.length - 1}})`, result: round2(reportTotals.packaging), numFmt: MONEY_FMT }],
+        ['مجموع إجمالي التكلفة', { formula: `=SUM(F{first}:F{first+${reportRows.length - 1}})`, result: round2(reportTotals.totalCost), numFmt: MONEY_FMT }],
+        [
+          'نسبة تكلفة الأغذية (إجمالي)',
+          { formula: `=IF(SUM(C{first}:C{first+${reportRows.length - 1}})=0,0,SUM(D{first}:D{first+${reportRows.length - 1}})/SUM(C{first}:C{first+${reportRows.length - 1}})*100)`, result: reportTotals.foodCostPct !== null ? Number(reportTotals.foodCostPct.toFixed(2)) : 0, numFmt: PCT_FMT },
+        ],
+        [
+          'نسبة التكلفة الإجمالية (إجمالي)',
+          { formula: `=IF(SUM(C{first}:C{first+${reportRows.length - 1}})=0,0,SUM(F{first}:F{first+${reportRows.length - 1}})/SUM(C{first}:C{first+${reportRows.length - 1}})*100)`, result: reportTotals.totalCostPct !== null ? Number(reportTotals.totalCostPct.toFixed(2)) : 0, numFmt: PCT_FMT },
+        ],
+        [
+          'نسبة التكلفة بعد التعديل (إجمالي)',
+          { formula: `=IF(SUM(J{first}:J{first+${reportRows.length - 1}})=0,0,SUM(F{first}:F{first+${reportRows.length - 1}})/SUM(J{first}:J{first+${reportRows.length - 1}})*100)`, result: reportTotals.totalCostPctAfter !== null ? Number(reportTotals.totalCostPctAfter.toFixed(2)) : 0, numFmt: PCT_FMT },
+        ],
       ],
       footer: 'تقرير تكلفة الأطباق والهامش — RestoCost ERP',
     };
@@ -768,7 +901,7 @@ export const RecipesView: React.FC = () => {
                 dense: true,
                 meta: [['الوصفات', `${recipes.length}`], ['التكلفة المستهدفة', `${TARGET_FC_PCT}%`], ['الضريبة', '15%']],
                 header: ['الكود', 'الاسم بالعربي', 'الاسم بالإنجليزي', 'التصنيف', 'مقاس الحصة', 'وقت التحضير', 'تكلفة الأغذية', 'إجمالي التكلفة', 'سعر المنيو', 'Food Cost %', 'هامش %', 'تحضير مركزي', 'الهامش المستهدف'],
-                rows: recipes.map((r) => { const c = calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces); const price = r.actualMenuPrice || c.suggestedPrice; return [r.code, r.nameAr, r.nameEn || '', categoryLabel(r.category), r.portionSize, r.prepTimeMins, c.foodCost, c.totalCost, price, price ? `${((c.foodCost / price) * 100).toFixed(2)}%` : '—', price ? `${((price - c.totalCost) / price * 100).toFixed(2)}%` : '—', r.isCentralKitchenPrep ? 'نعم' : 'لا', `${r.targetMarginPercent ?? globalTargetMarginPercent}%`]; }),
+                rows: recipes.map((r) => { const c = calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces); const price = r.actualMenuPrice || c.suggestedPrice; return [r.code, r.nameAr, r.nameEn || '', categoryLabel(r.category), Number(r.portionSize) || 0, r.prepTimeMins || 0, c.foodCost, c.totalCost, price, price ? Number(((c.foodCost / price) * 100).toFixed(2)) : '—', price ? Number(((price - c.totalCost) / price * 100).toFixed(2)) : '—', r.isCentralKitchenPrep ? 'نعم' : 'لا', Number(r.targetMarginPercent ?? globalTargetMarginPercent)]; }),
                 totals: [
                   ['مجموع تكلفة الأغذية', `${fmt(recipes.reduce((s, r) => s + calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces).foodCost, 0), 2)} ر.س`],
                   ['مجموع إجمالي التكلفة', `${fmt(recipes.reduce((s, r) => s + calculateRecipeCosts(r.ingredients, r.directLaborCost, r.packagingCost, r.subPrepIngredients, r.yieldPieces).totalCost, 0), 2)} ر.س`],
@@ -783,7 +916,7 @@ export const RecipesView: React.FC = () => {
                 dense: true,
                 meta: [['الوصفات', `${recipes.length}`], ['الخطوط', `${recipes.reduce((s, r) => s + r.ingredients.length, 0)}`]],
                 header: ['الكود', 'الوصفة', 'المكون', 'الكمية', 'الهدر %'],
-                rows: recipes.flatMap((r) => r.ingredients.map((ing) => [r.code, r.nameAr, rawMaterials.find((m) => m.id === ing.rawMaterialId)?.nameAr || ing.rawMaterialId, ing.quantity, `${ing.wastagePercent}%`])),
+                rows: recipes.flatMap((r) => r.ingredients.map((ing) => [r.code, r.nameAr, rawMaterials.find((m) => m.id === ing.rawMaterialId)?.nameAr || ing.rawMaterialId, Number(ing.quantity) || 0, Number(ing.wastagePercent) || 0])),
                 totals: [['إجمالي الخطوط', `${recipes.reduce((s, r) => s + r.ingredients.length, 0)}`]],
                 colWidths: [10, 22, 26, 12, 10],
                 footer: 'مكونات الوصفات المعيارية — RestoCost ERP',
