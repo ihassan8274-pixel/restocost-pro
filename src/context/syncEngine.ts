@@ -9,12 +9,14 @@ export type FlushDecision =
   | { kind: 'saved' }
   | { kind: 'shrunk'; note: string }
   | { kind: 'auth'; note: string }
+  | { kind: 'forbidden'; note: string }
   | { kind: 'retry'; note: string };
 
 export const decideFlush = (status: number): FlushDecision => {
   if (status >= 200 && status < 300) return { kind: 'saved' };
   if (status === 409) return { kind: 'shrunk', note: 'رفض (بيانات تجريبية)' };
-  if (status === 401 || status === 403) return { kind: 'auth', note: String(status) };
+  if (status === 401) return { kind: 'auth', note: String(status) };
+  if (status === 403) return { kind: 'forbidden', note: String(status) };
   return { kind: 'retry', note: `HTTP ${status}` };
 };
 
@@ -59,6 +61,11 @@ export const runFlushQueue = async (
         hadFailures = true;
         failures.push(`${key}→${d.note}`);
         await h.onShrinkRejected(key);
+        continue;
+      }
+      if (d.kind === 'forbidden') {
+        hadFailures = true;
+        failures.push(`${key}→صلاحية غير كافية (403)`);
         continue;
       }
       if (d.kind === 'auth') {
