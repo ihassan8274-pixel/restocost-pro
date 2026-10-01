@@ -47,6 +47,7 @@ import type {
   SystemNotification, ProductionRun, ProductionRunItem, StandardRecipe, RecipeCostHistoryEntry,
   InventoryRecord, GoodsReceiptNote, FoodCostAlert, User, SubPrepIngredient,
   MaterialCategory, PurchaseOrder, POSOrder, StockTransfer, FoodMenu,
+  MonthlyInventoryItem,
 } from '../../types';
 import { ROLE_PERMISSIONS } from '../../types';
 
@@ -1260,6 +1261,71 @@ export const useApp = () => {
     }
   }, []);
 
+  // ---- بدء جرد شهري مع تعبئة الأصناف تلقائياً ----
+  const startMonthlyInventoryWithItems = useCallback((branchId: string, monthKey: string) => {
+    if (usePeriodStore.getState().isMonthClosed(monthKey)) return;
+
+    const rawMaterials = useLegacyCompatStore.getState().rawMaterials;
+    const grnNotes = useProcurementStore.getState().grnNotes;
+    const stockTransfers = useInventoryStore.getState().stockTransfers;
+    const openingBalances = useInventoryStore.getState().openingBalances;
+
+    const monthStart = `${monthKey}-01`;
+    const nextMonth = new Date(monthStart);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    nextMonth.toISOString().slice(0, 10);
+
+    // حساب الكمية النظرية لكل مادة: افتتاحي + مشتريات + تحويلات واردة - تحويلات صادرة
+    const items: MonthlyInventoryItem[] = rawMaterials
+      .filter((m) => m.isActive)
+      .map((mat) => {
+        // الرصيد الافتتاحي: أحدث رصيد افتتاحي قبل أو في بداية الشهر، وإلا المخزون الحالي
+        const openingRecord = openingBalances
+          .filter((ob) => ob.branchId === branchId && ob.date.slice(0, 10) <= monthStart)
+          .sort((a, b) => b.date.localeCompare(a.date))[0];
+        const openingQty = openingRecord?.items.find((i) => i.rawMaterialId === mat.id)?.quantity ?? 0;
+
+        // المشتريات (GRN معتمد) في الشهر
+        const purchasedQty = grnNotes
+          .filter((g) => g.status === 'approved' && g.branchId === branchId && g.date.slice(0, 7) === monthKey)
+          .reduce((sum, g) => sum + g.items.filter((i) => i.rawMaterialId === mat.id).reduce((s, i) => s + i.quantityReceived, 0), 0);
+
+        // تحويلات واردة
+        const transferredIn = stockTransfers
+          .filter((t) => t.status === 'approved' && t.toBranchId === branchId && t.date.slice(0, 7) === monthKey)
+          .reduce((sum, t) => sum + t.items.filter((i) => i.itemType !== 'recipe' && i.rawMaterialId === mat.id).reduce((s, i) => s + i.quantity, 0), 0);
+
+        // تحويلات صادرة
+        const transferredOut = stockTransfers
+          .filter((t) => t.status === 'approved' && t.fromBranchId === branchId && t.date.slice(0, 7) === monthKey)
+          .reduce((sum, t) => sum + t.items.filter((i) => i.itemType !== 'recipe' && i.rawMaterialId === mat.id).reduce((s, i) => s + i.quantity, 0), 0);
+
+        const theoreticalQty = openingQty + purchasedQty + transferredIn - transferredOut;
+        const unitCost = getBranchAverageUnitCost(branchId, mat.id, `${monthKey}-01`);
+
+        return {
+          rawMaterialId: mat.id,
+          itemName: mat.nameAr,
+          unit: mat.unit,
+          openingQty,
+          purchasedQty,
+          transferredIn,
+          transferredOut,
+          theoreticalQty: Math.max(0, theoreticalQty),
+          countedQty: 0,
+          varianceQty: 0,
+          unitCost,
+          varianceCost: 0,
+          theoreticalUsage: theoreticalQty,
+          actualUsage: 0,
+          usageVariance: 0,
+        };
+      })
+      .filter((it) => it.theoreticalQty > 0 || it.openingQty > 0 || it.purchasedQty > 0 || it.transferredIn > 0 || it.transferredOut > 0);
+
+    usePeriodStore.getState().startMonthlyInventory(branchId, monthKey, items);
+  }, [getBranchAverageUnitCost]);
+
   const canUndo = false;
   const canRedo = false;
   const undo = useCallback(() => {}, []);
@@ -1320,6 +1386,7 @@ export const useApp = () => {
     resetDemoData,
     clearSystemData,
     clearCollections,
+    startMonthlyInventoryWithItems,
     canUndo,
     canRedo,
     undo,

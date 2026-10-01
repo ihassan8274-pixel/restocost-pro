@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { EodClosure, MonthlyInventoryPeriod } from '../types';
+import { EodClosure, MonthlyInventoryPeriod, MonthlyInventoryItem } from '../types';
 import { today } from '../utils/helpers';
 
 interface PeriodState {
@@ -12,7 +12,7 @@ interface PeriodState {
   isDateClosed: (date: string) => boolean;
   closeDay: (date: string) => void;
   reopenDay: (date: string) => void;
-  startMonthlyInventory: (branchId: string, monthKey: string) => void;
+  startMonthlyInventory: (branchId: string, monthKey: string, items?: MonthlyInventoryItem[]) => void;
   saveMonthlyInventoryCounts: (id: string, counted: Record<string, number>) => void;
   closeMonthlyInventory: (id: string) => void;
   deleteMonthlyInventory: (id: string) => void;
@@ -43,9 +43,9 @@ export const usePeriodStore = create<PeriodState>()(
         set((state) => ({ eodClosures: state.eodClosures.filter((c) => c.date !== d) }));
       },
 
-      startMonthlyInventory: (branchId, monthKey) => {
+      startMonthlyInventory: (branchId, monthKey, items?: MonthlyInventoryItem[]) => {
         if (get().isMonthClosed(monthKey)) return;
-        set((state) => ({ monthlyInventory: [{ id: `mi-${Date.now()}`, branchId, monthKey, status: 'counting' as const, createdAt: today(), items: [], totalTheoreticalUsage: 0, totalActualUsage: 0, totalUsageVariance: 0, totalVarianceCost: 0 }, ...state.monthlyInventory] }));
+        set((state) => ({ monthlyInventory: [{ id: `mi-${Date.now()}`, branchId, monthKey, status: 'counting' as const, createdAt: today(), items: items || [], totalTheoreticalUsage: 0, totalActualUsage: 0, totalUsageVariance: 0, totalVarianceCost: 0 }, ...state.monthlyInventory] }));
       },
 
       saveMonthlyInventoryCounts: (id, counted) => {

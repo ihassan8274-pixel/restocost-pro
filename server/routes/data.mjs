@@ -191,29 +191,35 @@ export const registerData = (app) => {
       const existing = Array.isArray(getKV(key)) ? getKV(key) : [];
       const incoming = Array.isArray(incomingData) ? incomingData : [];
 
-      // تصفية incoming IDs: يجب أن تكون موجودة في مجموعة تسمح بها الجلسة
+      // تصفية incoming IDs:
+      // - نرفض المعرّفات التي توجد في مجموعة لا يملك المستخدم صلاحية حذفها (admin-only, capped, إلخ)
+      // - نسمح بالمعرّفات التي: موجودة في مجموعة مسموح بها، أو غير موجودة أصلاً (سجل جديد / محذوف مسبقاً)
       const validIncoming = [];
       for (const id of incoming) {
+        let forbidden = false;
         let allowed = false;
         for (const col of COLLECTION_KEYS) {
           if (col === key || col === 'rcerp_deleted_ids') continue;
-          // لا نحذف rcerp_users أو أي مفتاح إداري
           if (col === 'rcerp_users') continue;
-          // تجاهل المجموعات غير المسموح بها للشواهد
-          if (!canPurgeTombstone(user, col, accessRoles)) continue;
           const arr = getKV(col);
-          if (Array.isArray(arr) && arr.some(r => r && r.id !== undefined && r.id === id)) {
-            allowed = true;
+          if (!Array.isArray(arr)) continue;
+          const exists = arr.some(r => r && r.id !== undefined && r.id === id);
+          if (!exists) continue;
+          if (!canPurgeTombstone(user, col, accessRoles)) {
+            forbidden = true; // يوجد في مجموعة لا يحق له حذفها
             break;
           }
+          allowed = true; // موجود في مجموعة مسموح بها
+          break;
         }
-        if (!allowed) {
+        if (forbidden) {
           return res.status(400).json({
             ok: false,
-            error: `معرف الحذف غير مصرح به: ${id} ليس موجودًا في مجموعة مزامنة مسموح بها للجلسة الحالية.`,
-            reason: 'tombstone-id-unauthorized',
+            error: `معرف الحذف غير مصرح به: ${id} ينتمي لمجموعة لا يحق لك الحذف منها.`,
+            reason: 'tombstone-id-forbidden',
           });
         }
+        // السماح إذا: موجود في مجموعة مسموحة، أو غير موجود أصلاً (سجل جديد / محذوف مسبقاً)
         validIncoming.push(id);
       }
 

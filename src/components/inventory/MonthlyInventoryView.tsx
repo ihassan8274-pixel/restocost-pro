@@ -10,7 +10,7 @@ import { useAdminDelete, AdminDeleteModal } from '../../hooks';
 import { MonthlyInventoryPeriod, MonthlyInventoryItem } from '../../types';
 
 export const MonthlyInventoryView: React.FC = () => {
-  const { branches, visibleBranchIds, rawMaterials, monthlyInventory, closedMonths, isMonthClosed, startMonthlyInventory, saveMonthlyInventoryCounts, closeMonthlyInventory, deleteMonthlyInventory, reopenMonthlyInventory, getBranchName, can, addRecentDoc } = useApp();
+  const { branches, visibleBranchIds, rawMaterials, monthlyInventory, closedMonths, isMonthClosed, startMonthlyInventoryWithItems, saveMonthlyInventoryCounts, closeMonthlyInventory, deleteMonthlyInventory, reopenMonthlyInventory, getBranchName, can, addRecentDoc } = useApp();
 
   const [branch, setBranch] = useState(visibleBranchIds.find((id) => id !== 'b-ck') || visibleBranchIds[0] || '');
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
@@ -78,6 +78,47 @@ export const MonthlyInventoryView: React.FC = () => {
     });
   };
 
+  const printBranchInventoryReport = (p: MonthlyInventoryPeriod) => {
+    const branchName = getBranchName(p.branchId);
+    const monthLabel = monthLabelFor(p.monthKey);
+    const sortedItems = sortByCode(p.items);
+    const totalItems = sortedItems.length;
+    const totalQty = sortedItems.reduce((s, it) => s + it.countedQty, 0);
+    const totalValue = sortedItems.reduce((s, it) => s + it.countedQty * it.unitCost, 0);
+
+    openPrintWindow({
+      title: `تقرير أرصدة الفرع بعد الإقفال — ${branchName}`,
+      subtitle: `الجرد الشهري لـ ${monthLabel} — تم الإقفال في ${p.closedAt ? new Date(p.closedAt).toLocaleString('ar-SA-u-nu-latn') : '—'}`,
+      meta: [
+        ['الفرع', branchName],
+        ['الشهر', monthLabel],
+        ['تاريخ الإقفال', p.closedAt ? new Date(p.closedAt).toLocaleString('ar-SA-u-nu-latn') : '—'],
+        ['أُغلق بواسطة', p.closedBy || '—'],
+        ['إجمالي الأصناف', totalItems.toString()],
+        ['إجمالي الكمية', `${fmt(totalQty)}`],
+        ['إجمالي القيمة', `${fmtMoney(totalValue)}`],
+      ],
+      tables: [{
+        title: 'تفاصيل الأرصدة حسب الصنف',
+        header: ['#', 'الصنف', 'الوحدة', 'الكمية المعدودة', 'متوسط السعر (ر.س)', 'القيمة الإجمالية (ر.س)'],
+        rows: sortByCode(p.items).map((it, idx) => [
+          idx + 1,
+          it.itemName,
+          it.unit,
+          fmt(it.countedQty),
+          fmt(it.unitCost, 2),
+          fmtMoney(it.countedQty * it.unitCost),
+        ]),
+      }],
+      totals: [
+        ['إجمالي الأصناف', totalItems.toString()],
+        ['إجمالي الكمية', `${fmt(totalQty)}`],
+        ['إجمالي القيمة', `${fmtMoney(totalValue)}`],
+      ],
+      footer: 'تقرير أرصدة الفرع بعد إقفال الجرد الشهري — صادر من RestoCost ERP',
+    });
+  };
+
   const confirmCloseId = confirmClose ? monthlyInventory.find((p) => p.id === confirmClose) : null;
 
   const requestDeleteCount = (p: MonthlyInventoryPeriod) => {
@@ -123,7 +164,7 @@ export const MonthlyInventoryView: React.FC = () => {
             ) : (
               isMonthClosed(month)
                 ? <div className="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs flex items-center gap-2"><Lock className="w-4 h-4" /> {monthLabelFor(month)} مقفل بالكامل</div>
-                : <Btn tone="success" onClick={() => { startMonthlyInventory(branch, month); }}><Play className="w-4 h-4" /> بدء جرد الشهر</Btn>
+                : <Btn tone="success" onClick={() => { startMonthlyInventoryWithItems(branch, month); }}><Play className="w-4 h-4" /> بدء جرد الشهر</Btn>
             )}
           </div>
         </div>
@@ -243,6 +284,7 @@ export const MonthlyInventoryView: React.FC = () => {
           )}
           <div className="flex justify-end gap-2 pt-2">
             <Btn tone="ghost" onClick={() => setConfirmClose(null)}>إلغاء</Btn>
+            <Btn tone="dark" onClick={() => { if (confirmCloseId) printBranchInventoryReport(confirmCloseId); }}><Printer className="w-4 h-4" /> طباعة تقرير الأرصدة</Btn>
             <Btn tone="danger" onClick={() => { if (confirmCloseId) closeMonthlyInventory(confirmCloseId.id); setConfirmClose(null); }}><Lock className="w-4 h-4" /> تأكيد الإقفال</Btn>
           </div>
         </div>

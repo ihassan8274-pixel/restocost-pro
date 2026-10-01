@@ -24,10 +24,15 @@ backup7/
 
 # logs & crash dumps
 *.log
+*.err
+*.pid
 err
 out
 build_log.txt
 server.log
+
+# runtime instance lock (single-instance guard, rewritten on every boot)
+server/instance.lock
 
 # deploy artifacts
 deploy-*.zip
