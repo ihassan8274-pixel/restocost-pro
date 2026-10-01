@@ -15,7 +15,17 @@ import { registerCollection, getCollectionValue, isApplying } from './collection
 // تُثبَّت المجموعات في السجل المركزي ويُشترك على كل ستور ليرفع التعديلات المحلية
 // إلى طابور الحفظ (syncStore.persist) — بينما تحمي isApplying() أثناء تطبيق بيانات
 // الخادم الواردة من إعادة رفع نفس القيم (منع الصدى).
-interface Pair { store: { setState: (p: object) => void; getState: () => unknown }; field: string; filterTombstones?: boolean }
+import { removedIdsBetween } from '../business/collection-tombstone';
+
+interface Pair {
+  store: { setState: (p: object) => void; getState: () => unknown };
+  field: string;
+  filterTombstones?: boolean;
+  // قوائم ذات سقف مقصود (truncate): اختفاء أقدم عناصرها نافذ محلياً ولا يُسجَّل
+  // شاهد حذف — وإلا لأعادت كل إضافة فوق السقف توليد شواهد حذف لأقدم السجلات
+  // فمُحيت من الخادم.
+  cappedList?: boolean;
+}
 
 const pairs: [string, Pair][] = [
   ['rcerp_branches', { store: useSettingsStore, field: 'branches' }],
@@ -31,7 +41,7 @@ const pairs: [string, Pair][] = [
 
   ['rcerp_inventory', { store: useInventoryStore, field: 'inventory', filterTombstones: true }],
   ['rcerp_inventory_batches', { store: useInventoryStore, field: 'inventoryBatches', filterTombstones: true }],
-  ['rcerp_inventory_movements', { store: useInventoryStore, field: 'inventoryMovements', filterTombstones: true }],
+  ['rcerp_inventory_movements', { store: useInventoryStore, field: 'inventoryMovements', filterTombstones: true, cappedList: true }],
   ['rcerp_recipe_inventory', { store: useInventoryStore, field: 'recipeInventory', filterTombstones: true }],
   ['rcerp_physical_counts', { store: useInventoryStore, field: 'physicalCounts', filterTombstones: true }],
   ['rcerp_daily_counts', { store: useInventoryStore, field: 'dailyCounts', filterTombstones: true }],
@@ -93,9 +103,9 @@ const pairs: [string, Pair][] = [
   ['rcerp_wastage', { store: useLegacyCompatStore, field: 'wastageLogs', filterTombstones: true }],
   ['rcerp_requisitions', { store: useLegacyCompatStore, field: 'requisitions', filterTombstones: true }],
   ['rcerp_customer_orders', { store: useLegacyCompatStore, field: 'customerOrders', filterTombstones: true }],
-  ['rcerp_audit', { store: useLegacyCompatStore, field: 'auditLogs', filterTombstones: true }],
+  ['rcerp_audit', { store: useLegacyCompatStore, field: 'auditLogs', filterTombstones: true, cappedList: true }],
   ['rcerp_custom_reports', { store: useLegacyCompatStore, field: 'customReports', filterTombstones: true }],
-  ['rcerp_recent_docs', { store: useLegacyCompatStore, field: 'recentDocs', filterTombstones: true }],
+  ['rcerp_recent_docs', { store: useLegacyCompatStore, field: 'recentDocs', filterTombstones: true, cappedList: true }],
   ['rcerp_deleted_ids', { store: useLegacyCompatStore, field: 'deletedIds' }],
   ['rcerp_ack_alerts', { store: useLegacyCompatStore, field: 'acknowledgedAlertIds', filterTombstones: true }],
   ['rcerp_target_margin', { store: useLegacyCompatStore, field: 'globalTargetMarginPercent', filterTombstones: true }],
@@ -119,7 +129,7 @@ export const ensureCollectionSources = (): void => {
     // rcerp_deleted_ids يجب أن تُرفع للخادم ليتمكن من تصفية السجلات المحذوفة عند الدمج
     const entry = pairs.find(([k]) => k === key);
     if (!entry) return;
-    const { store, field } = entry[1];
+    const { store, field, filterTombstones, cappedList } = entry[1];
     const bind = store as { subscribe?: (l: (s: unknown, p: unknown) => void) => () => void };
     if (!bind.subscribe) return;
     bind.subscribe((_state: unknown, prev: unknown) => {
@@ -132,6 +142,13 @@ export const ensureCollectionSources = (): void => {
       if (applied === cur) {
         sync.appliedRefsRef.current.delete(key);
         return;
+      }
+      // دمج الخادم اتحادٌ فقط، فلا يُحذف سجل بمجرد اختفائه محلياً: يعود مع
+      // bootstrap التالي. لذلك أي معرّف اختفى من تعديل محلي (وليس من تحميل
+      // خادم — محميٌّ بـ isApplying أعلاه) يُسجَّل شاهد حذف، فيثبت الحذف.
+      if (filterTombstones && !cappedList) {
+        const gone = removedIdsBetween(prevV, cur);
+        if (gone.length) useLegacyCompatStore.getState().tombstoneIds(gone);
       }
       sync.persist(key, cur);
     });
