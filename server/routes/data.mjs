@@ -190,7 +190,34 @@ export const registerData = (app) => {
     if (key === 'rcerp_deleted_ids') {
       const existing = Array.isArray(getKV(key)) ? getKV(key) : [];
       const incoming = Array.isArray(incomingData) ? incomingData : [];
-      const tomb = Array.from(new Set([...existing, ...incoming]));
+
+      // تصفية incoming IDs: يجب أن تكون موجودة في مجموعة تسمح بها الجلسة
+      const validIncoming = [];
+      for (const id of incoming) {
+        let allowed = false;
+        for (const col of COLLECTION_KEYS) {
+          if (col === key || col === 'rcerp_deleted_ids') continue;
+          // لا نحذف rcerp_users أو أي مفتاح إداري
+          if (col === 'rcerp_users') continue;
+          // تجاهل المجموعات غير المسموح بها للشواهد
+          if (!canPurgeTombstone(user, col, accessRoles)) continue;
+          const arr = getKV(col);
+          if (Array.isArray(arr) && arr.some(r => r && r.id !== undefined && r.id === id)) {
+            allowed = true;
+            break;
+          }
+        }
+        if (!allowed) {
+          return res.status(400).json({
+            ok: false,
+            error: `معرف الحذف غير مصرح به: ${id} ليس موجودًا في مجموعة مزامنة مسموح بها للجلسة الحالية.`,
+            reason: 'tombstone-id-unauthorized',
+          });
+        }
+        validIncoming.push(id);
+      }
+
+      const tomb = Array.from(new Set([...existing, ...validIncoming]));
       setKV(key, tomb);
       const tombSet = new Set(tomb);
       if (tombSet.size > 0) {

@@ -126,6 +126,16 @@ const KEY_PERMISSION = {
 // أدوار الإدارة:Fallback افتراضي لأي مجموعة غير مربوطة بصلاحية.
 const MANAGEMENT_ROLES = new Set(['admin', 'executive', 'branch_manager', 'cost_controller']);
 
+// المجموعات المستثناة من شاهد الحذف: إما ثابتة (capped) مثل inventoryMovements،
+// أو إدارية (admin-only) لا يمكن لأي جلسة كتابة فيها على الإطلاق.
+export const CAPPED_LIST_KEYS = new Set([
+  'rcerp_inventory_movements',
+  'rcerp_audit',
+  'rcerp_recent_docs',
+]);
+
+export const ADMIN_ONLY_KEYS_FOR_TOMBSTONE = new Set([...ADMIN_ONLY_KEYS, ...CAPPED_LIST_KEYS]);
+
 // الدور الفعّال: إن كان للمستخدم دور مخصّص (roleId) فالدور الأساسي هو baseRole الخاص به.
 const effectiveRole = (user, accessRoles) => {
   if (user.role === 'admin') return 'admin';
@@ -174,7 +184,7 @@ export const canWriteCollection = (user, key, accessRoles) => {
  * مستخدمو rcerp_users مستثنون دائماً: مسارهم الإداري الخاص لا شاهدَ حذف.
  */
 export const canPurgeTombstone = (user, collectionKey, accessRoles) => {
-  if (collectionKey === 'rcerp_deleted_ids') return false;
-  if (collectionKey === 'rcerp_users') return false;
+  if (collectionKey === 'rcerp_deleted_ids' || collectionKey === 'rcerp_users') return false;
+  if (ADMIN_ONLY_KEYS_FOR_TOMBSTONE.has(collectionKey)) return false;
   return canWriteCollection(user, collectionKey, accessRoles).ok;
 };
