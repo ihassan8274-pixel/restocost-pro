@@ -146,6 +146,10 @@ const hasPermission = (user, perm, accessRoles) => {
 export const canWriteCollection = (user, key, accessRoles) => {
   if (!user) return { ok: false, code: 'forbidden', message: 'غير مصادق' };
   if (user.role === 'admin') return { ok: true };
+  // شواهد الحذف مفتوح لكل جلسة مصادَق عليها: أي دور قد يحذف سجلاً من مجموعة
+  // يملك حقّ الكتابة فيها (counter/storekeeper مثلاً)، وقطعُ سجل مُشوهد يُمنع
+  // ما لم يملك صاحب الجلسة صلاحية الكتابة في المجموعة التي تضمّه.
+  if (key === 'rcerp_deleted_ids') return { ok: true };
   if (ADMIN_ONLY_KEYS.has(key)) {
     return { ok: false, code: 'admin_only', message: 'غير مصرح — هذا المفتاح يتطلب صلاحيات مسؤول النظام' };
   }
@@ -161,4 +165,16 @@ export const canWriteCollection = (user, key, accessRoles) => {
   const role = effectiveRole(user, accessRoles);
   if (MANAGEMENT_ROLES.has(role)) return { ok: true };
   return { ok: false, code: 'forbidden', message: 'غير مصرح — هذا المفتاح يتطلب صلاحيات إدارة' };
+};
+
+/**
+ * هل يحقّ لشاهد حذف أن يقطع سجلاً من هذه المجموعة؟
+ * القطع هنا يوازي الكتابة: من لا يملك حق الكتابة في المجموعة لا يحذف منها،
+ * وإلا акفي شاهد بمعرّف واحد لمحو أي سجل في النظام.
+ * مستخدمو rcerp_users مستثنون دائماً: مسارهم الإداري الخاص لا شاهدَ حذف.
+ */
+export const canPurgeTombstone = (user, collectionKey, accessRoles) => {
+  if (collectionKey === 'rcerp_deleted_ids') return false;
+  if (collectionKey === 'rcerp_users') return false;
+  return canWriteCollection(user, collectionKey, accessRoles).ok;
 };

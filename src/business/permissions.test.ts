@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 // يستورد وحدة السيرفر (خام .mjs) للتحقق من بوابة الصلاحيات التي تحمي حفظ الجرد والمبيعات.
-import { canWriteCollection } from '../../server/permissions.mjs';
+import { canWriteCollection, canPurgeTombstone } from '../../server/permissions.mjs';
 
 const ROLES = ['executive', 'admin', 'branch_manager', 'cost_controller', 'chef', 'storekeeper', 'waiter', 'counter'] as const;
 
@@ -61,5 +61,45 @@ describe('canWriteCollection', () => {
       expect(canWriteCollection({ role: 'storekeeper' }, key, []).ok).toBe(false);
       expect(canWriteCollection({ role: 'branch_manager' }, key, []).ok).toBe(true);
     }
+  });
+
+  // شواهد الحذف مفتوحة لكل دور يملك حق الكتابة في مجموعة ما (كي يستطيع
+  // حذف سجله)، لكن القطع النهائي يبقى محكوماً بصلاحية المجموعة نفسها.
+  it('كل الأدوار المصادَق عليها تكتب شواهد الحذف', () => {
+    for (const role of ROLES) {
+      expect(canWriteCollection({ role }, 'rcerp_deleted_ids', []).ok).toBe(true);
+    }
+    expect(canWriteCollection(null, 'rcerp_deleted_ids', []).ok).toBe(false);
+  });
+
+  // witness بمعرّف واحد كان يكفي لمحو أي سجل في النظام بلا فحص ثانٍ.
+  it('شاهد الحذف لا يقطع من مجموعة لا يملك صاحبها حق الكتابة فيها', () => {
+    expect(canPurgeTombstone({ role: 'counter' }, 'rcerp_daily_counts', [])).toBe(true);
+    expect(canPurgeTombstone({ role: 'counter' }, 'rcerp_journal', [])).toBe(false);
+    expect(canPurgeTombstone({ role: 'waiter' }, 'rcerp_pos_orders', [])).toBe(true);
+    expect(canPurgeTombstone({ role: 'waiter' }, 'rcerp_batch_sales', [])).toBe(false);
+  });
+
+  it('شاهد الحذف لا يقطع المستخدمين أبداً مهما كان الدور', () => {
+    for (const role of ROLES) {
+      expect(canPurgeTombstone({ role }, 'rcerp_users', [])).toBe(false);
+    }
+    expect(canPurgeTombstone({ role: 'admin' }, 'rcerp_users', [])).toBe(false);
+  });
+
+  it('شاهد الحذف لا يقطع قائمة الشواهد نفسها (لا حذف متسلسل للجميع)', () => {
+    for (const role of ROLES) {
+      expect(canPurgeTombstone({ role }, 'rcerp_deleted_ids', [])).toBe(false);
+    }
+  });
+
+  it('زائر غير مصادق لا يقطع شيئاً', () => {
+    expect(canPurgeTombstone(null, 'rcerp_daily_counts', [])).toBe(false);
+  });
+
+  it('الدور المخصّص يحدّد ما يمكن حذفه', () => {
+    const accessRoles = [{ id: 'r1', baseRole: 'storekeeper' }];
+    expect(canPurgeTombstone({ role: 'waiter', roleId: 'r1' }, 'rcerp_purchase_orders', accessRoles)).toBe(true);
+    expect(canPurgeTombstone({ role: 'waiter', roleId: 'r1' }, 'rcerp_journal', accessRoles)).toBe(false);
   });
 });

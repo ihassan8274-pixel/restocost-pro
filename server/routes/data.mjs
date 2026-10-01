@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 import {
   dataDir, COLLECTION_KEYS, instanceId, readToken, sessionUser, publicUser, readBindHost, portInUse,
 } from '../core.mjs';
-import { canWriteCollection } from '../permissions.mjs';
+import { canWriteCollection, canPurgeTombstone } from '../permissions.mjs';
+import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, buildFingerprint, serverStamp } from '../version.mjs';
 import { sendTelegram, sendTelegramDocument, buildNotificationText, testTelegram, getBotChatIds } from '../telegram.mjs';
@@ -51,45 +52,6 @@ const localIPs = () => {
   return out;
 };
 
-// تعرية حساسة للبث إلى المتصفحات: لا هاشات مستخدمين، لا مفاتيح ذكاء اصطناعي،
-// لا توكنات تليجرام — تُبث مؤشرات hasKey/masked فقط.
-const stripUserForBootstrap = (u) => {
-  if (!u || typeof u !== 'object') return u;
-  const { passwordHash, passwordHistory, totpSecret, ...rest } = u;
-  return rest;
-};
-
-const sanitizeAISettingsForBootstrap = (v) => {
-  if (!v || typeof v !== 'object') return v;
-  const items = Array.isArray(v.items) ? v.items : [];
-  const sanitized = items.map((m) => {
-    if (!m || typeof m !== 'object') return m;
-    const hasKey = !!decryptSecret(m.apiKey ?? '', 'ai:apiKey');
-    const { apiKey, hasKey: _hasKey, ...rest } = m;
-    return { ...rest, apiKey: '', hasKey };
-  });
-  const out = { ...v, items: sanitized };
-  delete out.apiKey;
-  delete out.hasKey;
-  out.hasKey = sanitized.some((m) => m && m.hasKey) || !!decryptSecret(v.apiKey ?? '', 'ai:apiKey');
-  return out;
-};
-
-const sanitizeTelegramSettingsForBootstrap = (v) => {
-  if (!v || typeof v !== 'object') return v;
-  return {
-    enabled: !!v.enabled,
-    chatIds: Array.isArray(v.chatIds) ? v.chatIds : [],
-    sendPdf: v.sendPdf !== false,
-    hasBotToken: !!decryptSecret(v.botToken ?? '', 'tg:botToken'),
-    purchaseEnabled: !!v.purchaseEnabled,
-    purchaseChatIds: Array.isArray(v.purchaseChatIds) ? v.purchaseChatIds : [],
-    purchaseHasToken: !!decryptSecret(v.purchaseBotToken ?? '', 'tg:purchaseBotToken'),
-    maskedBotToken: v.botToken ? (() => { const m = String(decryptSecret(v.botToken, 'tg:botToken')); return `${m.slice(0, 6)}…${m.slice(-4)}`; })() : '',
-    maskedPurchaseBotToken: v.purchaseBotToken ? (() => { const m = String(decryptSecret(v.purchaseBotToken, 'tg:purchaseBotToken')); return `${m.slice(0, 6)}…${m.slice(-4)}`; })() : '',
-  };
-};
-
 // مجموعات ثقيلة تُستثنى من bootstrap وتحمّل عند الطلب
 const LAZY_KEYS = new Set([
   'rcerp_inventory_movements',
@@ -125,10 +87,7 @@ export const registerData = (app) => {
         if (lastMod <= since) return;
         touchedKeys.push(key);
       }
-      if (key === 'rcerp_users') { data[key] = (Array.isArray(v) ? v : []).map(stripUserForBootstrap); return; }
-      if (key === 'rcerp_ai_settings') { data[key] = sanitizeAISettingsForBootstrap(v); return; }
-      if (key === 'rcerp_telegram_settings') { data[key] = sanitizeTelegramSettingsForBootstrap(v); return; }
-      data[key] = v;
+      data[key] = sanitizeCollectionForBroadcast(key, v);
     });
     const rev = revState ? revState() : { rev: 1, boot: 0 };
     const etag = `W/"${rev.rev}-${rev.boot}"`;
@@ -148,7 +107,9 @@ export const registerData = (app) => {
     const { key } = req.params;
     if (!COLLECTION_KEYS.includes(key)) return res.status(400).json({ ok: false, error: 'مفتاح غير معروف' });
     const page = paginateCollection(getKV(key), String(req.query.cursor || ''), Number(req.query.limit));
-    res.json({ ok: true, key, ...page });
+    // نفس تعقيم bootstrap: صفحة rcerp_users كانت تصل خاماً فتسريب هاشات
+    // كلمات المرور وأسرار TOTP لأي جلسة مصادَق عليها (حتى lowest role).
+    res.json({ ok: true, key, ...page, items: sanitizeCollectionForBroadcast(key, page.items) });
   });
 
   // بصمة مراجعة خفيفة (بلا تنزيل بيانات): يعرف منها التطبيق إن تغيّر أي شيء على
@@ -235,6 +196,11 @@ export const registerData = (app) => {
       if (tombSet.size > 0) {
         for (const ck of COLLECTION_KEYS) {
           if (ck === 'rcerp_deleted_ids') continue;
+          // شواهد الحذف سلاح ذو مصرف واسع: تقطع أي مجموعة فيها المعرّف.
+          // لا يُحذف سجل من مجموعة لا يملك صاحب الجلسة صلاحية كتابتها،
+          // ولا مستخدمون إطلاقاً (إلا بمسار users المحمي أدناه).
+          if (ck === 'rcerp_users') continue;
+          if (!canPurgeTombstone(user, ck, accessRoles)) continue;
           const arr = getKV(ck);
           if (Array.isArray(arr)) {
             const next = arr.filter((r) => !(r && r.id !== undefined && tombSet.has(r.id)));
@@ -1027,7 +993,7 @@ if (key === 'rcerp_recent_docs') {
       const data = {};
       COLLECTION_KEYS.forEach((key) => {
         const v = getKV(key);
-        if (v !== null) data[key] = v;
+        if (v !== null) data[key] = sanitizeCollectionForBroadcast(key, v);
       });
 
       fs.appendFileSync(

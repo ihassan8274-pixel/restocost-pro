@@ -11,6 +11,18 @@ import {
 } from '../auth-utils.mjs';
 import { generateSecret, verifyTotp, totpUrl } from '../totp.mjs';
 
+/**
+ * قرار مسار /api/auth/register — منطق خالص لاختباره بلا سيرفر.
+ *
+ * 'activate': ينشئ حساباً نشطاً بدور مُمرَّر (مسؤول نظام فقط بعد أول تهيئة).
+ * 'pending' : طلب حساب بانتظار التفعيل، بلا دور فعّال ولا صلاحية.
+ * 'first-admin': أول حساب في النظام (لا يوجد مستخدمون بعد) → مدير بلا جلسة.
+ */
+export const resolveRegisterMode = ({ userCount, voterRole }) => {
+  if (userCount === 0) return 'first-admin';
+  return voterRole === 'admin' ? 'activate' : 'pending';
+};
+
 const {
   getKV, setKV,
   createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
@@ -101,9 +113,14 @@ export const registerAuth = (app) => {
     if (users.some((u) => u.email.toLowerCase() === String(email).trim().toLowerCase())) {
       return res.status(400).json({ ok: false, error: 'هذا البريد الإلكتروني مسجل مسبقاً' });
     }
-    // التسجيل الذاتي بعد التهيئة الأولى → حساب "بانتظار التفعيل"
-    // يصل طلبُه إلى منصة إدارة المستخدمين فيعيّن المسؤول الدور والصلاحيات ويقرّها.
-    if (users.length > 0 && !voter) {
+    // سياسة كلمة المرور تُطبَّق على التسجيل نفسه لا على تغيير كلمة المرور فقط.
+    const policyErr = validatePassword(password);
+    if (policyErr) return res.status(400).json({ ok: false, error: policyErr });
+    // بعد أول تهيئة: إنشاء حساب نشط بدور مُمرَّر من صلاحيات مسؤول النظام فقط.
+    // أي جلسة أخرى (زائر أو موظف غير مدير) تسجّل كطلب بانتظار التفعيل بلا أثر،
+    // وإلا لأمكن لأي موظف تصعيد الدور المطلوب إلى مدير بمجرد موافقة أي مسؤول.
+    const mode = resolveRegisterMode({ userCount: users.length, voterRole: voter?.role });
+    if (mode === 'pending') {
       const pending = {
         id: `user-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
         name: String(name).trim(),
@@ -122,13 +139,14 @@ export const registerAuth = (app) => {
       writeAudit(null, 'SIGNUP_REQUEST', pending.id, pending.email + ' (بانتظار التفعيل)');
       return res.json({ ok: true, pending: true });
     }
-    if (role === 'admin' && voter && voter.role !== 'admin') return res.status(403).json({ ok: false, error: 'إنشاء حساب مدير يتطلب صلاحية مدير' });
+    // أول حساب في نظام فارغ → مدير بلا جلسة سابقة. بعد ذلك هذا المسار ينتج
+    // من مسؤول نظام فقط، فالدور المُمرَّر مُعتمد.
     const user = {
       id: `user-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
       name: String(name).trim(),
       email: String(email).trim().toLowerCase(),
       passwordHash: await hashPassword(password),
-      role,
+      role: mode === 'first-admin' ? 'admin' : role,
       branchId,
       isActive: true,
       createdAt: new Date().toISOString(),
