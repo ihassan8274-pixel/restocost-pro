@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2, WifiOff, RefreshCw, AlertTriangle, CloudUpload, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { CheckCircle2, WifiOff, RefreshCw, AlertTriangle, CloudUpload, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useSyncStore } from '@stores/syncStore';
 
@@ -9,6 +9,17 @@ export const SyncStrip: React.FC = () => {
 
   const syncing = pendingSavesCount > 0 && !saveFailed && !offline;
   const isAdmin = currentUser?.role === 'admin';
+  // 403 = نقص صلاحية على البيانات، لا انتهاء جلسة. messages خطأ الخادم كانت تصلنا
+  // كنص "rcerp_x→صلاحية غير كافية (403)" فنقرأها لنعرض رسالة مفيدة بدل إخراج المستخدم.
+  const deniedKeys = useMemo(() => {
+    const out: string[] = [];
+    (saveErrorDetail || '').split('·').forEach((part) => {
+      const m = part.trim().match(/^(\S+)\s*→\s*(.*403.*)$/);
+      if (m) out.push(m[2].trim());
+    });
+    return out;
+  }, [saveErrorDetail]);
+  const hasPermissionIssue = deniedKeys.length > 0;
   const showStrip = offline || saveFailed || authExpired || syncing || (saveFailed && pendingSavesCount > 0) || isAdmin;
 
   if (!showStrip) {
@@ -67,7 +78,14 @@ export const SyncStrip: React.FC = () => {
             </button>
           </span>
         )}
-        {saveFailed && !offline && (
+        {saveFailed && !offline && hasPermissionIssue && !authExpired && (
+          <span className="flex items-center gap-1.5" title="حسابك لا يملك صلاحية حفظ هذه البيانات — راجع مسؤول النظام لمنحك الصلاحية">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            صلاحيات غير كافية للحفظ — بياناتك محفوظة على هذا الجهاز
+            <span className="text-[10px] opacity-70">({Array.from(new Set(deniedKeys)).slice(0, 2).join(' · ')})</span>
+          </span>
+        )}
+        {saveFailed && !offline && !hasPermissionIssue && (
           <span className="flex items-center gap-1.5">
             {authExpired ? <AlertTriangle className="w-3.5 h-3.5" /> : <CloudUpload className="w-3.5 h-3.5" />}
             {authExpired ? 'انتهت صلاحية الجلسة' : 'فشل حفظ التغييرات على الخادم'} — {pendingSavesCount} عملية بانتظار المزامنة

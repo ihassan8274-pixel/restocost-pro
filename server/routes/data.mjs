@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   dataDir, COLLECTION_KEYS, instanceId, readToken, sessionUser, publicUser, readBindHost, portInUse,
 } from '../core.mjs';
+import { canWriteCollection } from '../permissions.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, buildFingerprint, serverStamp } from '../version.mjs';
 import { sendTelegram, sendTelegramDocument, buildNotificationText, testTelegram, getBotChatIds } from '../telegram.mjs';
@@ -192,14 +193,11 @@ export const registerData = (app) => {
     const { key } = req.params;
     if (!COLLECTION_KEYS.includes(key)) return res.status(400).json({ ok: false, error: 'مفتاح غير معروف' });
 
-    // ---- تحقق صلاحيات على الخادم (P1.4) ----
-    const ADMIN_ONLY_KEYS = new Set(['rcerp_users', 'rcerp_access_roles', 'rcerp_ai_settings', 'rcerp_telegram_settings', 'rcerp_custom_roles', 'rcerp_automation_rules', 'rcerp_scheduled_reports']);
-    const MANAGER_KEYS = new Set(['rcerp_branches', 'rcerp_companies', 'rcerp_suppliers', 'rcerp_raw_materials', 'rcerp_recipes', 'rcerp_inventory', 'rcerp_grn', 'rcerp_purchase_orders', 'rcerp_stock_transfers', 'rcerp_employees', 'rcerp_shifts', 'rcerp_pos_orders', 'rcerp_batch_sales', 'rcerp_customers', 'rcerp_reservations', 'rcerp_invoices', 'rcerp_accounts', 'rcerp_journal', 'rcerp_operating_expenses', 'rcerp_expense_budgets', 'rcerp_fixed_assets', 'rcerp_pl_summaries', 'rcerp_pos_returns', 'rcerp_requisitions', 'rcerp_purchase_requests', 'rcerp_supplier_quotes', 'rcerp_supplier_returns', 'rcerp_work_orders', 'rcerp_wastage', 'rcerp_production_runs', 'rcerp_food_menus', 'rcerp_menu_plans', 'rcerp_daily_counts', 'rcerp_employee_meals', 'rcerp_payroll', 'rcerp_attendance', 'rcerp_butcher_tests', 'rcerp_recipe_sections', 'rcerp_distributions', 'rcerp_intake_inbox', 'rcerp_branch_stock_limits', 'rcerp_delivery_sales', 'rcerp_delivery_apps', 'rcerp_customer_orders', 'rcerp_material_categories', 'rcerp_material_barcodes', 'rcerp_inventory_batches', 'rcerp_inventory_movements', 'rcerp_physical_counts', 'rcerp_opening_balances', 'rcerp_recipe_inventory', 'rcerp_closed_months', 'rcerp_closed_days', 'rcerp_eod_closures', 'rcerp_monthly_inventory', 'rcerp_vat_percent', 'rcerp_vat_inclusive', 'rcerp_deduct_sales', 'rcerp_currencies', 'rcerp_categories', 'rcerp_logo', 'rcerp_target_margin', 'rcerp_ack_alerts', 'rcerp_custom_reports', 'rcerp_recent_docs', 'rcerp_audit', 'rcerp_temp_logs', 'rcerp_haccp_inspections', 'rcerp_tasks', 'rcerp_documents', 'rcerp_deleted_ids', 'rcerp_units']);
-    if (ADMIN_ONLY_KEYS.has(key) && user.role !== 'admin') {
-      return res.status(403).json({ ok: false, error: 'غير مصرح — هذا المفتاح يتطلب صلاحيات مدير النظام' });
-    }
-    if (MANAGER_KEYS.has(key) && user.role !== 'admin' && user.role !== 'manager' && user.role !== 'executive') {
-      return res.status(403).json({ ok: false, error: 'غير مصرح — هذا المفتاح يتطلب صلاحيات إدارة' });
+    // ---- تحقق صلاحيات على الخادم (مبني على الصلاحيات) ----
+    const accessRoles = store.getKV('rcerp_access_roles') || [];
+    const writeCheck = canWriteCollection(user, key, accessRoles);
+    if (!writeCheck.ok) {
+      return res.status(403).json({ ok: false, error: writeCheck.message });
     }
 
     // ---- حماية من تلف النصوص العربية ----
@@ -950,7 +948,10 @@ if (key === 'rcerp_recent_docs') {
   app.post('/api/admin/pull-recent-docs', async (req, res) => {
     const user = sessionUser(readToken(req));
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
-    if (user.role !== 'admin' && user.role !== 'manager') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    // هذا المسار للإدارة فقط
+    if (user.role !== 'admin' && user.role !== 'executive' && user.role !== 'branch_manager' && user.role !== 'cost_controller') {
+      return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    }
 
     try {
       const recentDocs = store.getKV('rcerp_recent_docs') || [];
@@ -996,7 +997,7 @@ if (key === 'rcerp_recent_docs') {
   app.post('/api/admin/sync-collection', async (req, res) => {
     const user = sessionUser(readToken(req));
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
-    if (user.role !== 'admin' && user.role !== 'manager') return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    if (user.role !== 'admin' && user.role !== 'executive' && user.role !== 'branch_manager' && user.role !== 'cost_controller') return res.status(403).json({ ok: false, error: 'غير مصرح' });
 
     const { key } = req.body || {};
     if (!key || !COLLECTION_KEYS.includes(key)) return res.status(400).json({ ok: false, error: 'مفتاح مجموعة غير صالح' });

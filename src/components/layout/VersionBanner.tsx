@@ -15,7 +15,7 @@ export const VersionBanner: React.FC = () => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/health', { cache: 'no-store' });
+        const res = await fetch('/health', { cache: 'no-store' });
         if (!res.ok) return;
         const d = await res.json();
         const build = typeof d.build === 'string' ? d.build : '';

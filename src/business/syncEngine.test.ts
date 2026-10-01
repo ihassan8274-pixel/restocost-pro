@@ -10,9 +10,9 @@ describe('decideFlush', () => {
   it('يعتبر 409 رفضاً لبيانات تجريبية (shrink)', () => {
     expect(decideFlush(409)).toEqual({ kind: 'shrunk', note: 'رفض (بيانات تجريبية)' });
   });
-  it('يعتبر 401/403 انتهاء جلسة', () => {
+  it('يعتبر 401 انتهاء جلسة، و403 نقص صلاحية (ليس انتهاء جلسة)', () => {
     expect(decideFlush(401)).toEqual({ kind: 'auth', note: '401' });
-    expect(decideFlush(403)).toEqual({ kind: 'auth', note: '403' });
+    expect(decideFlush(403)).toEqual({ kind: 'forbidden', note: '403' });
   });
   it('يعيد محاولة أي رمز آخر', () => {
     expect(decideFlush(500)).toEqual({ kind: 'retry', note: 'HTTP 500' });
@@ -118,7 +118,7 @@ describe('runFlushQueue', () => {
     expect(res.failures).toContain('offline→لا استجابة');
   });
 
-  it('يتوقف فور 401/403 ويضع علامة انتهاء الجلسة', async () => {
+  it('يتوقف فور 401 ويضع علامة انتهاء الجلسة', async () => {
     const sent: string[] = [];
     const res = await runFlushQueue(
       [entry('a', 1), entry('b', 2)],
@@ -132,6 +132,23 @@ describe('runFlushQueue', () => {
     expect(sent).toEqual(['a']); // break بعد أول 401
     expect(res.gotAuthError).toBe(true);
     expect(res.hadFailures).toBe(true);
+  });
+
+  it('عند 403 لا يوقف الطابور ولا يضع علامة انتهاء الجلسة (نقص صلاحية لا جلسة منتهية)', async () => {
+    const sent: string[] = [];
+    const res = await runFlushQueue(
+      [entry('denied', 1), entry('allowed', 2)],
+      {
+        send: async (key) => { sent.push(key); return key === 'denied' ? 403 : 200; },
+        onSaved: vi.fn(),
+        onShrinkRejected: async () => {},
+      },
+      { failures: [] },
+    );
+    expect(sent).toEqual(['denied', 'allowed']); // لا break
+    expect(res.gotAuthError).toBe(false);
+    expect(res.hadFailures).toBe(true);
+    expect(res.failures).toContain('denied→صلاحية غير كافية (403)');
   });
 
   it('يلغي الطلب عند انتهاء المهلة ويعتبره لا استجابة', async () => {

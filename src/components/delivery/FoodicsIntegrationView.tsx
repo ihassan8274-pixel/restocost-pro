@@ -125,22 +125,14 @@ const FoodicsIntegrationView: React.FC = () => {
       Array.isArray(row) && row[0] === 'المنتج' && row[1] === 'كود تعريف المنتج'
     );
     const extracted: FoodicsRow[] = [];
-    // استخراج اسم الفرع من صفوف الـ metadata في الأعلى
-    let branchName = '';
-    let branchRef = '';
-    for (let i = 0; i < dataStart; i++) {
-      const r = allRows[i] as unknown[];
-      if (!r || !r[0]) continue;
-      if (String(r[0]).includes('الفروع') && r[1]) branchName = String(r[1]).trim();
-      if (String(r[0]).includes('مرجع الفرع') && r[1]) branchRef = String(r[1]).trim();
-    }
     for (let i = dataStart + 1; i < allRows.length; i++) {
       const r = allRows[i] as unknown[];
       if (!r || !r[0]) continue;
       if (String(r[0]).includes('الإجمالي')) continue;
+      // الفرع في العمود 2، مرجع الفرع في العمود 3
       extracted.push({
-        branch: branchName,
-        branchRef: branchRef,
+        branch: String(r[2] || '').trim(),
+        branchRef: String(r[3] || '').trim(),
         productEn: String(r[0] || '').trim(),
         productCode: String(r[1] || '').trim(),
         totalSales: Number(r[4]) || 0,           // إجمالي المبيعات
@@ -803,7 +795,7 @@ const FoodicsIntegrationView: React.FC = () => {
                     <td className="p-2 font-mono">{fmtNum(r.items.reduce((s, it) => s + it.quantitySold, 0), 0)}</td>
                     <td className="p-2 font-mono">{fmt(r.revenue)}</td>
                     <td className="p-2 font-mono text-amber-700">{fmt(r.cost)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{r.fcPct}%</td>
+                    <td className="p-2 font-mono font-bold text-emerald-700">{round2(r.fcPct)}%</td>
                     <td className="p-2">
                       <div className="flex gap-1">
                         <button onClick={() => deleteRecord(r.id, r.type)} className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600" title="حذف"><Trash2 className="w-3.5 h-3.5" /></button>

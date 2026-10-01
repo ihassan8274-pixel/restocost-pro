@@ -6,6 +6,11 @@ import {
 } from '../types';
 import { nextDocSequence } from '../business/docNumbers';
 
+// معرّف فريد يتضمّن عشوائية لتفادي تصادم Time.now() عند الاستيراد المجمّع
+// (فودكس يستدعي الإضافة عشرات المرات في حلقة واحدة بنفس المللي ثانية).
+const genId = (prefix: string): string =>
+  `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+
 interface SalesState {
   posOrders: POSOrder[];
   batchSalesRecords: BatchSalesRecord[];
@@ -50,12 +55,48 @@ export const useSalesStore = create<SalesState>()(
       deliveryApps: [],
       deliverySales: [],
 
-      addPOSOrder: () => ({ ok: false, autoSupplied: [] }),
+      addPOSOrder: (data) => {
+        const orderDate = data.date || new Date().toISOString();
+        const items = data.items || [];
+        const gross = items.reduce((s, i) => s + (i.lineTotal || 0), 0);
+        const totalCost = items.reduce((s, i) => s + (i.unitCost || 0) * (i.quantity || 0), 0);
+        const vat = Math.round(gross * 0.15 * 100) / 100;
+        const net = Math.round((gross - vat) * 100) / 100;
+        const total = Math.round(gross * 100) / 100;
+        const newOrder = {
+          ...data,
+          id: genId('ord'),
+          orderNumber: `POS-${(data.branchId || 'BR').toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          date: orderDate,
+          subtotal: net,
+          vatAmount: vat,
+          totalAmount: total,
+          totalCost,
+        } as POSOrder;
+        set((state) => ({ posOrders: [newOrder, ...state.posOrders] }));
+        return { ok: true, autoSupplied: [] };
+      },
       updatePOSOrder: (id, data) => set((state) => ({ posOrders: state.posOrders.map((o) => (o.id === id ? { ...o, ...data } : o)) })),
       deletePOSOrder: (id) => set((state) => ({ posOrders: state.posOrders.filter((o) => o.id !== id) })),
 
-      addBatchSalesRecord: () => {},
-      updateBatchSalesRecord: (id, data) => set((state) => ({ batchSalesRecords: state.batchSalesRecords.map((b) => (b.id === id ? { ...b, ...data } : b)) })),
+      // foodCostPercent يُقرّب إلى رقمين عند الحفظ حتى تتطابق كل السجلات
+      // المستوردة والمُدخلة يدوياً في العرض.
+      addBatchSalesRecord: (data) => {
+        const existing = get().batchSalesRecords.map((b) => b.batchNumber);
+        const rec = {
+          ...data,
+          foodCostPercent: Math.round((data.foodCostPercent || 0) * 100) / 100,
+          id: genId('bs'),
+          batchNumber: nextDocSequence('BS', { existing }),
+          createdAt: new Date().toISOString(),
+        } as BatchSalesRecord;
+        set((state) => ({ batchSalesRecords: [rec, ...state.batchSalesRecords] }));
+      },
+      updateBatchSalesRecord: (id, data) => set((state) => ({
+        batchSalesRecords: state.batchSalesRecords.map((b) => (b.id === id
+          ? { ...b, ...data, foodCostPercent: data.foodCostPercent !== undefined ? Math.round(data.foodCostPercent * 100) / 100 : b.foodCostPercent }
+          : b)),
+      })),
       deleteBatchSalesRecord: (id) => set((state) => ({ batchSalesRecords: state.batchSalesRecords.filter((b) => b.id !== id) })),
 
       addCustomer: (data) => set((state) => ({ customers: [{ ...data, id: `cus-${Date.now()}`, code: `CUS-${String(state.customers.length + 1).padStart(3, '0')}` }, ...state.customers] })),
@@ -69,7 +110,18 @@ export const useSalesStore = create<SalesState>()(
       addInvoice: (data) => set((state) => ({ invoices: [{ ...data, id: `inv-${Date.now()}`, invoiceNumber: nextDocSequence('INV', { existing: state.invoices.map((i) => i.invoiceNumber) }) }, ...state.invoices] })),
       updateInvoice: (id, data) => set((state) => ({ invoices: state.invoices.map((i) => (i.id === id ? { ...i, ...data } : i)) })),
       deleteInvoice: (id) => set((state) => ({ invoices: state.invoices.filter((i) => i.id !== id) })),
-      recordInvoicePayment: () => {},
+      recordInvoicePayment: (id, amount) => {
+        set((state) => ({
+          invoices: state.invoices.map((i) => {
+            if (i.id !== id) return i;
+            const paidAmount = Math.min(i.totalAmount, (i.paidAmount || 0) + amount);
+            const status: Invoice['status'] = paidAmount >= i.totalAmount - 1e-6
+              ? 'paid'
+              : paidAmount > 1e-6 ? 'partially_paid' : i.status;
+            return { ...i, paidAmount, status };
+          }),
+        }));
+      },
 
       addDeliveryApp: (data) => set((state) => ({ deliveryApps: [{ ...data, id: `app-${Date.now()}` }, ...state.deliveryApps] })),
       updateDeliveryApp: (id, data) => set((state) => ({ deliveryApps: state.deliveryApps.map((a) => (a.id === id ? { ...a, ...data } : a)) })),

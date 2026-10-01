@@ -104,7 +104,10 @@ export const ConsumptionMatrixReportView: React.FC = () => {
       (recipe.subPrepIngredients || []).forEach((sp) => {
         if (selectedType === 'recipe' && sp.recipeId === selectedId) add(date, branchId, sp.quantity * qty);
         const spr = recipes.find((x) => x.id === sp.recipeId);
-        if (spr) expand(spr, sp.quantity * qty, date, branchId);
+        if (spr) {
+          const pieces = Number(spr.yieldPieces) > 0 ? Number(spr.yieldPieces) : (Number(spr.portionSize) > 0 ? Number(spr.portionSize) : 1);
+          expand(spr, (sp.quantity * qty) / pieces, date, branchId);
+        }
       });
     };
 

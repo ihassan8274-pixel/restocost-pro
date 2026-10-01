@@ -118,7 +118,7 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
       addBatchSalesRecord({
         branchId, branchName: branch?.nameAr || branchId, date,
         items, totalRevenue, totalFoodCost, vatRate: vatRate, netRevenue, vatAmount,
-        foodCostPercent: netRevenue ? (totalFoodCost / netRevenue) * 100 : 0, enteredBy: 'المستخدم',
+        foodCostPercent: netRevenue ? round2((totalFoodCost / netRevenue) * 100) : 0, enteredBy: 'المستخدم',
       });
       showToast('تم إدخال مبيعات اليوم — خُصم المخزون تلقائياً');
     }

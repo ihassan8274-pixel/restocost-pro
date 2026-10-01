@@ -77,7 +77,10 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
         (recipe.subPrepIngredients || []).forEach((sp) => {
           if (capturePrep) addPrep(sp.recipeId, sp.quantity * qty);
           const spr = recipes.find((x) => x.id === sp.recipeId);
-          if (spr) expand(spr, sp.quantity * qty, capturePrep);
+          if (spr) {
+            const pieces = Number(spr.yieldPieces) > 0 ? Number(spr.yieldPieces) : (Number(spr.portionSize) > 0 ? Number(spr.portionSize) : 1);
+            expand(spr, (sp.quantity * qty) / pieces, capturePrep);
+          }
         });
       };
       const expandItem = (recipeId: string, qty: number) => {
