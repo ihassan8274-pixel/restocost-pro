@@ -290,6 +290,9 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   // --- change_log bounded retention: prune on boot, then every 6h. Keeps the
   // CDC table from growing unbounded (49k+ rows / 9 days observed). ---
   try { await store.pruneChangeLog(); } catch (e) { console.error('[store] initial prune failed:', e && (e.message || e)); }
+  // فهرس آخر seq لكل مفتاح: يجعل /api/bootstrap?since=N يعمل بعد إعادة التشغيل
+  // (بلا ذلك كانت data فارغة دوماً في وضع delta فالمزامنة التلقائية معطّلة).
+  try { await store.seedKvSeqFromLog(); } catch (e) { console.error('[store] seedKvSeq failed:', e && (e.message || e)); }
   setInterval(() => { try { store.pruneChangeLog(); } catch (e) { console.error('[store] periodic prune failed:', e && (e.message || e)); } }, 6 * 3600 * 1000).unref();
 
   const bindHost = readBindHost();

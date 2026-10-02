@@ -115,11 +115,21 @@ const createPgStore = async (prisma) => {
     const last = await prisma.changeLog.aggregate({ _max: { seq: true } });
     cdcNext = Number(last?._max?.seq ?? 0) + 1;
   } catch { /* tolerate */ }
+  // آخر seq تعديل لكل مفتاح — يخدم /api/bootstrap?since=N.
+  // كان الطلب يستدعي store.getKvMeta وهو غير معرَّف، فيعود null دائماً ⇒
+  // lastMod=0 ⇒ 0 <= since ⇒ كل مفتاح يُتخطّى ⇒ data فارغة في كل طلب delta
+  // (المزامنة التلقائية بين الأجهزة مكسورة بصمت).
+  const kvSeq = new Map();
+  const getKvMeta = (key) => {
+    const seq = kvSeq.get(key);
+    return seq === undefined ? null : { lastModified: seq, seq };
+  };
   const cdcPush = (key, op) => {
     // Skip CDC for high-frequency system keys to reduce DB writes
     if (key.startsWith('rcerp_sessions') || key.startsWith('rcerp_rate_limits') || key.startsWith('rcerp_audit') || key.startsWith('rcerp_telegram_')) return;
     const seq = cdcNext++;
     cdc.push({ seq, key, op, ts: Date.now() });
+    kvSeq.set(key, seq);
     if (cdc.length > 5000) cdc.splice(0, cdc.length - 5000);
     queue.push(() => prisma.changeLog.create({ data: { seq, key, op } }));
     return seq;
@@ -128,6 +138,15 @@ const createPgStore = async (prisma) => {
     const out = [];
     for (const e of cdc) { if (e.seq > since) out.push(e); if (out.length >= limit) break; }
     return out;
+  };
+  // على الإقلاع: بناء فهرس آخر seq لكل مفتاح من change_log (حتى بعد إعادة
+  // التشغيل يعرف أي مفتاح تغيّر منذ أي watermark محفوظ في جهاز).
+  const seedKvSeqFromLog = async () => {
+    try {
+      const rows = await prisma.changeLog.groupBy({ by: ['key'], _max: { seq: true } });
+      for (const r of rows) if (r._max && r._max.seq !== null && r._max.seq !== undefined) kvSeq.set(r.key, r._max.seq);
+      return kvSeq.size;
+    } catch { return 0; }
   };
 
   function getKV(key) {
@@ -274,6 +293,7 @@ const createPgStore = async (prisma) => {
     pg: true,
     getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany,
     cdcSince, pruneChangeLog,
+    getKvMeta, seedKvSeqFromLog,
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
@@ -331,9 +351,22 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
   // ---- CDC log (مثل PG): كل كتابة تُسجَّل بنسخة متزايدة ----
   let cdcNext = 1;
   try { const row = db.prepare('SELECT COALESCE(MAX(seq),0) AS m FROM change_log').get(); cdcNext = (row ? Number(row.m) : 0) + 1; } catch { /* tolerate */ }
+  const kvSeq = new Map();
+  const getKvMeta = (key) => {
+    const seq = kvSeq.get(key);
+    return seq === undefined ? null : { lastModified: seq, seq };
+  };
+  const seedKvSeqFromLog = async () => {
+    try {
+      const rows = db.prepare('SELECT key, MAX(seq) AS m FROM change_log GROUP BY key').all();
+      for (const r of rows) if (r.m !== null && r.m !== undefined) kvSeq.set(r.key, Number(r.m));
+      return kvSeq.size;
+    } catch { return 0; }
+  };
   const cdcPush = (key, op) => {
     if (key.startsWith('rcerp_sessions') || key.startsWith('rcerp_rate_limits') || key.startsWith('rcerp_audit') || key.startsWith('rcerp_telegram_')) return;
     const seq = cdcNext++;
+    kvSeq.set(key, seq);
     const ts = new Date().toISOString();
     try { db.prepare('INSERT INTO change_log (seq, key, op, ts) VALUES (?, ?, ?, ?)').run(seq, key, op, ts); } catch { /* CDC must never break the app */ }
     return seq;
@@ -416,6 +449,7 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
     backend: 'sqlite',
     pg: false,
     getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany, cdcSince, pruneChangeLog,
+    getKvMeta, seedKvSeqFromLog,
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
@@ -435,7 +469,7 @@ let backend = null; // set by init()
 
 const façade = {};
 const M = [
-  'getKV', 'setKV', 'deleteKV', 'kvKeysByPrefix', 'kvEntriesByPrefix', 'setKVMany', 'cdcSince', 'pruneChangeLog',
+  'getKV', 'setKV', 'deleteKV', 'kvKeysByPrefix', 'kvEntriesByPrefix', 'setKVMany', 'cdcSince', 'pruneChangeLog', 'getKvMeta', 'seedKvSeqFromLog',
   'createSession', 'deleteSession', 'deleteSessionsByUser', 'deleteOtherSessions',
   'purgeAllSessions', 'purgeExpiredSessions', 'sessionRow',
   'rateLimitGet', 'rateLimitRegisterFailure', 'rateLimitClear', 'purgeExpiredRateLimits',
