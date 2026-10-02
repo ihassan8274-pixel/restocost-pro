@@ -103,12 +103,16 @@ export const useSettingsStore = create<SettingsState>()(
       addCategory: (data) => set((state) => ({ customCategories: [{ ...data, id: `cat-${Date.now()}` }, ...state.customCategories] })),
       deleteCategory: (id) => set((state) => ({ customCategories: state.customCategories.filter((c) => c.id !== id) })),
 
+      // مفتاح العمل للعملة هو code (SAR, USD...)، لكن mergeById على الخادم
+      // يسقط أي سجل بلا id — فبلا id كانت العملات تُمحى من كل دمج. نضيف
+      // id مشتقاً من code: ثابت عبر التحديث (لا يتغيّر بتغيير الاسم) وبلا
+      // تصادم مع مفتاح أي مجموعة أخرى.
       addCurrency: (c) => {
         const code = c.code.trim().toUpperCase();
         if (get().currencies.some((x) => x.code === code)) return;
-        set((state) => ({ currencies: [{ ...c, code, isBase: false }, ...state.currencies] }));
+        set((state) => ({ currencies: [{ ...c, code, id: `cur-${code}`, isBase: false }, ...state.currencies] }));
       },
-      updateCurrency: (code, d) => set((state) => ({ currencies: state.currencies.map((c) => (c.code === code ? { ...c, ...d } : c)) })),
+      updateCurrency: (code, d) => set((state) => ({ currencies: state.currencies.map((c) => (c.code === code ? { ...c, ...d, id: c.id || `cur-${code}` } : c)) })),
       deleteCurrency: (code) => {
         if (code === 'SAR') return;
         set((state) => ({ currencies: state.currencies.filter((c) => c.code !== code) }));

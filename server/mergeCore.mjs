@@ -24,6 +24,9 @@ export const mergeById = (existing, incoming, tombstones = new Set()) => {
     const seen = new Set();
     for (const v of [...ex, ...inc]) {
       if (v === null) continue;
+      // شواهد القيم النصية: القيمة نفسها هي معرّفها (customRoles مثلاً)،
+      // فالمحذوف يجب ألا يعود بالاتحاد. بدون هذا كان حذف دور مخصص يعود.
+      if (tombstones.size > 0 && tombstones.has(String(v))) continue;
       if (seen.has(v)) continue;
       seen.add(v);
       out.push(v);

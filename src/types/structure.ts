@@ -30,6 +30,8 @@ export const DEFAULT_MATERIAL_CATEGORIES: Record<string, { labelAr: string; labe
 
 // ============ MULTI-CURRENCY ============
 export interface Currency {
+  // مفتاح الدمج على الخادم (mergeById يسقط ما بلا id). مشتق من code ثابت.
+  id?: string;
   code: string;
   nameAr: string;
   symbol: string;

@@ -27,3 +27,21 @@ export const removedIdsBetween = (prev: unknown, cur: unknown): string[] => {
   const kept = new Set(idsOf(cur));
   return idsOf(prev).filter((id) => !kept.has(id));
 };
+
+/**
+ * القيم النصية التي اختفت بين قائمتين (القيم الأولية: customRoles).
+ * rcerp_custom_roles قائمة نصوص بلا id، فلم يكن شاهد الحذف يلتقطها (isRecordArray
+ * ترفضها) فحذف دور مخصّص كان يعود بعد المزامنة. القيم النصية تُستخدم كـ"معرّف"
+ * مباشرةً — وهي فريدة داخل مجموعتها.
+ *
+ * ملاحظة: تفرّق عن isRecordArray عمداً: نشترط كل العناصر نصوصاً (أو أرقاماً).
+ */
+export const isPrimitiveArray = (v: unknown): v is (string | number)[] =>
+  Array.isArray(v) && v.every((x) => typeof x === 'string' || typeof x === 'number');
+
+/** القيم النصية/الرقمية الموجودة في prev وغير موجودة في cur. */
+export const removedValuesBetween = (prev: unknown, cur: unknown): string[] => {
+  if (!isPrimitiveArray(prev)) return [];
+  const kept = new Set<string>(isPrimitiveArray(cur) ? cur.map((x) => String(x)) : []);
+  return [...new Set(prev.filter((x) => !kept.has(String(x))).map((x) => String(x)))];
+};

@@ -15,7 +15,7 @@ import { registerCollection, getCollectionValue, isApplying } from './collection
 // تُثبَّت المجموعات في السجل المركزي ويُشترك على كل ستور ليرفع التعديلات المحلية
 // إلى طابور الحفظ (syncStore.persist) — بينما تحمي isApplying() أثناء تطبيق بيانات
 // الخادم الواردة من إعادة رفع نفس القيم (منع الصدى).
-import { removedIdsBetween } from '../business/collection-tombstone';
+import { removedIdsBetween, removedValuesBetween, isRecordArray } from '../business/collection-tombstone';
 
 interface Pair {
   store: { setState: (p: object) => void; getState: () => unknown };
@@ -42,7 +42,7 @@ const pairs: [string, Pair][] = [
   ['rcerp_categories', { store: useSettingsStore, field: 'customCategories', filterTombstones: true }],
   ['rcerp_currencies', { store: useSettingsStore, field: 'currencies' }], // مفتاحه code لا id
   ['rcerp_companies', { store: useSettingsStore, field: 'companies', filterTombstones: true }],
-  ['rcerp_custom_roles', { store: useSettingsStore, field: 'customRoles' }], // string[]
+  ['rcerp_custom_roles', { store: useSettingsStore, field: 'customRoles', filterTombstones: true }], // string[] — الشاهد هو القيمة نفسها
   ['rcerp_automation_rules', { store: useSettingsStore, field: 'automationRules' }], // admin-only
   ['rcerp_scheduled_reports', { store: useSettingsStore, field: 'scheduledReports' }], // admin-only
 
@@ -153,8 +153,11 @@ export const ensureCollectionSources = (): void => {
       // دمج الخادم اتحادٌ فقط، فلا يُحذف سجل بمجرد اختفائه محلياً: يعود مع
       // bootstrap التالي. لذلك أي معرّف اختفى من تعديل محلي (وليس من تحميل
       // خادم — محميٌّ بـ isApplying أعلاه) يُسجَّل شاهد حذف، فيثبت الحذف.
+      // القيم النصية (customRoles) لها مسارها: لا id فيها فالقيمة نفسها معرّف.
       if (filterTombstones && !cappedList) {
-        const gone = removedIdsBetween(prevV, cur);
+        const gone = isRecordArray(prevV) && isRecordArray(cur)
+          ? removedIdsBetween(prevV, cur)
+          : removedValuesBetween(prevV, cur);
         if (gone.length) useLegacyCompatStore.getState().tombstoneIds(gone);
       }
       sync.persist(key, cur);
