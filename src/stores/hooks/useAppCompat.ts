@@ -17,6 +17,9 @@ import { useProductionStore } from '@stores/productionStore';
 import { useProcurementStore } from '@stores/procurementStore';
 import { useSalesStore } from '@stores/salesStore';
 import { useFinancialStore } from '@stores/financialStore';
+// مالك إعداد "خصم المبيعات من المخزون" (context/domains/financial.ts) — ليس
+// stores/financialStore (مخزون وقوالب فقط).settings لاsettings.
+import { useFinancialStore as useFinancialSettingsStore } from '../../context/domains/financial';
 import { useSettingsStore } from '@stores/settingsStore';
 import { useHRStore } from '@stores/hrStore';
 import { usePeriodStore } from '@stores/periodStore';
@@ -1326,6 +1329,11 @@ export const useApp = () => {
     usePeriodStore.getState().startMonthlyInventory(branchId, monthKey, items);
   }, [getBranchAverageUnitCost]);
 
+  // المالك الموثوق لإعداد خصم المبيعات: financialStore (يرسل للخادم عبر
+  // markPending). كان ...legacy يكتب فوقه فيتحكم به الستور غير المتزامن،
+  // فالإعداد في الواجهة لا يساوي ما يُرفع.
+  const deductSalesFromInventory = useFinancialSettingsStore((s) => s.deductSalesFromInventory);
+
   const canUndo = false;
   const canRedo = false;
   const undo = useCallback(() => {}, []);
@@ -1350,6 +1358,10 @@ export const useApp = () => {
     showToast,
     getFoodCostAlerts,
     acknowledgedAlertIds: legacy.acknowledgedAlertIds,
+    // المالك الموثوق لإعداد خصم المبيعات: financialStore (يرسل للخادم عبر
+    // markPending). كان ...legacy يكتب فوقه فيتحكم به الستور غير المتزامن،
+    // فالإعداد المعروض في الواجهة لم يكن يساوي ما يُرفع للخادم.
+    deductSalesFromInventory,
     acknowledgeAlert,
     unacknowledgeAlert,
     getRawMaterialName,

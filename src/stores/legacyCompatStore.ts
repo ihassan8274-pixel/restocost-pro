@@ -65,7 +65,10 @@ export const useLegacyCompatStore = create<LegacyCompatState>()(
       globalTargetMarginPercent: 30,
       vatPercent: 0,
       vatInclusive: true,
-      deductSalesFromInventory: true,
+      // الافتراضي: لا خصم. تكلفة المبيعات تُحسب بالجرد (الجرد الأول + المشتريات
+      // − الجرد الأخير). الخصم التلقائي يجعل الرصيد سالباً عند نقص استلام
+      // مقابل كثرة البيع، وهو ما حدث في بيانات 9–16 سبتمبر (14,491 وحدة سالبة).
+      deductSalesFromInventory: false,
 
       setRawMaterials: (rawMaterials) => set({ rawMaterials }),
       setWastageLogs: (wastageLogs) => set({ wastageLogs }),
