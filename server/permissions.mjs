@@ -240,6 +240,49 @@ export const OPERATIONAL_READABLE = new Set([
 export const COUNTING_READ_KEYS = new Set(['rcerp_daily_counts']);
 
 /**
+ * ما يراه الدور غير الإداري: فروعه فقط أم الكل؟
+ * مطابق لـ visibleBranchIdsFor في العميل (src/stores/hooks/useAuth.ts) — نفس
+ * القاعدة في الطرفين حتى لا يختلف ما يراه المستخدم عن ما تصله البيانات.
+ * 'all' = كل الفروع. branchId فارغ = لا فرع مُسند بعد ⇒ لا شيء يُرسل
+ * (سلوك مقصود: الموظف غير المُسند لا يرى بيانات أي فرع).
+ */
+export const visibleBranchIdsFor = (user, branches) => {
+  if (!user) return [];
+  const bid = user.branchId;
+  if (bid === 'all') return (branches || []).map((b) => b.id);
+  return bid ? [bid] : [];
+};
+
+// المجموعات التي تحمل branchId على مستوى السجل — تُقصَّ على فروع المستخدم.
+// أي مجموعة خارج هذه القائمة إما مرجع مشترك (مواد/فروع/أصناف) أو مستCONCLUSION
+// إداري بلا فرع، فلا يُقصّ.
+export const BRANCH_SCOPED_KEYS = new Set([
+  'rcerp_inventory', 'rcerp_inventory_batches', 'rcerp_inventory_movements',
+  'rcerp_recipe_inventory', 'rcerp_opening_balances', 'rcerp_branch_stock_limits',
+  'rcerp_daily_counts', 'rcerp_physical_counts', 'rcerp_stock_transfers',
+  'rcerp_distributions', 'rcerp_grn', 'rcerp_purchase_orders', 'rcerp_purchase_requests',
+  'rcerp_supplier_quotes', 'rcerp_supplier_returns', 'rcerp_requisitions',
+  'rcerp_pos_orders', 'rcerp_pos_returns', 'rcerp_delivery_apps', 'rcerp_delivery_sales',
+  'rcerp_invoices', 'rcerp_reservations', 'rcerp_customers', 'rcerp_batch_sales',
+  'rcerp_customer_orders', 'rcerp_operating_expenses', 'rcerp_employees', 'rcerp_shifts',
+  'rcerp_attendance', 'rcerp_payroll', 'rcerp_employee_meals', 'rcerp_wastage',
+  'rcerp_production_runs', 'rcerp_work_orders', 'rcerp_butcher_tests',
+  'rcerp_monthly_inventory', 'rcerp_eod_closures', 'rcerp_intake_inbox',
+]);
+
+/**
+ * يقصّ قيمة مجموعة على فروع المستخدم.
+ * سجل بلا branchId يمرّ بلا قصّ (سلوك متحفّظ: لا نفقد بيانات لا نعرف نطاقها).
+ */
+export const scopeToBranches = (value, user, branches) => {
+  if (!Array.isArray(value)) return value;
+  const allowed = new Set(visibleBranchIdsFor(user, branches));
+  if (allowed.has('all')) return value; // لم نعدّل all هنا — الحالة تُمنح في visibleBranchIdsFor
+  if (allowed.size === 0) return [];      // بلا فرع مُسند: لا يرى شيئاً
+  return value.filter((r) => !r || typeof r !== 'object' || r.branchId === undefined || allowed.has(String(r.branchId)));
+};
+
+/**
  * هل يملك المستخدم حق قراءة مجموعة المزامنة؟
  * @returns {{ ok: true } | { ok: false, code: 'forbidden', message: string }}
  */

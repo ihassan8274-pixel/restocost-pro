@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   dataDir, COLLECTION_KEYS, instanceId, readToken, sessionUser, publicUser, readBindHost, portInUse,
 } from '../core.mjs';
-import { canWriteCollection, canPurgeTombstone, canReadCollection } from '../permissions.mjs';
+import { canWriteCollection, canPurgeTombstone, canReadCollection, BRANCH_SCOPED_KEYS, scopeToBranches } from '../permissions.mjs';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, buildFingerprint, serverStamp } from '../version.mjs';
@@ -87,18 +87,22 @@ export const registerData = (app) => {
     // كله (كسر العميل)، بل نستبعد ما لا يحقّ للمستخدم رؤيته ونُعلمه بالمستبعد.
     const deniedKeys = [];
     const accessRoles = store.getKV('rcerp_access_roles') || [];
+    const branches = store.getKV('rcerp_branches') || [];
     COLLECTION_KEYS.forEach((key) => {
       if (LAZY_KEYS.has(key)) return;
       const v = getKV(key);
       if (v === null) return;
       if (!canReadCollection(user, key, accessRoles).ok) { deniedKeys.push(key); return; }
+      // قيد الفرع: الموظف غير الإداري لا يستقبل سجلات فروع غيره. نفس قاعدة
+      // visibleBranchIdsFor في العميل، فيتطابق ما يراه مع ما يصله.
+      const scoped = BRANCH_SCOPED_KEYS.has(key) ? scopeToBranches(v, user, branches) : v;
       if (isDelta) {
         const kvMeta = store.getKvMeta ? store.getKvMeta(key) : null;
         const lastMod = kvMeta?.lastModified || 0;
         if (lastMod <= since) return;
         touchedKeys.push(key);
       }
-      data[key] = sanitizeCollectionForBroadcast(key, v);
+      data[key] = sanitizeCollectionForBroadcast(key, scoped);
     });
     const rev = revState ? revState() : { rev: 1, boot: 0 };
     const etag = `W/"${rev.rev}-${rev.boot}"`;
@@ -123,7 +127,13 @@ export const registerData = (app) => {
     if (!canReadCollection(user, key, accessRoles).ok) {
       return res.status(403).json({ ok: false, error: 'غير مصرح — هذه البيانات خارج نطاق صلاحياتك', reason: 'read_forbidden', key });
     }
-    const page = paginateCollection(getKV(key), String(req.query.cursor || ''), Number(req.query.limit));
+    // قيد الفرع يُطبَّق هنا أيضاً: المجموعات الـlazy (inventory, journal,
+    // movements...) تُسحب بعد bootstrap، فبلا قصّ she'd تعيد كل الفروع.
+    const branches = store.getKV('rcerp_branches') || [];
+    const source = BRANCH_SCOPED_KEYS.has(key)
+      ? scopeToBranches(getKV(key), user, branches)
+      : getKV(key);
+    const page = paginateCollection(source, String(req.query.cursor || ''), Number(req.query.limit));
     // نفس تعقيم bootstrap: صفحة rcerp_users كانت تصل خاماً فتسريب هاشات
     // كلمات المرور وأسرار TOTP لأي جلسة مصادَق عليها (حتى lowest role).
     res.json({ ok: true, key, ...page, items: sanitizeCollectionForBroadcast(key, page.items) });
@@ -820,7 +830,9 @@ if (key === 'rcerp_recent_docs') {
     const user = sessionUser(readToken(req));
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
     const inbox = Array.isArray(getKV('rcerp_intake_inbox')) ? getKV('rcerp_intake_inbox') : [];
-    res.json({ ok: true, items: inbox });
+    // نفس قيد الفرع المطبَّق على bootstrap: صندوق الفواتير يحوي فرع المصدر.
+    const branches = store.getKV('rcerp_branches') || [];
+    res.json({ ok: true, items: scopeToBranches(inbox, user, branches) });
   });
 
   app.post('/api/intake-inbox/:id/raise', (req, res) => {
