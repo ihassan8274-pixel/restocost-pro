@@ -14,7 +14,9 @@ interface PeriodState {
   reopenDay: (date: string) => void;
   startMonthlyInventory: (branchId: string, monthKey: string, items?: MonthlyInventoryItem[]) => void;
   saveMonthlyInventoryCounts: (id: string, counted: Record<string, number>) => void;
-  closeMonthlyInventory: (id: string) => void;
+  closeMonthlyInventory: (id: string, settlement?: {
+    appliedAt?: string; shortages?: number; surplus?: number; netVariance?: number;
+  }) => void;
   deleteMonthlyInventory: (id: string) => void;
   reopenMonthlyInventory: (id: string) => void;
 }
@@ -64,12 +66,31 @@ export const usePeriodStore = create<PeriodState>()(
         }));
       },
 
-      closeMonthlyInventory: (id) => {
-        const p = get().monthlyInventory.find((x) => x.id === id);
-        if (!p) return;
-        set((state) => ({ monthlyInventory: state.monthlyInventory.map((x) => (x.id === id ? { ...x, status: 'closed' as const, closedAt: new Date().toISOString() } : x)) }));
-        set((state) => ({ closedMonths: state.closedMonths.includes(p.monthKey) ? state.closedMonths : [...state.closedMonths, p.monthKey] }));
-      },
+// إقفال الشهر: يطبّق تسوية الجرد على المخزون (فرق الدفتري عن الفعلي)،
+// ثم يقفل الشهر. كان يقفل فقط بلا تعديل للمخزون ولا قيد — فالفرق كان يختفي.
+// التطبيق يتم في MonthlyInventoryView (startMonthlyInventoryClose) لأنه يحتاج
+// الوصول إلى متجر المخزون+dفتر القيود؛ هنا نُبقي الفترة ونقفلها فقط.
+closeMonthlyInventory: (id, settlement?: { appliedAt?: string; shortages?: number; surplus?: number; netVariance?: number }) => {
+  const p = get().monthlyInventory.find((x) => x.id === id);
+  if (!p) return;
+  set((state) => ({
+    monthlyInventory: state.monthlyInventory.map((x) => (x.id === id
+      ? {
+        ...x,
+        status: 'closed' as const,
+        closedAt: new Date().toISOString(),
+        // بصمة التسوية: نثبت ما طُبِّق فعلاً على المخزون
+        ...(settlement ? {
+          settlementAppliedAt: settlement.appliedAt || new Date().toISOString(),
+          settlementShortages: settlement.shortages ?? 0,
+          settlementSurpluses: settlement.surplus ?? 0,
+          settlementNetVariance: settlement.netVariance ?? 0,
+        } : {}),
+      }
+      : x)),
+  }));
+  set((state) => ({ closedMonths: state.closedMonths.includes(p.monthKey) ? state.closedMonths : [...state.closedMonths, p.monthKey] }));
+},
 
       deleteMonthlyInventory: (id) => {
         set((state) => ({ monthlyInventory: state.monthlyInventory.filter((x) => x.id !== id) }));

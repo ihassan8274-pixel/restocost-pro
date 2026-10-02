@@ -239,6 +239,39 @@ export const OPERATIONAL_READABLE = new Set([
 // فقط (counter/storekeeper) — waiter لا يقرأ سجلات جرد المطبخ ولا habil.
 export const COUNTING_READ_KEYS = new Set(['rcerp_daily_counts']);
 
+// من يملك صلاحية عرض كيان في القائمة (navigation.ts) يجب أن يقرأ بياناته،
+// وإلا ظهرت الشاشة والقائمة فارغتين. القاعدة مشتقّة من الصلاحيات لا من
+// قائمة مفاتيح مكتوبة يدوياً، فلا يمكن أن تتعارض مرتين.
+const SCREEN_PERM_TO_KEYS = [
+  ['view_dashboard', ['rcerp_tasks', 'rcerp_ack_alerts', 'rcerp_audit', 'rcerp_recent_docs']],
+  ['manage_wastage', ['rcerp_wastage']],
+  ['manage_labor', ['rcerp_employees', 'rcerp_shifts', 'rcerp_attendance', 'rcerp_payroll', 'rcerp_employee_meals']],
+  ['manage_inventory', ['rcerp_intake_inbox', 'rcerp_haccp_inspections', 'rcerp_temp_logs',
+    'rcerp_monthly_inventory', 'rcerp_eod_closures', 'rcerp_requisitions',
+    'rcerp_customer_orders', 'rcerp_documents']],
+  ['manage_customers', ['rcerp_customers', 'rcerp_customer_orders']],
+  ['manage_reservations', ['rcerp_reservations']],
+  ['manage_pos', ['rcerp_pos_orders', 'rcerp_delivery_apps', 'rcerp_delivery_sales']],
+  ['manage_recipes', ['rcerp_recipes', 'rcerp_recipe_sections', 'rcerp_food_menus', 'rcerp_menu_plans']],
+  ['manage_central_kitchen', ['rcerp_production_runs', 'rcerp_work_orders', 'rcerp_butcher_tests']],
+  ['manage_grn', ['rcerp_grn']],
+  ['manage_suppliers', ['rcerp_suppliers', 'rcerp_supplier_quotes', 'rcerp_supplier_returns']],
+  ['manage_purchase_orders', ['rcerp_purchase_orders', 'rcerp_purchase_requests']],
+  ['mobile_count', ['rcerp_daily_counts', 'rcerp_physical_counts']],
+  ['manage_export', ['rcerp_custom_reports', 'rcerp_targets', 'rcerp_logo']],
+];
+
+/** المجموعات التي يقرأها دور بعينه استناداً إلى صلاحياته المعلنة. */
+export const readableKeysFor = (role) => {
+  const perms = ROLE_PERMISSIONS[role] || [];
+  const keys = new Set();
+  for (const [perm, ks] of SCREEN_PERM_TO_KEYS) {
+    if (!perms.includes(perm)) continue;
+    ks.forEach((k) => keys.add(k));
+  }
+  return keys;
+};
+
 /**
  * ما يراه الدور غير الإداري: فروعه فقط أم الكل؟
  * مطابق لـ visibleBranchIdsFor في العميل (src/stores/hooks/useAuth.ts) — نفس
@@ -299,6 +332,10 @@ export const canReadCollection = (user, key, accessRoles) => {
   }
   // من له حق رؤية المبيعات يرى فواتيرها ومبيعاتها.
   if (perms.includes('manage_invoices')) return { ok: true };
+  // قاعدة الشاشة: من يملك صلاحية عرض كيان (navigation.ts) يقرأ بياناته.
+  // بدونها ظهرت شاشات فارغة لأدوار مرئية (chef/storekeeper مع wastage
+  // وintake_inbox وhaccp وmonthly_inventory وtasks).
+  if (readableKeysFor(role).has(key)) return { ok: true };
   // المرجع المشترك متاح للجميع (أسماء لا أرقام).
   if (SHARED_REFERENCE_KEYS.has(key)) return { ok: true };
   // سجلات الجرد لمن يعدّ فقط (mobile_count صلاحيةُ-counter وstorekeeper).

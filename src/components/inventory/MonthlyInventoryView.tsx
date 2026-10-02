@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { ClipboardCheck, Lock, Play, Save, Printer, Calculator, Trash2, Unlock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { usePeriodStore } from '../../stores/periodStore';
+import { useInventoryStore } from '../../stores/inventoryStore';
+import { buildMonthlySettlement, describeSettlementEntry } from '../../business/monthly-settlement';
 import { Card, PageHeader, Btn, Field, inputCls, SectionHeader, Modal } from '../ui';
 import { ViewToolbar } from '../ui/ViewToolbar';
 import { fmt, fmtMoney } from '../../utils/helpers';
@@ -10,7 +13,7 @@ import { useAdminDelete, AdminDeleteModal } from '../../hooks';
 import { MonthlyInventoryPeriod, MonthlyInventoryItem } from '../../types';
 
 export const MonthlyInventoryView: React.FC = () => {
-  const { branches, visibleBranchIds, rawMaterials, monthlyInventory, closedMonths, isMonthClosed, startMonthlyInventoryWithItems, saveMonthlyInventoryCounts, closeMonthlyInventory, deleteMonthlyInventory, reopenMonthlyInventory, getBranchName, can, addRecentDoc } = useApp();
+  const { branches, visibleBranchIds, rawMaterials, monthlyInventory, closedMonths, isMonthClosed, startMonthlyInventoryWithItems, saveMonthlyInventoryCounts, closeMonthlyInventory, deleteMonthlyInventory, reopenMonthlyInventory, getBranchName, can, addRecentDoc, showToast } = useApp();
 
   const [branch, setBranch] = useState(visibleBranchIds.find((id) => id !== 'b-ck') || visibleBranchIds[0] || '');
   const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
@@ -120,6 +123,36 @@ export const MonthlyInventoryView: React.FC = () => {
   };
 
   const confirmCloseId = confirmClose ? monthlyInventory.find((p) => p.id === confirmClose) : null;
+
+  // ── إقفال الشهر مع تطبيق التسوية على المخزون ──
+// الفرق بين الدفتري (theoreticalQty) والفعلي (countedQty) يعدّل المخزون:
+//   عجز  ⇒ المخزون ينقص  ⇒ حركة "تسوية جرد" سالبة
+//   فائض ⇒ المخزون يزيد  ⇒ حركة "تسوية جرد" موجبة
+// المدخلات تُحفظ أولاً (أعلاه) ثم نقرأ القيم المُحدَّثة، لأن setState غير متزامن.
+const closeWithSettlement = (id: string) => {
+  const p = usePeriodStore.getState().monthlyInventory.find((x) => x.id === id);
+  if (!p) return;
+  const plan = buildMonthlySettlement(p.items);
+  if (plan.hasVariance) {
+    for (const line of plan.lines) {
+      useInventoryStore.getState().adjustInventory(
+        p.branchId, line.rawMaterialId, line.delta, undefined,
+        { type: 'تسوية جرد', ref: `جرد ${monthLabelFor(p.monthKey)}` },
+      );
+    }
+  }
+  closeMonthlyInventory(id, {
+    appliedAt: new Date().toISOString(),
+    shortages: plan.shortages.length,
+    surplus: plan.surpluses.length,
+    netVariance: plan.netVarianceValue,
+  });
+  const note = describeSettlementEntry(plan, monthLabelFor(p.monthKey));
+  if (note) showToast(note);
+  else showToast(`أُقفل ${monthLabelFor(p.monthKey)} — لا يوجد فرق (الأعداد مطابقة للدفتري)`);
+  addRecentDoc({ type: 'inventory_count', title: `إقفال جرد ${monthLabelFor(p.monthKey)} — ${getBranchName(p.branchId)}`, tab: 'monthly_inventory' });
+  setConfirmClose(null);
+};
 
   const requestDeleteCount = (p: MonthlyInventoryPeriod) => {
     setConfirmKind('delete');
@@ -285,7 +318,7 @@ export const MonthlyInventoryView: React.FC = () => {
           <div className="flex justify-end gap-2 pt-2">
             <Btn tone="ghost" onClick={() => setConfirmClose(null)}>إلغاء</Btn>
             <Btn tone="dark" onClick={() => { if (confirmCloseId) printBranchInventoryReport(confirmCloseId); }}><Printer className="w-4 h-4" /> طباعة تقرير الأرصدة</Btn>
-            <Btn tone="danger" onClick={() => { if (confirmCloseId) closeMonthlyInventory(confirmCloseId.id); setConfirmClose(null); }}><Lock className="w-4 h-4" /> تأكيد الإقفال</Btn>
+            <Btn tone="danger" onClick={() => { if (confirmCloseId) closeWithSettlement(confirmCloseId.id); }}><Lock className="w-4 h-4" /> تأكيد الإقفال</Btn>
           </div>
         </div>
       </Modal>

@@ -187,6 +187,11 @@ export interface MonthlyInventoryPeriod {
   closedAt?: string;
   closedBy?: string;
   items: MonthlyInventoryItem[];
+  // بصمة تطبيق التسوية على المخزون وقت الإقفال (فرق الدفتري عن الفعلي)
+  settlementAppliedAt?: string;
+  settlementShortages?: number;
+  settlementSurpluses?: number;
+  settlementNetVariance?: number;
   originalItems?: MonthlyInventoryItem[];
   totalSystemCost?: number;
   totalCountedCost?: number;

@@ -27,13 +27,15 @@ interface Pair {
   cappedList?: boolean;
 }
 
-// ملاحظة على الشواهد هنا: هذه المجموعات كانت بلا filterTombstones، فحذفُ
-// فرع أو شركة أو وحدة يعود بعد المزامنة (نفس فئة ثغرة "الحذف الذي يعود").
-// الاستثناءات موثّقة عمداً:
-//   - rcerp_custom_roles  : string[] (بلا id) — لا يمكن شاهد بمعرّف.
-//   - rcerp_currencies    : المفتاح code لا id — يلزم تحويل بنيوي للـschema.
-//   - rcerp_access_roles / automation_rules / scheduled_reports :
-//     ADMIN_ONLY_KEYS على الخادم — لا شاهد لها بحكم البوابة.
+// قاعدة Witnesses هنا: لا تُفعَّل filterTombstones لمجموعة يرفض الخادم شاهدها
+// (canPurgeTombstone=false)، وإلا أرسل العميل witnesses يرفضها الخادم فيعود
+// 400 ويجمد المزامنة كاملة — وهو بالضبط ما حدث لـ rcerp_users/access_roles.
+// الاستثناءات الموثّقة عمداً:
+//   - rcerp_users / access_roles / custom_roles / automation_rules /
+//     scheduled_reports : ADMIN_ONLY_KEYS على الخادم — بلا witnesses.
+//   - rcerp_audit / recent_docs / inventory_movements : cappedList — اختفاء
+//     أقدم عناصرها نافذ محلياً، وإلا ذاب السقف فيولّد witnesses للأقدم.
+//   - rcerp_currencies   : مفتاحه code — أُضيف id مشتق (cur-SAR) ليمرّ بالدمج.
 const pairs: [string, Pair][] = [
   ['rcerp_branches', { store: useSettingsStore, field: 'branches', filterTombstones: true }],
   ['rcerp_units', { store: useSettingsStore, field: 'unitsOfMeasure', filterTombstones: true }],
@@ -42,7 +44,7 @@ const pairs: [string, Pair][] = [
   ['rcerp_categories', { store: useSettingsStore, field: 'customCategories', filterTombstones: true }],
   ['rcerp_currencies', { store: useSettingsStore, field: 'currencies' }], // مفتاحه code لا id
   ['rcerp_companies', { store: useSettingsStore, field: 'companies', filterTombstones: true }],
-  ['rcerp_custom_roles', { store: useSettingsStore, field: 'customRoles', filterTombstones: true }], // string[] — الشاهد هو القيمة نفسها
+  ['rcerp_custom_roles', { store: useSettingsStore, field: 'customRoles' }], // string[] — الخادم يرفض شاهدها (admin-only)
   ['rcerp_automation_rules', { store: useSettingsStore, field: 'automationRules' }], // admin-only
   ['rcerp_scheduled_reports', { store: useSettingsStore, field: 'scheduledReports' }], // admin-only
 
@@ -103,8 +105,11 @@ const pairs: [string, Pair][] = [
   ['rcerp_eod_closures', { store: usePeriodStore, field: 'eodClosures', filterTombstones: true }],
   ['rcerp_monthly_inventory', { store: usePeriodStore, field: 'monthlyInventory', filterTombstones: true }],
 
-  ['rcerp_users', { store: useAuthStore, field: 'users', filterTombstones: true }],
-  ['rcerp_access_roles', { store: useAuthStore, field: 'accessRoles', filterTombstones: true }],
+  // rcerp_users و rcerp_access_roles: بلا witnesses عن قصد — الخادم
+  // (canPurgeTombstone) يرفض أي شاهد لهما دائماً (admin-only)، فإرسال witnesses
+  // كان يعيد 400 ويجمد المزامنة. حذف المستخدم يمرّ بمسارها الإداري الخاص.
+  ['rcerp_users', { store: useAuthStore, field: 'users' }],
+  ['rcerp_access_roles', { store: useAuthStore, field: 'accessRoles' }],
 
   ['rcerp_raw_materials', { store: useLegacyCompatStore, field: 'rawMaterials', filterTombstones: true }],
   ['rcerp_wastage', { store: useLegacyCompatStore, field: 'wastageLogs', filterTombstones: true }],

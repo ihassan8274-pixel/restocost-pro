@@ -15,8 +15,9 @@ const toNum = (v: string): number => {
 
 export const OpeningBalancesView: React.FC = () => {
   const {
-    inventory, rawMaterials, branches, visibleBranchIds, getBranchName, getAverageUnitCost, setOpeningBalances, updateRawMaterial,
-    openingBalances, updateOpeningBalance, deleteOpeningBalance, materialCategories,
+    inventory, rawMaterials, branches, visibleBranchIds, getBranchName, getAverageUnitCost,
+    addOpeningBalance, updateOpeningBalance,
+    openingBalances, deleteOpeningBalance, materialCategories,
   } = useApp();
 
   const [branch, setBranch] = useState(visibleBranchIds[0] || 'b-01');
@@ -93,7 +94,7 @@ export const OpeningBalancesView: React.FC = () => {
     return !Number.isNaN(p) && p > 0 && p !== getAverageUnitCost(m.id);
   }).length;
 
-  const save = () => {
+const save = () => {
     const quantities: Record<string, number> = {};
     const costs: Record<string, number> = {};
     branchItems.forEach((m) => {
@@ -102,16 +103,16 @@ export const OpeningBalancesView: React.FC = () => {
       const p = toNum(price[m.id]);
       costs[m.id] = !Number.isNaN(p) && p > 0 ? p : getAverageUnitCost(m.id);
     });
-    setOpeningBalances(branch, quantities);
-    branchItems.forEach((m) => {
-      const p = toNum(price[m.id]);
-      if (!Number.isNaN(p) && p > 0 && p !== getAverageUnitCost(m.id)) updateRawMaterial(m.id, { standardPrice: Number(p.toFixed(2)) });
-    });
+    // تسجيل الافتتاح فقط — لا يمسّ أرصدة المخزون الحالية.
+    // الوضع القديم كان يستدعي setOpeningBalances الذي يستبدل rcerp_inventory،
+    // فإدخال رصيد افتتاحي بتاريخ قديم (30.09 مثلاً) كان يمسح ما تراكم بعده.
+    // الأرصدة الفعلية تُعدَّل من شاشة المخزون/الجرد، لا من هنا.
     const items = Object.entries(quantities).map(([rawMaterialId, quantity]) => ({ rawMaterialId, quantity, unitCost: costs[rawMaterialId] }));
     if (editing) {
       updateOpeningBalance(editing.id, { branchId: branch, date: balanceDate, items });
       setSavedMsg(`تم تعديل رصيد الافتتاحي لفرع ${getBranchName(branch)} بتاريخ ${balanceDate} بنجاح (${items.length} صنف)`);
     } else {
+      addOpeningBalance({ branchId: branch, date: balanceDate, items });
       setSavedMsg(`تم حفظ الأرصدة الافتتاحية لفرع ${getBranchName(branch)} بتاريخ ${balanceDate} بنجاح (${items.length} صنف${priceChangedCount > 0 ? ` — تحديث أسعار ${priceChangedCount} صنف` : ''})`);
     }
     setConfirmOpen(false);

@@ -33,3 +33,26 @@ export const nextDocSequence = (prefix: string, opts: DocNumberOpts = {}): strin
   const seq = String(max + 1).padStart(digits, '0');
   return year ? `${base}-${cy}-${seq}` : `${base}-${seq}`;
 };
+
+/**
+ * مثل nextDocSequence لكن لا تُعيد رقماً موجوداً في existing.
+ *
+ * يحمي: استدعاءان على الجهاز نفسه قبل تحديث الحالة (كان يُنتجان نفس الرقم).
+ * لا يحمي: جهازان يكتبان في اللحظة نفسها — كلٌّ يقرأ max من نسخته المحلية
+ * فيحسب max+1 نفسه (وقع ذلك في GRN-2026-0394: معرّفان، رقم واحد، نفس المورّد
+ * والمبلغ). الحل الجذري تخصيص التسلسل على الخادم (مسار API)، وهو تغيير
+ * معماري أوسع من هذا الملف.
+ */
+export const uniqueDocSequence = (prefix: string, opts: DocNumberOpts = {}): string => {
+  const { existing = [], segment = '', year = true } = opts;
+  const scratch = existing.filter((n) => typeof n === 'string');
+  for (let i = 0; i < 500; i++) {
+    const candidate = nextDocSequence(prefix, { ...opts, existing: scratch });
+    if (!scratch.includes(candidate)) return candidate;
+    scratch.push(candidate);   // ادفع الحد الأقصى واحداً وأعد الحساب
+  }
+  const stamp = Date.now().toString(36).slice(-5).toUpperCase();
+  return year
+    ? `${segment ? `${prefix}-${segment}` : prefix}-${new Date().getFullYear()}-${stamp}`
+    : `${prefix}-${stamp}`;
+};

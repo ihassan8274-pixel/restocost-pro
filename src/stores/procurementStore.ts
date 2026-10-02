@@ -4,7 +4,7 @@ import {
   Supplier, GoodsReceiptNote, PurchaseOrder, PurchaseOrderItem, PurchaseRequest, PurchaseRequestItem,
   SupplierQuote, SupplierReturn,
 } from '../types';
-import { nextDocSequence } from '../business/docNumbers';
+import { uniqueDocSequence } from '../business/docNumbers';
 // المنقّيات الصحيحة (نسخة سياق/selectors) — كان هذا الستور يحمل نسخاً
 // مُهكّمة منها تُرجع 0 دائماً، فكان سعر أمر الشراء يُثبَّت على صفر.
 // لا يُعاد حسابها هنا: same logic، مصدر واحد فقط.
@@ -62,7 +62,7 @@ export const useProcurementStore = create<ProcurementState>()(
       deleteSupplier: (id) => set((state) => ({ suppliers: state.suppliers.filter((s) => s.id !== id) })),
 
       addGoodsReceiptNote: (data) => {
-        const newGrn: GoodsReceiptNote = { ...data, id: `grn-${Date.now()}`, grnNumber: nextDocSequence('GRN', { existing: get().grnNotes.map((g) => g.grnNumber) }) };
+        const newGrn: GoodsReceiptNote = { ...data, id: `grn-${Date.now()}`, grnNumber: uniqueDocSequence('GRN', { existing: get().grnNotes.map((g) => g.grnNumber) }) };
         set((state) => ({ grnNotes: [newGrn, ...state.grnNotes] }));
       },
       updateGoodsReceiptNote: (id, data) => set((state) => ({ grnNotes: state.grnNotes.map((g) => (g.id === id ? { ...g, ...data } : g)) })),
@@ -70,13 +70,13 @@ export const useProcurementStore = create<ProcurementState>()(
       revertGoodsReceiptToDraft: (id) => { set((state) => ({ grnNotes: state.grnNotes.map((g) => (g.id === id ? { ...g, status: 'draft' as const } : g)) })); return 0; },
 
       addPurchaseOrder: (data) => {
-        const newPO: PurchaseOrder = { ...data, id: `po-${Date.now()}`, poNumber: nextDocSequence('PO', { existing: get().purchaseOrders.map((p) => p.poNumber) }) };
+        const newPO: PurchaseOrder = { ...data, id: `po-${Date.now()}`, poNumber: uniqueDocSequence('PO', { existing: get().purchaseOrders.map((p) => p.poNumber) }) };
         set((state) => ({ purchaseOrders: [newPO, ...state.purchaseOrders] }));
       },
       updatePurchaseOrder: (id, data) => set((state) => ({ purchaseOrders: state.purchaseOrders.map((p) => (p.id === id ? { ...p, ...data } : p)) })),
 
       addPurchaseRequest: (r) => {
-        const rec: PurchaseRequest = { ...r, id: `pr-${Date.now()}`, requestNumber: nextDocSequence('PR', { existing: get().purchaseRequests.map((r) => r.requestNumber) }), createdAt: new Date().toISOString() };
+        const rec: PurchaseRequest = { ...r, id: `pr-${Date.now()}`, requestNumber: uniqueDocSequence('PR', { existing: get().purchaseRequests.map((r) => r.requestNumber) }), createdAt: new Date().toISOString() };
         set((state) => ({ purchaseRequests: [rec, ...state.purchaseRequests] }));
         return rec;
       },
@@ -152,7 +152,7 @@ export const useProcurementStore = create<ProcurementState>()(
           const supplier = st.suppliers.find((s) => s.id === sid);
           const built: PurchaseOrder = {
             id: `po-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            poNumber: nextDocSequence('PO', { existing: get().purchaseOrders.map((o) => o.poNumber) }),
+            poNumber: uniqueDocSequence('PO', { existing: get().purchaseOrders.map((o) => o.poNumber) }),
             supplierId: sid,
             supplierName: supplier?.name || sid,
             branchId: req.branchId,
@@ -186,7 +186,7 @@ export const useProcurementStore = create<ProcurementState>()(
         getQuotePriceSel(get().supplierQuotes, supplierId, rawMaterialId),
 
       addSupplierReturn: (data) => {
-        const newReturn: SupplierReturn = { ...data, id: `sr-${Date.now()}`, returnNumber: nextDocSequence('RET', { existing: get().supplierReturns.map((r) => r.returnNumber) }) };
+        const newReturn: SupplierReturn = { ...data, id: `sr-${Date.now()}`, returnNumber: uniqueDocSequence('RET', { existing: get().supplierReturns.map((r) => r.returnNumber) }) };
         set((state) => ({ supplierReturns: [newReturn, ...state.supplierReturns] }));
       },
       updateSupplierReturn: (id, data) => set((state) => ({ supplierReturns: state.supplierReturns.map((r) => (r.id === id ? { ...r, ...data } : r)) })),
