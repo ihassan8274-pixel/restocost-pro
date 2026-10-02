@@ -42,6 +42,7 @@ interface LegacyCompatState {
   setDeductSalesFromInventory: (v: boolean) => void;
 
   tombstoneIds: (ids: string[]) => void;
+  dropTombstoneIds: (ids: string[]) => void;
   addRecentDoc: (doc: { type: string; title: string; tab: string }, id?: string) => void;
   clearRecentDocs: () => void;
   logAudit: (action: string, module: string, details?: string, entity?: { type: string; id: string }) => void;
@@ -81,6 +82,15 @@ export const useLegacyCompatStore = create<LegacyCompatState>()(
       setDeductSalesFromInventory: (deductSalesFromInventory) => set({ deductSalesFromInventory }),
 
       tombstoneIds: (ids) => set((state) => ({ deletedIds: Array.from(new Set([...state.deletedIds, ...ids])) })),
+
+      // إسقاط شواهد رفضها الخادم (لا يملك المستخدم حقّ قطعها): تُزال من
+      // القائمة المحلية وإلا أُعيد إرسالها في كل محاولة إلى الأبد — وهي الحلقة
+      // التي كانت تجمّد المزامنة كاملة وتُسقط حفظ الجرد.
+      dropTombstoneIds: (ids) => set((state) => {
+        const drop = new Set(ids);
+        const next = state.deletedIds.filter((x) => !drop.has(x));
+        return next.length === state.deletedIds.length ? {} : { deletedIds: next };
+      }),
 
       addRecentDoc: (doc, id) => set((state) => ({
         recentDocs: [{ ...doc, id: id || `${doc.type}-${Date.now()}`, at: Date.now() }, ...state.recentDocs

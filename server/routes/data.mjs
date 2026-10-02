@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import {
   dataDir, COLLECTION_KEYS, instanceId, readToken, sessionUser, publicUser, readBindHost, portInUse,
 } from '../core.mjs';
-import { canWriteCollection, canPurgeTombstone } from '../permissions.mjs';
+import { canWriteCollection, canPurgeTombstone, canReadCollection } from '../permissions.mjs';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, buildFingerprint, serverStamp } from '../version.mjs';
@@ -69,6 +69,12 @@ const LAZY_KEYS = new Set([
   'rcerp_eod_closures',
 ]);
 
+// حدّ أعلى لقائمة الشواهد: تنمو بلا سقف وبلا عمر، فكل شاهد قديم يرسله كل
+// جهاز في كل مزامنة (قائمة 148 معرّفاً = كل طلب يمرّ على 148 فحصاً)، ومع
+// تراكمها يرتفع احتمال رفض دفعة كاملة. الشاهد الذي تجاوز الحدّ لم يعد لسجله
+// أي أثر (سجله محذوف أصلاً)، فنKesره لا يفقد بيانات.
+const MAX_TOMBSTONES = 2000;
+
 export const registerData = (app) => {
   app.get('/api/bootstrap', (req, res) => {
     const user = sessionUser(readToken(req));
@@ -77,10 +83,15 @@ export const registerData = (app) => {
     const isDelta = Number.isFinite(since) && since >= 0;
     const data = {};
     const touchedKeys = [];
+    // تقييد القراءة: كل مجموعة تُفلتر حسب صلاحية الجلسة. لا نرفض الطلب
+    // كله (كسر العميل)، بل نستبعد ما لا يحقّ للمستخدم رؤيته ونُعلمه بالمستبعد.
+    const deniedKeys = [];
+    const accessRoles = store.getKV('rcerp_access_roles') || [];
     COLLECTION_KEYS.forEach((key) => {
       if (LAZY_KEYS.has(key)) return;
       const v = getKV(key);
       if (v === null) return;
+      if (!canReadCollection(user, key, accessRoles).ok) { deniedKeys.push(key); return; }
       if (isDelta) {
         const kvMeta = store.getKvMeta ? store.getKvMeta(key) : null;
         const lastMod = kvMeta?.lastModified || 0;
@@ -96,7 +107,7 @@ export const registerData = (app) => {
     }
     res.setHeader('ETag', etag);
     res.setHeader('Cache-Control', 'no-cache');
-    res.json({ ok: true, data, user: publicUser(user), version: PKG_VERSION, build: buildFingerprint, server: serverStamp, lazyKeys: [...LAZY_KEYS], rev: rev.rev, boot: rev.boot, delta: isDelta, touchedKeys: isDelta ? touchedKeys : undefined });
+    res.json({ ok: true, data, user: publicUser(user), version: PKG_VERSION, build: buildFingerprint, server: serverStamp, lazyKeys: [...LAZY_KEYS], deniedKeys, rev: rev.rev, boot: rev.boot, delta: isDelta, touchedKeys: isDelta ? touchedKeys : undefined });
   });
 
   // ترقيم خفيف بالقائمة (cursor) لمفتاح واحد — مساعدة للمعاينة عند نمو قائمة
@@ -106,6 +117,12 @@ export const registerData = (app) => {
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
     const { key } = req.params;
     if (!COLLECTION_KEYS.includes(key)) return res.status(400).json({ ok: false, error: 'مفتاح غير معروف' });
+    // تقييد القراءة: هنا نرفض صراحةً (هذا مسار صفحة واحدة صريح، لا bootstrap
+    // شامل) — فالمتصفح يعرف أنه لا يستطيع تحميل هذه المجموعة.
+    const accessRoles = store.getKV('rcerp_access_roles') || [];
+    if (!canReadCollection(user, key, accessRoles).ok) {
+      return res.status(403).json({ ok: false, error: 'غير مصرح — هذه البيانات خارج نطاق صلاحياتك', reason: 'read_forbidden', key });
+    }
     const page = paginateCollection(getKV(key), String(req.query.cursor || ''), Number(req.query.limit));
     // نفس تعقيم bootstrap: صفحة rcerp_users كانت تصل خاماً فتسريب هاشات
     // كلمات المرور وأسرار TOTP لأي جلسة مصادَق عليها (حتى lowest role).
@@ -191,41 +208,48 @@ export const registerData = (app) => {
       const existing = Array.isArray(getKV(key)) ? getKV(key) : [];
       const incoming = Array.isArray(incomingData) ? incomingData : [];
 
-      // تصفية incoming IDs:
-      // - نرفض المعرّفات التي توجد في مجموعة لا يملك المستخدم صلاحية حذفها (admin-only, capped, إلخ)
-      // - نسمح بالمعرّفات التي: موجودة في مجموعة مسموح بها، أو غير موجودة أصلاً (سجل جديد / محذوف مسبقاً)
+      // تصفية الشواهد الواردة — بلا رفض للدفعة:
+      // كان رفض دفعة كاملة (400) يوقف مزامنة كل المجموعات، فتجمد حفظ الجرد
+      // وكل تعديل آخر بسبب معرّف واحد مرفوض. الآن نقبل الصالح، ونُبلغ العميل
+      // بما رُفض ليستبعده محلياً بدل إعادة إرساله إلى الأبد.
+      //  - يُرفض ما ينتمي لمجموعة لا يملك المستخدم حق حذفها (admin-only/capped).
+      //  - غير الموجود أصلاً (سجل جديد/محذوف سابقاً) يُقبل.
       const validIncoming = [];
+      const rejectedIds = [];
       for (const id of incoming) {
         let forbidden = false;
-        let allowed = false;
         for (const col of COLLECTION_KEYS) {
-          if (col === key || col === 'rcerp_deleted_ids') continue;
-          if (col === 'rcerp_users') continue;
+          if (col === key || col === 'rcerp_deleted_ids' || col === 'rcerp_users') continue;
           const arr = getKV(col);
           if (!Array.isArray(arr)) continue;
-          const exists = arr.some(r => r && r.id !== undefined && r.id === id);
-          if (!exists) continue;
-          if (!canPurgeTombstone(user, col, accessRoles)) {
-            forbidden = true; // يوجد في مجموعة لا يحق له حذفها
-            break;
-          }
-          allowed = true; // موجود في مجموعة مسموح بها
-          break;
+          if (!arr.some(r => r && r.id !== undefined && r.id === id)) continue;
+          if (!canPurgeTombstone(user, col, accessRoles)) { forbidden = true; }
+          break; // أول مجموعة تحتوي المعرّف تحسمه (المعرّفات فريدة عملياً)
         }
-        if (forbidden) {
-          return res.status(400).json({
-            ok: false,
-            error: `معرف الحذف غير مصرح به: ${id} ينتمي لمجموعة لا يحق لك الحذف منها.`,
-            reason: 'tombstone-id-forbidden',
-          });
-        }
-        // السماح إذا: موجود في مجموعة مسموحة، أو غير موجود أصلاً (سجل جديد / محذوف مسبقاً)
-        validIncoming.push(id);
+        if (forbidden) rejectedIds.push(id);
+        else validIncoming.push(id);
+      }
+      if (rejectedIds.length) {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | TOMBSTONE-REJECTED ${key} | ${rejectedIds.length}/${incoming.length} ids | ${saveUA}\n`
+        );
       }
 
       const tomb = Array.from(new Set([...existing, ...validIncoming]));
-      setKV(key, tomb);
-      const tombSet = new Set(tomb);
+      // الأحدث في الصدارة: الوارد الآن مقصود الآن، والم.weather-old من existing.
+      // نبقي آخر MAX_TOMBSTONES معرّفاً فقط.
+      const capped = tomb.length > MAX_TOMBSTONES
+        ? tomb.slice(tomb.length - MAX_TOMBSTONES)
+        : tomb;
+      if (capped.length !== tomb.length) {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | TOMBSTONE-CAP ${key} | ${tomb.length}->${capped.length} | ${saveUA}\n`
+        );
+      }
+      setKV(key, capped);
+      const tombSet = new Set(capped);
       if (tombSet.size > 0) {
         for (const ck of COLLECTION_KEYS) {
           if (ck === 'rcerp_deleted_ids') continue;
@@ -245,7 +269,9 @@ export const registerData = (app) => {
         path.join(dataDir, 'savelog.txt'),
         `${new Date().toISOString()} | MERGED ${key} | ${saveBytes}b | ${saveUA}\n`
       );
-      return res.json({ ok: true });
+      // نُبلغ العميل بالمرفوض ليُسقطها من قائمته المحلية — وإلا بقيت في
+      // pendingSaves تُعاد إلى الأبد (هذه كانت حلقة التجميد).
+      return res.json({ ok: true, rejectedIds });
     }
     if (key !== 'rcerp_users' && key !== 'rcerp_ai_settings' && key !== 'rcerp_telegram_settings' && key !== 'rcerp_intake_inbox' && key !== 'rcerp_recent_docs') {
       const reject = shouldRejectShrink(getKV(key), incomingData);

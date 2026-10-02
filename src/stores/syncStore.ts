@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { runFlushQueue, sortEntriesBySize } from '../context/syncEngine';
 import { getCollectionSetter, getCollectionValue, isTombstoneKey, withApplying } from './collectionRegistry';
 import { useAuthStore } from './authStore';
+import { useLegacyCompatStore } from './legacyCompatStore';
 
 // نواة المزامنة على مستوى الستور: نفس منطق useSyncCore المستخلص سابقاً من AppProvider —
 // طابور حفظ دائم في المتصفح، إرسال عند عودة الاتصال/إعادة الدخول/دورياً، واستطلاع
@@ -65,6 +66,11 @@ const scheduleFlush = (delay: number, _set: (p: Partial<SyncState>) => void) => 
   if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
   if (useAuthStore.getState().authExpired) return;
   flushTimer = setTimeout(() => { void useSyncStore.getState().flushSaves(); }, delay);
+};
+
+// إسقاط الشواهد المرفوضة من الستور المحلي (يتزامن بعد applyData).
+const applyRejectedTombstones = (ids: string[]) => {
+  useLegacyCompatStore.getState().dropTombstoneIds(ids);
 };
 
 export const useSyncStore = create<SyncState>()(
@@ -139,13 +145,33 @@ export const useSyncStore = create<SyncState>()(
           const failures: string[] = [];
           const entries = sortEntriesBySize(Array.from(pendingSaves.entries(), ([key, value]) => ({ key, value })));
           const result = await runFlushQueue(entries, {
-            send(key, value, signal) {
-              return fetch(`/api/collections/${encodeURIComponent(key)}`, {
+            async send(key, value, signal) {
+              // الخادم يرسل rejectedIds عند شواهد الحذف (يقبل الدفعة ويسقط
+              // المرفوض منها). نقرأ الرد مرة واحدة، نُسقط المرفوض من الطابور
+              // ومن الستور المحلي، ثم نُرجع الحالة — لأن رفض 400 كان يُجمّد
+              // المزامنة كاملة ويُسقط حفظ الجرد.
+              const res = await fetch(`/api/collections/${encodeURIComponent(key)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: JSON.stringify(value),
                 signal,
-              }).then((res) => res.status);
+              });
+              if (key === 'rcerp_deleted_ids' && res.ok) {
+                try {
+                  const body = await res.json();
+                  const rejected: string[] = Array.isArray(body?.rejectedIds) ? body.rejectedIds : [];
+                  if (rejected.length) {
+                    const cur = pendingSaves.get(key);
+                    if (Array.isArray(cur)) {
+                      const drop = new Set(rejected);
+                      pendingSaves.set(key, cur.filter((x) => typeof x !== 'string' || !drop.has(x)));
+                      setCount();
+                    }
+                    applyRejectedTombstones(rejected);
+                  }
+                } catch { /* لا يهم — الرد نجح */ }
+              }
+              return res.status;
             },
             onSaved(key) {
               pendingSaves.delete(key);

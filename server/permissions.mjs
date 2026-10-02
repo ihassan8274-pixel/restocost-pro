@@ -180,11 +180,90 @@ export const canWriteCollection = (user, key, accessRoles) => {
 /**
  * هل يحقّ لشاهد حذف أن يقطع سجلاً من هذه المجموعة؟
  * القطع هنا يوازي الكتابة: من لا يملك حق الكتابة في المجموعة لا يحذف منها،
- * وإلا акفي شاهد بمعرّف واحد لمحو أي سجل في النظام.
+ * وإلا أكفي شاهد بمعرّف واحد لمحو أي سجل في النظام.
  * مستخدمو rcerp_users مستثنون دائماً: مسارهم الإداري الخاص لا شاهدَ حذف.
  */
 export const canPurgeTombstone = (user, collectionKey, accessRoles) => {
   if (collectionKey === 'rcerp_deleted_ids' || collectionKey === 'rcerp_users') return false;
   if (ADMIN_ONLY_KEYS_FOR_TOMBSTONE.has(collectionKey)) return false;
   return canWriteCollection(user, collectionKey, accessRoles).ok;
+};
+
+// ============ بوابة صلاحيات القراءة ============
+// كان /api/bootstrap و /api/collections/:key/paginated يتحققان من existence
+// الجلسة فقط (sessionUser) دون أي فحص صلاحية — فأي دور مصادَق عليه (counter مثلاً)
+// كان يسحب القيود المالية وأسعار الشراء ومبيعات كل الفروع.
+//
+// القراءة **أوسع من الكتابة عمداً** (قوائم الاختيار والمعارف المشتركة تحتاج
+// قراءة فروع ومواد لا يملك المستخدم حق تعديلها)، لكنها ليست مفتوحة للجميع:
+//  - الأدوار الإدارية والمالية والإعلانية ترى كل شيء.
+//  - الأدوار التشغيلية (waiter/chef/storekeeper/counter) تُقصر على مجموعات
+//    العرض الأساسية، ويُمنع عنها كل ما يمسّ المال أو المستخدمين أو الإعدادات.
+//
+// ملاحظة: هذا تحقق على مستوى **المفتاح** فقط. القيد على مستوى **الفرع**
+// (أن يرى counter فرعَه وحده) بند منفصل — انظر A4 في مخطط الإصلاح.
+
+export const FINANCIAL_READ_KEYS = new Set([
+  'rcerp_journal', 'rcerp_accounts', 'rcerp_pl_summaries', 'rcerp_pos_returns',
+  'rcerp_fixed_assets', 'rcerp_operating_expenses', 'rcerp_expense_budgets',
+  'rcerp_invoices', 'rcerp_purchase_orders', 'rcerp_purchase_requests',
+  'rcerp_supplier_quotes', 'rcerp_supplier_returns', 'rcerp_grn', 'rcerp_suppliers',
+  'rcerp_currencies', 'rcerp_companies',
+]);
+
+// مجموعات مرجعية مشتركة: كل دور يحتاجها لعرض القوائم (أسماء المواد والفروع
+// والعملاء)، ولا تكشف أرقاماً مالية — مسموحة للجميع.
+// ملاحظة: rcerp_access_roles ليست هنا عمداً — كشف خريطة الأدوار يتيح معرفة
+// أي دور يملك أي صلاحية، وهو可用于 تصعيد الصلاحيات. للإدارة فقط.
+export const SHARED_REFERENCE_KEYS = new Set([
+  'rcerp_raw_materials', 'rcerp_material_categories', 'rcerp_material_barcodes',
+  'rcerp_categories', 'rcerp_branches', 'rcerp_units', 'rcerp_customers',
+  'rcerp_custom_roles', 'rcerp_closed_months', 'rcerp_closed_days',
+]);
+
+// ما يراه دورRuns بلا صلاحية إدارية: مخزون ومبيعات وتشغيل، بلا دفاتر مالية
+// ولا مستخدمين ولا إعدادات نظام.
+export const OPERATIONAL_READABLE = new Set([
+  'rcerp_inventory', 'rcerp_inventory_batches', 'rcerp_inventory_movements',
+  'rcerp_recipe_inventory', 'rcerp_physical_counts',
+  'rcerp_opening_balances', 'rcerp_branch_stock_limits', 'rcerp_stock_transfers',
+  'rcerp_distributions', 'rcerp_recipes', 'rcerp_recipe_sections', 'rcerp_food_menus',
+  'rcerp_menu_plans', 'rcerp_production_runs', 'rcerp_work_orders', 'rcerp_butcher_tests',
+  'rcerp_pos_orders', 'rcerp_delivery_apps', 'rcerp_delivery_sales', 'rcerp_reservations',
+  'rcerp_batch_sales', 'rcerp_custom_reports', 'rcerp_audit', 'rcerp_recent_docs',
+  'rcerp_deleted_ids', 'rcerp_ack_alerts', 'rcerp_target_margin',
+  'rcerp_vat_percent', 'rcerp_vat_inclusive', 'rcerp_deduct_sales',
+]);
+
+// جرد outpost: الجرد اليومي والفيزيائيsettlementRestricted لأدوار المخزون
+// فقط (counter/storekeeper) — waiter لا يقرأ سجلات جرد المطبخ ولا habil.
+export const COUNTING_READ_KEYS = new Set(['rcerp_daily_counts']);
+
+/**
+ * هل يملك المستخدم حق قراءة مجموعة المزامنة؟
+ * @returns {{ ok: true } | { ok: false, code: 'forbidden', message: string }}
+ */
+export const canReadCollection = (user, key, accessRoles) => {
+  if (!user) return { ok: false, code: 'forbidden', message: 'غير مصادق' };
+  if (user.role === 'admin') return { ok: true };
+  const role = effectiveRole(user, accessRoles);
+  const perms = ROLE_PERMISSIONS[role] || [];
+  // الإدارة الكاملة ترى كل شيء.
+  if (MANAGEMENT_ROLES.has(role)) return { ok: true };
+  // من له صلاحية مالية على أي مستوى (cost_controller) يرى الدفاتر المالية.
+  if (perms.includes('view_accounting') || perms.includes('manage_accounting') || perms.includes('approve_expenses')) {
+    return { ok: true };
+  }
+  // من له حق رؤية المبيعات يرى فواتيرها ومبيعاتها.
+  if (perms.includes('manage_invoices')) return { ok: true };
+  // المرجع المشترك متاح للجميع (أسماء لا أرقام).
+  if (SHARED_REFERENCE_KEYS.has(key)) return { ok: true };
+  // سجلات الجرد لمن يعدّ فقط (mobile_count صلاحيةُ-counter وstorekeeper).
+  if (COUNTING_READ_KEYS.has(key)) {
+    if (perms.includes('mobile_count')) return { ok: true };
+    return { ok: false, code: 'forbidden', message: 'غير مصرح — سجلات الجرد لمن يعدّ فقط' };
+  }
+  // ما عدا ذلك: التشغيلية ترى مجموعتها المحددة فقط.
+  if (OPERATIONAL_READABLE.has(key)) return { ok: true };
+  return { ok: false, code: 'forbidden', message: 'غير مصرح — هذه البيانات خارج نطاق صلاحياتك' };
 };

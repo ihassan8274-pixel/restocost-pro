@@ -19,13 +19,26 @@ export const buildFingerprint = (() => {
   } catch { return 'no-dist'; }
 })();
 
+// بصمة السيرفر: تُحسب من كل ملفات الكود (الجذر + المسارات + الاختبارات) وقت
+// الإقلاع. كان يقرأ جذر server/ وحده فلا يشمل server/routes/ — فأي تعديل في
+// مسار (data.mjs مثلاً) كان يترك البصمة ثابتة ويوحيComprehensive بأنه لم يُحمّل
+// كود جديد. أي مراقبة نشر تعتمد على /health كانت تفشل بصمت.
 export const serverStamp = (() => {
   try {
     const h = crypto.createHash('sha256');
-    for (const name of fs.readdirSync(__dirname)) {
-      if (!(name.endsWith('.mjs') || name.endsWith('.js'))) continue;
-      h.update(name + ':' + fs.statSync(path.join(__dirname, name)).mtimeMs);
-    }
+    const walk = (dir, depth) => {
+      if (depth > 3) return;
+      let entries;
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+        if (e.name === 'node_modules' || e.name === 'data' || e.name === 'logs'
+          || e.name === 'backups' || e.name === 'backup-archive' || e.name === 'lib') continue;
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) walk(full, depth + 1);
+        else if (/\.(mjs|js|json)$/.test(e.name)) h.update(e.name + ':' + fs.statSync(full).mtimeMs);
+      }
+    };
+    walk(__dirname, 0);
     return h.digest('hex').slice(0, 10);
   } catch { return '?'; }
 })();
