@@ -5,6 +5,9 @@ import {
   CustomCategory, Currency, Company, AutomationRule, ScheduledReport,
 } from '../types';
 import { today } from '../utils/helpers';
+// المواد الخام في legacyCompatStore (لا settingsStore) — نحتاجها لتعرف هل
+// وحدة القياس مرتبطة بأصناف قبل حذفها.
+import { useLegacyCompatStore } from './legacyCompatStore';
 
 interface SettingsState {
   branches: Branch[];
@@ -69,7 +72,23 @@ export const useSettingsStore = create<SettingsState>()(
 
       addUnitOfMeasure: (u) => set((state) => ({ unitsOfMeasure: [...state.unitsOfMeasure, { ...u, id: `u-${Date.now()}` }] })),
       updateUnitOfMeasure: (id, u) => set((state) => ({ unitsOfMeasure: state.unitsOfMeasure.map((x) => (x.id === id ? { ...x, ...u } : x)) })),
-      deleteUnitOfMeasure: (_id) => ({ ok: true }),
+      // كان stubاً يُرجع {ok:true} بلا حذف — الواجهة تقول "تم" والوحدة باقية.
+      // الآن يحذف فعلاً، ويرفض إن كانت مرتبطة بأصناف أو باركود (وحدة بلا
+      // مرجع آمنة للحذف).
+      deleteUnitOfMeasure: (id) => {
+        const st = get();
+        const mats = useLegacyCompatStore.getState().rawMaterials;
+        const unit = st.unitsOfMeasure.find((u) => u.id === id);
+        if (!unit) return { ok: false, error: 'وحدة القياس غير موجودة' };
+        const inUse = mats.filter((m) => m.unit === unit.code || m.purchaseUnit === unit.code);
+        if (inUse.length) {
+          return { ok: false, error: `لا يمكن الحذف — الوحدة مستخدمة في ${inUse.length} صنف (${inUse.slice(0, 3).map((m) => m.nameAr).join('، ')})` };
+        }
+        const barcodes = st.materialBarcodes.filter((b) => (b as { unit?: string }).unit === unit.code);
+        if (barcodes.length) return { ok: false, error: `لا يمكن الحذف — الوحدة مرتبطة بـ${barcodes.length} باركود` };
+        set((state) => ({ unitsOfMeasure: state.unitsOfMeasure.filter((u) => u.id !== id) }));
+        return { ok: true };
+      },
 
       addMaterialBarcode: (b) => set((state) => ({ materialBarcodes: [...state.materialBarcodes, { ...b, id: `bc-${Date.now()}` }] })),
       updateMaterialBarcode: (id, b) => set((state) => ({ materialBarcodes: state.materialBarcodes.map((x) => (x.id === id ? { ...x, ...b } : x)) })),
