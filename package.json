@@ -29,6 +29,7 @@
     "bcryptjs": "^3.0.3",
     "bidi-js": "^1.1.0",
     "cors": "^2.8.6",
+    "dompurify": "^3.4.16",
     "exceljs": "^4.4.0",
     "express": "^4.22.2",
     "express-rate-limit": "^8.7.0",

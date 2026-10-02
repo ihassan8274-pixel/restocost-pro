@@ -27,17 +27,24 @@ interface Pair {
   cappedList?: boolean;
 }
 
+// ملاحظة على الشواهد هنا: هذه المجموعات كانت بلا filterTombstones، فحذفُ
+// فرع أو شركة أو وحدة يعود بعد المزامنة (نفس فئة ثغرة "الحذف الذي يعود").
+// الاستثناءات موثّقة عمداً:
+//   - rcerp_custom_roles  : string[] (بلا id) — لا يمكن شاهد بمعرّف.
+//   - rcerp_currencies    : المفتاح code لا id — يلزم تحويل بنيوي للـschema.
+//   - rcerp_access_roles / automation_rules / scheduled_reports :
+//     ADMIN_ONLY_KEYS على الخادم — لا شاهد لها بحكم البوابة.
 const pairs: [string, Pair][] = [
-  ['rcerp_branches', { store: useSettingsStore, field: 'branches' }],
-  ['rcerp_units', { store: useSettingsStore, field: 'unitsOfMeasure' }],
-  ['rcerp_material_barcodes', { store: useSettingsStore, field: 'materialBarcodes' }],
-  ['rcerp_material_categories', { store: useSettingsStore, field: 'materialCategories' }],
-  ['rcerp_categories', { store: useSettingsStore, field: 'customCategories' }],
-  ['rcerp_currencies', { store: useSettingsStore, field: 'currencies' }],
-  ['rcerp_companies', { store: useSettingsStore, field: 'companies' }],
-  ['rcerp_custom_roles', { store: useSettingsStore, field: 'customRoles' }],
-  ['rcerp_automation_rules', { store: useSettingsStore, field: 'automationRules' }],
-  ['rcerp_scheduled_reports', { store: useSettingsStore, field: 'scheduledReports' }],
+  ['rcerp_branches', { store: useSettingsStore, field: 'branches', filterTombstones: true }],
+  ['rcerp_units', { store: useSettingsStore, field: 'unitsOfMeasure', filterTombstones: true }],
+  ['rcerp_material_barcodes', { store: useSettingsStore, field: 'materialBarcodes', filterTombstones: true }],
+  ['rcerp_material_categories', { store: useSettingsStore, field: 'materialCategories', filterTombstones: true }],
+  ['rcerp_categories', { store: useSettingsStore, field: 'customCategories', filterTombstones: true }],
+  ['rcerp_currencies', { store: useSettingsStore, field: 'currencies' }], // مفتاحه code لا id
+  ['rcerp_companies', { store: useSettingsStore, field: 'companies', filterTombstones: true }],
+  ['rcerp_custom_roles', { store: useSettingsStore, field: 'customRoles' }], // string[]
+  ['rcerp_automation_rules', { store: useSettingsStore, field: 'automationRules' }], // admin-only
+  ['rcerp_scheduled_reports', { store: useSettingsStore, field: 'scheduledReports' }], // admin-only
 
   ['rcerp_inventory', { store: useInventoryStore, field: 'inventory', filterTombstones: true }],
   ['rcerp_inventory_batches', { store: useInventoryStore, field: 'inventoryBatches', filterTombstones: true }],
