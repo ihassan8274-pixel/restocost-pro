@@ -73,6 +73,31 @@ const LAZY_KEYS = new Set([
 // جهاز في كل مزامنة (قائمة 148 معرّفاً = كل طلب يمرّ على 148 فحصاً)، ومع
 // تراكمها يرتفع احتمال رفض دفعة كاملة. الشاهد الذي تجاوز الحدّ لم يعد لسجله
 // أي أثر (سجله محذوف أصلاً)، فنKesره لا يفقد بيانات.
+// حدّ أعلى لسجلات الحركة على الخادم. العميل يslice محلياً فقط (5000)، والخادم
+// يدمج favoredeterministicأcedence فيراكم بلا سقف — فبلغ 3MB تُسحب مع كل
+// bootstrap. السقف على الأقليم古い لا جديد: لا يُسقط حركة حديثة أبداً.
+const MOVEMENT_RETENTION = 5000;
+const MOVEMENT_KEYS = new Set(['rcerp_inventory_movements', 'rcerp_audit']);
+
+const applyRetention = (key, value) => {
+  if (!MOVEMENT_KEYS.has(key) || !Array.isArray(value) || value.length <= MOVEMENT_RETENTION) return value;
+  // الأحدث أولاً بـdate (الحركة تحمله)، ولا نُسقط ما لا يحمل تاريخاً كاملاً
+  // إلا إذا كان الأقدم — نُبقي الأصناف بلا تاريخ في النهاية بأمان.
+  const dated = value.filter((r) => r && typeof r.date === 'string' && r.date.length >= 10);
+  const undated = value.filter((r) => !(r && typeof r.date === 'string' && r.date.length >= 10));
+  if (dated.length <= MOVEMENT_RETENTION) return value;
+  dated.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const kept = dated.slice(0, MOVEMENT_RETENTION);
+  const dropped = value.length - kept.length - undated.length;
+  try {
+    fs.appendFileSync(
+      path.join(dataDir, 'savelog.txt'),
+      `${new Date().toISOString()} | RETENTION ${key} | ${value.length}->${kept.length + undated.length} (dropped ${dropped} oldest)\n`
+    );
+  } catch { /* تجاهل */ }
+  return [...kept, ...undated];
+};
+
 const MAX_TOMBSTONES = 2000;
 
 export const registerData = (app) => {
@@ -472,7 +497,11 @@ if (key === 'rcerp_recent_docs') {
       // قائمة "المحذوفة نهائياً": أي سجل موجود فيها لا نعيده مهما حاولت نسخة أخرى دفعه
       // (حماية من "تعود الشركة المحذوفة" بعد الحذف — الحذف نهائي عبر معرّف السجل).
       const tomb = new Set(Array.isArray(getKV('rcerp_deleted_ids')) ? getKV('rcerp_deleted_ids') : []);
-      setKV(key, mergeById(existingArr, incomingData, tomb));
+      const merged = mergeById(existingArr, incomingData, tomb);
+      // retention: سجلات الحركة تنمو بلا حدّ على الخادم (العميل يslice محلياً
+      // فقط، والخادم يدمج فيراكم). بلا سقف تتحوّل إلى 3MB تُسحب في كل bootstrap.
+      // نُبقي الأحدث دائماً: السقف على الأقل قديم، فلا يُسقط حركة حديثة.
+      setKV(key, applyRetention(key, merged));
     } else {
       setKV(key, incomingData);
     }
