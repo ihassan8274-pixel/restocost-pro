@@ -315,6 +315,12 @@ export const useApp = () => {
     leg.tombstoneIds([id]);
     useLegacyCompatStore.setState({ rawMaterials: leg.rawMaterials.filter((m) => m.id !== id) });
     useSettingsStore.setState({ materialBarcodes: useSettingsStore.getState().materialBarcodes.filter((b) => b.rawMaterialId !== id) });
+    // حدود الفرع الخاصة بالصنف: كانت تبقى بعد حذف الصنف فتصبح مرجعاً مكسوراً
+    // يخفض درجة صحة البيانات ويجدّد مفتاح rcerp_branch_stock_limits بلا فائدة.
+    // المالك الفعلي هو inventoryStore (وهو ما يربطه collectionSources).
+    useInventoryStore.setState({
+      branchStockLimits: useInventoryStore.getState().branchStockLimits.filter((l) => l.rawMaterialId !== id),
+    });
     leg.logAudit('حذف مادة خام', 'المخزون', id);
     return { ok: true };
   }, []);
