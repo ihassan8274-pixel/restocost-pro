@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { decideFlush, runFlushQueue, sortEntriesBySize, mergeByIdLocal } from '../context/syncEngine';
-import type { FlushHandlers } from '../context/syncEngine';
+import { decideFlush, runFlushQueue, sortEntriesBySize, mergeByIdLocal } from './syncEngine';
+import type { FlushHandlers } from './syncEngine';
 
 describe('decideFlush', () => {
   it('يعتبر 2xx نجاحاً', () => {

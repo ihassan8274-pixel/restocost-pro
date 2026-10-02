@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { runFlushQueue, sortEntriesBySize } from '../context/syncEngine';
+import { runFlushQueue, sortEntriesBySize } from '../business/syncEngine';
 import { getCollectionSetter, getCollectionValue, isTombstoneKey, withApplying } from './collectionRegistry';
 import { useAuthStore } from './authStore';
 import { useLegacyCompatStore } from './legacyCompatStore';
