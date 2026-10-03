@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
@@ -26,6 +26,32 @@ function sourceStamp(): string {
   } catch {
     return 'unknown';
   }
+}
+
+const BUILD_STAMP = sourceStamp();
+
+/**
+ * يكتب البصمة إلى dist/build-stamp.txt.
+ *
+ * العميل يحتاج أن يعرف أي بناء يعمل أمامه فعلاً. كان الخيار الوحيد
+ * localStorage، لكنها تحمل قيمة من قبل أن تكون البصمة مخبوزة في الحزمة، فلا
+ * يستطيع العميل أن يميّز «نسخة قديمة» من «نسخة جديدة وصلت» — فيبقى شريط
+ * «أعد التحميل» ظاهراً بعد التحميل إلى الأبد.
+ *
+ * الحل: تُكتب نفس البصمة التي تُخبَز في الحزمة إلى قرص، فيقارنها السيرفر
+ * بما عنده ويعيدها للعميل عبر /health، فيقارنها العميل ببصمته المخبوزة.
+ * المصدر الوحيد للحقيقة، ولا اعتماد على ذاكرة المتصفح.
+ */
+function writeStampPlugin(stamp: string): Plugin {
+  return {
+    name: 'restocost-write-build-stamp',
+    apply: 'build',
+    closeBundle() {
+      const out = path.resolve(__dirname, 'dist', 'build-stamp.txt');
+      fs.mkdirSync(path.dirname(out), { recursive: true });
+      fs.writeFileSync(out, `${stamp}\n`, 'utf8');
+    },
+  };
 }
 
 const VENDOR_GROUPS = new Map<string, string>([
@@ -58,9 +84,9 @@ function manualChunks(id: string): string | undefined {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), writeStampPlugin(BUILD_STAMP)],
   define: {
-    __BUILD_STAMP__: JSON.stringify(sourceStamp()),
+    __BUILD_STAMP__: JSON.stringify(BUILD_STAMP),
   },
   resolve: {
     alias: {

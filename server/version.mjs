@@ -35,6 +35,25 @@ export const getBuildFingerprint = () => {
   }
 };
 
+// البصمة المخبوزة في الحزمة، كما كتبها بناء Vite إلى dist/build-stamp.txt.
+// يقارنها العميل ببصمته المخبوزة (‎__BUILD_STAMP__‎) ليعرف أهو يعمل على بناء
+// أقدم من المنشور. لا تعتمد على localStorage لأن قيمتها السابقة كتبها عميل
+// لا يعرف ببصمته.
+let stampCache = { mtimeMs: -1, value: '' };
+
+export const getClientStamp = () => {
+  try {
+    const file = path.join(__dirname, '..', 'dist', 'build-stamp.txt');
+    const { mtimeMs } = fs.statSync(file);
+    if (mtimeMs !== stampCache.mtimeMs) {
+      stampCache = { mtimeMs, value: fs.readFileSync(file, 'utf8').trim() };
+    }
+    return stampCache.value;
+  } catch {
+    return '';
+  }
+};
+
 // kept for compatibility: the fingerprint *at boot time*.
 export const buildFingerprint = getBuildFingerprint();
 
