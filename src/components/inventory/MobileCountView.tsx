@@ -123,14 +123,17 @@ const MobileCountView: React.FC = () => {
 
   const buildItems = () => buildCountItems(mats, counts, theoMap);
 
+  // نموذج جرد فارغ مطابق لـ printCurrentCount: الصنف، الوحدة، الكمية
+  // بوحدة المخزون، وخانة فارغة للمعدود. بلا رصيد نظامي ولا فرق ولا ملاحظات.
   const printBlankSheet = () => {
     if (!branchId) { showToast('اختر الفرع أولاً'); return; }
     const branchMats = mats;
-    const rows = branchMats.map((m) => {
-      const f = stockPerPurchase(m);
-      const twoCols = !!m.purchaseUnit && m.purchaseUnit.trim() !== '' && f > 1;
-      return [m.code || '—', m.nameAr, twoCols ? `${purchaseUnitName(m)} (${f} ${m.unit || ''})` : purchaseUnitName(m), twoCols ? `${(theoMap[m.id] || 0).toFixed(2)} ${m.unit || ''}` : ((theoMap[m.id] || 0) / f).toFixed(2), '', '', ''];
-    });
+    const rows = branchMats.map((m) => [
+      m.nameAr,
+      m.unit || '',
+      (theoMap[m.id] || 0).toFixed(2),   // الكمية بوحدة المخزون
+      '',
+    ]);
     openPrintWindow({
       title: `نموذج جرد فارغ — ${getBranchName(branchId)}`,
       subtitle: `${fmtDateLong(countDate)} — العداد: ${currentUser?.name || '—'}`,
@@ -139,49 +142,46 @@ const MobileCountView: React.FC = () => {
         ['التاريخ', fmtDateLong(countDate)],
         ['القائم بالجرد', currentUser?.name || '—'],
         ['عدد الأصناف', String(branchMats.length)],
-        ['ملاحظة', 'عبّئ عمود "المعدود" يدوياً ثم أدخل الأرقام في التطبيق'],
+        ['ملاحظة', 'عبّئ خانة «المعدود» يدوياً ثم أدخل الأرقام في التطبيق'],
       ],
       tables: [{
         title: 'قائمة الجرد اليدوي',
-        header: ['الكود', 'الصنف', 'الوحدة', 'النظامي', 'المعدود', 'الفرق', 'ملاحظات'],
+        header: ['الصنف', 'الوحدة', 'الكمية (نظامي)', 'المعدود'],
         rows,
       }],
       footer: `نموذج جرد فارغ — RestoCost ERP Pro (${branchMats.length} صنفاً)`,
     });
   };
 
+  // طباعة نموذج الجرد الميداني: الصنف والوحدة والكمية بوحدة المخزون فقط.
+  // لا تُعرض الأرصدة النظامية ولا الفروق ولا الهدر — النموذج يُملأ يدوياً
+  // على الورق ثم تُدخَل الأرقام، فعرض النظامي يفسد العدّاد (يميل للمطابقة).
   const printCurrentCount = () => {
     if (!branchId) { showToast('اختر الفرع أولاً'); return; }
     const items = buildItems();
     if (!items.length) { showToast('لا توجد أصناف معدة للطباعة'); return; }
     const rows = items.map((i) => [
-      i.rawMaterialId,
       i.itemName,
       i.unit,
-      i.theoreticalQty.toFixed(2),
-      i.countedQty.toFixed(2),
-      (i.countedQty - i.theoreticalQty).toFixed(2),
-      i.consumedQty > 0 ? `هدر: ${i.consumedQty.toFixed(2)} ${i.unit}` : '',
+      i.countedStorage.toFixed(2),   // الكمية بوحدة المخزون كما تُكتب في النموذج
+      '',                            // خانة المعدود (تُملأ يدوياً)
     ]);
-    const totalConsumedQty = items.reduce((s, i) => s + i.consumedQty, 0);
-    const totalConsumedValue = items.reduce((s, i) => s + i.consumedValue, 0);
     openPrintWindow({
-      title: `جرد يومي — ${getBranchName(branchId)}`,
+      title: `نموذج جرد ميداني — ${getBranchName(branchId)}`,
       subtitle: `${fmtDateLong(countDate)} — العداد: ${currentUser?.name || '—'}`,
       meta: [
         ['الفرع', getBranchName(branchId)],
         ['التاريخ', fmtDateLong(countDate)],
         ['القائم بالجرد', currentUser?.name || '—'],
-        ['الأصناف المعدودة', String(items.length)],
-        ['المستهلك (كمية)', totalConsumedQty.toFixed(2)],
-        ['قيمة الهدر', fmtMoney(totalConsumedValue)],
+        ['عدد الأصناف', String(items.length)],
+        ['ملاحظة', 'عبّئ خانة «المعدود» يدوياً ثم أدخل الأرقام في التطبيق'],
       ],
       tables: [{
-        title: 'تفاصيل الجرد',
-        header: ['الكود', 'الصنف', 'الوحدة', 'النظامي', 'المعدود', 'الفرق', 'ملاحظات'],
+        title: 'قائمة الجرد',
+        header: ['الصنف', 'الوحدة', 'الكمية (نظامي)', 'المعدود'],
         rows,
       }],
-      footer: `جرد سريع — RestoCost ERP Pro`,
+      footer: 'نموذج جرد ميداني — RestoCost ERP Pro',
     });
   };
 
