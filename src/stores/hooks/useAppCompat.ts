@@ -32,6 +32,7 @@ import { stockPerPurchase, tradeToStock } from '../../business/units';
 import { lowestPrice30Days, lastSupplierIdFor } from '../../business/purchaseRequests';
 import { nextDocSequence } from '../../business/docNumbers';
 import { buildMonthlyCountItems } from '../../business/monthly-count';
+import { computeDataHealth } from '../../business/data-health';
 import { parseNum } from '../../utils/excel';
 import { fmtMoney, today } from '../../utils/helpers';
 
@@ -722,50 +723,18 @@ export const useApp = () => {
   }, [calculateRecipeCosts]);
 
   // ---- صحة البيانات ----
-  const dataHealth = useMemo<DataHealthScore>(() => {
-    const rawMaterials = legacy.rawMaterials;
-    const recipes = production.recipes;
-    const suppliers = procurement.suppliers;
-    const usersArr = auth.users;
-    const journalEntries = financial.journalEntries;
-    const inventoryArr = inventory.inventory;
-    const recipeInventory = inventory.recipeInventory;
-
-    const pct = (okCount: number, total: number) => (total > 0 ? Number(((okCount / total) * 100).toFixed(0)) : 100);
-    const activeMats = rawMaterials.filter((m) => m.isActive);
-    const matsWithCost = activeMats.filter((m) => getAverageUnitCost(m.id) > 0).length;
-    const partMats = { label: 'المواد الخام (سعر تكلفة)', pct: pct(matsWithCost, activeMats.length), detail: `${matsWithCost.toLocaleString('en')} / ${activeMats.length.toLocaleString('en')} صنفاً له سعر تكلفة` };
-
-    const activeRecipes = recipes.filter((r) => r.isActive);
-    const completeRecipes = activeRecipes.filter((r) => (r.ingredients?.length || 0) > 0 && (r.actualMenuPrice > 0 || (r.suggestedPrice || 0) > 0)).length;
-    const partRecipes = { label: 'الوصفات (مكونات + سعر)', pct: pct(completeRecipes, activeRecipes.length), detail: `${completeRecipes.toLocaleString('en')} / ${activeRecipes.length.toLocaleString('en')} وصفة بمقادير وسعر بيع` };
-
-    const activeSuppliers = suppliers.filter((s) => s.isActive);
-    const suppliersWithContact = activeSuppliers.filter((s) => !!(s.phone || s.email || s.contactPerson)).length;
-    const partSuppliers = { label: 'الموردون (بيانات التواصل)', pct: pct(suppliersWithContact, activeSuppliers.length), detail: `${suppliersWithContact.toLocaleString('en')} / ${activeSuppliers.length.toLocaleString('en')} مورداً بمعلومات تواصل` };
-
-    const roleMap = ROLE_PERMISSIONS as Record<string, string[]>;
-    const activeUsers = usersArr.filter((u) => u.isActive);
-    const readyUsers = activeUsers.filter((u) => !!roleMap[u.role] || !!u.roleId).length;
-    const partUsers = { label: 'المستخدمون (أدوار/صلاحيات)', pct: pct(readyUsers, activeUsers.length), detail: `${readyUsers.toLocaleString('en')} / ${activeUsers.length.toLocaleString('en')} مستخدماً نشطاً بدور محدد` };
-
-    const balancedEntries = journalEntries.filter((j) => Math.abs(j.lines.reduce((s, l) => s + (l.debit || 0) - (l.credit || 0), 0)) <= 0.01).length;
-    const partLedger = { label: 'القيود المحاسبية (توازن)', pct: pct(balancedEntries, journalEntries.length), detail: `${balancedEntries.toLocaleString('en')} / ${journalEntries.length.toLocaleString('en')} قيداً متوازناً` };
-
-    const matIds = new Set(rawMaterials.map((m) => m.id));
-    const recipeIds = new Set(recipes.map((r) => r.id));
-    const invBroken = inventoryArr.filter((i) => !matIds.has(i.rawMaterialId)).length;
-    const recBroken = recipes.filter((r) => r.ingredients.some((ing) => !matIds.has(ing.rawMaterialId))).length + recipeInventory.filter((r) => !recipeIds.has(r.recipeId)).length;
-    const refTotal = inventoryArr.length + recipes.length + recipeInventory.length;
-    const refOk = refTotal - invBroken - recBroken;
-    const partRefs = { label: 'المراجع التكاملية (لا يتام)', pct: pct(refOk, refTotal), detail: invBroken || recBroken ? `${invBroken + recBroken} مرجعاً مكسوراً` : `لا توجد مراجع مكسورة في ${refTotal.toLocaleString('en')} سجل` };
-
-    const parts = [partMats, partRecipes, partSuppliers, partUsers, partLedger, partRefs];
-    const score = Math.round(parts.reduce((s, p) => s + p.pct, 0) / parts.length);
-    const grade: DataHealthScore['grade'] = score >= 90 ? 'excellent' : score >= 70 ? 'good' : 'attention';
-    return { score, grade, parts };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [legacy.rawMaterials, production.recipes, procurement.suppliers, auth.users, financial.journalEntries, inventory.inventory, inventory.recipeInventory, getAverageUnitCost]);
+// المنطق النقي مستخرج إلى src/business/data-health.ts (قابل للاختبار وحده).
+const dataHealth = useMemo<DataHealthScore>(() => computeDataHealth({
+    rawMaterials: legacy.rawMaterials,
+    recipes: production.recipes,
+    suppliers: procurement.suppliers,
+    users: auth.users,
+    journalEntries: financial.journalEntries,
+    inventory: inventory.inventory,
+    recipeInventory: inventory.recipeInventory,
+    hasCost: (id: string) => getAverageUnitCost(id) > 0,
+    roleMap: ROLE_PERMISSIONS as Record<string, string[]>,
+  }), [legacy.rawMaterials, production.recipes, procurement.suppliers, auth.users, financial.journalEntries, inventory.inventory, inventory.recipeInventory, getAverageUnitCost]);
 
   // ---- إعادة بناء النظام ----
   const rebuildSystem = useCallback((): SystemRebuildResult => {
