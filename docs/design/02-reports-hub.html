@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مركز التقارير — تصميم عصري (Oracle Reports style)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family:system-ui,"Segoe UI",sans-serif; background:#f1f5f9; }
+  .mono { font-family:"Cascadia Mono",Consolas,monospace; }
+  .tnum { font-variant-numeric:tabular-nums; }
+  .btn { font-size:12px; font-weight:600; border-radius:8px; padding:7px 13px;
+         display:inline-flex; align-items:center; gap:6px; cursor:pointer; transition:all .12s; border:1px solid transparent; }
+  .btn-pri { background:#4f46e5; color:#fff; box-shadow:0 1px 2px rgba(79,70,229,.25); }
+  .btn-pri:hover { background:#4338ca; }
+  .btn-sec { background:#fff; border-color:#cbd5e1; color:#334155; }
+  .btn-sec:hover { background:#f8fafc; }
+  .inp { border:1px solid #cbd5e1; border-radius:8px; padding:7px 11px; font-size:13px; background:#fff; width:100%; font-family:inherit; }
+  .inp:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.13); }
+  .lbl { font-size:11px; font-weight:600; color:#64748b; margin-bottom:4px; display:block; }
+  .chip { font-size:10px; font-weight:700; padding:3px 9px; border-radius:6px; display:inline-block; }
+  .rep-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px;
+              cursor:pointer; transition:all .15s; }
+  .rep-card:hover { border-color:#a5b4fc; box-shadow:0 4px 12px rgba(79,70,229,.1); transform:translateY(-1px); }
+  .fam-pill { padding:6px 13px; border-radius:8px; font-size:12px; font-weight:600;
+              cursor:pointer; transition:all .12s; border:1px solid transparent; white-space:nowrap; }
+  .fam-pill:hover { background:#eef2ff; color:#4338ca; }
+  .fam-pill.on { background:#4f46e5; color:#fff; }
+  table.tbl { width:100%; border-collapse:separate; border-spacing:0; }
+  table.tbl th { background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:11px 14px;
+                 font-size:11px; font-weight:700; color:#475569; text-align:right; white-space:nowrap; }
+  table.tbl td { padding:12px 14px; font-size:13px; border-bottom:1px solid #f1f5f9; }
+  table.tbl tbody tr:hover { background:#f8faff; }
+</style>
+</head>
+<body class="p-4">
+
+<div class="max-w-[1440px] mx-auto space-y-4">
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+    <div class="px-6 py-5 flex items-start justify-between">
+      <div class="flex items-center gap-3">
+        <span class="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">📊</span>
+        <div>
+          <h1 class="font-bold text-slate-900 text-xl">مركز التقارير</h1>
+          <p class="text-xs text-slate-500 mt-0.5">26 تقريراً في 7 عائلات · تكلفة ومبيعات ومخزون ومشتريات</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-sec">⭐ المفضلة</button>
+        <button class="btn btn-sec">🕐 الأخيرة</button>
+        <button class="btn btn-pri">+ تقرير مخصص</button>
+      </div>
+    </div>
+
+    <div class="px-6 pb-4 space-y-3">
+      <div class="flex items-center gap-3">
+        <div class="flex-1 relative">
+          <input class="inp pl-9" placeholder="ابحث في التقارير…">
+          <span class="absolute right-3 top-2.5 text-slate-400">🔍</span>
+        </div>
+        <div class="w-44">
+          <select class="inp"><option>كل الفروع</option><option>الجبيل</option><option>طيبة</option></select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <span class="text-[11px] font-bold text-slate-500 ml-2 shrink-0">العائلة:</span>
+        <span class="fam-pill on">الكل (26)</span>
+        <span class="fam-pill">تكلفة الطعام (10)</span>
+        <span class="fam-pill">تنفيذية (4)</span>
+        <span class="fam-pill">مالية (4)</span>
+        <span class="fam-pill">مشتريات (3)</span>
+        <span class="fam-pill">مخزون (3)</span>
+        <span class="fam-pill">مبيعات (1)</span>
+        <span class="fam-pill">عمليات (1)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs font-bold text-slate-600">كل التقارير <span class="mono text-slate-400">(26)</span></span>
+      <div class="flex gap-1.5">
+        <button class="fam-pill on" style="padding:4px 10px;font-size:11px">شبكة</button>
+        <button class="fam-pill" style="padding:4px 10px;font-size:11px">قائمة</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-3">
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-lg">🥗</span>
+          <span class="chip bg-emerald-50 text-emerald-700">تكلفة طعام</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">تكلفة الطعام حسب الفئة</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">Food Cost لكل فئة مع نسبة من المبيعات ومقارنة بالشهر السابق</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center text-lg">📈</span>
+          <span class="chip bg-violet-50 text-violet-700">تنفيذية</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">لوحة المؤشرات التنفيذية</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">المبيعات والتكلفة والهامش لكل فرع مع الاتجاه</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-lg">📋</span>
+          <span class="chip bg-blue-50 text-blue-700">مبيعات</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">سجل المبيعات التفصيلي</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">كل عملية بيع بالتفصيل مع المنتج والسعر والتكلفة</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-lg">📊</span>
+          <span class="chip bg-amber-50 text-amber-700">مالية</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">تقرير شهري لكل فرع</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">إيراد وتكلفة وهامش صافي لكل فرع شهرياً</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center text-lg">💰</span>
+          <span class="chip bg-rose-50 text-rose-700">تكلفة طعام</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">التكلفة الحقيقية (True Cost)</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">التكلفة الفعلية شاملة الهدر والتحضير والتالف</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center text-lg">🧠</span>
+          <span class="chip bg-cyan-50 text-cyan-700">تكلفة طعام</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">ذكاء التكلفة</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">تحليل ذكي للانحرافات واقتراحات Improving</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center text-lg">📦</span>
+          <span class="chip bg-teal-50 text-teal-700">مخزون</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">تقييم المخزون</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">قيمة المخزون حسب الفئة ومعدل الدوران</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <div class="flex items-start justify-between mb-2.5">
+          <span class="w-9 h-9 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center text-lg">🛒</span>
+          <span class="chip bg-orange-50 text-orange-700">مشتريات</span>
+        </div>
+        <p class="font-bold text-slate-900 text-sm mb-1">انحراف أسعار الشراء</p>
+        <p class="text-[11px] text-slate-500 leading-relaxed mb-3">الفرق بين السعر المطلوب والمحصّل</p>
+        <div class="flex items-center gap-1.5">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">فتح</button>
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">⤓ تصدير</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 mt-4 flex items-center justify-between rounded-xl">
+      <span class="text-[11px] font-semibold text-slate-500">عرض 1–8 من 26 تقريراً</span>
+      <span class="flex items-center gap-1">
+        <button class="btn btn-sec" style="padding:5px 10px">السابق</button>
+        <button class="btn btn-pri" style="padding:5px 10px">1</button>
+        <button class="btn btn-sec" style="padding:5px 10px">2</button>
+        <button class="btn btn-sec" style="padding:5px 10px">3</button>
+        <button class="btn btn-sec" style="padding:5px 10px">التالي</button>
+      </span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -11,7 +11,7 @@ import {
 import { canWriteCollection, canPurgeTombstone, canReadCollection, BRANCH_SCOPED_KEYS, scopeToBranches } from '../permissions.mjs';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
 import { store } from '../store.mjs';
-import { PKG_VERSION, buildFingerprint, serverStamp } from '../version.mjs';
+import { PKG_VERSION, getBuildFingerprint, serverStamp } from '../version.mjs';
 import { sendTelegram, sendTelegramDocument, buildNotificationText, testTelegram, getBotChatIds } from '../telegram.mjs';
 import { encryptSecret, decryptSecret } from '../secrets.mjs';
 import { learnItemAlias, learnBranchAlias, getAliases } from '../intake.mjs';
@@ -136,7 +136,7 @@ export const registerData = (app) => {
     }
     res.setHeader('ETag', etag);
     res.setHeader('Cache-Control', 'no-cache');
-    res.json({ ok: true, data, user: publicUser(user), version: PKG_VERSION, build: buildFingerprint, server: serverStamp, lazyKeys: [...LAZY_KEYS], deniedKeys, rev: rev.rev, boot: rev.boot, delta: isDelta, touchedKeys: isDelta ? touchedKeys : undefined });
+    res.json({ ok: true, data, user: publicUser(user), version: PKG_VERSION, build: getBuildFingerprint(), server: serverStamp, lazyKeys: [...LAZY_KEYS], deniedKeys, rev: rev.rev, boot: rev.boot, delta: isDelta, touchedKeys: isDelta ? touchedKeys : undefined });
   });
 
   // ترقيم خفيف بالقائمة (cursor) لمفتاح واحد — مساعدة للمعاينة عند نمو قائمة
@@ -963,7 +963,7 @@ if (key === 'rcerp_recent_docs') {
       ok: true,
       status: 'healthy',
       version: PKG_VERSION,
-      build: buildFingerprint,
+      build: getBuildFingerprint(),
       server: serverStamp,
       uptime: Math.floor(process.uptime()),
       pid: process.pid,

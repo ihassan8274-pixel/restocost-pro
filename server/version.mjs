@@ -12,12 +12,31 @@ export const PKG_VERSION = (() => {
   try { return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version || '0.0.0'; } catch { return '0.0.0'; }
 })();
 
-export const buildFingerprint = (() => {
+// بصمة البناء تُحسب عند كل استدعاء، لا مرة واحدة عند الإقلاع.
+//
+// كانت ثابتة (IIFE وقت الاستيراد): أي `npm run build` دون إعادة تشغيل السيرفر
+// كان يُبقي /health يبلّغ عن البصمة القديمة، فيطابقها المتصفح مع ما خزّنه في
+// localStorage ويختفي شريط «تم نشر تحديث» نهائياً — فيبقى المستخدم على واجهة
+// قديمة بلا أي تنبيه، لأن الـAPI ما زال يعمل فلا يRlاحظ شيئاً.
+// مخبأ بـ mtime: قراءة الستات reread مرة واحدة فقط عند تغيّر البناء.
+let fpCache = { mtimeMs: -1, value: 'no-dist' };
+
+export const getBuildFingerprint = () => {
   try {
-    const html = fs.readFileSync(path.join(__dirname, '..', 'dist', 'index.html'), 'utf8');
-    return crypto.createHash('sha256').update(html).digest('hex').slice(0, 10);
-  } catch { return 'no-dist'; }
-})();
+    const file = path.join(__dirname, '..', 'dist', 'index.html');
+    const { mtimeMs } = fs.statSync(file);
+    if (mtimeMs !== fpCache.mtimeMs) {
+      const html = fs.readFileSync(file, 'utf8');
+      fpCache = { mtimeMs, value: crypto.createHash('sha256').update(html).digest('hex').slice(0, 10) };
+    }
+    return fpCache.value;
+  } catch {
+    return 'no-dist';
+  }
+};
+
+// kept for compatibility: the fingerprint *at boot time*.
+export const buildFingerprint = getBuildFingerprint();
 
 // بصمة السيرفر: تُحسب من كل ملفات الكود (الجذر + المسارات + الاختبارات) وقت
 // الإقلاع. كان يقرأ جذر server/ وحده فلا يشمل server/routes/ — فأي تعديل في

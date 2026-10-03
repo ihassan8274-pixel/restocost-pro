@@ -5,6 +5,10 @@ import { NAV_SECTIONS } from '../../navigation';
 import { ROLE_LABELS } from '../../types';
 import { Modal } from '../ui';
 
+// تُحقن وقت البناء (vite.config.ts). محمية احتياطياً لأن tsconfig قد لا يلتقط
+// تعريف vite-env.d.ts في كل إعداد.
+const BUILD_STAMP: string = typeof __BUILD_STAMP__ === 'string' ? __BUILD_STAMP__ : '—';
+
 const WHATS_NEW = [
   { v: 'v2.2 — المرحلة V4', items: ['شريط مسار الموافقة أعلى كل مستند (مسودة → مراجعة → اعتماد → ترحيل)', 'معاينة استيراد Excel قبل التنفيذ مع أخطاء صف-بصف (اسحب الملف)', 'اختصارات كيبورد شاملة: / للبحث · N لإنشاء جديد · E للتصدير · Esc للإغلاق', 'مؤشر صحة النسخ الاحتياطي في إعدادات النظام مع عمر آخر نسخة'] },
   { v: 'v2.1 — المرحلة V3', items: ['وضع تابلت لشاشة الجرد اليومي من الجوال', 'نسخ وصفة مع فرق التكلفة والاعتماد المرن (مسودة)', 'رؤية متعددة الفروع بتقارير موحّدة', 'توقعات موسمية، ذكاء أسعار الموردين، FEFO، مخطط المنيو، تخطيط الإنتاج'] },
@@ -245,7 +249,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
           >
             <Sparkles className="w-3.5 h-3.5" /> ما الجديد؟
           </button>
-          <p className="text-center text-[10px] text-stone-400">RestoCost ERP Pro v2.2</p>
+          <p className="text-center text-[10px] text-stone-400">
+            RestoCost ERP Pro v2.2
+            {/* بصمة البناء: تُظهر للمستخدم أي نسخة تعمل أمامه فعلاً. بدونها
+                يستحيل تمييز «نافذة قديمة لم تُحدَّث» عن «النشر لم يصل». */}
+            <span className="block mt-0.5 tnum" dir="ltr" title="بصمة البناء الحالية — لو اختلفت عن/build فالحالة على الشاشة قديمة">
+              build {typeof BUILD_STAMP === 'string' ? BUILD_STAMP : '—'}
+            </span>
+          </p>
         </div>
         <button
           onClick={() => { logout(); onCloseMobile(); }}

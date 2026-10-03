@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { PackageCheck, Plus, CheckCircle2, XCircle, Receipt, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, PageHeader, Btn, Modal, Field, inputCls, CurrencySelect, AutocompleteSelect, DateText, DocumentFingerprint } from '../ui';
+import { Card, PageHeader, Btn, Modal, Field, inputCls, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
-import { fmt, fmtMoney, navOnEnter } from '../../utils/helpers';
+import { fmt, fmtMoney } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
 import { openLabelsWindow } from '../../utils/labels';
 import { GoodsReceiptItem } from '../../types';
+import { GrnItemsTable } from './GrnItemsTable';
 import { ViewToolbar } from '../ui/ViewToolbar';
 import { ApprovalPathBar, type ApprovalStepDef, type ApprovalTerminalType } from '../ui/ApprovalPath';
 
@@ -90,11 +91,9 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
   const supplier = suppliers.find((s) => s.id === supplierId);
   const subtotal = items.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0);
   const vatAmount = vatIncl ? (subtotal * vatRate) / (100 + vatRate) : (subtotal * vatRate) / 100;
-  const totalAmount = vatIncl ? subtotal : subtotal + vatAmount;
+    const totalAmount = vatIncl ? subtotal : subtotal + vatAmount;
 
-  // تنسيق الأسعار بـ 4 علامات عشرية
-  const fmtPrice = (n: number) => fmt(n, 4);
-  const lastPurchasePrice = (materialId: string, forBranch: string) => {
+    const lastPurchasePrice = (materialId: string, forBranch: string) => {
     if (!materialId || !forBranch) return null;
     const cur = currencyCode || 'SAR';
     const matches = grnNotes
@@ -674,233 +673,27 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                 </div>
               </div>
               
-              {/* Column Headers */}
-              <div className="hidden lg:grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-bold text-slate-500 bg-slate-50 rounded-xl border border-slate-100">
-                <span className="col-span-3">الصنف</span>
-                <span className="col-span-1 text-center">الكمية<br/><span className="text-[9px] text-amber-600">(وحدة التخزين)</span></span>
-                <span className="col-span-1 text-center">سعر الوحدة</span>
-                <span className="col-span-2 text-center">الإجمالي</span>
-                <span className="col-span-1 text-center">تاريخ الانتهاء</span>
-                <span className="col-span-1 text-center">الدفعة</span>
-                <span className="col-span-1 text-center">انتهاء</span>
-                <span className="col-span-1 text-center">جودة</span>
-                <span className="col-span-1 text-center">إجراءات</span>
-              </div>
-
-              {/* Mobile Headers */}
-              <div className="lg:hidden grid grid-cols-2 gap-2 px-2 py-1 text-[9px] font-bold text-slate-500 bg-slate-50 rounded-xl border border-slate-100">
-                <span>الصنف</span>
-                <span>التفاصيل</span>
-              </div>
-
-              {items.map((item, idx) => {
-                const mat = rawMaterials.find((m) => m.id === item.rawMaterialId);
-                const conv = convOf(item.rawMaterialId);
-
-                return (
-                  <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden transition-all hover:border-indigo-200">
-                    {/* Desktop Row */}
-                    <div className="hidden lg:grid grid-cols-12 gap-2 items-end p-3 bg-slate-50/50">
-                      {/* Item Name - col-span-3 */}
-                      <div className="col-span-3 min-w-0">
-                        <AutocompleteSelect
-                          value={item.rawMaterialId}
-                          onChange={(val) => {
-                            updateItem(idx, { rawMaterialId: val, unitPrice: prefillPrice(rawMaterials.find((x) => x.id === val), branchId) });
-                          }}
-                          options={rawMaterials.map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
-                          getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
-                          placeholder="— اختر صنف —"
-                          className="w-full"
-                        />
-                        {mat && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{mat.code} • {mat.unit}</p>}
-                      </div>
-                      
-                      {/* Quantity with inline conversion - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="text" inputMode="decimal" data-nav autoComplete="off" 
-                          value={draftVal(qtyKey(rowKeys[idx] ?? idx), item.quantityReceived || '')} 
-                          onInput={(e: React.FormEvent<HTMLInputElement>) => onQty(idx, e.currentTarget.value)} 
-                          onBlur={() => clearDraft(qtyKey(rowKeys[idx] ?? idx))} 
-                          onKeyDown={navOnEnter} 
-                          className={inputCls + ' text-center font-mono'} 
-                          placeholder="الكمية"
-                        />
-                        {conv && (
-                          <div className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5 mt-1 text-center whitespace-nowrap" title="تحويل وحدة التخزين إلى وحدة الشراء">
-                            {item.quantityReceived > 0
-                              ? `= ${(item.quantityReceived / conv.conv).toFixed(2)} ${conv.pu}`
-                              : `${mat?.unit || '—'} → ${conv.pu} (×${conv.conv})`}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Unit Price - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="text" inputMode="decimal" data-nav autoComplete="off" 
-                          value={draftVal(priceKey(rowKeys[idx] ?? idx), item.unitPrice ? fmtPrice(item.unitPrice) : '')} 
-                          onInput={(e: React.FormEvent<HTMLInputElement>) => onPrice(idx, e.currentTarget.value)} 
-                          onBlur={() => clearDraft(priceKey(rowKeys[idx] ?? idx))} 
-                          onKeyDown={navOnEnter} 
-                          className={inputCls + ' text-center font-mono'} 
-                          placeholder="سعر الوحدة"
-                        />
-                      </div>
-                      
-                      {/* Line Total - col-span-2 (editable: enter total → calculates unit price) */}
-                      <div className="col-span-2">
-                        <input
-                          type="text" inputMode="decimal" data-nav autoComplete="off"
-                          value={draftVal(totalKey(rowKeys[idx] ?? idx), item.lineTotal && item.lineTotal > 0 ? fmtPrice(item.lineTotal) : '')}
-                          onInput={(e: React.FormEvent<HTMLInputElement>) => onLineTotal(idx, e.currentTarget.value)}
-                          onBlur={() => clearDraft(totalKey(rowKeys[idx] ?? idx))}
-                          onKeyDown={navOnEnter}
-                          className={inputCls + ' text-center font-mono text-emerald-700 bg-emerald-50 font-bold'}
-                          placeholder="الإجمالي"
-                        />
-                      </div>
-                      
-                      {/* Expiry Date - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="date" 
-                          value={item.expiryDate} 
-                          onChange={(e) => updateItem(idx, { expiryDate: e.target.value })} 
-                          className={inputCls + ' text-center'} 
-                        />
-                      </div>
-                      
-                      {/* Batch Number - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="text" 
-                          value={item.batchNumber} 
-                          onChange={(e) => updateItem(idx, { batchNumber: e.target.value })} 
-                          className={inputCls + ' text-center'} 
-                          placeholder="الدفعة"
-                        />
-                      </div>
-                      
-                      {/* Expiry - col-span-1 (readonly display) */}
-                      <div className="col-span-1 text-center text-[10px] text-slate-500">
-                        {item.expiryDate || '—'}
-                      </div>
-                      
-                      {/* Quality - col-span-1 */}
-                      <div className="col-span-1 flex items-center justify-center gap-1">
-                        <label className="flex items-center gap-1 text-[10px] font-bold text-slate-600 cursor-pointer">
-                          <input type="checkbox" checked={item.qualityPassed} onChange={(e) => updateItem(idx, { qualityPassed: e.target.checked })} className="w-4 h-4 accent-emerald-600" />
-                          جودة
-                        </label>
-                      </div>
-                      
-                      {/* Actions - col-span-1 */}
-                      <div className="col-span-1 flex items-center justify-center gap-1">
-                        <button 
-                          type="button" 
-                          onClick={() => { setItems(items.filter((_, i) => i !== idx)); setRowKeys(rowKeys.filter((_, i) => i !== idx)); }} 
-                          className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition-colors" 
-                          title="حذف الصنف"
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Mobile Card Layout */}
-                    <div className="lg:hidden p-3 space-y-2 border-t border-slate-100">
-                      <div className="flex items-center justify-between">
-                        <AutocompleteSelect
-                          value={item.rawMaterialId}
-                          onChange={(val) => {
-                            updateItem(idx, { rawMaterialId: val, unitPrice: prefillPrice(rawMaterials.find((x) => x.id === val), branchId) });
-                          }}
-                          options={rawMaterials.map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
-                          getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
-                          placeholder="— اختر صنف —"
-                          className="w-full max-w-xs"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => { setItems(items.filter((_, i) => i !== idx)); setRowKeys(rowKeys.filter((_, i) => i !== idx)); }} 
-                          className="text-rose-500 hover:text-rose-700 p-1.5" 
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">الكمية (وحدة التخزين)</label>
-                          <input 
-                            type="text" inputMode="decimal" data-nav autoComplete="off" 
-                            value={draftVal(qtyKey(rowKeys[idx] ?? idx), item.quantityReceived || '')} 
-                            onInput={(e: React.FormEvent<HTMLInputElement>) => onQty(idx, e.currentTarget.value)} 
-                            onBlur={() => clearDraft(qtyKey(rowKeys[idx] ?? idx))} 
-                            onKeyDown={navOnEnter} 
-                            className={inputCls + ' font-mono'} 
-                            placeholder="الكمية"
-                          />
-                          {conv && (
-                            <div className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5 mt-1 text-center whitespace-nowrap" title="تحويل وحدة التخزين إلى وحدة الشراء">
-                              {item.quantityReceived > 0
-                                ? `= ${(item.quantityReceived / conv.conv).toFixed(2)} ${conv.pu}`
-                                : `${mat?.unit || '—'} → ${conv.pu} (×${conv.conv})`}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">سعر الوحدة</label>
-                          <input 
-                            type="text" inputMode="decimal" data-nav autoComplete="off" 
-                            value={draftVal(priceKey(rowKeys[idx] ?? idx), item.unitPrice ? fmtPrice(item.unitPrice) : '')} 
-                            onInput={(e: React.FormEvent<HTMLInputElement>) => onPrice(idx, e.currentTarget.value)} 
-                            onBlur={() => clearDraft(priceKey(rowKeys[idx] ?? idx))} 
-                            onKeyDown={navOnEnter} 
-                            className={inputCls + ' font-mono'} 
-                            placeholder="سعر الوحدة"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">الإجمالي</label>
-                          <input
-                            type="text" inputMode="decimal" data-nav autoComplete="off"
-                            value={draftVal(totalKey(rowKeys[idx] ?? idx), item.lineTotal && item.lineTotal > 0 ? fmtPrice(item.lineTotal) : '')}
-                            onInput={(e: React.FormEvent<HTMLInputElement>) => onLineTotal(idx, e.currentTarget.value)}
-                            onBlur={() => clearDraft(totalKey(rowKeys[idx] ?? idx))}
-                            onKeyDown={navOnEnter}
-                            className={inputCls + ' font-mono text-emerald-700 bg-emerald-50 font-bold text-center'}
-                            placeholder="الإجمالي"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">تاريخ الانتهاء</label>
-                          <input type="date" value={item.expiryDate} onChange={(e) => updateItem(idx, { expiryDate: e.target.value })} className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">الدفعة</label>
-                          <input type="text" value={item.batchNumber} onChange={(e) => updateItem(idx, { batchNumber: e.target.value })} className={inputCls} placeholder="الدفعة" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="flex items-center gap-1 text-[10px] font-bold text-slate-600 cursor-pointer">
-                            <input type="checkbox" checked={item.qualityPassed} onChange={(e) => updateItem(idx, { qualityPassed: e.target.checked })} className="w-4 h-4 accent-emerald-600" />
-                            جودة
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              {items.length === 0 && (
-                <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                  <PackageCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500 font-medium">لا توجد أصناف بعد</p>
-                  <p className="text-[11px] text-slate-400 mt-1">اضغط "إضافة صنف" لبدء تسجيل الأصناف المستلمة</p>
-                  <Btn onClick={addItem} className="mt-3"><Plus className="w-4 h-4" /> إضافة أول صنف</Btn>
-                </div>
-              )}
+              {/* جدول أصناف GRN — نفس المكوّن المستخدم في نموذج التعديل
+                  (docs/design/04-grn-entry.html). كان مكرراً مرتين بمخططات
+                  مختلفة، فيت drifting أي تحسين بينهما. */}
+              <GrnItemsTable
+                items={items}
+                rowKeys={rowKeys}
+                rawMaterials={rawMaterials}
+                convOf={convOf}
+                prefillPrice={prefillPrice}
+                branchId={branchId}
+                updateItem={updateItem}
+                onQty={onQty}
+                onPrice={onPrice}
+                onLineTotal={onLineTotal}
+                onRemove={(i) => { setItems(items.filter((_, k2) => k2 !== i)); setRowKeys(rowKeys.filter((_, k2) => k2 !== i)); }}
+                qtyKey={qtyKey}
+                priceKey={priceKey}
+                totalKey={totalKey}
+                draftVal={draftVal}
+                clearDraft={clearDraft}
+              />
             </section>
 
             {/* Section 3: Totals & Actions - Sticky Footer */}
@@ -1045,238 +838,30 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               </div>
             </section>
 
-            {/* Section 2: Items - Professional Table */}
+            {/* Section 2: Items — جدول واحد مشترك مع نموذج الإدخال */}
             <section>
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-bold text-slate-800 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-amber-600" /> الأصناف المستلمة</h4>
               </div>
-              
-              {/* Column Headers */}
-              <div className="hidden lg:grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-bold text-slate-500 bg-slate-50 rounded-xl border border-slate-100">
-                <span className="col-span-3">الصنف</span>
-                <span className="col-span-1 text-center">الكمية<br/><span className="text-[9px] text-amber-600">(وحدة التخزين)</span></span>
-                <span className="col-span-1 text-center">سعر الوحدة</span>
-                <span className="col-span-2 text-center">الإجمالي</span>
-                <span className="col-span-1 text-center">تاريخ الانتهاء</span>
-                <span className="col-span-1 text-center">الدفعة</span>
-                <span className="col-span-1 text-center">انتهاء</span>
-                <span className="col-span-1 text-center">جودة</span>
-                <span className="col-span-1 text-center">إجراءات</span>
-              </div>
 
-              {/* Mobile Headers */}
-              <div className="lg:hidden grid grid-cols-2 gap-2 px-2 py-1 text-[9px] font-bold text-slate-500 bg-slate-50 rounded-xl border border-slate-100">
-                <span>الصنف</span>
-                <span>التفاصيل</span>
-              </div>
-
-              {editItems.map((item, idx) => {
-                  const mat = rawMaterials.find((m) => m.id === item.rawMaterialId);
-                  const conv = convOf(item.rawMaterialId);
-                  return (
-                    <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden transition-all hover:border-amber-200">
-                      {/* Desktop Row */}
-                      <div className="hidden lg:grid grid-cols-12 gap-2 items-end p-3 bg-slate-50/50">
-                      {/* Item Name - col-span-3 */}
-                      <div className="col-span-3 min-w-0">
-                        <AutocompleteSelect
-                          value={item.rawMaterialId}
-                          onChange={(val) => {
-                            updateEditItem(idx, { rawMaterialId: val, unitPrice: prefillPrice(rawMaterials.find((x) => x.id === val), editGrn?.branchId || branchId) });
-                          }}
-                          options={rawMaterials.map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
-                          getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
-                          placeholder="— اختر صنف —"
-                          className="w-full"
-                        />
-                        {mat && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{mat.code} • {mat.unit}</p>}
-                      </div>
-                      
-                      {/* Quantity with inline conversion - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="text" inputMode="decimal" data-nav autoComplete="off" 
-                          value={draftVal(qtyKey(editKeys[idx] ?? idx) + 'e', item.quantityReceived || '')} 
-                          onInput={(e: React.FormEvent<HTMLInputElement>) => onQtyEdit(idx, e.currentTarget.value)} 
-                          onBlur={() => clearDraft(qtyKey(editKeys[idx] ?? idx) + 'e')} 
-                          onKeyDown={navOnEnter} 
-                          className={inputCls + ' text-center font-mono'} 
-                          placeholder="الكمية"
-                        />
-                        {conv && (
-                          <div className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5 mt-1 text-center whitespace-nowrap" title="تحويل وحدة التخزين إلى وحدة الشراء">
-                            {item.quantityReceived > 0
-                              ? `= ${(item.quantityReceived / conv.conv).toFixed(2)} ${conv.pu}`
-                              : `${mat?.unit || '—'} → ${conv.pu} (×${conv.conv})`}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Unit Price - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="text" inputMode="decimal" data-nav autoComplete="off" 
-                          value={draftVal(priceKey(editKeys[idx] ?? idx) + 'e', item.unitPrice ? fmtPrice(item.unitPrice) : '')} 
-                          onInput={(e: React.FormEvent<HTMLInputElement>) => onPriceEdit(idx, e.currentTarget.value)} 
-                          onBlur={() => clearDraft(priceKey(editKeys[idx] ?? idx) + 'e')} 
-                          onKeyDown={navOnEnter} 
-                          className={inputCls + ' text-center font-mono'} 
-                          placeholder="سعر الوحدة"
-                        />
-                      </div>
-                      
-                      {/* Line Total - col-span-2 (editable: enter total → calculates unit price) */}
-                      <div className="col-span-2">
-                        <input
-                          type="text" inputMode="decimal" data-nav autoComplete="off"
-                          value={draftVal(totalKey(editKeys[idx] ?? idx) + 'e', item.lineTotal && item.lineTotal > 0 ? fmtPrice(item.lineTotal) : '')}
-                          onInput={(e: React.FormEvent<HTMLInputElement>) => onLineTotalEdit(idx, e.currentTarget.value)}
-                          onBlur={() => clearDraft(totalKey(editKeys[idx] ?? idx) + 'e')}
-                          onKeyDown={navOnEnter}
-                          className={inputCls + ' text-center font-mono text-emerald-700 bg-emerald-50 font-bold'}
-                          placeholder="الإجمالي"
-                        />
-                      </div>
-                      
-                      {/* Expiry Date - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="date" 
-                          value={item.expiryDate} 
-                          onChange={(e) => updateEditItem(idx, { expiryDate: e.target.value })} 
-                          className={inputCls + ' text-center'} 
-                        />
-                      </div>
-                      
-                      {/* Batch Number - col-span-1 */}
-                      <div className="col-span-1">
-                        <input 
-                          type="text" 
-                          value={item.batchNumber} 
-                          onChange={(e) => updateEditItem(idx, { batchNumber: e.target.value })} 
-                          className={inputCls + ' text-center'} 
-                          placeholder="الدفعة"
-                        />
-                      </div>
-                      
-                      {/* Expiry - col-span-1 (readonly display) */}
-                      <div className="col-span-1 text-center text-[10px] text-slate-500">
-                        {item.expiryDate || '—'}
-                      </div>
-                      
-                      {/* Quality - col-span-1 */}
-                      <div className="col-span-1 flex items-center justify-center gap-1">
-                        <label className="flex items-center gap-1 text-[10px] font-bold text-slate-600 cursor-pointer">
-                          <input type="checkbox" checked={item.qualityPassed} onChange={(e) => updateEditItem(idx, { qualityPassed: e.target.checked })} className="w-4 h-4 accent-emerald-600" />
-                          جودة
-                        </label>
-                      </div>
-                      
-                      {/* Actions - col-span-1 */}
-                      <div className="col-span-1 flex items-center justify-center gap-1">
-                        <button 
-                          type="button" 
-                          onClick={() => { setEditItems(editItems.filter((_, i) => i !== idx)); setEditKeys(editKeys.filter((_, i) => i !== idx)); }} 
-                          className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition-colors" 
-                          title="حذف الصنف"
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Mobile Card Layout */}
-                    <div className="lg:hidden p-3 space-y-2 border-t border-slate-100">
-                      <div className="flex items-center justify-between">
-                        <AutocompleteSelect
-                          value={item.rawMaterialId}
-                          onChange={(val) => {
-                            updateEditItem(idx, { rawMaterialId: val, unitPrice: prefillPrice(rawMaterials.find((x) => x.id === val), editGrn?.branchId || branchId) });
-                          }}
-                          options={rawMaterials.map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
-                          getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
-                          placeholder="— اختر صنف —"
-                          className="w-full max-w-xs"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => { setEditItems(editItems.filter((_, i) => i !== idx)); setEditKeys(editKeys.filter((_, i) => i !== idx)); }} 
-                          className="text-rose-500 hover:text-rose-700 p-1.5" 
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">الكمية (وحدة التخزين)</label>
-                          <input 
-                            type="text" inputMode="decimal" data-nav autoComplete="off" 
-                            value={draftVal(qtyKey(editKeys[idx] ?? idx) + 'e', item.quantityReceived || '')} 
-                            onInput={(e: React.FormEvent<HTMLInputElement>) => onQtyEdit(idx, e.currentTarget.value)} 
-                            onBlur={() => clearDraft(qtyKey(editKeys[idx] ?? idx) + 'e')} 
-                            onKeyDown={navOnEnter} 
-                            className={inputCls + ' font-mono'} 
-                            placeholder="الكمية"
-                          />
-                          {conv && (
-                            <div className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5 mt-1 text-center whitespace-nowrap" title="تحويل وحدة التخزين إلى وحدة الشراء">
-                              {item.quantityReceived > 0
-                                ? `= ${(item.quantityReceived / conv.conv).toFixed(2)} ${conv.pu}`
-                                : `${mat?.unit || '—'} → ${conv.pu} (×${conv.conv})`}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">سعر الوحدة</label>
-                          <input 
-                            type="text" inputMode="decimal" data-nav autoComplete="off" 
-                            value={draftVal(priceKey(editKeys[idx] ?? idx) + 'e', item.unitPrice ? fmtPrice(item.unitPrice) : '')} 
-                            onInput={(e: React.FormEvent<HTMLInputElement>) => onPriceEdit(idx, e.currentTarget.value)} 
-                            onBlur={() => clearDraft(priceKey(editKeys[idx] ?? idx) + 'e')} 
-                            onKeyDown={navOnEnter} 
-                            className={inputCls + ' font-mono'} 
-                            placeholder="سعر الوحدة"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">الإجمالي</label>
-                          <input
-                            type="text" inputMode="decimal" data-nav autoComplete="off"
-                            value={draftVal(totalKey(editKeys[idx] ?? idx) + 'e', item.lineTotal && item.lineTotal > 0 ? fmtPrice(item.lineTotal) : '')}
-                            onInput={(e: React.FormEvent<HTMLInputElement>) => onLineTotalEdit(idx, e.currentTarget.value)}
-                            onBlur={() => clearDraft(totalKey(editKeys[idx] ?? idx) + 'e')}
-                            onKeyDown={navOnEnter}
-                            className={inputCls + ' font-mono text-emerald-700 bg-emerald-50 font-bold text-center'}
-                            placeholder="الإجمالي"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">تاريخ الانتهاء</label>
-                          <input type="date" value={item.expiryDate} onChange={(e) => updateEditItem(idx, { expiryDate: e.target.value })} className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-slate-500 block mb-0.5">الدفعة</label>
-                          <input type="text" value={item.batchNumber} onChange={(e) => updateEditItem(idx, { batchNumber: e.target.value })} className={inputCls} placeholder="الدفعة" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="flex items-center gap-1 text-[10px] font-bold text-slate-600 cursor-pointer">
-                            <input type="checkbox" checked={item.qualityPassed} onChange={(e) => updateEditItem(idx, { qualityPassed: e.target.checked })} className="w-4 h-4 accent-emerald-600" />
-                            جودة
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              // End of editItems map
-              })}
-              {/* Empty State */}
-              {editItems.length === 0 && (
-                <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                  <PackageCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500 font-medium">لا توجد أصناف في هذا الإشعار</p>
-                </div>
-              )}
+              <GrnItemsTable
+                items={editItems}
+              rowKeys={editKeys}
+              rawMaterials={rawMaterials}
+              convOf={convOf}
+              prefillPrice={prefillPrice}
+                branchId={editGrn?.branchId || ''}
+              updateItem={updateEditItem}
+              onQty={onQtyEdit}
+              onPrice={onPriceEdit}
+              onLineTotal={onLineTotalEdit}
+              onRemove={(i) => setEditItems(editItems.filter((_, k) => k !== i))}
+              qtyKey={qtyKey}
+              priceKey={priceKey}
+              totalKey={totalKey}
+              draftVal={draftVal}
+              clearDraft={clearDraft}
+            />
             </section>
 
             {/* Section 3: Totals & Actions - Sticky Footer */}

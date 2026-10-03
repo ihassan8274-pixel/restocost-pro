@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { dataDir, readBindHost, portInUse, sessionUser, readToken, isLiveRestoServer, acquireInstanceLock, releaseInstanceLock } from './core.mjs';
 import { ensureStore, store, probeStore } from './store.mjs';
 import { requestLogger, writeLog } from './logger.mjs';
-import { PKG_VERSION, buildFingerprint, serverStamp } from './version.mjs';
+import { PKG_VERSION, getBuildFingerprint, serverStamp } from './version.mjs';
 import { registerAuth } from './routes/auth.mjs';
 import { registerBackup } from './routes/backup.mjs';
 import { registerData } from './routes/data.mjs';
@@ -114,7 +114,7 @@ app.get('/health', (req, res) => {
     uptime: Math.round(process.uptime()),
     ts: new Date().toISOString(),
     version: PKG_VERSION,
-    build: buildFingerprint,
+    build: getBuildFingerprint(),
     server: serverStamp,
   });
 });
@@ -125,7 +125,7 @@ app.get('/ready', async (req, res) => {
     const probe = await probeStore();
     writeLog({ reqId, action: 'GET /ready', status: probe.ok ? 200 : 503, msg: probe.ok ? '' : probe.error });
     if (!probe.ok) return res.status(503).json({ status: 'not_ready', backend: probe.backend, error: probe.error });
-    res.json({ status: 'ready', backend: probe.backend, version: PKG_VERSION, build: buildFingerprint, server: serverStamp, ts: new Date().toISOString() });
+    res.json({ status: 'ready', backend: probe.backend, version: PKG_VERSION, build: getBuildFingerprint(), server: serverStamp, ts: new Date().toISOString() });
   } catch (e) {
     writeLog({ reqId, action: 'GET /ready', status: 500, msg: (e && e.message) || e });
     res.status(500).json({ status: 'error', msg: 'ready-check failed' });

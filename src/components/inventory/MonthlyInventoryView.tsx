@@ -81,48 +81,48 @@ export const MonthlyInventoryView: React.FC = () => {
     });
   };
 
-  const printBranchInventoryReport = (p: MonthlyInventoryPeriod) => {
-    const branchName = getBranchName(p.branchId);
-    const monthLabel = monthLabelFor(p.monthKey);
-    const sortedItems = sortByCode(p.items);
-    const totalItems = sortedItems.length;
-    const totalQty = sortedItems.reduce((s, it) => s + it.countedQty, 0);
-    const totalValue = sortedItems.reduce((s, it) => s + it.countedQty * it.unitCost, 0);
+  const confirmCloseId = confirmClose ? monthlyInventory.find((p) => p.id === confirmClose) : null;
 
+  // ── طباعة أرصدة الفرع كما وردت في الجرد المُدخل ──
+  // الصفوف = الكميات التي أدخلها العدّاد (countedQty)، لا الدفتري.
+  // الأعمدة: الصنف · الوحدة · الكمية · السعر · الإجمالي.
+  const printBranchBalances = (p: MonthlyInventoryPeriod) => {
+    const filled = sortByCode(p.items).filter((it) => (it.countedQty ?? 0) > 0);
+    if (!filled.length) {
+      showToast('لا توجد كميات مدخلة في هذا الجرد لطباعتها');
+      return;
+    }
+    const totalQty = filled.reduce((s, it) => s + (it.countedQty || 0), 0);
+    const totalValue = filled.reduce((s, it) => s + (it.countedQty || 0) * (it.unitCost || 0), 0);
     openPrintWindow({
-      title: `تقرير أرصدة الفرع بعد الإقفال — ${branchName}`,
-      subtitle: `الجرد الشهري لـ ${monthLabel} — تم الإقفال في ${p.closedAt ? new Date(p.closedAt).toLocaleString('ar-SA-u-nu-latn') : '—'}`,
+      title: `أرصدة الفرع — ${getBranchName(p.branchId)}`,
+      subtitle: `جرد ${monthLabelFor(p.monthKey)} · ${p.status === 'closed' ? 'مُقفل' : 'قيد الجرد'}`,
       meta: [
-        ['الفرع', branchName],
-        ['الشهر', monthLabel],
-        ['تاريخ الإقفال', p.closedAt ? new Date(p.closedAt).toLocaleString('ar-SA-u-nu-latn') : '—'],
-        ['أُغلق بواسطة', p.closedBy || '—'],
-        ['إجمالي الأصناف', totalItems.toString()],
-        ['إجمالي الكمية', `${fmt(totalQty)}`],
-        ['إجمالي القيمة', `${fmtMoney(totalValue)}`],
+        ['الفرع', getBranchName(p.branchId)],
+        ['الشهر', monthLabelFor(p.monthKey)],
+        ['عدد الأصناف', String(filled.length)],
+        ['إجمالي الكمية', fmt(totalQty)],
+        ['إجمالي القيمة', fmtMoney(totalValue)],
+        ['الحالة', p.status === 'closed' ? 'مُقفل' : 'قيد الجرد'],
       ],
       tables: [{
-        title: 'تفاصيل الأرصدة حسب الصنف',
-        header: ['#', 'الصنف', 'الوحدة', 'الكمية المعدودة', 'متوسط السعر (ر.س)', 'القيمة الإجمالية (ر.س)'],
-        rows: sortByCode(p.items).map((it, idx) => [
-          idx + 1,
+        title: 'أرصدة الفرع حسب الجرد',
+        header: ['الصنف', 'الوحدة', 'الكمية', 'السعر', 'الإجمالي'],
+        rows: filled.map((it) => [
           it.itemName,
-          it.unit,
+          it.unit || '—',
           fmt(it.countedQty),
           fmt(it.unitCost, 2),
-          fmtMoney(it.countedQty * it.unitCost),
+          fmtMoney((it.countedQty || 0) * (it.unitCost || 0)),
         ]),
       }],
       totals: [
-        ['إجمالي الأصناف', totalItems.toString()],
-        ['إجمالي الكمية', `${fmt(totalQty)}`],
-        ['إجمالي القيمة', `${fmtMoney(totalValue)}`],
+        ['إجمالي الكمية', fmt(totalQty)],
+        ['إجمالي القيمة', fmtMoney(totalValue)],
       ],
-      footer: 'تقرير أرصدة الفرع بعد إقفال الجرد الشهري — صادر من RestoCost ERP',
+      footer: 'أرصدة الفرع كما وردت في الجرد — RestoCost ERP Pro',
     });
   };
-
-  const confirmCloseId = confirmClose ? monthlyInventory.find((p) => p.id === confirmClose) : null;
 
   // ── إقفال الشهر مع تطبيق التسوية على المخزون ──
 // الفرق بين الدفتري (theoreticalQty) والفعلي (countedQty) يعدّل المخزون:
@@ -227,13 +227,14 @@ const closeWithSettlement = (id: string) => {
                   <td className="p-3 font-mono">{fmt(p.totalUsageVariance)}</td>
                   <td className="p-3 font-mono font-extrabold text-amber-700">{fmtMoney(p.totalVarianceCost)}</td>
                   <td className="p-3">
-                    <div className="flex gap-1">
-                      <button onClick={() => openActive(p)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إدخال الأعداد / التعديل"><Calculator className="w-4 h-4" /></button>
-                      {p.status === 'counting' && <button onClick={() => setConfirmClose(p.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="إقفال الشهر"><Lock className="w-4 h-4" /></button>}
-                      {p.status === 'counting' && can('delete_data') && <button onClick={() => requestDeleteCount(p)} className="p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg" title="حذف (مسموح فقط قبل الإقفال)"><Trash2 className="w-4 h-4" /></button>}
-                      {p.status === 'closed' && can('delete_data') && <button onClick={() => requestReopen(p)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="فتح الفترة والتعديل"><Unlock className="w-4 h-4" /></button>}
-                      <button onClick={() => printReport(p)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة التقرير"><Printer className="w-4 h-4" /></button>
-                    </div>
+<div className="flex gap-1 items-center">
+                       <button onClick={() => openActive(p)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إدخال الأعداد / التعديل"><Calculator className="w-4 h-4" /></button>
+                       {p.status === 'counting' && <button onClick={() => setConfirmClose(p.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="إقفال الشهر"><Lock className="w-4 h-4" /></button>}
+                       {p.status === 'counting' && can('delete_data') && <button onClick={() => requestDeleteCount(p)} className="p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 rounded-lg" title="حذف (مسموح فقط قبل الإقفال)"><Trash2 className="w-4 h-4" /></button>}
+                       {p.status === 'closed' && can('delete_data') && <button onClick={() => requestReopen(p)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="فتح الفترة والتعديل"><Unlock className="w-4 h-4" /></button>}
+                       <button onClick={() => printBranchBalances(p)} className="text-[11px] font-bold text-primary-600 hover:underline whitespace-nowrap" title="طباعة أرصدة الفرع كما وردت في الجرد">طباعة الأرصدة</button>
+                       <button onClick={() => printReport(p)} className="text-[11px] font-bold text-primary-600 hover:underline whitespace-nowrap" title="طباعة تقرير الجرد التفصيلي">التقرير</button>
+                     </div>
                   </td>
                 </tr>
               ))}
@@ -315,9 +316,9 @@ const closeWithSettlement = (id: string) => {
               </table>
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2">
+<div className="flex justify-end gap-2 pt-2">
             <Btn tone="ghost" onClick={() => setConfirmClose(null)}>إلغاء</Btn>
-            <Btn tone="dark" onClick={() => { if (confirmCloseId) printBranchInventoryReport(confirmCloseId); }}><Printer className="w-4 h-4" /> طباعة تقرير الأرصدة</Btn>
+            <Btn tone="dark" onClick={() => confirmCloseId && printBranchBalances(confirmCloseId)}><Printer className="w-4 h-4" /> طباعة أرصدة الفرع</Btn>
             <Btn tone="danger" onClick={() => { if (confirmCloseId) closeWithSettlement(confirmCloseId.id); }}><Lock className="w-4 h-4" /> تأكيد الإقفال</Btn>
           </div>
         </div>
