@@ -123,15 +123,16 @@ const MobileCountView: React.FC = () => {
 
   const buildItems = () => buildCountItems(mats, counts, theoMap);
 
-  // نموذج جرد فارغ مطابق لـ printCurrentCount: الصنف، الوحدة، الكمية
-  // بوحدة المخزون، وخانة فارغة للمعدود. بلا رصيد نظامي ولا فرق ولا ملاحظات.
+  // نموذج جرد فارغ مطابق لـ printCurrentCount: الكود، الصنف، الوحدة،
+  // المعدود، ملاحظات — بلا رصيد نظامي ولا فرق.
   const printBlankSheet = () => {
     if (!branchId) { showToast('اختر الفرع أولاً'); return; }
     const branchMats = mats;
     const rows = branchMats.map((m) => [
+      m.id,
       m.nameAr,
       m.unit || '',
-      (theoMap[m.id] || 0).toFixed(2),   // الكمية بوحدة المخزون
+      '',
       '',
     ]);
     openPrintWindow({
@@ -145,29 +146,30 @@ const MobileCountView: React.FC = () => {
         ['ملاحظة', 'عبّئ خانة «المعدود» يدوياً ثم أدخل الأرقام في التطبيق'],
       ],
       tables: [{
-        title: 'قائمة الجرد اليدوي',
-        header: ['الصنف', 'الوحدة', 'الكمية (نظامي)', 'المعدود'],
+        title: 'تفاصيل الجرد',
+        header: ['الكود', 'الصنف', 'الوحدة', 'المعدود', 'ملاحظات'],
         rows,
       }],
       footer: `نموذج جرد فارغ — RestoCost ERP Pro (${branchMats.length} صنفاً)`,
     });
   };
 
-  // طباعة نموذج الجرد الميداني: الصنف والوحدة والكمية بوحدة المخزون فقط.
-  // لا تُعرض الأرصدة النظامية ولا الفروق ولا الهدر — النموذج يُملأ يدوياً
-  // على الورق ثم تُدخَل الأرقام، فعرض النظامي يفسد العدّاد (يميل للمطابقة).
+  // طباعة تفاصيل الجرد المُدخَل: الكود، الصنف، الوحدة، المعدود، ملاحظات.
+  // بلا رصيد نظامي ولا فرق — النموذج ورقي يُملأ ثم تُدخَل أرقامه، وعرض النظامي
+  // يميل العدّاد للمطابقة بدل العدّ المستقل.
   const printCurrentCount = () => {
     if (!branchId) { showToast('اختر الفرع أولاً'); return; }
     const items = buildItems();
     if (!items.length) { showToast('لا توجد أصناف معدة للطباعة'); return; }
     const rows = items.map((i) => [
+      i.rawMaterialId,
       i.itemName,
       i.unit,
-      i.countedStorage.toFixed(2),   // الكمية بوحدة المخزون كما تُكتب في النموذج
-      '',                            // خانة المعدود (تُملأ يدوياً)
+      i.countedStorage.toFixed(2),   // الكمية بوحدة المخزون
+      '',
     ]);
     openPrintWindow({
-      title: `نموذج جرد ميداني — ${getBranchName(branchId)}`,
+      title: `تفاصيل الجرد — ${getBranchName(branchId)}`,
       subtitle: `${fmtDateLong(countDate)} — العداد: ${currentUser?.name || '—'}`,
       meta: [
         ['الفرع', getBranchName(branchId)],
@@ -177,8 +179,8 @@ const MobileCountView: React.FC = () => {
         ['ملاحظة', 'عبّئ خانة «المعدود» يدوياً ثم أدخل الأرقام في التطبيق'],
       ],
       tables: [{
-        title: 'قائمة الجرد',
-        header: ['الصنف', 'الوحدة', 'الكمية (نظامي)', 'المعدود'],
+        title: 'تفاصيل الجرد',
+        header: ['الكود', 'الصنف', 'الوحدة', 'المعدود', 'ملاحظات'],
         rows,
       }],
       footer: 'نموذج جرد ميداني — RestoCost ERP Pro',
