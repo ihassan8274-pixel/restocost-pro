@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { useSyncStore } from '@stores/syncStore';
 import { stockPerPurchase, purchaseUnitName } from '../../business/units';
 import { CountEntry, blankCountEntry, cleanCountInput, countFilled, buildCountItems } from '../../business/counting';
-import { fmtMoney, downloadCSV } from '../../utils/helpers';
+import { downloadCSV } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
 import { useAdminDelete, AdminDeleteModal } from '../../hooks';
 import { PageHeader, TabBar, Btn, inputCls, StatCard } from '../ui';
@@ -187,33 +187,32 @@ const MobileCountView: React.FC = () => {
     });
   };
 
+  // سجل جرد محفوظ — بنفس أعمدة نموذج الجرد الميداني:
+  // الكود، الصنف، الوحدة، المعدود، ملاحظات. بلا النظامي ولا الفرق ولا الهدر،
+  // اتساقاً مع printCurrentCount/printBlankSheet.
   const printRecord = (rec: typeof dailyCounts[number]) => {
     const rows = rec.items.map((it) => [
       it.rawMaterialId,
       it.itemName,
       it.unit,
-      it.theoreticalQty.toFixed(2),
       it.countedQty.toFixed(2),
-      (it.countedQty - it.theoreticalQty).toFixed(2),
-      it.consumedQty > 0 ? `هدر: ${it.consumedQty.toFixed(2)} ${it.unit}` : '',
+      '',
     ]);
     openPrintWindow({
-      title: `جرد يومي — ${getBranchName(rec.branchId)}`,
+      title: `تفاصيل الجرد — ${getBranchName(rec.branchId)}`,
       subtitle: `${fmtDateLong(rec.date)} — العداد: ${rec.countedBy || '—'}`,
       meta: [
         ['الفرع', getBranchName(rec.branchId)],
         ['التاريخ', fmtDateLong(rec.date)],
         ['القائم بالجرد', rec.countedBy || '—'],
-        ['الأصناف', String(rec.items.length)],
-        ['المستهلك (كمية)', rec.totalConsumedQty.toFixed(2)],
-        ['قيمة الهدر', fmtMoney(rec.totalConsumedValue)],
+        ['عدد الأصناف', String(rec.items.length)],
       ],
       tables: [{
         title: 'تفاصيل الجرد',
-        header: ['الكود', 'الصنف', 'الوحدة', 'النظامي', 'المعدود', 'الفرق', 'ملاحظات'],
+        header: ['الكود', 'الصنف', 'الوحدة', 'المعدود', 'ملاحظات'],
         rows,
       }],
-      footer: `جرد سريع — RestoCost ERP Pro`,
+      footer: 'جرد — RestoCost ERP Pro',
     });
   };
 
@@ -392,13 +391,7 @@ const MobileCountView: React.FC = () => {
               <div className="bg-slate-50 rounded-xl p-2"><p className="text-[10px] text-slate-500">الأصناف</p><p className="font-extrabold text-slate-800">{viewingRecord.items.length}</p></div>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Btn tone="dark" onClick={() => openPrintWindow({
-                title: `جرد يومي — ${getBranchName(viewingRecord.branchId)}`,
-                subtitle: `${fmtDateLong(viewingRecord.date)} — المُعدّ: ${viewingRecord.countedBy || '—'}`,
-                meta: [['تاريخ', fmtDateLong(viewingRecord.date)], ['الفرع', getBranchName(viewingRecord.branchId)], ['القائم بالجرد', viewingRecord.countedBy || '—'], ['عدد الأصناف', String(viewingRecord.items.length)]],
-                tables: [{ title: 'تفاصيل الجرد', header: ['الصنف', 'النظامي', 'المعدود', 'الفرق', 'الوحدة'], rows: viewingRecord.items.map((it) => [it.itemName, it.theoreticalQty.toFixed(2), it.countedQty.toFixed(2), `${it.countedQty - it.theoreticalQty > 0 ? '+' : ''}${(it.countedQty - it.theoreticalQty).toFixed(2)}`, it.unit]) }],
-                footer: 'جرد سريع — RestoCost ERP Pro',
-              })}><Printer className="w-4 h-4" /> PDF</Btn>
+              <Btn tone="dark" onClick={() => printRecord(viewingRecord)}><Printer className="w-4 h-4" /> PDF</Btn>
               <Btn tone="ghost" onClick={() => downloadCSV(`جرد_${viewingRecord.date}.csv`, ['الصنف', 'النظامي', 'المعدود', 'الفرق', 'الوحدة', 'تكلفة الوحدة', 'قيمة الاستهلاك'], viewingRecord.items.map((it) => [it.itemName, it.theoreticalQty, it.countedQty, it.countedQty - it.theoreticalQty, it.unit, it.unitCost, it.consumedValue]))}><FileDown className="w-4 h-4" /> Excel</Btn>
               <Btn tone="success" onClick={() => {
                 const txt = `جرد يومي — ${getBranchName(viewingRecord.branchId)}\nالتاريخ: ${fmtDateLong(viewingRecord.date)}\nالقائم بالجرد: ${viewingRecord.countedBy || '—'}\n\nالأصناف: ${viewingRecord.items.length}\n\n${'─'.repeat(30)}\n${viewingRecord.items.map((it) => {
