@@ -253,7 +253,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
             RestoCost ERP Pro v2.2
             {/* بصمة البناء: تُظهر للمستخدم أي نسخة تعمل أمامه فعلاً. بدونها
                 يستحيل تمييز «نافذة قديمة لم تُحدَّث» عن «النشر لم يصل». */}
-            <span className="block mt-0.5 tnum" dir="ltr" title="بصمة البناء الحالية — لو اختلفت عن/build فالحالة على الشاشة قديمة">
+            <span className="block mt-0.5 tnum" dir="ltr" title="بصمة البناء التي تعمل عليها هذه الصفحة. قارنها ببصمة /health على السيرفر: اختلافهما يعني أن الصفحة أقدم من المنشور.">
               build {typeof BUILD_STAMP === 'string' ? BUILD_STAMP : '—'}
             </span>
           </p>

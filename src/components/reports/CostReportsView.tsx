@@ -2,7 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { BarChart as BarIcon, TrendingDown, TrendingUp, Printer, Receipt, Sparkles } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useApp } from '../../context/AppContext';
-import { Card, PageHeader, TabBar, Btn, inputCls } from '../ui';
+import { Card, Btn, inputCls } from '../ui';
+import {
+  ErpPanel, ErpPageHeader, ErpButton, ErpKpi, ErpTabs,
+} from '../ui/erp';
 import { ViewToolbar } from '../ui/ViewToolbar';
 import { fmt, fmtMoney, downloadCSV, EXPENSE_CATEGORY_LABELS } from '../../utils/helpers';
 import { captureCharts, openPrintWindow } from '../../utils/print';
@@ -335,26 +338,82 @@ export const CostReportsView: React.FC = () => {
     });
   };
 
+  // ── مساعدات صف الإجمالي ──
+  // كان جدول الفروع بلا صف إجمالي. الفروع 17 موزّعة على أكثر من شاشة، فيضطر
+  // المستخدم للتحقق من المجموع ذهنياً أو عبر التصدير.
+
+  const sumBranch = (k: 'rev' | 'fc' | 'labor' | 'exp' | 'was' | 'total' | 'profit') =>
+    branchDetail.reduce((s, b) => s + (Number(b[k]) || 0), 0);
+
+  const pctOfRevenue = (v: number) =>
+    (monthlyRevenue ? (v / monthlyRevenue) * 100 : 0).toFixed(2);
+
   return (
-    <div className="space-y-6">
-      <PageHeader title="تقارير التكاليف المتطورة" subtitle="تحليل تكلفة الطعام، الضريبة، تفصيل الفروع، المصاريف، والهوالك مع تصدير شامل" icon={<BarIcon className="w-6 h-6 text-indigo-300" />}
-        actions={<>
-          <ViewToolbar filename="تقارير_التكاليف_الشاملة" sheets={exportSheets} />
-          <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة تقرير شامل</Btn>
-          <Btn onClick={() => setAiOpen(true)}><Sparkles className="w-4 h-4" /> تحليل ذكي</Btn>
-          <Btn tone="ghost" onClick={() => downloadCSV('CostReport.csv', ['البند', 'القيمة'], [['الإيراد', monthlyRevenue], ['تكلفة الطعام', monthlyFoodCost], ['التشغيلية', monthlyExpenses], ['العمالة', monthlyLabor], ['الهوالك', monthlyWastage]])}><TrendingDown className="w-4 h-4" /> تصدير CSV</Btn>
-        </>} />
+    <div className="space-y-4">
+      {/* ═════ الترويسة + المؤشرات + التبويبات (نمط ERP الموحّد — docs/design/03) ═════
+          كانت PageHeader عامة فوق شبكة بطاقات مكتوبة يدوياً، فبقيت المؤشرات بلا
+          ترقيم جدولي ولا لون دلالّي موحّد مع باقي النظام. */}
+      <ErpPanel>
+        <ErpPageHeader
+          icon={<BarIcon className="w-6 h-6" />}
+          title="تقارير التكاليف المتطورة"
+          subtitle="تحليل تكلفة الطعام، الضريبة، تفصيل الفروع، المصاريف، والهوالك"
+          actions={
+            <>
+              <ViewToolbar filename="تقارير_التكاليف_الشاملة" sheets={exportSheets} />
+              <ErpButton onClick={printReport}>
+                <Printer className="w-3.5 h-3.5" /> طباعة شامل
+              </ErpButton>
+              <ErpButton variant="primary" onClick={() => setAiOpen(true)}>
+                <Sparkles className="w-3.5 h-3.5" /> تحليل ذكي
+              </ErpButton>
+              <ErpButton
+                onClick={() => downloadCSV('CostReport.csv', ['البند', 'القيمة'], [['الإيراد', monthlyRevenue], ['تكلفة الطعام', monthlyFoodCost], ['التشغيلية', monthlyExpenses], ['العمالة', monthlyLabor], ['الهوالك', monthlyWastage]])}
+              >
+                <TrendingDown className="w-3.5 h-3.5" /> CSV
+              </ErpButton>
+            </>
+          }
+        />
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">Food Cost</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${fcPct > 35 ? 'text-rose-600' : 'text-emerald-700'}`}>{fcPct.toFixed(2)}%</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">التكاليف التشغيلية</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{overheadPct.toFixed(2)}%</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تكلفة العمالة</span><strong className="text-lg font-extrabold font-mono text-violet-700 block mt-1">{monthlyRevenue ? ((monthlyLabor / monthlyRevenue) * 100).toFixed(2) : '0.0'}%</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي التكلفة %</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{totalCostPct.toFixed(2)}%</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">هامش الربح</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{(100 - totalCostPct).toFixed(2)}%</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">ضريبة مشتريات</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(vatSummary.vat)}</strong></div>
-      </div>
+        <div className="px-6 pb-5 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          <ErpKpi
+            label="Food Cost"
+            value={`${fcPct.toFixed(2)}%`}
+            sub={fcPct > 35 ? 'أعلى من المستهدف 35%' : 'ضمن المستهدف (<35%)'}
+            subTone={fcPct > 35 ? 'down' : 'up'}
+            highlight={fcPct <= 35}
+          />
+          <ErpKpi label="التكاليف التشغيلية" value={`${overheadPct.toFixed(2)}%`} sub="من الإيراد" />
+          <ErpKpi
+            label="تكلفة العمالة"
+            value={`${(monthlyRevenue ? (monthlyLabor / monthlyRevenue) * 100 : 0).toFixed(2)}%`}
+            sub="من الإيراد"
+          />
+          <ErpKpi label="إجمالي التكلفة" value={`${totalCostPct.toFixed(2)}%`} sub="تكلفة + تشغيلية + عمالة" />
+          <ErpKpi
+            label="هامش الربح"
+            value={`${(100 - totalCostPct).toFixed(2)}%`}
+            sub={100 - totalCostPct >= 0 ? 'إيراد − إجمالي التكلفة' : 'خسارة'}
+            subTone={100 - totalCostPct >= 0 ? 'up' : 'down'}
+            highlight={100 - totalCostPct >= 0}
+          />
+          <ErpKpi label="ضريبة مشتريات" value={fmtMoney(vatSummary.vat)} sub={`إجمالي ${fmtMoney(vatSummary.gross)}`} />
+        </div>
 
-      <TabBar tabs={[{ id: 'costs', label: 'تكلفة الطعام' }, { id: 'branches', label: 'تفصيل الفروع' }, { id: 'vat', label: 'ضريبة المشتريات 15%' }, { id: 'recipes', label: 'تكلفة الأطباق' }, { id: 'expenses', label: 'المصاريف' }, { id: 'wastage', label: 'الهوالك' }]} active={tab} onChange={(id) => setTab(id as TabId)} />
+        <ErpTabs
+          tabs={[
+            { id: 'costs', label: 'تكلفة الطعام' },
+            { id: 'branches', label: 'تفصيل الفروع', badge: branchDetail.length || undefined },
+            { id: 'vat', label: 'ضريبة المشتريات', badge: vatRows.length || undefined },
+            { id: 'recipes', label: 'تكلفة الأطباق' },
+            { id: 'expenses', label: 'المصاريف' },
+            { id: 'wastage', label: 'الهوالك' },
+          ]}
+          active={tab}
+          onChange={(id) => setTab(id as TabId)}
+        />
+      </ErpPanel>
 
       {tab === 'costs' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -402,26 +461,43 @@ export const CostReportsView: React.FC = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                <tr><th className="p-2">الفرع</th><th className="p-2">الإيراد</th><th className="p-2">تكلفة الطعام</th><th className="p-2">FC %</th><th className="p-2">العمالة</th><th className="p-2">التشغيلية</th><th className="p-2">الهوالك</th><th className="p-2">إجمالي التكاليف</th><th className="p-2">الربح</th><th className="p-2">الهامش %</th></tr>
+              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
+                {/* الأرقام: tnum + محاذاة يسار (قاعدة النظام) */}
+                <tr><th className="p-2 text-right">الفرع</th><th className="p-2 text-left">الإيراد</th><th className="p-2 text-left">تكلفة الطعام</th><th className="p-2 text-left">FC %</th><th className="p-2 text-left">العمالة</th><th className="p-2 text-left">التشغيلية</th><th className="p-2 text-left">الهوالك</th><th className="p-2 text-left">إجمالي التكاليف</th><th className="p-2 text-left">الربح</th><th className="p-2 text-left">الهامش %</th></tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-line/60">
                 {branchDetail.map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50">
                     <td className="p-2 font-extrabold text-slate-900">{b.name}</td>
-                    <td className="p-2 font-mono font-bold">{fmt(b.rev, 0)}</td>
-                    <td className="p-2 font-mono">{fmt(b.fc, 0)}</td>
-                    <td className="p-2 font-mono font-bold">{b.fcPct.toFixed(2)}%</td>
-                    <td className="p-2 font-mono">{fmt(b.labor, 0)}</td>
-                    <td className="p-2 font-mono">{fmt(b.exp, 0)}</td>
-                    <td className="p-2 font-mono text-rose-700">{fmt(b.was, 0)}</td>
-                    <td className="p-2 font-mono font-extrabold">{fmt(b.total, 0)}</td>
-                    <td className={`p-2 font-mono font-extrabold ${b.profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmt(b.profit, 0)}</td>
-                    <td className={`p-2 font-mono font-extrabold ${b.margin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{b.margin.toFixed(2)}%</td>
+                    <td className="p-2 text-left tnum font-bold">{fmt(b.rev, 0)}</td>
+                    <td className="p-2 text-left tnum">{fmt(b.fc, 0)}</td>
+                    <td className="p-2 text-left tnum font-bold">{b.fcPct.toFixed(2)}%</td>
+                    <td className="p-2 text-left tnum">{fmt(b.labor, 0)}</td>
+                    <td className="p-2 text-left tnum">{fmt(b.exp, 0)}</td>
+                    <td className="p-2 text-left tnum text-rose-700">{fmt(b.was, 0)}</td>
+                    <td className="p-2 text-left tnum font-extrabold">{fmt(b.total, 0)}</td>
+                    <td className={`p-2 text-left tnum font-extrabold ${b.profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmt(b.profit, 0)}</td>
+                    <td className={`p-2 text-left tnum font-extrabold ${b.margin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{b.margin.toFixed(2)}%</td>
                   </tr>
                 ))}
                 {branchDetail.length === 0 && <tr><td colSpan={10} className="p-6 text-center text-slate-400 text-xs">لا توجد بيانات فروع</td></tr>}
               </tbody>
+              {branchDetail.length > 0 && (
+                <tfoot>
+                  <tr className="bg-slate-50 border-t-2 border-line">
+                    <td className="px-3 py-2.5 font-bold text-slate-700">الإجمالي</td>
+                    <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">{fmt(sumBranch('rev'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">{fmt(sumBranch('fc'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">{pctOfRevenue(sumBranch('fc'))}%</td>
+                    <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">{fmt(sumBranch('labor'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">{fmt(sumBranch('exp'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-bold text-rose-700">{fmt(sumBranch('was'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-extrabold text-slate-900">{fmt(sumBranch('total'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-extrabold text-slate-900">{fmt(sumBranch('profit'), 0)}</td>
+                    <td className="px-2 py-2.5 text-left tnum font-extrabold text-slate-900">{pctOfRevenue(sumBranch('profit'))}%</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </Card>

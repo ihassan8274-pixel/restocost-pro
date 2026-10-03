@@ -150,7 +150,7 @@ export const ErpRowActions: React.FC<{
   /** نصّ بارز — الإجراء الرئيسي (تفاصيل) */
   primaryLabel?: string;
   onPrimary?: () => void;
-  /** procedure أخرىكنصّ (طباعة) */
+  /** إجراءات أخرى كنصّ بارز (طباعة) */
   secondaryLabels?: { label: string; onClick: () => void }[];
   /** أ��ونات — إجراءات ثانوية */
   iconActions?: { icon: React.ReactNode; title: string; onClick: () => void }[];
@@ -207,12 +207,20 @@ export const ErpTable = <T,>({
   selectedKey?: string;
   emptyMessage?: string;
   footer?: React.ReactNode;
-  actionsColumn?: React.ReactNode;
+  /**
+   * عمود الإجراءات. دالة أو عقدة واحدة تُعاد في كل صف.
+   * كان عقدة واحدة فقط، فكل الصفوف كانت تعرض *نفس* الأزرار — أي زر «تفاصيل»
+   * يفتح أول سجل في القائمة لا الذي أمامك.
+   */
+  actionsColumn?: React.ReactNode | ((row: T, index: number) => React.ReactNode);
 }) => {
   const cellAlign = (c: ErpColumn<T>) =>
     c.align === 'left' ? 'text-left' : c.align === 'center' ? 'text-center' : 'text-right';
   const cellCls = (c: ErpColumn<T>) =>
     `px-3.5 py-3 text-xs border-b border-line/60 ${cellAlign(c)} ${c.numeric ? 'tnum' : ''}`;
+  const actionsFor = (row: T, i: number) =>
+    typeof actionsColumn === 'function' ? actionsColumn(row, i) : actionsColumn;
+  const hasActions = actionsColumn !== undefined && actionsColumn !== null;
 
   return (
     <table className="w-full">
@@ -223,12 +231,12 @@ export const ErpTable = <T,>({
               {c.header}
             </th>
           ))}
-          {actionsColumn && <th className="px-3.5 py-3 text-center text-[11px] font-bold text-slate-500 border-b border-line">إجراءات</th>}
+          {hasActions && <th className="px-3.5 py-3 text-center text-[11px] font-bold text-slate-500 border-b border-line">إجراءات</th>}
         </tr>
       </thead>
       <tbody>
         {rows.length === 0 && (
-          <tr><td colSpan={columns.length + (actionsColumn ? 1 : 0)} className="px-4 py-8 text-center text-slate-400 text-xs font-bold">{emptyMessage}</td></tr>
+          <tr><td colSpan={columns.length + (hasActions ? 1 : 0)} className="px-4 py-8 text-center text-slate-400 text-xs font-bold">{emptyMessage}</td></tr>
         )}
         {rows.map((row, i) => {
           const k = rowKey(row);
@@ -243,7 +251,7 @@ export const ErpTable = <T,>({
                   {c.render(row, i)}
                 </td>
               ))}
-              {actionsColumn && <td className="px-3.5 py-3 text-center">{actionsColumn}</td>}
+              {hasActions && <td className="px-3.5 py-3 text-center">{actionsFor(row, i)}</td>}
             </tr>
           );
         })}
