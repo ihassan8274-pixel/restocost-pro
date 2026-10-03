@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { PackageSearch, Plus, BadgeCheck, Truck, XCircle, Printer, Send, Ban, PackagePlus, RotateCcw, Package, ChevronDown, ChevronUp } from 'lucide-react';
+﻿import React, { useState } from 'react';
+import { PackageSearch, Plus, BadgeCheck, Truck, XCircle, Send, Ban, PackagePlus, RotateCcw, Package, ChevronDown, ChevronUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, PageHeader, Btn, Modal, Field, inputCls, StatusPill, CurrencySelect, AutocompleteSelect, EmptyState } from '../ui';
 import { SignaturePad } from '../ui/SignaturePad';
@@ -173,50 +173,62 @@ export const PurchaseOrdersView: React.FC = () => {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-              <tr><th className="p-3">رقم PO</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">الطلب</th><th className="p-3">المتوقع</th><th className="p-3">الأصناف</th><th className="p-3">المبلغ</th><th className="p-3">العملة</th><th className="p-3">الحالة</th><th className="p-3">إجراءات</th></tr>
+            <thead className="bg-slate-50 text-slate-500 border-b border-line">
+              {/* الأرقام (الطلب/المتوقع/الأصناف/المبلغ) محاذاة يسار + tnum */}
+              <tr><th className="p-3 text-right">رقم PO</th><th className="p-3 text-right">المورد</th><th className="p-3 text-right">الفرع</th><th className="p-3 text-left">الطلب</th><th className="p-3 text-left">المتوقع</th><th className="p-3 text-left">الأصناف</th><th className="p-3 text-left">المبلغ</th><th className="p-3 text-left">العملة</th><th className="p-3 text-center">الحالة</th><th className="p-3 text-center">إجراءات</th></tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line/60">
               {filtered.map((p) => (
                 <React.Fragment key={p.id}>
-                <tr className={`hover:bg-slate-50 cursor-pointer ${expandedPo === p.id ? 'bg-indigo-50/40' : ''}`} onClick={() => setExpandedPo((cur) => (cur === p.id ? null : p.id))}>
-                  <td className="p-3 font-mono font-bold text-indigo-700 flex items-center gap-1.5">{expandedPo === p.id ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />} {p.poNumber}</td>
+                {/* الصف لا يفتح بالنقر — قاعدة النظام: الفتح بزر «تفاصيل» صريح. كان
+                    onClick على الصف، فينفتح أثناء سحب النص أو نقر عابر. */}
+                <tr className={`hover:bg-slate-50 ${expandedPo === p.id ? 'bg-primary-50/50' : ''}`}>
+                  <td className="p-3 font-mono font-bold text-primary-700">{p.poNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{p.supplierName}</td>
                   <td className="p-3 text-slate-600">{p.branchId === 'b-ck' ? 'المطبخ المركزي' : p.branchId}</td>
-                  <td className="p-3 font-mono text-slate-600">{p.orderDate}</td>
-                  <td className="p-3 font-mono text-slate-600">{p.expectedDate}</td>
-                  <td className="p-3 font-bold">{p.items.length}</td>
-                  <td className="p-3 font-mono font-extrabold text-slate-900">{fmtMoney(p.totalAmount)}</td>
-                  <td className="p-3 font-mono text-amber-700">{p.currencyCode || 'SAR'}</td>
+                  <td className="p-3 text-left tnum text-slate-600">{p.orderDate}</td>
+                  <td className="p-3 text-left tnum text-slate-600">{p.expectedDate}</td>
+                  <td className="p-3 text-left tnum font-bold">{p.items.length}</td>
+                  <td className="p-3 text-left tnum font-extrabold text-slate-900">{fmtMoney(p.totalAmount)}</td>
+                  <td className="p-3 text-left tnum text-amber-700">{p.currencyCode || 'SAR'}</td>
                   <td className="p-3"><StatusPill status={p.status} map={PO_STATUS_LABELS} /></td>
                   <td className="p-3">
-                    <div className="flex gap-1">
+                    <div className="flex items-center justify-center gap-2">
+                      {/* الأيقونات للثانوي (اعتماد/رفض/استلام)، والنصّ للرئيسي.
+                          فلا حاجة لـstopPropagation بعد إزالة نقر الصف. */}
                       {p.status === 'draft' && (
                         <>
-                          <button onClick={(e) => { e.stopPropagation(); updatePurchaseOrder(p.id, { status: 'submitted', approvedBy: undefined }); }} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إرسال للاعتماد"><Send className="w-4 h-4" /></button>
-                          <button onClick={(e) => { e.stopPropagation(); updatePurchaseOrder(p.id, { status: 'cancelled' }); }} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="إلغاء المسودة"><XCircle className="w-4 h-4" /></button>
+                          <button onClick={() => updatePurchaseOrder(p.id, { status: 'submitted', approvedBy: undefined })} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إرسال للاعتماد"><Send className="w-4 h-4" /></button>
+                          <button onClick={() => updatePurchaseOrder(p.id, { status: 'cancelled' })} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="إلغاء المسودة"><XCircle className="w-4 h-4" /></button>
                         </>
                       )}
                       {p.status === 'submitted' && (
                         <>
                           {can('approve_purchase_orders') && (
                             <>
-                              <button onClick={(e) => { e.stopPropagation(); setSignPo(p); setSignature(null); }} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="اعتماد"><BadgeCheck className="w-4 h-4" /></button>
-                              <button onClick={(e) => { e.stopPropagation(); updatePurchaseOrder(p.id, { status: 'rejected', approvedBy: currentUser?.name || 'المدير' }); }} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="رفض"><Ban className="w-4 h-4" /></button>
+                              <button onClick={() => { setSignPo(p); setSignature(null); }} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="اعتماد"><BadgeCheck className="w-4 h-4" /></button>
+                              <button onClick={() => updatePurchaseOrder(p.id, { status: 'rejected', approvedBy: currentUser?.name || 'المدير' })} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="رفض"><Ban className="w-4 h-4" /></button>
                             </>
                           )}
                         </>
                       )}
                       {(p.status === 'approved' || p.status === 'partially_received') && (
                         <>
-                          <button onClick={(e) => { e.stopPropagation(); openPartialReceive(p); }} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="استلام جزئي"><PackagePlus className="w-4 h-4" /></button>
-                          <button onClick={(e) => { e.stopPropagation(); receivePurchaseOrder(p.id); }} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="استلام كامل ورفع للمخزون"><Truck className="w-4 h-4" /></button>
+                          <button onClick={() => openPartialReceive(p)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="استلام جزئي"><PackagePlus className="w-4 h-4" /></button>
+                          <button onClick={() => receivePurchaseOrder(p.id)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="استلام كامل ورفع للمخزون"><Truck className="w-4 h-4" /></button>
                         </>
                       )}
                       {(p.status === 'cancelled' || p.status === 'rejected') && can('delete_data') && (
-                        <button onClick={(e) => { e.stopPropagation(); updatePurchaseOrder(p.id, { status: 'cancelled' }); }} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="إلغاء"><XCircle className="w-4 h-4" /></button>
+                        <button onClick={() => updatePurchaseOrder(p.id, { status: 'cancelled' })} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="إلغاء"><XCircle className="w-4 h-4" /></button>
                       )}
-                      <button onClick={(e) => { e.stopPropagation(); printPO(p); }} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة احترافية"><Printer className="w-4 h-4" /></button>
+                      <button onClick={() => printPO(p)} className="text-[11px] font-bold text-primary-600 hover:underline">طباعة</button>
+                      <button
+                        onClick={() => setExpandedPo((cur) => (cur === p.id ? null : p.id))}
+                        className="text-[11px] font-bold text-primary-600 hover:underline inline-flex items-center gap-1"
+                      >
+                        {expandedPo === p.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        تفاصيل
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -285,37 +297,70 @@ export const PurchaseOrdersView: React.FC = () => {
               <span className="font-bold text-slate-700">أصناف الأمر</span>
               <Btn onClick={addItem}><Plus className="w-3.5 h-3.5" /> إضافة صنف</Btn>
             </div>
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-7 gap-2 items-end bg-slate-50 border border-slate-200 rounded-xl p-2">
-                <div className="col-span-2">
-                  <AutocompleteSelect
-                    value={item.rawMaterialId}
-                    onChange={(val) => { const m = rawMaterials.find((x) => x.id === val); updateItem(idx, { rawMaterialId: val, materialName: m?.nameAr || '', unit: m?.unit || '' }); }}
-                    options={rawMaterials.filter(m => m.isActive).map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
-                    getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
-                    placeholder="— اختر مادة خام —"
-                    className="w-full"
-                  />
-                </div>
-                <input type="number" min="0" step="any" data-nav value={item.quantity || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                  const qty = parseFloat(e.currentTarget.value) || 0;
-                  updateItem(idx, { quantity: qty, lineTotal: qty * (item.unitPrice || 0) });
-                }} onKeyDown={navOnEnter} className={inputCls} placeholder="الكمية" />
-                <span className="text-center text-slate-500 text-[10px] pt-2">{item.unit}</span>
-                <input type="number" min="0" step="any" data-nav value={item.unitPrice || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                  const price = parseFloat(e.currentTarget.value) || 0;
-                  updateItem(idx, { unitPrice: price, lineTotal: (item.quantity || 0) * price });
-                }} onKeyDown={navOnEnter} className={inputCls} placeholder="السعر" />
-                <input type="number" min="0" step="any" data-nav value={item.lineTotal || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                  const total = parseFloat(e.currentTarget.value) || 0;
-                  const qty = item.quantity || 0;
-                  updateItem(idx, { lineTotal: total, unitPrice: qty > 0 ? total / qty : 0 });
-                }} onKeyDown={navOnEnter} className={inputCls} placeholder="الإجمالي" />
-                <div className="flex items-center justify-between">
-                  <button type="button" onClick={() => setItems(items.filter((_, i) => i !== idx))} className="text-rose-500 hover:text-rose-700 p-1">✕</button>
-                </div>
+            {items.length > 0 && (
+              <div className="border border-line rounded-xl overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 w-9 text-center">#</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-right">المادة الخام</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-center w-24">الكمية</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-center w-16">الوحدة</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-center w-28">سعر الوحدة</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-left w-28">الإجمالي</th>
+                      <th className="px-2 py-2 w-9" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/60">
+                        <td className="px-2 py-1 text-center mono text-slate-400 text-xs">{idx + 1}</td>
+                        <td className="px-2 py-1">
+                          <AutocompleteSelect
+                            value={item.rawMaterialId}
+                            onChange={(val) => { const m = rawMaterials.find((x) => x.id === val); updateItem(idx, { rawMaterialId: val, materialName: m?.nameAr || '', unit: m?.unit || '' }); }}
+                            options={rawMaterials.filter(m => m.isActive).map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
+                            getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
+                            placeholder="— اختر مادة خام —"
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="px-2 py-1">
+                          <input type="number" min="0" step="any" data-nav value={item.quantity || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                            const qty = parseFloat(e.currentTarget.value) || 0;
+                            updateItem(idx, { quantity: qty, lineTotal: qty * (item.unitPrice || 0) });
+                          }} onKeyDown={navOnEnter} className={inputCls + ' text-center tnum'} placeholder="الكمية" />
+                        </td>
+                        <td className="px-2 py-1 text-center text-xs text-slate-600">{item.unit || '—'}</td>
+                        <td className="px-2 py-1">
+                          <input type="number" min="0" step="any" data-nav value={item.unitPrice || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                            const price = parseFloat(e.currentTarget.value) || 0;
+                            updateItem(idx, { unitPrice: price, lineTotal: (item.quantity || 0) * price });
+                          }} onKeyDown={navOnEnter} className={inputCls + ' text-center tnum'} placeholder="السعر" />
+                        </td>
+                        <td className="px-2 py-1">
+                          <input type="number" min="0" step="any" data-nav value={item.lineTotal || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                            const total = parseFloat(e.currentTarget.value) || 0;
+                            const qty = item.quantity || 0;
+                            updateItem(idx, { lineTotal: total, unitPrice: qty > 0 ? total / qty : 0 });
+                          }} onKeyDown={navOnEnter} className={inputCls + ' text-center tnum font-bold'} placeholder="الإجمالي" />
+                        </td>
+                        <td className="px-2 py-1 text-center">
+                          <button type="button" onClick={() => setItems(items.filter((_, i) => i !== idx))} className="text-rose-500 hover:text-rose-700 p-1">✕</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={5} className="px-3 py-2.5 text-right font-bold text-slate-600 text-xs bg-slate-50 border-t-2 border-line">الإجمالي</td>
+                      <td className="px-2 py-2.5 text-left tnum font-extrabold text-xs bg-slate-50 border-t-2 border-line">{fmtMoney(total)}</td>
+                      <td className="bg-slate-50 border-t-2 border-line" />
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-            ))}
+            )}
             {items.length === 0 && <p className="text-center text-slate-400 text-xs py-3">أضف أصنافاً للأمر</p>}
           </div>
 

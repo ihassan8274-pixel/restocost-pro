@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo, useEffect } from 'react';
 import { RotateCcw, Plus, CheckCircle2, XCircle, Printer, Pencil, Send, Ban, Search, Shield } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, PageHeader, Btn, Modal, Field, inputCls, AutocompleteSelect, DocumentFingerprint } from '../ui';
@@ -301,24 +301,25 @@ export const SupplierReturnsView: React.FC = () => {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-              <tr><th className="p-3 w-10"><input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(filtered.map((r) => r.id))); else setSelectedIds(new Set()); }} /></th><th className="p-3">رقم الإرجاع</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">التاريخ</th><th className="p-3">السبب</th><th className="p-3">الأصناف</th><th className="p-3">الإجمالي</th><th className="p-3">العملة</th><th className="p-3">الحالة</th><th className="p-3">إجراءات</th></tr>
+            <thead className="bg-slate-50 text-slate-500 border-b border-line">
+              {/* الأرقام (التاريخ/الأصناف/الإجمالي/العملة) محاذاة يسار + tnum */}
+              <tr><th className="p-3 w-10"><input type="checkbox" checked={filtered.length > 0 && selectedIds.size === filtered.length} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(filtered.map((r) => r.id))); else setSelectedIds(new Set()); }} /></th><th className="p-3 text-right">رقم الإرجاع</th><th className="p-3 text-right">المورد</th><th className="p-3 text-right">الفرع</th><th className="p-3 text-left">التاريخ</th><th className="p-3 text-right">السبب</th><th className="p-3 text-left">الأصناف</th><th className="p-3 text-left">الإجمالي</th><th className="p-3 text-left">العملة</th><th className="p-3 text-center">الحالة</th><th className="p-3 text-center">إجراءات</th></tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line/60">
               {filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} /></td>
-                  <td className="p-3 font-mono font-bold text-indigo-700">{r.returnNumber}</td>
+                  <td className="p-3 font-mono font-bold text-primary-700">{r.returnNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{r.supplierName}</td>
                   <td className="p-3 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
-                  <td className="p-3 font-mono text-slate-600">{r.date}</td>
+                  <td className="p-3 text-left tnum text-slate-600">{r.date}</td>
                   <td className="p-3 text-slate-600 max-w-xs truncate" title={r.reason}>{r.reason}</td>
-                  <td className="p-3 font-bold">{r.items.length}</td>
-                  <td className="p-3 font-mono font-extrabold text-slate-900">{fmtMoney(r.totalAmount)}</td>
-                  <td className="p-3 font-mono text-amber-700">{r.currencyCode || 'SAR'}</td>
+                  <td className="p-3 text-left tnum font-bold">{r.items.length}</td>
+                  <td className="p-3 text-left tnum font-extrabold text-slate-900">{fmtMoney(r.totalAmount)}</td>
+                  <td className="p-3 text-left tnum text-amber-700">{r.currencyCode || 'SAR'}</td>
                   <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${RETURN_STATUS_COLORS[r.status]}`}>{RETURN_STATUS_LABELS[r.status]}</span></td>
                   <td className="p-3">
-                    <div className="flex gap-1 items-center">
+                    <div className="flex gap-2 items-center justify-center">
                       {r.status === 'draft' && (
                         <div className="flex gap-1">
                           {can('approve_purchase_orders') && <button onClick={() => updateSupplierReturn(r.id, { status: 'submitted' })} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إرسال للمراجعة"><Send className="w-4 h-4" /></button>}
@@ -330,14 +331,14 @@ export const SupplierReturnsView: React.FC = () => {
                         <div className="flex gap-1">
                           {can('approve_purchase_orders') && <button onClick={() => approveSupplierReturn(r.id)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="اعتماد نهائي (يخفض المخزون)"><Shield className="w-4 h-4" /></button>}
                           <button onClick={() => updateSupplierReturn(r.id, { status: 'rejected' })} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="رفض"><Ban className="w-4 h-4" /></button>
-                          <button onClick={() => printReturns([r])} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
+                          <button onClick={() => printReturns([r])} className="text-[11px] font-bold text-primary-600 hover:underline">طباعة</button>
                         </div>
                       )}
                       {r.status === 'approved' && (
                         <div className="flex gap-1">
                           <span className="text-emerald-600"><CheckCircle2 className="w-4 h-4 inline" /> معتمد</span>
                           <button onClick={() => { if (confirm('إعادة ترحيل هذا الإرجاع؟ سيُنشأ حركات مخزون وقيود محاسبية جديدة.')) reprocessSupplierReturn(r.id); }} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إعادة ترحيل (إنشاء حركات مخزون)"><RotateCcw className="w-4 h-4" /></button>
-                          <button onClick={() => printReturns([r])} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
+                          <button onClick={() => printReturns([r])} className="text-[11px] font-bold text-primary-600 hover:underline">طباعة</button>
                         </div>
                       )}
                       {r.status === 'rejected' && <span className="text-rose-600"><XCircle className="w-4 h-4 inline" /> مرفوض</span>}
@@ -347,6 +348,22 @@ export const SupplierReturnsView: React.FC = () => {
               ))}
               {filtered.length === 0 && <tr><td colSpan={11} className="p-8 text-center text-slate-500 font-bold">لا توجد إخطارات إرجاع</td></tr>}
             </tbody>
+            {/* صف الإجمالي — كان مفقوداً: عند التصفية على فرع أو حالة يرى
+                المستخدمSubset لا يعرف قيمته الإجمالية إلا عبر التصدير. */}
+            {filtered.length > 0 && (
+              <tfoot>
+                <tr className="bg-slate-50 border-t-2 border-line">
+                  <td className="px-2 py-2.5" />
+                  <td className="px-3 py-2.5 font-bold text-slate-700">
+                    الإجمالي <span className="tnum text-slate-500">({filtered.length})</span>
+                  </td>
+                  <td colSpan={3} className="px-2 py-2.5" />
+                  <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">{filtered.reduce((s, r) => s + r.items.length, 0)}</td>
+                  <td className="px-2 py-2.5 text-left tnum font-extrabold text-slate-900">{fmtMoney(filtered.reduce((s, r) => s + (r.totalAmount || 0), 0))}</td>
+                  <td colSpan={3} className="px-2 py-2.5" />
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </Card>
@@ -436,22 +453,56 @@ export const SupplierReturnsView: React.FC = () => {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between"><span className="font-bold text-slate-700">الأصناف المرتجعة</span><Btn onClick={addItem}><Plus className="w-3.5 h-3.5" /> إضافة صنف</Btn></div>
-            {editItems.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-6 gap-2 items-end bg-slate-50 border border-slate-200 rounded-xl p-2">
-                <div className="col-span-2"><AutocompleteSelect
-                    value={item.rawMaterialId}
-                    onChange={(val) => { const m = rawMaterials.find((x) => x.id === val); updItem(idx, { rawMaterialId: val, itemName: m?.nameAr || '', unit: m?.unit || '' }); }}
-                    options={rawMaterials.filter(m => m.isActive).map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
-                    getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
-                    placeholder="— اختر مادة خام —"
-                    className="w-full"
-                  /></div>
-                <input type="number" min="0" step="any" value={item.quantity || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => { const q = parseFloat(e.currentTarget.value) || 0; updItem(idx, { quantity: q, lineTotal: (item.unitPrice || 0) * q }); }} className={inputCls} placeholder="الكمية" />
-                <input type="number" min="0" step="any" value={item.unitPrice || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => { const p = parseFloat(e.currentTarget.value) || 0; updItem(idx, { unitPrice: p, lineTotal: (item.quantity || 0) * p }); }} className={inputCls} placeholder="سعر الوحدة" />
-                <input type="number" min="0" step="any" value={item.lineTotal || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => { const total = parseFloat(e.currentTarget.value) || 0; const qty = item.quantity || 0; updItem(idx, { lineTotal: total, unitPrice: qty > 0 ? total / qty : 0 }); }} className={inputCls} placeholder="الإجمالي" />
-                <button type="button" onClick={() => setEditItems(editItems.filter((_, i) => i !== idx))} className="text-rose-500 hover:text-rose-700 p-1">✕</button>
+            {editItems.length > 0 && (
+              <div className="border border-line rounded-xl overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 w-9 text-center">#</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-right">المادة الخام</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-center w-24">الكمية</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-center w-28">سعر الوحدة</th>
+                      <th className="px-2 py-2 text-[10px] font-bold text-slate-500 text-left w-28">الإجمالي</th>
+                      <th className="px-2 py-2 w-9" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {editItems.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/60">
+                        <td className="px-2 py-1 text-center mono text-slate-400 text-xs">{idx + 1}</td>
+                        <td className="px-2 py-1"><AutocompleteSelect
+                            value={item.rawMaterialId}
+                            onChange={(val) => { const m = rawMaterials.find((x) => x.id === val); updItem(idx, { rawMaterialId: val, itemName: m?.nameAr || '', unit: m?.unit || '' }); }}
+                            options={rawMaterials.filter(m => m.isActive).map((m) => ({ value: m.id, label: m.nameAr, code: m.code }))}
+                            getOptionLabel={(opt) => `${opt.code} - ${opt.label}`}
+                            placeholder="— اختر مادة خام —"
+                            className="w-full"
+                          /></td>
+                        <td className="px-2 py-1">
+                          <input type="number" min="0" step="any" value={item.quantity || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => { const q = parseFloat(e.currentTarget.value) || 0; updItem(idx, { quantity: q, lineTotal: (item.unitPrice || 0) * q }); }} className={inputCls + ' text-center tnum'} placeholder="الكمية" />
+                        </td>
+                        <td className="px-2 py-1">
+                          <input type="number" min="0" step="any" value={item.unitPrice || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => { const p = parseFloat(e.currentTarget.value) || 0; updItem(idx, { unitPrice: p, lineTotal: (item.quantity || 0) * p }); }} className={inputCls + ' text-center tnum'} placeholder="السعر" />
+                        </td>
+                        <td className="px-2 py-1">
+                          <input type="number" min="0" step="any" value={item.lineTotal || ''} onInput={(e: React.FormEvent<HTMLInputElement>) => { const total = parseFloat(e.currentTarget.value) || 0; const qty = item.quantity || 0; updItem(idx, { lineTotal: total, unitPrice: qty > 0 ? total / qty : 0 }); }} className={inputCls + ' text-center tnum font-bold'} placeholder="الإجمالي" />
+                        </td>
+                        <td className="px-2 py-1 text-center">
+                          <button type="button" onClick={() => setEditItems(editItems.filter((_, i) => i !== idx))} className="text-rose-500 hover:text-rose-700 p-1">✕</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={4} className="px-3 py-2.5 text-right font-bold text-slate-600 text-xs bg-slate-50 border-t-2 border-line">الإجمالي قبل الضريبة</td>
+                      <td className="px-2 py-2.5 text-left tnum font-extrabold text-xs bg-slate-50 border-t-2 border-line">{fmtMoney(calcTotalsWithVat(editItems)._subtotal)}</td>
+                      <td className="bg-slate-50 border-t-2 border-line" />
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-            ))}
+            )}
             {editItems.length === 0 && <p className="text-center text-slate-400 text-xs py-3">أضف أصنافاً للإرجاع</p>}
           </div>
 
