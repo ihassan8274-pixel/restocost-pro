@@ -106,6 +106,54 @@ const createPgStore = async (prisma) => {
   let rev = 0;
   const bootAt = Date.now();
 
+  // ---- تخصيص أرقام المستندات (حجز ذرّي) ----
+  // أرقام المستندات كانت تُولَّد في العميل من max+1 محلي ⇒ جهازان يكتبان في
+  // اللحظة نفسها فيأخذان الرقم نفسه (وقع: GRN-2026-0394 بمعرّفين). الخادم
+  // هنا هو المصدر الوحيد للحق: يحجز تسلسلاً تصاعدياً ويضمن التفرّد.
+  // المخزون: prefix→{seq,year,boot}. الإقلاع: من أعلى رقم فعلي في البيانات.
+  const docSeq = new Map();
+  const docSeqStamp = (prefix, year) => `${prefix}|${year}`;
+
+  const bumpDocSeq = (prefix, year, count) => {
+    const k = docSeqStamp(prefix, year);
+    const cur = docSeq.get(k);
+    const startFrom = cur && cur.year === year ? cur.seq : 0;
+    docSeq.set(k, { seq: startFrom + count, year });
+  };
+
+  /** أعلى تسلسل موجود فعلاً لهذا البادئة (من البيانات نفسها) — يملأ الفجوات. */
+  const seedDocSeqFromData = (prefix) => {
+    const re = new RegExp(`^${prefix}-(\\d{4})-(\\d+)$`);
+    const years = new Map();
+    for (const arr of kv.values()) {
+      if (!Array.isArray(arr)) continue;
+      for (const r of arr) {
+        const num = r && (r.grnNumber || r.poNumber || r.requestNumber || r.returnNumber || r.transferNumber || r.reqNumber || r.batchNumber || r.docNo);
+        if (typeof num !== 'string') continue;
+        const m = num.match(re);
+        if (!m) continue;
+        const year = Number(m[1]);
+        const v = Number(m[2]);
+        const cur = years.get(year) || 0;
+        if (v > cur) years.set(year, v);
+      }
+    }
+    for (const [year, seq] of years) docSeq.set(docSeqStamp(prefix, year), { seq, year });
+    return years.size;
+  };
+
+  const reserveDocNumbers = (prefix, count = 1, year = new Date().getFullYear()) => {
+    const k = docSeqStamp(prefix, year);
+    const cur = docSeq.get(k);
+    const from = cur && cur.year === year ? cur.seq + 1 : 1;
+    const to = from + count - 1;
+    docSeq.set(k, { seq: to, year });
+    const pad = (v) => String(v).padStart(4, '0');
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(`${prefix}-${year}-${pad(from + i)}`);
+    return out;
+  };
+
   // ---- CDC: change-data-capture log (تعويض الاعتماد على _mtime) ----
   // كل كتابة (set/delete) تُسجَّل بنسخة seq متزايدة في جدول change_log عبر
   // نفس قائمة الكتابة التسلسلية — فيأخذها الجهاز "ما تغيّر" بدل سحب الكل.
@@ -294,6 +342,7 @@ const createPgStore = async (prisma) => {
     getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany,
     cdcSince, pruneChangeLog,
     getKvMeta, seedKvSeqFromLog,
+    reserveDocNumbers, seedDocSeqFromData, bumpDocSeq,
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
@@ -347,6 +396,47 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
 
   let rev = 0;
   const bootAt = Date.now();
+
+  // ---- تخصيص أرقام المستندات (مثل PG): الخادم المصدر الوحيد للحق ----
+  const docSeq = new Map();
+  const docSeqStamp = (prefix, year) => `${prefix}|${year}`;
+  const bumpDocSeq = (prefix, year, count) => {
+    const k = docSeqStamp(prefix, year);
+    const cur = docSeq.get(k);
+    const startFrom = cur && cur.year === year ? cur.seq : 0;
+    docSeq.set(k, { seq: startFrom + count, year });
+  };
+  const seedDocSeqFromData = (prefix) => {
+    const re = new RegExp(`^${prefix}-(\\d{4})-(\\d+)$`);
+    const years = new Map();
+    for (const arr of db.prepare('SELECT key, value FROM kv').all()) {
+      let parsed;
+      try { parsed = JSON.parse(arr.value); } catch { continue; }
+      if (!Array.isArray(parsed)) continue;
+      for (const r of parsed) {
+        const num = r && (r.grnNumber || r.poNumber || r.requestNumber || r.returnNumber || r.transferNumber || r.reqNumber || r.batchNumber || r.docNo);
+        if (typeof num !== 'string') continue;
+        const m = num.match(re);
+        if (!m) continue;
+        const year = Number(m[1]); const v = Number(m[2]);
+        const cur = years.get(year) || 0;
+        if (v > cur) years.set(year, v);
+      }
+    }
+    for (const [year, seq] of years) docSeq.set(docSeqStamp(prefix, year), { seq, year });
+    return years.size;
+  };
+  const reserveDocNumbers = (prefix, count = 1, year = new Date().getFullYear()) => {
+    const k = docSeqStamp(prefix, year);
+    const cur = docSeq.get(k);
+    const from = cur && cur.year === year ? cur.seq + 1 : 1;
+    const to = from + count - 1;
+    docSeq.set(k, { seq: to, year });
+    const pad = (v) => String(v).padStart(4, '0');
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(`${prefix}-${year}-${pad(from + i)}`);
+    return out;
+  };
 
   // ---- CDC log (مثل PG): كل كتابة تُسجَّل بنسخة متزايدة ----
   let cdcNext = 1;
@@ -450,6 +540,7 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
     pg: false,
     getKV, setKV, deleteKV, kvKeysByPrefix, kvEntriesByPrefix, setKVMany, cdcSince, pruneChangeLog,
     getKvMeta, seedKvSeqFromLog,
+    reserveDocNumbers, seedDocSeqFromData, bumpDocSeq,
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
@@ -469,7 +560,7 @@ let backend = null; // set by init()
 
 const façade = {};
 const M = [
-  'getKV', 'setKV', 'deleteKV', 'kvKeysByPrefix', 'kvEntriesByPrefix', 'setKVMany', 'cdcSince', 'pruneChangeLog', 'getKvMeta', 'seedKvSeqFromLog',
+  'getKV', 'setKV', 'deleteKV', 'kvKeysByPrefix', 'kvEntriesByPrefix', 'setKVMany', 'cdcSince', 'pruneChangeLog', 'getKvMeta', 'seedKvSeqFromLog', 'reserveDocNumbers', 'seedDocSeqFromData', 'bumpDocSeq',
   'createSession', 'deleteSession', 'deleteSessionsByUser', 'deleteOtherSessions',
   'purgeAllSessions', 'purgeExpiredSessions', 'sessionRow',
   'rateLimitGet', 'rateLimitRegisterFailure', 'rateLimitClear', 'purgeExpiredRateLimits',

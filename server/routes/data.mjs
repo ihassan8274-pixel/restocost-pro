@@ -918,6 +918,26 @@ if (key === 'rcerp_recent_docs') {
     }
   });
 
+  // تخصيص أرقام المستندات: الخادم المصدر الوحيد للحق. العميل كان يحسب
+  // max+1 من نسخته المحلية ⇒ جهازان في اللحظة نفسها يأخذان رقماً واحداً.
+  // POST /api/doc-seq {prefix, count, year?} ⇒ أرقام محجوزة لا تتكرر.
+  app.post('/api/doc-seq', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    const prefix = String(req.body?.prefix || '');
+    const count = Math.min(Math.max(Number(req.body?.count) || 1, 1), 50);
+    const year = Number(req.body?.year) || new Date().getFullYear();
+    if (!/^[A-Z]{2,4}$/.test(prefix)) {
+      return res.status(400).json({ ok: false, error: 'بادئة غير صالحة (2-4 حروف كبيرة)' });
+    }
+    // الأدوار الإدارية فقط: تخصيص أرقام مستند رسمية.
+    if (user.role !== 'admin' && user.role !== 'executive' && user.role !== 'branch_manager') {
+      return res.status(403).json({ ok: false, error: 'غير مصرح — تخصيص أرقام المستندات للإدارة' });
+    }
+    const nums = store.reserveDocNumbers(prefix, count, year);
+    res.json({ ok: true, prefix, year, numbers: nums });
+  });
+
   // ---- نقطة صحة الإدارة (P1.6) ----
   app.get('/api/admin/health', (req, res) => {
     const user = sessionUser(readToken(req));

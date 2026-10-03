@@ -293,6 +293,11 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   // فهرس آخر seq لكل مفتاح: يجعل /api/bootstrap?since=N يعمل بعد إعادة التشغيل
   // (بلا ذلك كانت data فارغة دوماً في وضع delta فالمزامنة التلقائية معطّلة).
   try { await store.seedKvSeqFromLog(); } catch (e) { console.error('[store] seedKvSeq failed:', e && (e.message || e)); }
+  // تهيئة تسلسلات أرقام المستندات من أعلى رقم فعلي في البيانات — حتى لا تبدأ
+  // الترقيم من 0001 وت collide مع مستند قديم.
+  for (const prefix of ['GRN', 'PO', 'PR', 'RET', 'TRF', 'ISS']) {
+    try { store.seedDocSeqFromData(prefix); } catch { /* tolerate */ }
+  }
   setInterval(() => { try { store.pruneChangeLog(); } catch (e) { console.error('[store] periodic prune failed:', e && (e.message || e)); } }, 6 * 3600 * 1000).unref();
 
   const bindHost = readBindHost();
