@@ -1,10 +1,11 @@
-import React, { Fragment, useMemo, useState } from 'react';
+﻿import React, { Fragment, useMemo, useState } from 'react';
 import {
   ChevronDown, ChevronLeft, Truck, Package, BarChart3, ClipboardList, ChevronsDownUp, ChevronsUpDown,
-  FileSpreadsheet, FileDown, Printer, Loader2, Filter, BadgeCheck, TrendingUp, TrendingDown, CalendarRange, Search,
+  FileSpreadsheet, FileDown, Printer, Loader2, BadgeCheck, TrendingUp, TrendingDown, Search,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, Btn } from '../ui';
+import { ErpPanel, ErpField, ErpInput, ErpButton } from '../ui/erp';
 import { fmt, fmtMoney, PO_STATUS_LABELS } from '../../utils/helpers';
 import { exportPDF } from '../../utils/pdf';
 import { openPrintWindow } from '../../utils/print';
@@ -430,7 +431,12 @@ export const PurchasesReportView: React.FC = () => {
   );
 
   const th = 'p-2 text-right whitespace-nowrap';
-  const thC = 'bg-slate-100 text-slate-700 font-bold border-b border-slate-200';
+  // رأس الجدول: رمز تصميم واحد. كان هذا النمط مكتوباً ثلاث مرات مكرراً
+  // hard-coded، وجدتولان بلون بنفسجي في نفس الشاشة — فثمانية جداول على شاشة
+  // واحدة بثلاثة أنماط رأس مختلفة.
+  const thC = 'bg-slate-50 text-slate-500 font-bold border-b border-line';
+  // الأرقام: tnum + محاذاة يسار (قاعدة النظام)
+  const tdN = 'p-2 text-left tnum whitespace-nowrap';
   const inputCls = 'border border-slate-300 rounded-lg p-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white';
   const chipCls = 'rounded-full px-3 py-1 text-[11px] font-bold border transition-colors';
 
@@ -438,34 +444,37 @@ export const PurchasesReportView: React.FC = () => {
     <div className="space-y-4">
       {msg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl p-3">{msg}</div>}
 
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Filter className="w-4 h-4 text-indigo-500" />
-          <span className="text-[11px] font-bold text-slate-500">الفترة:</span>
-          <CalendarRange className="w-4 h-4 text-slate-400" />
-          <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className={inputCls} title="من تاريخ" />
-          <span className="text-[11px] font-bold text-slate-500">إلى</span>
-          <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className={inputCls} title="إلى تاريخ" />
-          {(from || to) && <button onClick={() => { setFrom(''); setTo(''); }} className="text-[11px] font-bold text-rose-500 hover:underline">مسح الفترة</button>}
-          <span className="w-full" />
+      <ErpPanel>
+        <div className="flex flex-wrap items-end gap-3 px-6 py-4">
+          <ErpField label="الفترة" className="w-52">
+            <div className="flex items-center gap-2">
+              <ErpInput type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} />
+              <span className="text-[11px] font-bold text-slate-500">إلى</span>
+              <ErpInput type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} />
+            </div>
+          </ErpField>
+          {(from || to) && <ErpButton onClick={() => { setFrom(''); setTo(''); }} className="text-rose-600">مسح الفترة</ErpButton>}
+
+          <div className="flex-1" />
+
           <span className="text-[11px] font-bold text-slate-500">الفروع / مراكز التكلفة:</span>
           <button
             onClick={() => setBranchSel([])}
-            className={`${chipCls} ${branchSel.length === 0 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'}`}
+            className={`${chipCls} ${branchSel.length === 0 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-slate-600 border-line hover:border-primary-300'}`}
           >كل الفروع</button>
           {branches.map((b) => {
             const on = branchSel.includes(b.id);
             return (
-              <button key={b.id} onClick={() => toggleBranch(b.id)} className={`${chipCls} ${on ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'}`}>
+              <button key={b.id} onClick={() => toggleBranch(b.id)} className={`${chipCls} ${on ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-slate-600 border-line hover:border-primary-300'}`}>
                 {getBranchName(b.id)}
               </button>
             );
           })}
-          <span className="w-full" />
+          <div className="w-full" />
           <span className="text-[11px] font-bold text-slate-500">الأصناف:</span>
           <button
             onClick={() => setItemSel([])}
-            className={`${chipCls} ${itemSel.length === 0 ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-slate-300 hover:border-emerald-400'}`}
+            className={`${chipCls} ${itemSel.length === 0 ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-600 border-line hover:border-emerald-400'}`}
           >كل الأصناف</button>
           <div className="relative">
             <button
@@ -508,8 +517,9 @@ export const PurchasesReportView: React.FC = () => {
           </div>
           <span className="text-[11px] font-bold text-slate-500">كل الأصناف في الفترة ({itemOptions.length})</span>
           <span className="w-full" />
-          <span className="text-[11px] font-bold text-indigo-600">{approvedGrns.length} فاتورة · {articleStats.length} صنف · إجمالي {fmtMoney(grandGross)}</span>
-          {devStats.length > 0 && <span className="text-[11px] font-bold text-amber-600">أقصى انحراف سعر: {devStats[0].spreadPct.toFixed(1)}% ({devStats[0].name})</span>}
+          <div className="flex-1" />
+          <span className="text-[11px] font-bold text-primary-700 tnum">{approvedGrns.length} فاتورة · {articleStats.length} صنف · إجمالي {fmtMoney(grandGross)}</span>
+          {devStats.length > 0 && <span className="text-[11px] font-bold text-amber-600 tnum">أقصى انحراف سعر: {devStats[0].spreadPct.toFixed(1)}% ({devStats[0].name})</span>}
           <div className="flex-1" />
           <Btn onClick={() => setAll(true)}><ChevronsUpDown className="w-4 h-4" /> فتح الكل</Btn>
           <Btn onClick={() => setAll(false)}><ChevronsDownUp className="w-4 h-4" /> طي الكل</Btn>
@@ -517,7 +527,7 @@ export const PurchasesReportView: React.FC = () => {
           <Btn tone="success" onClick={exportPdf} disabled={pdfBusy}>{pdfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />} PDF</Btn>
           <Btn tone="dark" onClick={printAll}><Printer className="w-4 h-4" /> طباعة</Btn>
         </div>
-      </Card>
+      </ErpPanel>
 
       {/* 0. تحليل انحراف الأسعار حسب الصنف */}
       <SectionShell id="deviation" title="تحليل انحراف الأسعار حسب الصنف (Price Variance Analysis)" subtitle={`مدى سعر كل صنف خلال الفترة + تفصيل بكل فرع — تنبيه عند انحراف يتجاوز ${DEV_THRESHOLD}% عن المتوسط`} icon={<TrendingUp className="w-5 h-5 text-violet-500" />} badgeCount={onlyDev ? `${deviatingItems.length}/${devStats.length} منحرف` : `${devStats.length} صنف`} onPartPrint={() => printPart('deviation')}>
@@ -544,7 +554,7 @@ export const PurchasesReportView: React.FC = () => {
               {isOpen('deviation', d.name) && (
                 <div className="mt-1 overflow-x-auto">
                   <table className="w-full text-xs min-w-max">
-                    <thead><tr className="bg-violet-50 text-violet-800 font-bold border-b border-violet-100"><th className={th}>مؤشر</th><th className={th}>عدد مرات الشراء</th><th className={th}>الكمية</th><th className={th}>أول سعر</th><th className={th}>آخر سعر</th><th className={th}>أدنى سعر</th><th className={th}>أعلى سعر</th><th className={th}>المتوسط (المرجح)</th><th className={th}>مدى السعر</th><th className={th}>الانحراف %</th></tr></thead>
+                    <thead><tr className={thC}><th className={th}>مؤشر</th><th className={th}>عدد مرات الشراء</th><th className={th}>الكمية</th><th className={th}>أول سعر</th><th className={th}>آخر سعر</th><th className={th}>أدنى سعر</th><th className={th}>أعلى سعر</th><th className={th}>المتوسط (المرجح)</th><th className={th}>مدى السعر</th><th className={th}>الانحراف %</th></tr></thead>
                     <tbody className="divide-y divide-slate-100">
                       <tr className="hover:bg-slate-50">
                         <td className="p-2 whitespace-nowrap font-bold text-slate-700">الإجمالي</td>
@@ -566,7 +576,7 @@ export const PurchasesReportView: React.FC = () => {
                     <div className="mt-2">
                       <p className="text-[10px] font-extrabold text-slate-400 mb-1">تفصيل الانحراف حسب الفرع / مركز التكلفة (اضغط على الفرع لعرض إيصالات الاستلام):</p>
                       <table className="w-full text-xs min-w-max">
-                        <thead><tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><th className={th}>الفرع</th><th className={th}>مرات الشراء</th><th className={th}>الكمية</th><th className={th}>أدنى</th><th className={th}>أعلى</th><th className={th}>المتوسط</th><th className={th}>الانحراف %</th><th className={th}></th></tr></thead>
+                        <thead><tr className={thC}><th className={th}>الفرع</th><th className={th}>مرات الشراء</th><th className={th}>الكمية</th><th className={th}>أدنى</th><th className={th}>أعلى</th><th className={th}>المتوسط</th><th className={th}>الانحراف %</th><th className={th}></th></tr></thead>
                         <tbody className="divide-y divide-slate-100">
                           {d.branches.map((b) => {
                             const bOpen = isBranchOpen(d.id, b.branchId);
@@ -591,7 +601,7 @@ export const PurchasesReportView: React.FC = () => {
                                   <tr><td colSpan={8}>
                                     <div className="p-2 pr-6 bg-white/70">
                                       <table className="w-full text-[10px] min-w-max">
-                                        <thead><tr className="bg-violet-50 text-violet-800 font-bold"><th className={th}>رقم الإذن / الفاتورة</th><th className={th}>التاريخ</th><th className={th}>الكمية (بوحدة الشراء)</th><th className={th}>سعر الوحدة</th><th className={`${th} text-emerald-700`}>الإجمالي</th></tr></thead>
+                                        <thead><tr className={thC}><th className={th}>رقم الإذن / الفاتورة</th><th className={th}>التاريخ</th><th className={th}>الكمية (بوحدة الشراء)</th><th className={th}>سعر الوحدة</th><th className={`${th} text-emerald-700`}>الإجمالي</th></tr></thead>
                                         <tbody className="divide-y divide-slate-100">
                                           {b.receipts.map((r, ri) => (
                                             <tr key={ri} className={Math.abs(r.price - b.avg) / Math.max(0.0001, b.avg) > DEV_THRESHOLD / 100 ? 'bg-rose-50/60' : ''}>
@@ -735,7 +745,7 @@ export const PurchasesReportView: React.FC = () => {
       <SectionShell id="abc" title="تحليل المشتريات ABC (ABC Purchase Analysis)" subtitle="ترتيب الأصناف تنازلياً حسب قيمة المشتريات: A ≥70% تراكمي، B ≥90%، C الباقي" icon={<BarChart3 className="w-5 h-5 text-amber-500" />} badgeCount={`${abc.length} صنف`} onPartPrint={() => printPart('abc')}>
         <div className="mt-1 overflow-x-auto">
           <table className="w-full text-xs min-w-max">
-            <thead><tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><th className={th}>الترتيب</th><th className={th}>الصنف</th><th className={th}>الكمية</th><th className={th}>نسبة المواد %</th><th className={th}>قيمة المشتريات</th><th className={th}>التراكمي %</th><th className={th}>التصنيف</th></tr></thead>
+            <thead><tr className={thC}><th className={th}>الترتيب</th><th className={th}>الصنف</th><th className={th}>الكمية</th><th className={th}>نسبة المواد %</th><th className={th}>قيمة المشتريات</th><th className={th}>التراكمي %</th><th className={th}>التصنيف</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
               {abc.map((a) => (
                 <tr key={a.rank} className="hover:bg-slate-50">
@@ -752,7 +762,7 @@ export const PurchasesReportView: React.FC = () => {
             <tfoot>
               <tr className="bg-slate-800 text-white font-extrabold">
                 <td className="p-2"></td><td className="p-2">الإجمالي</td><td className="p-2 font-mono">{fmt(abc.reduce((s, a) => s + a.qty, 0))}</td>
-                <td className="p-2 font-mono">100%</td><td className="p-2 font-mono">{fmtMoney(grandGross)}</td><td className="p-2"></td>
+                <td className={tdN}>100%</td><td className={tdN}>{fmtMoney(grandGross)}</td><td className="p-2"></td>
                 <td className="p-2">
                   <span className="inline-flex gap-1 text-[10px]">
                     <span className="bg-emerald-100 text-emerald-700 rounded px-1.5 py-0.5">{abc.filter((a) => a.cls === 'A').length} A</span>
@@ -775,7 +785,7 @@ export const PurchasesReportView: React.FC = () => {
       <SectionShell id="receiving" title="الاستلام وفحص الجودة (Receiving & HACCP)" subtitle="ملخص استلام البضائع لكل مورد: عدد المستندات، نسبة الجودة المقبولة، ونسبة الدفعات HACCP" icon={<BadgeCheck className="w-5 h-5 text-rose-500" />} badgeCount={`${receivSummary.length} مورد`} onPartPrint={() => printPart('receiving')}>
         <div className="mt-1 overflow-x-auto">
           <table className="w-full text-xs min-w-max">
-            <thead><tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><th className={th}>المورد</th><th className={th}>مستندات الاستلام</th><th className={th}>الصافي</th><th className={th}>بند تم فحصه</th><th className={th}>جودة مقبولة %</th><th className={th}>دفعات HACCP %</th></tr></thead>
+            <thead><tr className={thC}><th className={th}>المورد</th><th className={th}>مستندات الاستلام</th><th className={th}>الصافي</th><th className={th}>بند تم فحصه</th><th className={th}>جودة مقبولة %</th><th className={th}>دفعات HACCP %</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
               {receivSummary.map((r) => (
                 <tr key={r.name} className="hover:bg-slate-50">
