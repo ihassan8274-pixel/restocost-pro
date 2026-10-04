@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { Lock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Permission } from '../../types';
@@ -37,7 +37,8 @@ export const StatCard: React.FC<{ label: string; value: string; sub?: string; to
   );
 };
 
-export const Modal: React.FC<{ open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean; xl?: boolean; closeOnOverlayClick?: boolean }> = ({ open, onClose, title, children, wide, xl, closeOnOverlayClick = true }) => {
+export const Modal: React.FC<{ open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean; xl?: boolean; /** عرض إضافي: 2xl أعرض substantially، full ملء الشاشة */
+  size?: '2xl' | 'full'; closeOnOverlayClick?: boolean }> = ({ open, onClose, title, children, wide, xl, size, closeOnOverlayClick = true }) => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -47,7 +48,7 @@ export const Modal: React.FC<{ open: boolean; onClose: () => void; title: string
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-warm-950/60 backdrop-blur-xs" onClick={closeOnOverlayClick ? onClose : undefined}>
-      <div className={`bg-surface relative overflow-hidden rounded-2xl ${xl ? 'max-w-6xl' : wide ? 'max-w-3xl' : 'max-w-lg'} w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto border border-line`} onClick={(e) => e.stopPropagation()}>
+      <div className={`bg-surface relative overflow-hidden rounded-2xl ${size === 'full' ? 'max-w-[97vw]' : size === '2xl' ? 'max-w-[1600px]' : xl ? 'max-w-6xl' : wide ? 'max-w-3xl' : 'max-w-lg'} w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto border border-line`} onClick={(e) => e.stopPropagation()}>
         <div className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full bg-gradient-to-br from-amber-400/25 via-amber-500/15 to-primary-600/25 blur-2xl" />
         <div className="flex items-center justify-between border-b border-line pb-3 sticky top-0 bg-surface z-10">
           <h3 className="text-lg font-bold text-slate-900">{title}</h3>

@@ -1,9 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { AutocompleteSelect } from '../ui/AutocompleteSelect';
 import { inputCls } from '../ui';
 import { XCircle } from 'lucide-react';
 import { fmt, fmtMoney, navOnEnter } from '../../utils/helpers';
 import { GoodsReceiptItem, RawMaterial } from '../../types';
+import { evalArithmetic, hasOperator } from '../../business/arithmetic';
 
 const fmtPrice = (n: number) => fmt(n, 4);
 
@@ -59,20 +60,23 @@ export const GrnItemsTable: React.FC<ItemsTableProps> = ({
         <span className="text-[11px] text-slate-500">الكمية بوحدة التخزين</span>
       </div>
 
-      {/* ── سطح المكتب: جدول حقيقي ── */}
-      <div className="overflow-x-auto hidden lg:block">
+      {/* ── سطح المكتب: جدول حقيقي ──
+              الرأس ملاصق (sticky) وأعمدة هوية الصنف مثبّتة يميناً. بدونها يختفي
+              اسم الصنف عند التمرير أفقياً أو نزولاً في جدول 20 صنفاً، فيصبح
+              الرقم 4,200.00 بلا معرفة صاحبه — وهو أسوأ من عدم وجود جدول. */}
+      <div className="overflow-auto max-h-[52vh] border border-line rounded-xl hidden lg:block">
         <table className="w-full">
-          <thead>
+          <thead className="sticky top-0 z-20 bg-slate-50">
             <tr>
-              <th className={head + ' w-9'}>#</th>
-              <th className={head + ' text-right'} style={{ minWidth: 190 }}>الصنف</th>
+              <th className={head + ' w-9 sticky right-0 z-10 bg-slate-50'}>#</th>
+              <th className={head + ' text-right sticky right-9 z-10 bg-slate-50'} style={{ minWidth: 190 }}>الصنف</th>
               <th className={head + ' text-center w-16'}>الوحدة</th>
-              <th className={head + ' text-center w-24'}>الكمية<br /><span className="font-normal text-amber-600">(وحدة التخزين)</span></th>
-              <th className={head + ' text-center w-24'}>سعر الوحدة</th>
-              <th className={head + ' text-left w-24'}>الإجمالي</th>
-              <th className={head + ' text-center w-28'}>تاريخ الانتهاء</th>
-              <th className={head + ' text-center w-20'}>الدفعة</th>
-              <th className={head + ' text-center w-14'}>جودة</th>
+              <th className={head + ' text-center w-28'}>الكمية<br /><span className="font-normal text-amber-600">(وحدة التخزين)</span></th>
+              <th className={head + ' text-center w-28'}>سعر الوحدة</th>
+              <th className={head + ' text-left w-28'}>الإجمالي</th>
+              <th className={head + ' text-center w-32'}>تاريخ الانتهاء</th>
+              <th className={head + ' text-center w-24'}>الدفعة</th>
+              <th className={head + ' text-center w-16'}>جودة</th>
               <th className={head + ' text-center w-9'} />
             </tr>
           </thead>
@@ -83,8 +87,8 @@ export const GrnItemsTable: React.FC<ItemsTableProps> = ({
               const k = keyOf(idx);
               return (
                 <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                  <td className={`${cell} text-center mono text-slate-400 text-xs`}>{idx + 1}</td>
-                  <td className={cell}>
+                  <td className={`${cell} text-center mono text-slate-400 text-xs sticky right-0 bg-surface`}>{idx + 1}</td>
+                  <td className={`${cell} sticky right-9 bg-surface`}>
                     <AutocompleteSelect
                       value={item.rawMaterialId}
                       onChange={(val: string) => {
@@ -99,15 +103,46 @@ export const GrnItemsTable: React.FC<ItemsTableProps> = ({
                   </td>
                   <td className={`${cell} text-center text-xs text-slate-600`}>{mat?.unit || '—'}</td>
                   <td className={cell}>
+                    {/* يقبل التعبير: «5*48» ⇒ 240. الأسعار بالكرتون لا
+                        بالوحدة، فالحساب المتكرر وقت الإدخال. يُقيَّم عند
+                       离开 الحقل لا أثناء الكتابة — لو قيّمنا كل ضغطة لاختفى
+                        التعبير قبل كتابته. */}
                     <input
                       type="text" inputMode="decimal" data-nav autoComplete="off"
                       value={draftVal(qtyKey(k), item.quantityReceived || '')}
                       onInput={(e: React.FormEvent<HTMLInputElement>) => onQty(idx, e.currentTarget.value)}
-                      onBlur={() => clearDraft(qtyKey(k))}
+                      onBlur={() => {
+                        // نُعيد حساب التعبير قبل مسح المسودّة، وإلا ضاع النصّ
+                        const raw = draftVal(qtyKey(k), '');
+                        if (raw && hasOperator(raw)) {
+                          const v = evalArithmetic(raw);
+                          if (v !== null) onQty(idx, String(v));
+                          else clearDraft(qtyKey(k));
+                        } else {
+                          clearDraft(qtyKey(k));
+                        }
+                      }}
                       onKeyDown={navOnEnter}
-                      className={inputCls + ' text-center font-mono'}
-                      placeholder="الكمية"
+                      className={inputCls + ' text-center tnum'}
+                      placeholder="الكمية أو 5*48"
                     />
+                    {(() => {
+                      const raw = draftVal(qtyKey(k), '');
+                      if (!raw || !hasOperator(raw)) return null;
+                      const v = evalArithmetic(raw);
+                      return (
+                        <div
+                          className={`text-[9px] font-bold border rounded-lg px-2 py-0.5 mt-1 text-center whitespace-nowrap ${
+                            v === null
+                              ? 'text-rose-700 bg-rose-50 border-rose-200'
+                              : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                          }`}
+                          title={v === null ? 'تعبير غير صالح' : 'نتيجة التعبير'}
+                        >
+                          {v === null ? 'غير صالح' : `= ${fmt(v, 3)}`}
+                        </div>
+                      );
+                    })()}
                     {conv && (
                       <div
                         className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-0.5 mt-1 text-center whitespace-nowrap"

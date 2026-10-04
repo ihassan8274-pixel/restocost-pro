@@ -117,7 +117,7 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
   );
 
   return (
-    <Modal open={p.open} onClose={p.onClose} title="إشعار استلام جديد" xl closeOnOverlayClick={false}>
+    <Modal open={p.open} onClose={p.onClose} title="إشعار استلام جديد" size="2xl" closeOnOverlayClick={false}>
       <div className="-mx-6 -my-4">
 
         {/* ═══ ① الترويسة + مسار الاعتماد ═══ */}
