@@ -166,7 +166,7 @@ const closeWithSettlement = (id: string) => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الجرد الشهري والإقفال" subtitle="كما في Oracle Material Control — جرد نظري/فعلي، قياس انحراف، وإقفال الشهر (يمنع أي حركة على الشهر المقفَل ويحوّل الفرق للمخزون وقيد محاسبي)" icon={<ClipboardCheck className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="الجرد الشهري والإقفال" subtitle="كما في Oracle Material Control — جرد نظري/فعلي، قياس انحراف، وإقفال الشهر (يمنع أي حركة على الشهر المقفَل ويحوّل الفرق للمخزون وقيد محاسبي)" icon={<ClipboardCheck className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar
             filename={`الجرد_الشهري_${month}`}

@@ -22,7 +22,7 @@ export const GuideView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="دليل الاستخدام" subtitle="دليل عملي لبدء استخدام النظام وتشغيل العمليات اليومية" icon={<BookOpen className="w-6 h-6 text-indigo-300" />} />
+      <PageHeader title="دليل الاستخدام" subtitle="دليل عملي لبدء استخدام النظام وتشغيل العمليات اليومية" icon={<BookOpen className="w-6 h-6 text-indigo-600" />} />
 
       <div className="flex items-start gap-3 bg-white border border-slate-200 rounded-2xl p-4">
         <Shield className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />

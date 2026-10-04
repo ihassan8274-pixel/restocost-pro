@@ -147,7 +147,7 @@ export const StockCoverView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تغطية المخزون بالأيام" subtitle="كم يوماً من الاستهلاك المتبقي لكل صنف بناءً على متوسط الاستهلاك اليومي الفعلي من المبيعات والإنتاج" icon={<Gauge className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="تغطية المخزون بالأيام" subtitle="كم يوماً من الاستهلاك المتبقي لكل صنف بناءً على متوسط الاستهلاك اليومي الفعلي من المبيعات والإنتاج" icon={<Gauge className="w-6 h-6 text-emerald-600" />}
         actions={<>
           <ViewToolbar filename="تغطية المخزون" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

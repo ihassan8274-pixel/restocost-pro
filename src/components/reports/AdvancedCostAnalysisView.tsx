@@ -247,7 +247,7 @@ export const AdvancedCostAnalysisView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تحليل التكلفة المتقدم" subtitle="انحراف التكلفة، سجل أسعار المواد، محاكاة التسعير، تكلفة الخدمة لكل عملية، ومحلل الهالك بالذكاء الاصطناعي" icon={<Activity className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="تحليل التكلفة المتقدم" subtitle="انحراف التكلفة، سجل أسعار المواد، محاكاة التسعير، تكلفة الخدمة لكل عملية، ومحلل الهالك بالذكاء الاصطناعي" icon={<Activity className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="تحليل_التكلفة_المتقدم" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

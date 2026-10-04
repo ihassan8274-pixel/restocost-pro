@@ -233,7 +233,7 @@ export const BranchScorecardReport: React.FC = () => {
       <PageHeader
         title="بطاقة أداء الفروع (Branch Scorecard)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Building2 className="w-6 h-6 text-emerald-300" />}
+        icon={<Building2 className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Branch_Scorecard_${periodValue}`} sheets={excelSheets} />

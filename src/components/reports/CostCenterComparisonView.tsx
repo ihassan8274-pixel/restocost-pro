@@ -105,7 +105,7 @@ export const CostCenterComparisonView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مقارنة مراكز التكلفة" subtitle="مصفوفة جنباً إلى جنب لأداء الفروع: الإيراد، التكاليف، الهامش وكفاءة التشغيل" icon={<GitCompare className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="مقارنة مراكز التكلفة" subtitle="مصفوفة جنباً إلى جنب لأداء الفروع: الإيراد، التكاليف، الهامش وكفاءة التشغيل" icon={<GitCompare className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="مقارنة مراكز التكلفة" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

@@ -298,7 +298,7 @@ export const BackupCenterView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مركز النسخ الاحتياطي المتطور" subtitle="نسخ تلقائية مجدولة، سياسة احتفاظ، نقط استعادة تلقائية، وإدارة كاملة لإصدارات البيانات" icon={<DatabaseBackup className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="مركز النسخ الاحتياطي المتطور" subtitle="نسخ تلقائية مجدولة، سياسة احتفاظ، نقط استعادة تلقائية، وإدارة كاملة لإصدارات البيانات" icon={<DatabaseBackup className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <Btn tone="success" onClick={createNow} disabled={!canManage || busy}>

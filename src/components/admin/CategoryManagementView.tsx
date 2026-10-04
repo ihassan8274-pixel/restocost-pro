@@ -109,7 +109,7 @@ export const CategoryManagementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة تصنيفات المواد" subtitle="الثمانية تصنيفات الافتراضية مدمجة ولا يمكن حذفها — يمكنك إضافة تصنيفات مخصصة خاصة بمنشأتك" icon={<Palette className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="إدارة تصنيفات المواد" subtitle="الثمانية تصنيفات الافتراضية مدمجة ولا يمكن حذفها — يمكنك إضافة تصنيفات مخصصة خاصة بمنشأتك" icon={<Palette className="w-6 h-6 text-indigo-600" />}
         actions={
           <Btn onClick={openNew} tone="success"><Plus className="w-4 h-4" /> إضافة تصنيف مخصص</Btn>
         } />

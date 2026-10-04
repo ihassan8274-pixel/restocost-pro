@@ -116,7 +116,7 @@ export const StockMovementsReport: React.FC = () => {
       <PageHeader
         title="حركات المخزون التفصيلية (Stock Movements)"
         subtitle={`${COMPANY} — ${monthLabel(periodValue)} — ${branchLabel}`}
-        icon={<ArrowUpDown className="w-6 h-6 text-emerald-300" />}
+        icon={<ArrowUpDown className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Stock_Movements_${periodValue}`} sheets={excelSheets} />

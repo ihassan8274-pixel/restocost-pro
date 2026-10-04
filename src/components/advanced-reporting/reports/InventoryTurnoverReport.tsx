@@ -161,7 +161,7 @@ export const InventoryTurnoverReport: React.FC = () => {
       <PageHeader
         title="دوران المخزون (Inventory Turnover)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<RefreshCcw className="w-6 h-6 text-emerald-300" />}
+        icon={<RefreshCcw className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Inventory_Turnover_${periodValue}`} sheets={excelSheets} />

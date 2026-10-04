@@ -94,7 +94,7 @@ export const AnalyticsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التحليلات والرسوم البيانية" subtitle="مؤشرات الأداء: اتجاهات المبيعات والتكلفة، مقارنة الفروع، أعلى الأصناف ربحية وتوزيع المصروفات" icon={<BarChart3 className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="التحليلات والرسوم البيانية" subtitle="مؤشرات الأداء: اتجاهات المبيعات والتكلفة، مقارنة الفروع، أعلى الأصناف ربحية وتوزيع المصروفات" icon={<BarChart3 className="w-6 h-6 text-emerald-600" />}
         actions={
           <ViewToolbar
             filename="التحليلات"

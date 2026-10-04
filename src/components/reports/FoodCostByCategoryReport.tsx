@@ -298,7 +298,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
       <PageHeader
         title="تكلفة الأصناف المباعة"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<BarChart3 className="w-6 h-6 text-indigo-300" />}
+        icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
             <TabBar

@@ -96,7 +96,7 @@ export const UserManagementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة المستخدمين والصلاحيات" subtitle="تعيين الأدوار والشاشات المسموح بها لكل مستخدم — واعتماد طلبات الانضمام" icon={<ShieldCheck className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="إدارة المستخدمين والصلاحيات" subtitle="تعيين الأدوار والشاشات المسموح بها لكل مستخدم — واعتماد طلبات الانضمام" icon={<ShieldCheck className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="المستخدمون" sheets={[
             {

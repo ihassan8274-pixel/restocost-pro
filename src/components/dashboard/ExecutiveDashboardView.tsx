@@ -229,7 +229,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
       <PageHeader
         title="لوحة القيادة التنفيذية (CEO)"
         subtitle="نظرة شاملة على أداء المجموعة، مقارنة الفروع، متابعة الميزانيات، والمخاطر النقدية"
-        icon={<Crown className="w-6 h-6 text-amber-300" />}
+        icon={<Crown className="w-6 h-6 text-amber-600" />}
         actions={
           <>
             <ViewToolbar

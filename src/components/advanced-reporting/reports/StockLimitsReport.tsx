@@ -139,7 +139,7 @@ export const StockLimitsReport: React.FC = () => {
       <PageHeader
         title="الانحراف عن حدي المخزون (Stock Limits)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Gauge className="w-6 h-6 text-emerald-300" />}
+        icon={<Gauge className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Stock_Limits_${periodValue}`} sheets={excelSheets} />

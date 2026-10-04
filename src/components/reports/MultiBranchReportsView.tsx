@@ -80,7 +80,7 @@ export const MultiBranchReportsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الرؤية المتعددة الفروع (تقارير موحّدة)" subtitle={`مقارنة موحّدة لكل الفروع في شاشة واحدة — إيرادات، تكاليف، مخزون، هالك`} icon={<Building2 className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="الرؤية المتعددة الفروع (تقارير موحّدة)" subtitle={`مقارنة موحّدة لكل الفروع في شاشة واحدة — إيرادات، تكاليف، مخزون، هالك`} icon={<Building2 className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
             <ViewToolbar filename={`رؤية_فروع_${month}`} sheets={[{

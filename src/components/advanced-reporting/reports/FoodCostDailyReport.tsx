@@ -128,7 +128,7 @@ export const FoodCostDailyReport: React.FC = () => {
       <PageHeader
         title="نسبة تكلفة الطعام اليومية (Food Cost — Daily)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<CalendarDays className="w-6 h-6 text-emerald-300" />}
+        icon={<CalendarDays className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Food_Cost_Daily_${periodValue}`} sheets={excelSheets} />

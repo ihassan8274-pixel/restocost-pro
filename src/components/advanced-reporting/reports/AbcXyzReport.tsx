@@ -152,7 +152,7 @@ export const AbcXyzReport: React.FC = () => {
       <PageHeader
         title="تصنيف ABC/XYZ للمواد"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Layers className="w-6 h-6 text-emerald-300" />}
+        icon={<Layers className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`ABC_XYZ_${periodValue}`} sheets={excelSheets} />

@@ -142,7 +142,7 @@ export const PurchaseVarianceView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="انحراف أوامر الشراء (PO vs GRN)" subtitle="مقارنة الكميات والأسعار والقيم بين أمر الشراء وما استُلم فعلياً من إشعارات الاستلام المرتبطة" icon={<Scale className="w-6 h-6 text-amber-300" />}
+      <PageHeader title="انحراف أوامر الشراء (PO vs GRN)" subtitle="مقارنة الكميات والأسعار والقيم بين أمر الشراء وما استُلم فعلياً من إشعارات الاستلام المرتبطة" icon={<Scale className="w-6 h-6 text-amber-600" />}
         actions={
           <ViewToolbar
             filename="انحراف_أوامر_الشراء"

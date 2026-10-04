@@ -87,7 +87,7 @@ export const DevAssistantView: React.FC = () => {
   const [modelPick, setModelPick] = useState<string>(() => getActiveAIModelId());
 
   if (!can('use_ai')) {
-    return <PageHeader title="مساعد التطوير المدمج" subtitle="توليد قوالب التقارير واختبارها وقواعد الأتمتة بمساعدة الذكاء الاصطناعي" icon={<Wand2 className="w-6 h-6 text-violet-300" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح — تواصل مع مدير النظام.</Card>} />;
+    return <PageHeader title="مساعد التطوير المدمج" subtitle="توليد قوالب التقارير واختبارها وقواعد الأتمتة بمساعدة الذكاء الاصطناعي" icon={<Wand2 className="w-6 h-6 text-violet-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح — تواصل مع مدير النظام.</Card>} />;
   }
 
   const selectedCfg = getAIModels().find((m) => m.id === modelPick);
@@ -187,7 +187,7 @@ export const DevAssistantView: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="مساعد التطوير المدمج" subtitle="توليد قوالب التقارير وتجربتها كـ PDF، وبناء قواعد الأتمتة، والإجابة عن استفسارات التطوير — عبر مزوّد الذكاء المفعّل أو محلياً دون إنترنت" icon={<Wand2 className="w-6 h-6 text-violet-300" />}
+      <PageHeader title="مساعد التطوير المدمج" subtitle="توليد قوالب التقارير وتجربتها كـ PDF، وبناء قواعد الأتمتة، والإجابة عن استفسارات التطوير — عبر مزوّد الذكاء المفعّل أو محلياً دون إنترنت" icon={<Wand2 className="w-6 h-6 text-violet-600" />}
         actions={<span className={`text-[11px] font-bold px-3 py-1.5 rounded-full border ${aiReady ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>{aiReady ? `مزوّد متصل: ${providerLabel}` : 'تحليل/توليد محلي'}</span>} />
 
       <div className="flex flex-wrap gap-2">

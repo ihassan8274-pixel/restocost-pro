@@ -889,7 +889,7 @@ export const RecipesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الوصفات المعيارية (BOM) وتكلفة الأطباق" subtitle="بناء الوصفات، حساب تكلفة الأغذية والهامش، ومتابعة انحرافات Food Cost" icon={<ChefHat className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="الوصفات المعيارية (BOM) وتكلفة الأطباق" subtitle="بناء الوصفات، حساب تكلفة الأغذية والهامش، ومتابعة انحرافات Food Cost" icon={<ChefHat className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar
             filename="الوصفات_المعيارية"

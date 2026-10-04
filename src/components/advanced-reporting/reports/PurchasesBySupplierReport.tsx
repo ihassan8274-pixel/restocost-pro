@@ -129,7 +129,7 @@ export const PurchasesBySupplierReport: React.FC = () => {
       <PageHeader
         title="المشتريات حسب المورد (Purchases by Supplier)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Truck className="w-6 h-6 text-emerald-300" />}
+        icon={<Truck className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Purchases_By_Supplier_${periodValue}`} sheets={excelSheets} />

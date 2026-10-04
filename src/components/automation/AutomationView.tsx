@@ -73,7 +73,7 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الأتمتة والتقارير المجدولة" subtitle="قواعد أتمتة تشغيلية (أوامر شراء وتصنيع تلقائية) وتقارير دورية تُجدول وتُشغّل بنقرة واحدة مع تنبيه عند الاستحقاق" icon={<Zap className="w-6 h-6 text-amber-300" />}
+      <PageHeader title="الأتمتة والتقارير المجدولة" subtitle="قواعد أتمتة تشغيلية (أوامر شراء وتصنيع تلقائية) وتقارير دورية تُجدول وتُشغّل بنقرة واحدة مع تنبيه عند الاستحقاق" icon={<Zap className="w-6 h-6 text-amber-600" />}
         actions={
           <ViewToolbar
             filename="الأتمتة_والتقارير"

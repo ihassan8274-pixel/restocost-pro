@@ -164,7 +164,7 @@ export const DetailedReportsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التقارير التفصيلية والدمج الموحد" subtitle="تقارير تفصيلية احترافية قابلة للطباعة والتصدير: شيخوخة المخزون، تفصيل الاستلام، تكلفة الأطباق، ورقة الإقفال، والدمج المالي للشركات" icon={<FileSpreadsheet className="w-6 h-6 text-indigo-300" />} />
+      <PageHeader title="التقارير التفصيلية والدمج الموحد" subtitle="تقارير تفصيلية احترافية قابلة للطباعة والتصدير: شيخوخة المخزون، تفصيل الاستلام، تكلفة الأطباق، ورقة الإقفال، والدمج المالي للشركات" icon={<FileSpreadsheet className="w-6 h-6 text-indigo-600" />} />
 
       <TabBar tabs={[
         { id: 'aging', label: 'شيخوخة المخزون' },

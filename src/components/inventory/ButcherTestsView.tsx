@@ -132,7 +132,7 @@ export const ButcherTestsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="اختبارات الجزارة والإنتاجية" subtitle="تسجيل وزن الذبيحة الإجمالي والصالح، احتساب نسبة الإنتاجية، وتحديث سعر المادة عند الترحيل" icon={<Plus className="w-6 h-6 text-amber-300" />}
+      <PageHeader title="اختبارات الجزارة والإنتاجية" subtitle="تسجيل وزن الذبيحة الإجمالي والصالح، احتساب نسبة الإنتاجية، وتحديث سعر المادة عند الترحيل" icon={<Plus className="w-6 h-6 text-amber-600" />}
         actions={<>
           <ViewToolbar
             filename="اختبارات_الجزارة"

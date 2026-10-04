@@ -40,7 +40,7 @@ export const AccessRolesView: React.FC = () => {
   if (currentUser && currentUser.role !== 'admin' && currentUser.role !== 'executive') {
     return (
       <div className="space-y-4">
-        <PageHeader title="نموذج صلاحيات الشاشات" icon={<KeyRound className="w-6 h-6 text-rose-300" />} />
+        <PageHeader title="نموذج صلاحيات الشاشات" icon={<KeyRound className="w-6 h-6 text-rose-600" />} />
         <Card className="p-8 text-center">
           <AlertTriangle className="w-10 h-10 text-rose-400 mx-auto mb-3" />
           <p className="font-extrabold text-slate-700">هذه الشاشة متاحة لمسؤول النظام فقط</p>
@@ -84,7 +84,7 @@ export const AccessRolesView: React.FC = () => {
       <PageHeader
         title="نموذج صلاحيات الشاشات (متقدم)"
         subtitle="حدد لكل دور الشاشات المسموحة ومستوى الوصول عليها: عرض / إضافة / تعديل / حذف — ثم أسند الدور للمستخدمين"
-        icon={<ShieldCheck className="w-6 h-6 text-indigo-300" />}
+        icon={<ShieldCheck className="w-6 h-6 text-indigo-600" />}
         actions={<Btn tone="primary" onClick={startNew}><Plus className="w-4 h-4" /> دور جديد</Btn>}
       />
 

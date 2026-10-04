@@ -140,7 +140,7 @@ export const DistributionsReport: React.FC = () => {
       <PageHeader
         title="مراجعة توزيعات البوت (Distributions Review)"
         subtitle={`${COMPANY} — ${periodLabel}`}
-        icon={<Network className="w-6 h-6 text-emerald-300" />}
+        icon={<Network className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Distributions_${periodValue}`} sheets={excelSheets} />

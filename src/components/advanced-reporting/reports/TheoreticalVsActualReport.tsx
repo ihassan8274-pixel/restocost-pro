@@ -284,7 +284,7 @@ export const TheoreticalVsActualReport: React.FC = () => {
       <PageHeader
         title="الاستهلاك النظري مقابل الفعلي (Theoretical vs Actual)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel} — ${categoryLabelActive}`}
-        icon={<Scale className="w-6 h-6 text-amber-300" />}
+        icon={<Scale className="w-6 h-6 text-amber-600" />}
         actions={
           <>
             <ViewToolbar filename={`Theoretical_vs_Actual_${periodValue}`} sheets={excelSheets} />

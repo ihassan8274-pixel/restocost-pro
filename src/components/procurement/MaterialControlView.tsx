@@ -182,7 +182,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="دورة المواد (Material Control)" subtitle="دورة كاملة تحاكي Oracle Hospitality Material Control: تكوين ← اقتراح ← شراء ← استلام ← تحويل/إنتاج ← صرف/إرجاع ← جرد ← تقييم وقيود" icon={<RotateCcw className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="دورة المواد (Material Control)" subtitle="دورة كاملة تحاكي Oracle Hospitality Material Control: تكوين ← اقتراح ← شراء ← استلام ← تحويل/إنتاج ← صرف/إرجاع ← جرد ← تقييم وقيود" icon={<RotateCcw className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="دورة_المواد" sheets={exportSheets} />
           <Btn tone="ghost" onClick={() => downloadCSV('دورة_المواد.csv', ['المرحلة', 'التفاصيل', 'القيمة'], stages.map((s) => [s.label, s.sub, s.badge]))}><FileDown className="w-4 h-4" /> تصدير الدورة</Btn>

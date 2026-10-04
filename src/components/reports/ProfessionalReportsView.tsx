@@ -335,7 +335,7 @@ export const ProfessionalReportsView: React.FC = () => {
       <PageHeader
         title="التقارير الاحترافية المتكاملة"
         subtitle="مستندات PDF مصمّمة باحترافية (ترويسة موحدة + ترقيم صفحات + تنسيق أعمدة) لكل تقرير على حدة — جاهزة للطباعة والاعتماد"
-        icon={<FileText className="w-6 h-6 text-indigo-300" />}
+        icon={<FileText className="w-6 h-6 text-indigo-600" />}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-slate-300">الفرع:</span>

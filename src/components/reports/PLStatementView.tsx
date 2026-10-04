@@ -84,7 +84,7 @@ export const PLStatementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="قائمة الدخل (P&L)" subtitle="تقرير الإيرادات والتكاليف وصافي الربح حسب الفرع والفترة" icon={<PieIcon className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="قائمة الدخل (P&L)" subtitle="تقرير الإيرادات والتكاليف وصافي الربح حسب الفرع والفترة" icon={<PieIcon className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="قائمة الدخل" sheets={[
             { name: 'قائمة الدخل', header: ['البند', 'القيمة'], rows: rows.map((r) => [r.label, r.value]) },

@@ -170,7 +170,7 @@ export const InventoryValuationReport: React.FC = () => {
       <PageHeader
         title="تقييم المخزون (Inventory Valuation)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Wallet className="w-6 h-6 text-emerald-300" />}
+        icon={<Wallet className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Inventory_Valuation_${periodValue}`} sheets={excelSheets} />

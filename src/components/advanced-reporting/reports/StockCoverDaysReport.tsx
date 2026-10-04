@@ -144,7 +144,7 @@ export const StockCoverDaysReport: React.FC = () => {
       <PageHeader
         title="أيام التغطية المتاحة (Days of Supply)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<PackageX className="w-6 h-6 text-emerald-300" />}
+        icon={<PackageX className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Stock_Cover_${periodValue}`} sheets={excelSheets} />

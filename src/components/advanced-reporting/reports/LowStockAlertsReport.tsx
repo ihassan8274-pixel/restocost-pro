@@ -138,7 +138,7 @@ export const LowStockAlertsReport: React.FC = () => {
       <PageHeader
         title="تنبيهات انخفاض المخزون (Low Stock Alerts)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<BellRing className="w-6 h-6 text-emerald-300" />}
+        icon={<BellRing className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Low_Stock_${periodValue}`} sheets={excelSheets} />

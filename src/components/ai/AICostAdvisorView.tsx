@@ -123,7 +123,7 @@ const {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المستشار الذكي للتكاليف" subtitle="تحليل تلقائي للبيانات مع توصيات قابلة للتنفيذ لخفض التكاليف ورفع الهامش" icon={<Sparkles className="w-6 h-6 text-indigo-300" />} />
+      <PageHeader title="المستشار الذكي للتكاليف" subtitle="تحليل تلقائي للبيانات مع توصيات قابلة للتنفيذ لخفض التكاليف ورفع الهامش" icon={<Sparkles className="w-6 h-6 text-indigo-600" />} />
 
       <div className="flex items-start gap-3 bg-gradient-to-l from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-4">
         <Sparkles className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />

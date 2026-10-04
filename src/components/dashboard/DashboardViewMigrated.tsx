@@ -207,7 +207,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
       <PageHeader
         title="لوحة التحكم والتحليلات التنفيذية"
         subtitle="مؤشرات الأداء الرئيسية، التوجهات المالية، التنبؤ بالتشغيل، ومتابعة الانحرافات"
-        icon={<TrendingUp className="w-6 h-6 text-indigo-300" />}
+        icon={<TrendingUp className="w-6 h-6 text-indigo-600" />}
         actions={
           <ViewToolbar
             filename="لوحة التحكم"

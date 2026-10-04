@@ -237,7 +237,7 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تقرير الاستهلاك النظري (المبيعات → المواد الخام)" subtitle="إجمالي الأصناف المباعة لكل فرع محولة إلى كميات مواد خام/وصفات تحضيرية وفق الوصفات القياسية" icon={<Calculator className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="تقرير الاستهلاك النظري (المبيعات → المواد الخام)" subtitle="إجمالي الأصناف المباعة لكل فرع محولة إلى كميات مواد خام/وصفات تحضيرية وفق الوصفات القياسية" icon={<Calculator className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
             <Btn onClick={printReport} tone="dark"><Printer className="w-4 h-4" /> طباعة</Btn>

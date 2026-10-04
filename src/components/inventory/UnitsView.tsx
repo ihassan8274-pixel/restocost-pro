@@ -32,7 +32,7 @@ export const UnitsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="وحدات القياس (التداول)" subtitle="ماديول وحدات القياس القياسية المستخدمة في الوصفات — حوِّل رصيدك من وحدة المخزون إلى وحدات قياس (لتر/كغم/قطعة) بسلسلة: شراء ← مخزون ← تداول" icon={<Ruler className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="وحدات القياس (التداول)" subtitle="ماديول وحدات القياس القياسية المستخدمة في الوصفات — حوِّل رصيدك من وحدة المخزون إلى وحدات قياس (لتر/كغم/قطعة) بسلسلة: شراء ← مخزون ← تداول" icon={<Ruler className="w-6 h-6 text-indigo-600" />}
         actions={<Btn onClick={openCreate}><Plus className="w-4 h-4" /> وحدة قياس جديدة</Btn>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -155,7 +155,7 @@ export const BranchStockLimitsView: React.FC = () => {
       <PageHeader
         title="حدود المخزون للفروع (الأدنى والأقصى)"
         subtitle="لكل فرع حد أدنى وأقصى مختلف لكل صنف — الطلب يتم حتى الحد الأقصى عند وصول الرصيد للحد الأدنى، ويمكن استثناء أصناف لتُطلب بالكمية القصوى كاملة دون النظر للرصيد"
-        icon={<SlidersHorizontal className="w-6 h-6 text-indigo-300" />}
+        icon={<SlidersHorizontal className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <Btn onClick={exportCsv}><FileSpreadsheet className="w-4 h-4" /> تصدير CSV</Btn>
           <Btn onClick={() => setImportModal(true)}><Upload className="w-4 h-4" /> استيراد من Excel</Btn>

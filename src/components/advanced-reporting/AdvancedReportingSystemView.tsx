@@ -450,7 +450,7 @@ export const AdvancedReportingSystemView: React.FC = () => {
       <PageHeader
         title="منظومة التقارير المتطورة المتكاملة"
         subtitle={`${COMPANY} — منظومة موحدة للتقارير الاحترافية: تكلفة، مخزون، مشتريات، مالية — كل تقرير شاشة مستقلة، طباعة منفردة، تصدير متعدد`}
-        icon={<FileChartColumn className="w-6 h-6 text-indigo-300" />}
+        icon={<FileChartColumn className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
           </>

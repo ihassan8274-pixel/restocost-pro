@@ -27,7 +27,7 @@ export const CentralKitchenView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المطبخ المركزي والتصنيع" subtitle="أوامر تصنيع التحضيرات المركزية وتوزيعها على الفروع مع خصم المواد الخام" icon={<Factory className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="المطبخ المركزي والتصنيع" subtitle="أوامر تصنيع التحضيرات المركزية وتوزيعها على الفروع مع خصم المواد الخام" icon={<Factory className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar
             filename="أوامر_التصنيع"

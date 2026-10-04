@@ -42,7 +42,7 @@ export const SuppliersView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة الموردين" subtitle="سجل الموردين، تقييم الجودة، شروط الدفع، وتصنيفات التوريد" icon={<Truck className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="إدارة الموردين" subtitle="سجل الموردين، تقييم الجودة، شروط الدفع، وتصنيفات التوريد" icon={<Truck className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar
             filename="الموردون"

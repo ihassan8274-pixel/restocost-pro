@@ -132,7 +132,7 @@ export const MenuPlanningView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تخطيط القوائم والأطعمة" subtitle="خطط كميات الإنتاج/المبيعات المتوقعة لكل يوم وفرع ووجبة، مع الإيراد والهامش المخطط" icon={<CalendarDays className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="تخطيط القوائم والأطعمة" subtitle="خطط كميات الإنتاج/المبيعات المتوقعة لكل يوم وفرع ووجبة، مع الإيراد والهامش المخطط" icon={<CalendarDays className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="تخطيط القوائم والأطعمة" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

@@ -63,7 +63,7 @@ export const ManufacturingView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="شاشة التصنيع" subtitle="تصنيع الأصناف الأساسية (تحضيرات مسبقة / مطبخ مركزي) وتحويلها إلى مخزون قابل للتحويل بين الفروع" icon={<Factory className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="شاشة التصنيع" subtitle="تصنيع الأصناف الأساسية (تحضيرات مسبقة / مطبخ مركزي) وتحويلها إلى مخزون قابل للتحويل بين الفروع" icon={<Factory className="w-6 h-6 text-indigo-600" />}
         actions={
           <ViewToolbar
             filename="سجل_التصنيع"

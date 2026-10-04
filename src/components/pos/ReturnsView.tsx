@@ -57,7 +57,7 @@ export const ReturnsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المرتجعات والاسترداد (POS)" subtitle="إرجاع أصناف من طلبات صادرة — استعادة المخزون والمواد الخام تلقائياً مع قيد محاسبي عكسي" icon={<RotateCcw className="w-6 h-6 text-rose-300" />}
+      <PageHeader title="المرتجعات والاسترداد (POS)" subtitle="إرجاع أصناف من طلبات صادرة — استعادة المخزون والمواد الخام تلقائياً مع قيد محاسبي عكسي" icon={<RotateCcw className="w-6 h-6 text-rose-600" />}
         actions={
           <ViewToolbar
             filename="المرتجعات"

@@ -444,7 +444,7 @@ export const CostIntelligenceView: React.FC = () => {
       <PageHeader
         title="مركز تقارير التكلفة المتقدمة"
         subtitle="نقطة التعادل · هامش المساهمة · Prime Cost · الاتجاه والتنبؤ · تفصيل الطبق · أثر الهالك"
-        icon={<BarChart3 className="w-6 h-6 text-indigo-300" />}
+        icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
         actions={<ViewToolbar filename="مركز_تقارير_التكلفة_المتقدمة" sheets={excelSheets} />}
       />
       <TabBar tabs={TABS} active={tab} onChange={(id) => setTab(id as TabId)} />

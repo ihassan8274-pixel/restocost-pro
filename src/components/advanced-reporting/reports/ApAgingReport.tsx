@@ -163,7 +163,7 @@ export const ApAgingReport: React.FC = () => {
       <PageHeader
         title="الحسابات الدائنة وتقادمها (AP Aging)"
         subtitle={`${COMPANY} — ${periodLabel}`}
-        icon={<CreditCard className="w-6 h-6 text-emerald-300" />}
+        icon={<CreditCard className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`AP_Aging_${periodValue}`} sheets={excelSheets} />

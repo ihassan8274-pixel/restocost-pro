@@ -169,7 +169,7 @@ export const InventoryAgingReport: React.FC = () => {
       <PageHeader
         title="أقدمية المخزون (Inventory Aging)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Hourglass className="w-6 h-6 text-emerald-300" />}
+        icon={<Hourglass className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Inventory_Aging_${periodValue}`} sheets={excelSheets} />

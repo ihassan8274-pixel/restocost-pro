@@ -135,7 +135,7 @@ export const InventoryHealthReport: React.FC = () => {
       <PageHeader
         title="صحة بيانات المخزون (Inventory Health)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<ShieldCheck className="w-6 h-6 text-emerald-300" />}
+        icon={<ShieldCheck className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Inventory_Health_${periodValue}`} sheets={excelSheets} />

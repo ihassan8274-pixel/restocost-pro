@@ -102,7 +102,7 @@ export const LowStockAlertsView: React.FC = () => {
       <PageHeader
         title="تنبيهات نقص المخزون"
         subtitle="شاشة مستقلة لمتابعة جميع الأصناف التي وصلت أو نزلت عن الحد الأدنى عبر الفروع — مع اقتراح إعادة التوريد والتحويل السريع"
-        icon={<AlertTriangle className="w-6 h-6 text-rose-300" />}
+        icon={<AlertTriangle className="w-6 h-6 text-rose-600" />}
         actions={<>
           <Btn onClick={exportCsv}><FileSpreadsheet className="w-4 h-4" /> تصدير Excel/CSV</Btn>
           <Btn tone="dark" onClick={printAlerts}><Printer className="w-4 h-4" /> طباعة التقرير</Btn>

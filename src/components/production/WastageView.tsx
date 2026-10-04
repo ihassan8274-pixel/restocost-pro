@@ -113,7 +113,7 @@ export const WastageView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الهوالك والفاقد" subtitle="حصر وقائع الهدر المالي (تلف، حرق، انتهاء صلاحية) وتحميلها على التكلفة مع تحليل أثرها على Food Cost والمبيعات" icon={<Trash2 className="w-6 h-6 text-rose-300" />}
+      <PageHeader title="الهوالك والفاقد" subtitle="حصر وقائع الهدر المالي (تلف، حرق، انتهاء صلاحية) وتحميلها على التكلفة مع تحليل أثرها على Food Cost والمبيعات" icon={<Trash2 className="w-6 h-6 text-rose-600" />}
         actions={<>
           <ViewToolbar
             filename="سجل_الهوالك"

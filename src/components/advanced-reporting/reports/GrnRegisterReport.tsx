@@ -107,7 +107,7 @@ export const GrnRegisterReport: React.FC = () => {
       <PageHeader
         title="سجل سندات الاستلام (GRN Register)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<ClipboardList className="w-6 h-6 text-emerald-300" />}
+        icon={<ClipboardList className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`GRN_Register_${periodValue}`} sheets={excelSheets} />

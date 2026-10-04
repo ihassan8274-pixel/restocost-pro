@@ -283,7 +283,7 @@ export const COGSBranchReport: React.FC = () => {
       <PageHeader
         title="تكلفة الأصناف حسب الفرع (COGS by Branch)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<Building2 className="w-6 h-6 text-emerald-300" />}
+        icon={<Building2 className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <TabBar

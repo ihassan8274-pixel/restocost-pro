@@ -169,7 +169,7 @@ export const PurchaseSuggestionsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="دورة المشتريات والاقتراحات الذكية" subtitle="اقتراحات الشراء حسب الحد الأدنى/الأقصى لكل صنف أو حسب الاستهلاك، مع الطلب بوحدة الشراء وتقريب الكمية لأقرب وحدة شراء" icon={<Sparkles className="w-6 h-6 text-amber-300" />}
+      <PageHeader title="دورة المشتريات والاقتراحات الذكية" subtitle="اقتراحات الشراء حسب الحد الأدنى/الأقصى لكل صنف أو حسب الاستهلاك، مع الطلب بوحدة الشراء وتقريب الكمية لأقرب وحدة شراء" icon={<Sparkles className="w-6 h-6 text-amber-600" />}
         actions={
           <ViewToolbar
             filename="اقتراحات_الشراء"

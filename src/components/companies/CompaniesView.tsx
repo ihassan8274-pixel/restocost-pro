@@ -102,7 +102,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الشركات والمجموعة" subtitle="إدارة شركات المجموعة (فروع ← شركة) + التقرير الموحد + فتح النسخ المستقلة لكل شركة" icon={<Building2 className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="الشركات والمجموعة" subtitle="إدارة شركات المجموعة (فروع ← شركة) + التقرير الموحد + فتح النسخ المستقلة لكل شركة" icon={<Building2 className="w-6 h-6 text-indigo-600" />}
         actions={tab === 'instances' ? <Btn onClick={load}><RefreshCw className="w-4 h-4" /> تحديث</Btn> : <Btn onClick={openCreate}><Plus className="w-4 h-4" /> شركة جديدة</Btn>} />
 
       <TabBar tabs={[

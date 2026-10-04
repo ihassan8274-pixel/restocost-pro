@@ -172,7 +172,7 @@ export const PriceHistoryReport: React.FC = () => {
       <PageHeader
         title="سجل أسعار الشراء — المواد (Price History)"
         subtitle={`${COMPANY} — ${materialName}`}
-        icon={<History className="w-6 h-6 text-emerald-300" />}
+        icon={<History className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Price_History_${materialFilter}`} sheets={excelSheets} />

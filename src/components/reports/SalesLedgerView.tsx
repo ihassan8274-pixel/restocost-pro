@@ -296,7 +296,7 @@ export const SalesLedgerView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="دفتر المبيعات التحليلي" subtitle="تحليل المبيعات حسب الصنف والفرع واليوم مع هامش الربح ومقارنته بالهدف (شامل المرتجعات)" icon={<BarChart3 className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="دفتر المبيعات التحليلي" subtitle="تحليل المبيعات حسب الصنف والفرع واليوم مع هامش الربح ومقارنته بالهدف (شامل المرتجعات)" icon={<BarChart3 className="w-6 h-6 text-emerald-600" />}
         actions={<>
           <ViewToolbar filename="دفتر المبيعات" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printSalesLedger}><Printer className="w-4 h-4" /> طباعة</Btn>

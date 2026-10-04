@@ -28,7 +28,7 @@ export const CurrenciesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="العملات المتعددة" subtitle="تعريف العملات وأسعار صرفها مقابل الريال (عملة الأساس) — تُستخدم على أوامر الشراء والاستلام والإرجاع والفواتير" icon={<Coins className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="العملات المتعددة" subtitle="تعريف العملات وأسعار صرفها مقابل الريال (عملة الأساس) — تُستخدم على أوامر الشراء والاستلام والإرجاع والفواتير" icon={<Coins className="w-6 h-6 text-indigo-600" />}
         actions={<Btn onClick={openCreate}><Plus className="w-4 h-4" /> عملة جديدة</Btn>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

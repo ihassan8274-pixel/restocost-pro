@@ -187,12 +187,12 @@ export const AIBranchSummaryView: React.FC = () => {
   };
 
   if (!can('use_ai')) {
-    return <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="تحليل موحد لكل الفروع مع توصيات ذكية" icon={<Network className="w-6 h-6 text-indigo-300" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح بالوصول — تواصل مع مدير النظام.</Card>} />;
+    return <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="تحليل موحد لكل الفروع مع توصيات ذكية" icon={<Network className="w-6 h-6 text-indigo-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح بالوصول — تواصل مع مدير النظام.</Card>} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="دمج مؤشرات كل الفروع (إيراد، تكلفة طعام، عمالة، تشغيلية، هالك، ربح) مع تحليل ذكي وتوصيات" icon={<Network className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="دمج مؤشرات كل الفروع (إيراد، تكلفة طعام، عمالة، تشغيلية، هالك، ربح) مع تحليل ذكي وتوصيات" icon={<Network className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="الشاشة_المجمعة_للفروع" sheets={[
             {

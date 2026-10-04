@@ -166,7 +166,7 @@ export const PeriodOverPeriodReport: React.FC = () => {
       <PageHeader
         title="مقارنة الفترات (Period over Period)"
         subtitle={`${COMPANY} — ${monthLabel(pa)} مقابل ${monthLabel(pb)} — ${branchName}`}
-        icon={<GitCompare className="w-6 h-6 text-emerald-300" />}
+        icon={<GitCompare className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Period_Over_Period_${pa}_${pb}`} sheets={excelSheets} />

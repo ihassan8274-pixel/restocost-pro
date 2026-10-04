@@ -93,7 +93,7 @@ export const CustomerOrderView: React.FC = () => {
   /* ===== شاشة مراقبة طلبات الفروع (لجهاز الفرع — طباعة تلقائية) ===== */
   return (
     <div className="space-y-5">
-      <PageHeader title="طلب العميل الذاتي" subtitle="العميل يختار الفرع والأصناف ← فاتورة ← واتساب للفرع + طباعة ← إتمام الدفع" icon={<Smartphone className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="طلب العميل الذاتي" subtitle="العميل يختار الفرع والأصناف ← فاتورة ← واتساب للفرع + طباعة ← إتمام الدفع" icon={<Smartphone className="w-6 h-6 text-emerald-600" />}
         actions={<Btn tone="ghost" onClick={newOrder}>طلب جديد</Btn>} />
 
       {stage === 'menu' && (
@@ -216,7 +216,7 @@ export const BranchOrdersMonitorView: React.FC<{ onNavigate?: (t: string) => voi
 
   return (
     <div className="space-y-5">
-      <PageHeader title="مراقب طلبات الفروع" subtitle="ضع هذه الشاشة على جهاز كل فرع — تُطبع الطلبات الجديدة تلقائياً عند وصولها" icon={<MonitorSpeaker className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="مراقب طلبات الفروع" subtitle="ضع هذه الشاشة على جهاز كل فرع — تُطبع الطلبات الجديدة تلقائياً عند وصولها" icon={<MonitorSpeaker className="w-6 h-6 text-indigo-600" />}
         actions={
           <Btn tone={autoPrint ? 'primary' : 'ghost'} onClick={() => setAutoPrint(!autoPrint)}>
             {autoPrint ? <><Printer className="w-4 h-4" /> الطباعة التلقائية مفعّلة</> : 'تشغيل الطباعة التلقائية'}

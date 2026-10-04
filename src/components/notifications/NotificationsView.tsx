@@ -56,7 +56,7 @@ export const NotificationsView: React.FC<Props> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مركز التنبيهات" subtitle="جميع تنبيهات النظام: المخزون، الصلاحية، الفواتير، المصاريف، وانحراف التكلفة — مع إشعارات سطح المكتب" icon={<BellRing className="w-6 h-6 text-rose-300" />} />
+      <PageHeader title="مركز التنبيهات" subtitle="جميع تنبيهات النظام: المخزون، الصلاحية، الفواتير، المصاريف، وانحراف التكلفة — مع إشعارات سطح المكتب" icon={<BellRing className="w-6 h-6 text-rose-600" />} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي التنبيهات</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{notes.length}</strong></div>

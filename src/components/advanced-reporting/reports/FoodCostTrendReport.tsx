@@ -225,7 +225,7 @@ export const FoodCostTrendReport: React.FC = () => {
       <PageHeader
         title="اتجاه تكلفة الطعام — 12 شهر (Food Cost Trend)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel} — الهدف ${targetFoodCost.toFixed(1)}%`}
-        icon={<TrendingDown className="w-6 h-6 text-amber-300" />}
+        icon={<TrendingDown className="w-6 h-6 text-amber-600" />}
         actions={
           <>
             <ViewToolbar filename={`FoodCost_Trend12_${yearFilter}`} sheets={excelSheets} />

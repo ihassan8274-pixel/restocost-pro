@@ -204,7 +204,7 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المبيعات اليومية و Food Cost" subtitle="إدخال مبيعات اليوم، فتح وتعديل وحذف، طباعة وتصدير، وتتبع نسبة تكلفة الطعام" icon={<TrendingUp className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="المبيعات اليومية و Food Cost" subtitle="إدخال مبيعات اليوم، فتح وتعديل وحذف، طباعة وتصدير، وتتبع نسبة تكلفة الطعام" icon={<TrendingUp className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar
             filename="المبيعات_اليومية"

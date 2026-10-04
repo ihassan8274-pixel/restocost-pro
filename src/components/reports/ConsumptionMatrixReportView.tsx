@@ -201,7 +201,7 @@ export const ConsumptionMatrixReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="استهلاك يومي مصفوفي (تاريخ × فرع)" subtitle="يعرض استهلاك صنف أو وصفة تحضيرية بشكل يومي لكل فرع في شكل مصفوفة (جداول متقاطعة)" icon={<CalendarDays className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="استهلاك يومي مصفوفي (تاريخ × فرع)" subtitle="يعرض استهلاك صنف أو وصفة تحضيرية بشكل يومي لكل فرع في شكل مصفوفة (جداول متقاطعة)" icon={<CalendarDays className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <Btn onClick={printReport} tone="dark" disabled={!hasData}><Printer className="w-4 h-4" /> طباعة</Btn>
           <Btn onClick={exportCSV} tone="primary" disabled={!hasData}><Download className="w-4 h-4" /> تصدير CSV</Btn>

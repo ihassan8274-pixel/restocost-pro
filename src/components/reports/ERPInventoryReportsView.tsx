@@ -304,7 +304,7 @@ export const ERPInventoryReportsView: React.FC = () => {
       <PageHeader
         title="تقارير المخزون والمواد (بمعايير Oracle Material Control)"
         subtitle="التكلفة المرجحة (WAC)، انحراف الاستهلاك (Theoretical vs Actual)، تعديلات الجرد، تغطية المخزون (أيام)، وتحويلات الفروع — مع تصدير PDF احترافي و CSV"
-        icon={<Boxes className="w-6 h-6 text-indigo-300" />}
+        icon={<Boxes className="w-6 h-6 text-indigo-600" />}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-slate-300">الفرع:</span>

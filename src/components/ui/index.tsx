@@ -59,16 +59,34 @@ export const Modal: React.FC<{ open: boolean; onClose: () => void; title: string
   );
 };
 
+// 136 شاشة تستدعي هذا المكوّن. كان شريطاً متدرّجاً داكناً
+// (from-primary-800 via-primary-700 to-amber-600) بنصّ أبيض — أي مظهر
+// Oracle-Forms الكلاسيكي، وهو ما رُفض صراحةً في بداية التصميم.
+// النظام المعتمد (docs/design/02 و03) ترويسة بيضاء ذات حدّ.
+//
+// الحل لم يكن Adapter يلصق 136 استدعاء، بل تعديل هذا المكوّن نفسه: موضع
+// واحد، صفر مخاطرة، ويصلح 136 شاشة دفعة واحدة. والـprops بقيت كما هي عمداً
+// حتى لا يحتاج أي مستدعٍ تغييراً.
 export const PageHeader: React.FC<{ title: string; subtitle?: string; icon?: React.ReactNode; actions?: React.ReactNode; subtitleNoWrap?: boolean }> = ({ title, subtitle, icon, actions, subtitleNoWrap }) => (
-  <div className="bg-gradient-to-r from-primary-800 via-primary-700 to-amber-600 text-white p-6 rounded-2xl shadow-card-hover border border-primary-600/40">
-    <div className="flex items-center gap-3">
-      {icon && <div className="w-11 h-11 rounded-xl bg-primary-600/40 border border-primary-500/40 flex items-center justify-center">{icon}</div>}
-      <div>
-        <h2 className="font-extrabold text-xl md:text-2xl tracking-tight">{title}</h2>
-        {subtitle && <p className={`text-xs text-amber-100 mt-1 ${subtitleNoWrap ? 'whitespace-nowrap' : ''}`}>{subtitle}</p>}
+  <div className="bg-surface rounded-2xl border border-line shadow-card px-6 py-5">
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center gap-3">
+        {icon && (
+          <span className="w-11 h-11 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
+            {icon}
+          </span>
+        )}
+        <div className="min-w-0">
+          <h1 className="font-bold text-slate-900 text-xl tracking-tight">{title}</h1>
+          {subtitle && (
+            <p className={`text-xs text-slate-500 mt-0.5 ${subtitleNoWrap ? 'whitespace-nowrap' : ''}`}>
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
+      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
     </div>
-    {actions && <div className="mt-4 flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
   </div>
 );
 
@@ -78,7 +96,10 @@ export const Btn: React.FC<{ onClick?: (e: React.MouseEvent<HTMLButtonElement>) 
     dark: 'bg-slate-900 hover:bg-slate-800 text-white',
     danger: 'bg-rose-600 hover:bg-rose-700 text-white',
     success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    ghost: 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white dark:border-white/20',
+    // ghost كان شبه-شفاف مخصّصاً لوضعه فوق PageHeader الداكنة (bg-white/10
+    // ونصّ أبيض). الترويسة صارت بيضاء، فصار زرٌّ شبه-شفاف بلا أثر — لون
+    // نصّي داكن يناسب الخلفية الجديدة.
+    ghost: 'bg-surface text-slate-700 border border-line hover:bg-slate-50',
   };
   return (
     <button type={type} onClick={onClick} disabled={disabled} className={`font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-colors ${tones[tone]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>

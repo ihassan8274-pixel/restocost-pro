@@ -138,7 +138,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="معالج إقفال نهاية الشهر" subtitle="خطوات موجهة لإقفال الجرد الشهري، بناء قائمة الدخل، وقفل الفترة" icon={<Lock className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="معالج إقفال نهاية الشهر" subtitle="خطوات موجهة لإقفال الجرد الشهري، بناء قائمة الدخل، وقفل الفترة" icon={<Lock className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
             <Btn tone="ghost" onClick={printSummary} disabled={step !== 'done'}><FileText className="w-4 h-4" /> طباعة الملخص</Btn>

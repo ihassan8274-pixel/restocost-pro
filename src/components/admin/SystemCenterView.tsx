@@ -395,7 +395,7 @@ export const SystemCenterView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مركز النظام: التصدير والطباعة وإدارة البيانات" subtitle="تصدير جميع التقارير، طباعة تقرير شامل، وتفريغ بيانات النظام" icon={<Settings2 className="w-6 h-6 text-indigo-300" />} />
+      <PageHeader title="مركز النظام: التصدير والطباعة وإدارة البيانات" subtitle="تصدير جميع التقارير، طباعة تقرير شامل، وتفريغ بيانات النظام" icon={<Settings2 className="w-6 h-6 text-indigo-600" />} />
 
       {exportMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl p-3">{exportMsg}</div>}
 

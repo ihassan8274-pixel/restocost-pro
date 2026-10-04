@@ -168,7 +168,7 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={isEditing ? 'تعديل سجل المبيعات' : 'إدخال مبيعات اليوم'} subtitle="صفحة كاملة ثابتة — اكتب وانتقل بين الحقول بحرية دون أي اختفاء" icon={<ArrowLeft className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title={isEditing ? 'تعديل سجل المبيعات' : 'إدخال مبيعات اليوم'} subtitle="صفحة كاملة ثابتة — اكتب وانتقل بين الحقول بحرية دون أي اختفاء" icon={<ArrowLeft className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <Btn onClick={onDone} tone="ghost"><ArrowLeft className="w-4 h-4" /> رجوع للقائمة</Btn>
           <Btn onClick={printCurrent} tone="dark"><Printer className="w-4 h-4" /> طباعة</Btn>

@@ -206,7 +206,7 @@ export const CostCentersView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مراكز التكلفة (الفروع)" subtitle="كل فرع مركز تكلفة مستقل: تكلفة طعام، عمالة، تشغيلية، هالك، وتخصيص المصاريف المركزية المشتركة حسب الإيراد" icon={<Boxes className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="مراكز التكلفة (الفروع)" subtitle="كل فرع مركز تكلفة مستقل: تكلفة طعام، عمالة، تشغيلية، هالك، وتخصيص المصاريف المركزية المشتركة حسب الإيراد" icon={<Boxes className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="مراكز_التكلفة" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

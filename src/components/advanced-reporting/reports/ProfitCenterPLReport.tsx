@@ -208,7 +208,7 @@ export const ProfitCenterPLReport: React.FC = () => {
       <PageHeader
         title="قائمة دخل مركز الربح (Profit Center P&L)"
         subtitle={`${COMPANY} — ${periodLabel} — ${centerName}`}
-        icon={<LineChartIcon className="w-6 h-6 text-emerald-300" />}
+        icon={<LineChartIcon className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Profit_Center_PL_${periodValue}`} sheets={excelSheets} />

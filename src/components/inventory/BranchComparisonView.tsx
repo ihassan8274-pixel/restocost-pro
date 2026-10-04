@@ -92,7 +92,7 @@ export const BranchComparisonView: React.FC = () => {
       <PageHeader
         title="مقارنة الفروع — حدود المخزون"
         subtitle="كل الفروع في شاشة واحدة: الرصيد مقابل الحد الأدنى/الأقصى المخصص لكل فرع، مع كمية الطلب المقترحة وقيمتها"
-        icon={<GitCompare className="w-6 h-6 text-indigo-300" />}
+        icon={<GitCompare className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <Btn onClick={exportCsv}><FileSpreadsheet className="w-4 h-4" /> تصدير CSV</Btn>
           <Btn tone="dark" onClick={printReport}><Printer className="w-4 h-4" /> طباعة التقرير</Btn>

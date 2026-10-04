@@ -224,7 +224,7 @@ export const InventoryMovementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تقرير حركة المخزون" subtitle="الوارد والصادر لكل صنف من المشتريات والتحويلات والإنتاج والهالك وتسويات الجرد، مع دفتر حركة تفصيلي" icon={<Activity className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="تقرير حركة المخزون" subtitle="الوارد والصادر لكل صنف من المشتريات والتحويلات والإنتاج والهالك وتسويات الجرد، مع دفتر حركة تفصيلي" icon={<Activity className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="حركة المخزون" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printSummarySheet}><Printer className="w-4 h-4" /> طباعة الملخص</Btn>

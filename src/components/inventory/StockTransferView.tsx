@@ -247,7 +247,7 @@ export const StockTransferView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تحويل الأصناف بين الفروع" subtitle="تحويل أصناف مخزنية (مواد خام) وأصناف مصنّعة من الوصفات الأساسية بين الفروع والمطبخ المركزي" icon={<ArrowRightLeft className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="تحويل الأصناف بين الفروع" subtitle="تحويل أصناف مخزنية (مواد خام) وأصناف مصنّعة من الوصفات الأساسية بين الفروع والمطبخ المركزي" icon={<ArrowRightLeft className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
           <ViewToolbar

@@ -126,7 +126,7 @@ export const SupplierScorecardView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="بطاقة أداء الموردين" subtitle="تقييم الموردين حسب الجودة، الالتزام بالمواعيد، دقة الكميات، وانحراف الأسعار عن أوامر الشراء" icon={<BadgeCheck className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="بطاقة أداء الموردين" subtitle="تقييم الموردين حسب الجودة، الالتزام بالمواعيد، دقة الكميات، وانحراف الأسعار عن أوامر الشراء" icon={<BadgeCheck className="w-6 h-6 text-emerald-600" />}
         actions={<>
           <ViewToolbar filename="أداء الموردين" sheets={exportSheets} />
           <Btn tone="ghost" onClick={() => downloadCSV('أداء_الموردين.csv', exportSheets[0].header, exportSheets[0].rows)}><PackageCheck className="w-4 h-4" /> تصدير</Btn>

@@ -307,7 +307,7 @@ export const COGSRecipeReport: React.FC = () => {
       <PageHeader
         title="تكلفة الوصفات: معياري vs فعلي (Recipe Standard vs Actual)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<ChefHat className="w-6 h-6 text-amber-300" />}
+        icon={<ChefHat className="w-6 h-6 text-amber-600" />}
         actions={
           <>
             <TabBar

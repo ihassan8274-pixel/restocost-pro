@@ -29,7 +29,7 @@ export const PurchaseOrdersViewMigrated: React.FC = () => {
   
   return (
     <div className="space-y-6">
-      <PageHeader title="أوامر الشراء (Purchase Orders)" subtitle="إنشاء أوامر الشراء ومتابعتها من التقديم حتى الاستلام مع ربط مباشر بالمخزون" icon={<PackageSearch className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="أوامر الشراء (Purchase Orders)" subtitle="إنشاء أوامر الشراء ومتابعتها من التقديم حتى الاستلام مع ربط مباشر بالمخزون" icon={<PackageSearch className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar
             filename="أوامر_الشراء"

@@ -90,7 +90,7 @@ export const WhatIfSimulationView: React.FC = () => {
       <PageHeader
         title="محاكاة ماذا لو — أثر تغيّر الأسعار على التكلفة"
         subtitle="ارفع سعر خامة (أو غيّرها بالنسب) وشاهد الأثر الفوري على تكلفة كل وصفة وسعرها المقترح — بدون تغيير بياناتك"
-        icon={<FlaskConical className="w-6 h-6 text-violet-300" />}
+        icon={<FlaskConical className="w-6 h-6 text-violet-600" />}
         actions={
           <ViewToolbar
             filename="محاكاة ماذا لو"

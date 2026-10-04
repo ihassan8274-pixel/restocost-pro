@@ -249,7 +249,7 @@ export const AIExecutiveReportView: React.FC = () => {
   };
 
   if (!can('use_ai')) {
-    return <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد بالذكاء الاصطناعي لكل المؤشرات" icon={<FileText className="w-6 h-6 text-indigo-300" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح — تواصل مع مدير النظام.</Card>} />;
+    return <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد بالذكاء الاصطناعي لكل المؤشرات" icon={<FileText className="w-6 h-6 text-indigo-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح — تواصل مع مدير النظام.</Card>} />;
   }
 
   const kpis = [
@@ -265,7 +265,7 @@ export const AIExecutiveReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد: مبيعات، تكاليف، مراكز تكلفة، مخزون، ضريبة — مع توليد تقرير تنفيذي بالذكاء الاصطناعي" icon={<FileText className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد: مبيعات، تكاليف، مراكز تكلفة، مخزون، ضريبة — مع توليد تقرير تنفيذي بالذكاء الاصطناعي" icon={<FileText className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="التقرير_التنفيذي_الذكي" sheets={[
             { name: 'ملخص تنفيذي', header: ['المؤشر', 'القيمة'], rows: [['الإيراد', revenue], ['تكلفة الطعام', foodCost], ['Food Cost %', fcPct.toFixed(2)], ['العمالة', labor], ['التشغيلية', opex], ['الهالك', wastage], ['الربح', profit], ['الهامش %', margin.toFixed(2)], ['صافي الضريبة', vatNet]] },

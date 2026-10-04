@@ -126,7 +126,7 @@ export const PotentialUsageView: React.FC = () => {
       <PageHeader
         title="الاستهلاك المتوقع (Potential Usage)"
         subtitle="كما في Oracle Material Control — مقارنة الاستهلاك النظري (من الوصفات × مبيعات POS) بالفعلي؛ كشف الهسر والتلاعب"
-        icon={<Calculator className="w-6 h-6 text-indigo-300" />}
+        icon={<Calculator className="w-6 h-6 text-indigo-600" />}
         actions={
           <ViewToolbar
             filename={`الاستهلاك_المتوقع_${month}`}

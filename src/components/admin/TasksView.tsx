@@ -65,7 +65,7 @@ export const TasksView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المهام والتكليفات" subtitle="تعيين مهام (اعتماد، جرد، تدقيق) مع إشعارات للمكلفين ولوحة متابعة الحالة" icon={<ListChecks className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="المهام والتكليفات" subtitle="تعيين مهام (اعتماد، جرد، تدقيق) مع إشعارات للمكلفين ولوحة متابعة الحالة" icon={<ListChecks className="w-6 h-6 text-indigo-600" />}
         actions={
           <Btn onClick={() => setShowModal(true)}><Plus className="w-4 h-4" /> مهمة جديدة</Btn>
         } />

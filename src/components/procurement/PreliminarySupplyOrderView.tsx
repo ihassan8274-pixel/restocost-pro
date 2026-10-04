@@ -139,7 +139,7 @@ export const PreliminarySupplyOrderView: React.FC = () => {
       <PageHeader
         title="أوامر التوريد المبدئي"
         subtitle="أوامر شراء مشتقّة من طلبات الشراء بعد الجرد بسعر «أقل سعر استلام خلال 30 يوماً» وموردها الفعلي — تعتمدها فتحوّل لأمر توريد يُستلم من شاشة «إذن استلام المواد» استلاماً كلياً أو جزئياً، وتتبع منجزها ومعلقها (الأصناف بلا سجل شراء سابق تتطلب تسجيل مورد جديد أولاً)"
-        icon={<BadgeDollarSign className="w-6 h-6 text-emerald-300" />}
+        icon={<BadgeDollarSign className="w-6 h-6 text-emerald-600" />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

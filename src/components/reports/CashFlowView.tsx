@@ -103,7 +103,7 @@ export const CashFlowView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="قائمة التدفقات النقدية" subtitle="المقبوضات والمدفوعات الفعلية وصافي التدفق النقدي حسب الفترة والفرع" icon={<Wallet className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="قائمة التدفقات النقدية" subtitle="المقبوضات والمدفوعات الفعلية وصافي التدفق النقدي حسب الفترة والفرع" icon={<Wallet className="w-6 h-6 text-emerald-600" />}
         actions={<>
           <ViewToolbar filename="التدفقات النقدية" sheets={exportRows} />
           <Btn tone="ghost" onClick={() => openPrintWindow({

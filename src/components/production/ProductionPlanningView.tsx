@@ -151,7 +151,7 @@ export const ProductionPlanningView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تخطيط الإنتاج" subtitle="توقعات الطلب من المبيعات التاريخية، ومعادلة المتاح (المخزون + أوامر مفتوحة) لاقتراح كميات الإنتاج وتوليد أوامر تشغيل" icon={<Factory className="w-6 h-6 text-emerald-300" />}
+      <PageHeader title="تخطيط الإنتاج" subtitle="توقعات الطلب من المبيعات التاريخية، ومعادلة المتاح (المخزون + أوامر مفتوحة) لاقتراح كميات الإنتاج وتوليد أوامر تشغيل" icon={<Factory className="w-6 h-6 text-emerald-600" />}
         actions={<>
           <ViewToolbar filename="تخطيط الإنتاج" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

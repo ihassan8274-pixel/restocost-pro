@@ -288,7 +288,7 @@ export const ERPHROperationsReportsView: React.FC = () => {
       <PageHeader
         title="تقارير الموارد البشرية والعمليات"
         subtitle="تكلفة العمالة، سجل الورديات، المبيعات حسب القناة، Sales Mix، تحليل المصاريف vs الميزانية، ملخص الفواتير — مع تصدير PDF احترافي و CSV"
-        icon={<Users className="w-6 h-6 text-indigo-300" />}
+        icon={<Users className="w-6 h-6 text-indigo-600" />}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-slate-300">الفرع:</span>

@@ -137,7 +137,7 @@ export const SalesByItemReport: React.FC = () => {
       <PageHeader
         title="المبيعات حسب الصنف (Sales by Item)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<ShoppingCart className="w-6 h-6 text-emerald-300" />}
+        icon={<ShoppingCart className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Sales_By_Item_${periodValue}`} sheets={excelSheets} />

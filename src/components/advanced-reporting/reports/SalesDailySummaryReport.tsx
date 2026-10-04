@@ -111,7 +111,7 @@ export const SalesDailySummaryReport: React.FC = () => {
       <PageHeader
         title="ملخص المبيعات اليومي (Daily Sales Summary)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<TrendingUp className="w-6 h-6 text-emerald-300" />}
+        icon={<TrendingUp className="w-6 h-6 text-emerald-600" />}
         actions={
           <>
             <ViewToolbar filename={`Sales_Daily_${periodValue}`} sheets={excelSheets} />

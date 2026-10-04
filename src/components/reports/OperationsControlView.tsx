@@ -374,7 +374,7 @@ export const OperationsControlView: React.FC = () => {
       <PageHeader
         title="مركز الرقابة التشغيلية"
         subtitle="إعادة الطلب · تحليل ABC · دقة الجرد · انحرافات الأسعار · رقابة الهالك · الصلاحية والجودة"
-        icon={<PackageSearch className="w-6 h-6 text-indigo-300" />}
+        icon={<PackageSearch className="w-6 h-6 text-indigo-600" />}
         actions={<ViewToolbar filename="مركز_الرقابة_التشغيلية" sheets={excelSheets} />}
       />
       <TabBar tabs={TABS} active={tab} onChange={(id) => setTab(id as TabId)} />

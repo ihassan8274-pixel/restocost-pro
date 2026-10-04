@@ -134,7 +134,7 @@ export const EndOfDayWizardView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="معالج إغلاق اليوم (نهاية الدوام)" subtitle="خطوات موجهة لإقفال اليوم التشغيلي، مراجعة الحصيلة، وإصدار التقرير النهائي" icon={<Moon className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="معالج إغلاق اليوم (نهاية الدوام)" subtitle="خطوات موجهة لإقفال اليوم التشغيلي، مراجعة الحصيلة، وإصدار التقرير النهائي" icon={<Moon className="w-6 h-6 text-indigo-600" />}
         actions={
           <>
             <Btn tone="ghost" onClick={() => setStep('select')}>بدء جديد</Btn>

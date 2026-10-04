@@ -127,7 +127,7 @@ export const PurchaseRequestView: React.FC = () => {
       <PageHeader
         title="طلبات الشراء"
         subtitle="يُحسب الطلب تلقائياً بعد الجرد من الجوال: عند بلوغ الصنف الحد الأدنى أو أقل يُطلب الفرق حتى الحد الأقصى، بالأقل رقمياً لوحدة الشراء — آخر سعر توريد = أقل سعر استلام خلال 30 يوماً، والمورد = آخر مورد تم الشراء منه فعلياً"
-        icon={<ClipboardList className="w-6 h-6 text-indigo-300" />}
+        icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
         actions={
           <Btn tone="primary" onClick={saveRequest}><Save className="w-4 h-4" /> حفظ الطلب ({selectedRows.length})</Btn>
         }

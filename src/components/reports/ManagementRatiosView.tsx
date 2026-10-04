@@ -118,7 +118,7 @@ export const ManagementRatiosView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المؤشرات الإدارية (KPI)" subtitle="نسب الربحية، كفاءة العمالة، دوران المخزون، ومؤشرات أداء رئيسية محسوبة من البيانات الفعلية" icon={<Activity className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="المؤشرات الإدارية (KPI)" subtitle="نسب الربحية، كفاءة العمالة، دوران المخزون، ومؤشرات أداء رئيسية محسوبة من البيانات الفعلية" icon={<Activity className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="المؤشرات الإدارية" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>

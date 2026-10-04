@@ -254,7 +254,7 @@ export const MarginAnalysisReport: React.FC = () => {
       <PageHeader
         title="تحليل هامش المساهمة ونقطة التعادل (Contribution Margin / Break-even)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}${scenarioLabel ? ` — ${scenarioLabel}` : ''}`}
-        icon={<TrendingUp className="w-6 h-6 text-rose-300" />}
+        icon={<TrendingUp className="w-6 h-6 text-rose-600" />}
         actions={
           <>
             <ViewToolbar filename={`Margin_Analysis_${currentPeriodValue}`} sheets={excelSheets} />

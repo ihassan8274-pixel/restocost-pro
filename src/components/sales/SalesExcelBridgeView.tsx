@@ -246,7 +246,7 @@ export const SalesExcelBridgeView: React.FC = () => {
       <PageHeader
         title="استيراد المبيعات من Excel"
         subtitle="حمّل قالباً فارغاً، عبّئه في Excel، ثم ارفعه للاستيراد الجماعي — يدعم مبيعات التوصيل والمبيعات المجمعة اليومية مع تجميع تلقائي للأطباق"
-        icon={<FileSpreadsheet className="w-6 h-6 text-emerald-300" />}
+        icon={<FileSpreadsheet className="w-6 h-6 text-emerald-600" />}
       />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <Panel

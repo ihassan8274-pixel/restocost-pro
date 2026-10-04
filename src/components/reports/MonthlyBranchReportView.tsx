@@ -75,7 +75,7 @@ export const MonthlyBranchReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تقرير الإيرادات وتكلفة المبيعات الشهري" subtitle={`إيرادات كل فرع وتكلفة المبيعات = الجرد أول + المشتريات - الجرد آخر`} icon={<BarChart3 className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="تقرير الإيرادات وتكلفة المبيعات الشهري" subtitle={`إيرادات كل فرع وتكلفة المبيعات = الجرد أول + المشتريات - الجرد آخر`} icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
         actions={<ViewToolbar filename={`تقرير_إيرادات_${month}`} sheets={[{
           name: 'إيرادات وتكلفة',
           header: ['الفرع', 'إيراد المبيعات', 'إيراد التوصيل', 'إيراد POS', 'الإجمالي', 'الجرد أول', 'المشتريات', 'الجرد آخر', 'تكلفة المبيعات', 'صافي الربح', 'الهامش %'],

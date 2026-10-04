@@ -48,7 +48,7 @@ export const MenuEngineeringView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="هندسة المنيو (Menu Engineering)" subtitle="تحليل محفظة الأطباق: النجوم، الخيول العاملة، الألغاز، والكلاب" icon={<LineIcon className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="هندسة المنيو (Menu Engineering)" subtitle="تحليل محفظة الأطباق: النجوم، الخيول العاملة، الألغاز، والكلاب" icon={<LineIcon className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="هندسة المنيو" sheets={[
             {

@@ -365,7 +365,7 @@ export const TrueCostView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التكلفة الحقيقية والشراء الذكي" subtitle="تكلفة الوحدة الكاملة، هامش المساهمة، تكلفة الدفعات، إعادة الطلب الذكية، إعادة التسعير التلقائية، وتنبؤ التكلفة" icon={<Layers className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="التكلفة الحقيقية والشراء الذكي" subtitle="تكلفة الوحدة الكاملة، هامش المساهمة، تكلفة الدفعات، إعادة الطلب الذكية، إعادة التسعير التلقائية، وتنبؤ التكلفة" icon={<Layers className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <ViewToolbar filename="التكلفة_الحقيقية_والشراء_الذكي" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printKitchenCards}><Printer className="w-4 h-4" /> بطاقات المطبخ</Btn>

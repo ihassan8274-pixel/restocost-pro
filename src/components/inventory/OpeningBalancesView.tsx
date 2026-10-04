@@ -309,7 +309,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الأرصدة الافتتاحية للفروع" subtitle="إدخال أرصدة بداية الفترة لكل صنف وفرع (الكميات الافتتاحية للمخزون) — تُحفظ كرصيد أساس للمخزون" icon={<ClipboardList className="w-6 h-6 text-indigo-300" />}
+      <PageHeader title="الأرصدة الافتتاحية للفروع" subtitle="إدخال أرصدة بداية الفترة لكل صنف وفرع (الكميات الافتتاحية للمخزون) — تُحفظ كرصيد أساس للمخزون" icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
         actions={<>
           <Btn onClick={printAllBranches} tone="dark"><Printer className="w-4 h-4" /> طباعة أرصدة الفروع</Btn>
           <Btn onClick={printConsolidated} tone="primary"><Printer className="w-4 h-4" /> تقرير مجمع</Btn>
