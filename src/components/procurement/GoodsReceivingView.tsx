@@ -1,13 +1,14 @@
 ﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { PackageCheck, Plus, Printer, Save, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
+import { PackageCheck, Plus, Printer, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, AlertTriangle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, Btn, Modal, CurrencySelect, DocumentFingerprint } from '../ui';
+import { Card, Btn, Modal, DocumentFingerprint } from '../ui';
 import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi, erpInputCls } from '../ui/erp';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
 import { fmt, fmtMoney } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
 import { openLabelsWindow } from '../../utils/labels';
 import { GoodsReceiptItem } from '../../types';
+import { GrnEntryModal } from './GrnEntryModal';
 import { GrnItemsTable } from './GrnItemsTable';
 import { ViewToolbar } from '../ui/ViewToolbar';
 import { ApprovalPathBar, type ApprovalStepDef, type ApprovalTerminalType } from '../ui/ApprovalPath';
@@ -51,7 +52,6 @@ export const GoodsReceivingView: React.FC = () => {
   const [vatIncl, setVatIncl] = useState<boolean>(vatInclusive);
   const [currencyCode, setCurrencyCode] = useState('SAR');
   const [exchangeRate, setExchangeRate] = useState(1);
-  const [invoiceTotalInput, setInvoiceTotalInput] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkReopenModal, setBulkReopenModal] = useState(false);
   const [bulkReopenPassword, setBulkReopenPassword] = useState('');
@@ -305,10 +305,6 @@ export const GoodsReceivingView: React.FC = () => {
     setItems([]); setRowKeys([]); setShowModal(false); setInvoiceNumber(''); setInvoiceDate(new Date().toISOString().split('T')[0]); setReceivedBy(''); setNotes(''); setPurchaseOrderId(''); setCurrencyCode('SAR'); setExchangeRate(1); setCopySource('');
   };
 
-  const submit = (ev: React.FormEvent) => {
-    ev.preventDefault();
-    doSubmit(false);
-  };
 
   const openEdit = (g: typeof grnNotes[number]) => {
     setEditGrn(g);
@@ -482,7 +478,6 @@ export const GoodsReceivingView: React.FC = () => {
     });
     setItems(list);
     setRowKeys(list.map(() => makeKey()));
-    setInvoiceTotalInput('');
     showToast(`تم تعبئة ${list.length} صنف من استلامات المورد السابقة — عدّل الكميات والأسعار`);
   };
 
@@ -849,254 +844,66 @@ export const GoodsReceivingView: React.FC = () => {
       </Card>
 
 {/* New GRN Modal - Professional Design */}
-      <Modal open={showModal} onClose={() => setShowModal(false)} title="إشعار استلام جديد (GRN)" xl closeOnOverlayClick={false}>
-        <form onSubmit={submit} className="space-y-0">
-          {/* ═══ الترويسة + المسار + شريط الأدوات (التصميم المعتمد) ═══
-              كان العنوان الفرعي «سجل استلام المواد من المورد — مسودة ← مراجعة ← اعتماد»
-              وهو وصف للعملية لا تعليمات للمستخدم. ولا مسار اعتماد، ولا شريط أدوات
-              فوق الحقول. */}
-          <div className="border-b border-line bg-surface">
-            <div className="px-6 py-4 flex items-start justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                  <PackageCheck className="w-6 h-6" />
-                </span>
-                <div>
-                  <h2 className="font-bold text-slate-900 text-lg">{copySource ? 'نسخة من إشعار' : 'إشعار استلام جديد (GRN)'}</h2>
-                  <p className="text-[11px] text-slate-500 mt-0.5">أدخل الأصناف المستلمة — الكمية بوحدة التخزين</p>
-                </div>
-              </div>
-
-              {/* المسار: يوضّح أين وصل الإشعار وخطوةComing التالية */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[11px] font-bold text-slate-500">المسار:</span>
-                {APPROVAL_STEPS.map((st, i) => (
-                  <React.Fragment key={st.id}>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      i === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : i === 1 ? 'bg-amber-50 text-amber-700 border-amber-200'
-                          : 'bg-slate-50 text-slate-500 border-line'
-                    }`}>
-                      {i + 1} · {st.label}
-                    </span>
-                    {i < APPROVAL_STEPS.length - 1 && <span className="text-slate-300 text-[10px]">←</span>}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-
-            {/* شريط الأدوات — كما في المعتمد: حفظ ثم أدوات إدخال ثم اعتماد */}
-            <div className="px-6 pb-3 flex flex-wrap items-center gap-2">
-              <ErpButton variant="primary" onClick={() => doSubmit(false)}>
-                <Save className="w-3.5 h-3.5" /> حفظ كمسودة
-              </ErpButton>
-              <ErpButton onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</ErpButton>
-              <ErpButton onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</ErpButton>
-              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> استيراد Excel</ErpButton>
-              <span className="flex-1" />
-              {can('approve_grn') ? (
-                <ErpButton variant="primary" onClick={() => doSubmit(true)}>
-                  <Shield className="w-3.5 h-3.5" /> اعتماد
-                </ErpButton>
-              ) : (
-                <span className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-line bg-slate-50 text-slate-300">✓ اعتماد</span>
-              )}
-              <span className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-line bg-slate-50 text-slate-300">⇪ ترحيل للمخزون</span>
-            </div>
-          </div>
-
-          {/* محتوى النموذج */}
-          <div className="space-y-5">
-            {/* ═══ ① بيانات الإشعار (المعتمد: شبكة رباعية، والضريبة داخلها) ═══
-                كانت الضريبة في صندوق منفصل بين شبكتين، فينتشر «المستلم» وحده في
-                صف ويصبح eleven حقلاً على أربعة صفوف بدل ثلاثة. */}
-            <section className="border border-line rounded-xl px-4 py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <ErpField label="المورد" required className="lg:col-span-2">
-                  <div className="flex gap-2">
-                    <ErpSelect value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className="flex-1">
-                      {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </ErpSelect>
-                    <ErpButton onClick={() => fillFromSupplierHistory(supplierId)} disabled={!supplierId} className="shrink-0 whitespace-nowrap">
-                      <History className="w-3.5 h-3.5" /> تعبئة أصناف سابقة
-                    </ErpButton>
-                  </div>
-                </ErpField>
-
-                <ErpField label="الفرع" required>
-                  <ErpSelect value={branchId} onChange={(e) => setBranchId(e.target.value)}>
-                    {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
-                  </ErpSelect>
-                </ErpField>
-
-                <ErpField label="أمر الشراء المرتبط">
-                  <ErpSelect value={purchaseOrderId} onChange={(e) => applyPO(e.target.value)}>
-                    <option value="">بدون أمر شراء</option>
-                    {availablePOs.map((p) => {
-                      const remCount = p.items.filter((i) => (i.receivedQty || 0) < (i.quantity || 0)).length;
-                      return <option key={p.id} value={p.id}>{p.poNumber} — {p.supplierName} — {fmtMoney(p.totalAmount)}{p.status === 'partially_received' ? ` — متبقي ${remCount} بند` : ''}</option>;
-                    })}
-                    {availablePOs.length === 0 && <option value="" disabled>لا توجد أوامر شراء مفتوحة لهذا المورد</option>}
-                  </ErpSelect>
-                </ErpField>
-
-                <ErpField label="المستلم">
-                  <ErpInput value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} placeholder="اسم الموظف" />
-                </ErpField>
-
-                <ErpField label="تاريخ النظام" hint="يُضبط على اليوم">
-                  <ErpInput value={new Date().toISOString().split('T')[0]} readOnly className="bg-slate-50 text-slate-500" />
-                </ErpField>
-
-                <ErpField label="رقم فاتورة المورد">
-                  <ErpInput value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder="اختياري" />
-                </ErpField>
-
-                <ErpField label="تاريخ الفاتورة">
-                  <ErpInput type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} />
-                </ErpField>
-
-                <ErpField label="عملة المستند" required>
-                  <CurrencySelect value={currencyCode} onChange={(code) => { setCurrencyCode(code); setExchangeRate(getCurrencyRate(code)); }} />
-                </ErpField>
-
-                {currencyCode !== 'SAR' && (
-                  <ErpField label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
-                    <ErpInput type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} required />
-                  </ErpField>
-                )}
-
-                <ErpField label="الأسعار شاملة الضريبة؟">
-                  <div className="flex gap-1.5">
-                    <button type="button" onClick={() => setVatIncl(true)} className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${vatIncl ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}>شاملة</button>
-                    <button type="button" onClick={() => setVatIncl(false)} className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${!vatIncl ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}>غير شاملة</button>
-                  </div>
-                </ErpField>
-
-                <ErpField label="نسبة ضريبة القيمة المضافة %">
-                  <ErpInput type="number" min="0" max="100" value={vatRate || ''} onChange={(e) => setVatRate(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} />
-                </ErpField>
-
-                <ErpField label="ملاحظات" className="lg:col-span-2">
-                  <ErpInput value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="مثال: وصل ناقص صنف واحد · اتفق على الكمية مع مندوب المورد" />
-                </ErpField>
-              </div>
-            </section>
-
-            {/* Section 2: Items - Professional Table */}
-            <section>
-              <div className="flex items-center justify-between mb-3 gap-2">
-                {/* العنوان بعدّاد — المعتمد: «الأصناف المستلمة (4)» */}
-                <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                  <PackageCheck className="w-4 h-4 text-indigo-600" /> الأصناف المستلمة
-                  <span className="tnum text-[11px] font-bold text-slate-500">({items.length})</span>
-                </h4>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">الكمية بوحدة التخزين</span>
-                  <button type="button" onClick={() => showToast('تحويل الوحدة يُطبَّق من جدول الأصناف أدناه')} className="text-[11px] font-bold text-indigo-600 hover:underline">تحويل وحدة ▾</button>
-                  <ErpButton onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</ErpButton>
-                  <ErpButton onClick={() => addItems(5)}><Plus className="w-3.5 h-3.5" /> 5 أصناف</ErpButton>
-                  <ErpButton onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</ErpButton>
-                </div>
-              </div>
-              
-              {/* جدول أصناف GRN — نفس المكوّن المستخدم في نموذج التعديل
-                  (docs/design/04-grn-entry.html). كان مكرراً مرتين بمخططات
-                  مختلفة، فيت drifting أي تحسين بينهما. */}
-              <GrnItemsTable
-                items={items}
-                rowKeys={rowKeys}
-                rawMaterials={rawMaterials}
-                convOf={convOf}
-                prefillPrice={prefillPrice}
-                branchId={branchId}
-                updateItem={updateItem}
-                onQty={onQty}
-                onPrice={onPrice}
-                onLineTotal={onLineTotal}
-                onRemove={(i) => { setItems(items.filter((_, k2) => k2 !== i)); setRowKeys(rowKeys.filter((_, k2) => k2 !== i)); }}
-                qtyKey={qtyKey}
-                priceKey={priceKey}
-                totalKey={totalKey}
-                draftVal={draftVal}
-                clearDraft={clearDraft}
-              />
-            </section>
-
-            {/* Section 3: Totals & Actions - Sticky Footer */}
-            <div className="sticky bottom-0 z-10 bg-surface border-t border-line py-4 px-6 space-y-4">
-
-              {/* Invoice Total Distribution */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex-1 min-w-[200px]">
-                    <label className="text-[10px] font-bold text-amber-800 block mb-1">إجمالي الفاتورة من المورد (اختياري — للتوزيع التلقائي)</label>
-                    <div className="flex gap-2">
-                      <input type="number" min="0" step="0.01" value={invoiceTotalInput} onChange={(e) => setInvoiceTotalInput(e.target.value)} className={`${erpInputCls} flex-1`} placeholder="أدخل إجمالي الفاتورة واضغط توزيع" />
-                      <Btn tone="ghost" onClick={() => {
-                        const targetTotal = parseFloat(invoiceTotalInput) || 0;
-                        if (targetTotal <= 0) return;
-                        const currentSubtotal = items.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0);
-                        if (currentSubtotal <= 0) return;
-                        const factor = targetTotal / (vatIncl ? currentSubtotal : currentSubtotal + (currentSubtotal * vatRate / 100));
-                        setItems((prev) => prev.map((it) => ({ ...it, unitPrice: Math.round(it.unitPrice * factor * 100) / 100 })));
-                        setInvoiceTotalInput('');
-                      }}><RotateCcw className="w-3.5 h-3.5" /> توزيع</Btn>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Totals Summary */}
-              {/* سطر الملخّص — المعتمد سطر واحد مختصر لا ثلاث بطاقات.
-                  البطاقات كانت تشغل ثلاثة أسطر كاملة وتدفع الجدول خارج الشاشة،
-                  و«إجمالي الفاتورة» لا يظهر فيها إلا بعد حساب كل صنف. */}
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 py-3 border-t border-line text-[11px] font-bold">
-                <span className="text-slate-500">
-                  عدد الأصناف: <span className="tnum text-slate-800">{items.length}</span>
-                </span>
-                <span className="text-slate-500">
-                  إجمالي الكمية: <span className="tnum text-slate-800">{fmt(items.reduce((s, i) => s + (Number(i.quantityReceived) || 0), 0))}</span>
-                </span>
-                <span className="text-slate-500">
-                  الصافي: <span className="tnum text-slate-800">{fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}</span>
-                </span>
-                <span className="text-amber-600">
-                  ضريبة {vatRate}%: <span className="tnum">{fmtMoney(vatAmount)}</span>
-                </span>
-                <span className="text-indigo-700">
-                  الإجمالي: <span className="tnum text-[12px] font-extrabold">{fmtMoney(totalAmount)} ر.س</span>
-                </span>
-              </div>
-              {/* أزرار الحفظ — التصميم المعتمد: «حفظ كمسودة» و«حفظ واعتماد» */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-line">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-2.5 border border-line rounded-xl text-slate-700 font-bold hover:bg-slate-50 transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-surface text-slate-700 border border-line rounded-xl font-bold hover:bg-slate-50 transition-colors"
-                >
-                  حفظ كمسودة
-                </button>
-                {can('approve_grn') && (
-                  <button
-                    type="button"
-                    onClick={() => doSubmit(true)}
-                    className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-card transition-all"
-                  >
-                    حفظ واعتماد
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </form>
-      </Modal>
+      {/* نافذة الإدخال — مكوّن مستقل مبني على docs/design/04.
+          كانت 247 سطراً داخل هذا الملف تُرقَّع فوق بعضها، فأ Reeves كل رقعة
+          تُدخل فرقاً جديداً بين المعتمد وما بُني. ملف مستقل = قابل للمراجعة
+          والتعديل دون لمس 1,000+ سطر. */}
+      <GrnEntryModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        copySource={copySource || undefined}
+        items={items}
+        rowKeys={rowKeys}
+        rawMaterials={rawMaterials}
+        convOf={convOf}
+        prefillPrice={prefillPrice}
+        updateItem={updateItem}
+        onQty={onQty}
+        onPrice={onPrice}
+        onLineTotal={onLineTotal}
+        onRemove={(i) => { setItems(items.filter((_, k) => k !== i)); setRowKeys(rowKeys.filter((_, k) => k !== i)); }}
+        onAddOne={addItem}
+        onAddFive={() => addItems(5)}
+        qtyKey={qtyKey}
+        priceKey={priceKey}
+        totalKey={totalKey}
+        draftVal={draftVal}
+        clearDraft={clearDraft}
+        suppliers={suppliers}
+        visibleBranches={visibleBranches}
+        availablePOs={availablePOs}
+        supplierId={supplierId}
+        onSupplier={setSupplierId}
+        branchId={branchId}
+        onBranch={setBranchId}
+        purchaseOrderId={purchaseOrderId}
+        onApplyPO={applyPO}
+        onFillHistory={() => fillFromSupplierHistory(supplierId)}
+        receivedBy={receivedBy}
+        onReceivedBy={setReceivedBy}
+        invoiceNumber={invoiceNumber}
+        onInvoiceNumber={setInvoiceNumber}
+        invoiceDate={invoiceDate}
+        onInvoiceDate={setInvoiceDate}
+        currencyCode={currencyCode}
+        onCurrency={(code) => { setCurrencyCode(code); setExchangeRate(getCurrencyRate(code)); }}
+        exchangeRate={exchangeRate}
+        onExchangeRate={setExchangeRate}
+        vatRate={vatRate}
+        onVatRate={setVatRate}
+        vatIncl={vatIncl}
+        onVatIncl={setVatIncl}
+        notes={notes}
+        onNotes={setNotes}
+        subtotal={subtotal}
+        vatAmount={vatAmount}
+        totalAmount={totalAmount}
+        onSaveDraft={() => doSubmit(false)}
+        onSaveApprove={() => doSubmit(true)}
+        canApprove={can('approve_grn')}
+        onScan={() => setScannerOpen(true)}
+        onImportExcel={openPrintModal}
+      />
 
       {/* Edit Modal - Professional Design */}
       <Modal open={editGrn !== null} onClose={() => setEditGrn(null)} title={`تعديل الإشعار ${editGrn?.grnNumber || ''} (${editGrn?.status === 'draft' ? 'مسودة' : 'قيد المراجعة'})`} xl closeOnOverlayClick={false}>
