@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+
+# ⛔ أسرار — لا تُرفع أبداً
+.env
+.env.*
+!.env.example

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>RestoCost · Control Plane</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <div>
+        <h1>RestoCost Control</h1>
+        <p class="sub" id="subtitle">Loading…</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="stamp" id="stamp">—</span>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <section class="summary" id="summary" aria-label="Summary"></section>
+
+  <div class="toolbar">
+    <button id="add-company" type="button">+ New company</button>
+    <button id="unlock" type="button" class="ghost">🔒 Enable editing</button>
+    <span class="hint" id="mode-hint">read-only</span>
+  </div>
+
+  <main id="grid" class="grid" aria-live="polite">
+    <p class="loading">Reading <code>config/companies.yaml</code>…</p>
+  </main>
+
+  <footer class="foot">
+    <span>Metadata only — no business data is readable from this plane.</span>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+
+  <dialog id="dlg">
+    <form id="form" method="dialog">
+      <h3 id="dlg-title">…</h3>
+      <div id="fields"></div>
+      <ul id="problems" class="problems" hidden></ul>
+      <p class="msg" id="msg" hidden></p>
+      <menu>
+        <button type="button" id="cancel" class="ghost">Cancel</button>
+        <button type="button" id="save" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+</body>
+</html>

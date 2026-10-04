@@ -1,0 +1,39 @@
+# ══════════════════════════════════════════════════════════════════
+#  RestoCost — تعريف الشركات
+#  هذا هو المصدر الوحيد للtruth. كل شيء آخر يقرأ منه.
+# ══════════════════════════════════════════════════════════════════
+#  ⚠️ لا تضع كلمات مرور حقيقية هنا.
+#     ضعها في control/.env  (يُستثنى من git تلقائياً)
+# ══════════════════════════════════════════════════════════════════
+
+control:
+  port: 3010
+  # ⚠️ افترضت نطاق restocost.shop من web.config — صحّحه لو مختلف
+  subdomain: control.restocost.shop
+  # 🔐 افتح هذا الرابط خلف Cloudflare Access ببريدك وحدك
+
+companies:
+  # ─────────────────────────────────────────────────────────────
+  - id: massobi
+    name: Massobi
+    nameAr: مسوبي
+    subdomain: massobi.restocost.shop
+    port: 3011
+    databaseUrl: postgres://restocost:CHANGE_ME@127.0.0.1:5432/restocost_massobi
+    timezone: Asia/Riyadh
+    active: true
+
+  # ─────────────────────────────────────────────────────────────
+  - id: bukharo
+    name: Bukharo
+    nameAr: بخارو
+    subdomain: bukharo.restocost.shop
+    port: 3012
+    databaseUrl: postgres://restocost:CHANGE_ME@127.0.0.1:5432/restocost_bukharo
+    timezone: Asia/Riyadh
+    active: true
+
+    # 🟡 النسخة القديمة — للترحيل فقط. احذف هذا بعد القطع النهائي.
+    legacy:
+      port: 3002
+      note: النسخة الحالية على النظام القديم
