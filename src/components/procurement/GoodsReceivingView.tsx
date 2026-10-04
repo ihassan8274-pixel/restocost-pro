@@ -1,7 +1,7 @@
-﻿import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { PackageCheck, Plus, CheckCircle2, XCircle, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
+﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { PackageCheck, Plus, Printer, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, Btn, Modal, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
+import { Card, Btn, Modal, CurrencySelect, DocumentFingerprint } from '../ui';
 import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi, erpInputCls } from '../ui/erp';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
 import { fmt, fmtMoney } from '../../utils/helpers';
@@ -19,8 +19,7 @@ const GRN_PATH: { steps: Record<'draft' | 'review' | 'approve' | 'post', Approva
   terminal: { type: 'rejected', label: 'مرفوض' },
 };
 
-interface GoodsReceivingViewProps { onNavigate?: (tab: string) => void; }
-export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNavigate }) => {
+export const GoodsReceivingView: React.FC = () => {
   const {
     grnNotes, suppliers, rawMaterials, branches, visibleBranchIds,
     addGoodsReceiptNote, updateGRNStatus, revertGoodsReceiptToDraft, updateGoodsReceiptNote, purchaseOrders,
@@ -105,27 +104,20 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
   ];
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
 
+  // مسار الاعتماد — المعتمد في التصميم: مسودة ثم مراجعة ثم اعتماد ثم ترحيل
+  const APPROVAL_STEPS = [
+    { id: 'draft', label: 'مسودة' },
+    { id: 'submitted', label: 'مراجعة' },
+    { id: 'approved', label: 'اعتماد' },
+    { id: 'posted', label: 'ترحيل' },
+  ];
+
+  // فلتر المورد — كان في شريط الاستعلام بالتصميم ولم يكن موجوداً
+  const [filterSupplier, setFilterSupplier] = useState('all');
+
   const PAGE_SIZE = 25;
   const [page, setPage] = useState(1);
 
-  const [hiddenCols, setHiddenCols] = useState<string[]>([]);
-  const [colsOpen, setColsOpen] = useState(false);
-  const toggleCol = useCallback((id: string) => setHiddenCols((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id])), []);
-
-  const COL_LABELS: [string, string][] = [
-    ['grnNumber', 'رقم GRN'],
-    ['supplier', 'المورد'],
-    ['branch', 'الفرع'],
-    ['date', 'تاريخ النظام'],
-    ['invoiceDate', 'تاريخ الفاتورة'],
-    ['invoiceNumber', 'الفاتورة'],
-    ['net', 'الصافي (ر.س)'],
-    ['vat', 'الضريبة (ر.س)'],
-    ['total', 'الإجمالي (ر.س)'],
-    ['currency', 'العملة'],
-    ['items', 'الأصناف'],
-    ['status', 'الحالة'],
-  ];
 
   // نطبّق المرشّح السريع على نتيجة الاستعلام
   const filteredQuick = useMemo(() => {
@@ -539,8 +531,8 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
       <ErpPanel>
         <ErpPageHeader
           icon={<PackageCheck className="w-6 h-6" />}
-          title="استلام المواد الخام (GRN)"
-          subtitle="تسجيل إشعارات الاستلام واعتمادها بمرحلتين (مراجعة ← اعتماد نهائي) مع تحديث المخزون تلقائياً"
+          title="إشعارات الاستلام"
+          subtitle="مسودة ← مراجعة ← اعتماد ← ترحيل للمخزون"
           actions={
             <>
               <ViewToolbar
@@ -549,97 +541,98 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                   { name: 'الإشعارات', header: ['رقم GRN', 'المورد', 'الفرع', 'تاريخ النظام', 'تاريخ الفاتورة', 'الفاتورة', 'الصافي', 'الضريبة', 'الإجمالي', 'العملة', 'معادل الريال', 'الأصناف', 'الحالة', 'استلمها', 'ملاحظات'], rows: filtered.map((g) => [g.grnNumber, g.supplierName, g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchDisplayName(g.branchId), g.date, g.invoiceDate || '—', g.invoiceNumber, fmtMoney(g.totalAmount - (g.vatAmount || 0)), fmtMoney(g.vatAmount || 0), fmtMoney(g.totalAmount), g.currencyCode || 'SAR', fmtMoney(g.totalAmount * (g.exchangeRate || 0)), g.items.length, GRN_STATUS_LABELS[g.status], g.receivedBy, g.notes || '']) },
                 ]}
               />
-              <ErpButton onClick={printSelectedLabels}><Printer className="w-3.5 h-3.5" /> ملصقات</ErpButton>
-              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> طباعة مخصصة</ErpButton>
+              <ErpButton onClick={printSelectedLabels}><Printer className="w-3.5 h-3.5" /> طباعة</ErpButton>`r`n              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> طباعة مخصصة</ErpButton>
               <ErpButton variant="primary" onClick={() => { setCopySource(''); setShowModal(true); }}><Plus className="w-3.5 h-3.5" /> إشعار جديد</ErpButton>
             </>
           }
         />
 
-        {/* إجراءات جماعية — تظهر فقط عند تحديد سجلات */}
-        {selectedIds.size > 0 && (
-          <div className="mx-6 mb-3 flex flex-wrap items-center gap-2 px-3.5 py-2.5 rounded-xl border border-primary-200 bg-primary-50/50">
-            <span className="text-[11px] font-bold text-primary-800 tnum">
-              محدَّد {selectedIds.size} من {filtered.length}
-            </span>
-            <Btn tone="ghost" onClick={bulkCopySelected}><Copy className="w-4 h-4" /> نسخ كمسودات</Btn>
-            {filtered.some((g) => selectedIds.has(g.id) && g.status === 'draft') && (
-              <Btn tone="primary" onClick={bulkSubmitForReview}><Send className="w-4 h-4" /> اعتماد المراجعة</Btn>
-            )}
-            {filtered.some((g) => selectedIds.has(g.id) && g.status === 'submitted') && (
-              <Btn tone="success" onClick={bulkApprove}><Shield className="w-4 h-4" /> اعتماد نهائي</Btn>
-            )}
-            {filtered.some((g) => selectedIds.has(g.id) && (g.status === 'approved' || g.status === 'submitted')) && can('approve_grn') && (
-              <>
-                <Btn tone="danger" onClick={bulkReturnSelectedToDraft}><RotateCw className="w-4 h-4" /> إرجاع لمسودة</Btn>
-                <Btn tone="dark" onClick={openBulkReopen}><Settings className="w-4 h-4" /> إرجاع متقدّم</Btn>
-              </>
-            )}
-          </div>
-        )}
+        {/* ═══ مسار الاعتماد (التصميم المعتمد) ═══
+            كان الاعتماد معلّقاً بلا مرجع: المستخدم لا يرى أين وصل إشعاره
+            إلا من شارة الحالة، ولا يرى أن عليه خطوة تالية. */}
+        <div className="mx-6 mb-3 flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold text-slate-500">المسار:</span>
+          {APPROVAL_STEPS.map((s, i) => (
+            <React.Fragment key={s.id}>
+              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                i === 0 ? 'bg-slate-100 text-slate-500' : 'bg-primary-50 text-primary-700'
+              }`}>
+                {i + 1} · {s.label}
+              </span>
+              {i < APPROVAL_STEPS.length - 1 && <span className="text-slate-300 text-xs">→</span>}
+            </React.Fragment>
+          ))}
+        </div>
 
-        <div className="px-6 pb-4 border-t border-line/60">
+        {/* ═══ عدّادات الحالات ═══
+            لم تكن الترويسة تعرض أي عدد، فلم يعرف المستخدم أن 12 إشعاراً
+            ينتظر المراجعة إلا بعد فتح القائمة والبحث عن رقمه. */}
+        <div className="px-6 pb-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+          {([
+            { id: 'all', label: 'كل الإشعارات', n: statusCounts.all, cls: 'text-slate-900' },
+            { id: 'submitted', label: 'قيد المراجعة', n: statusCounts.submitted, cls: 'text-amber-600' },
+            { id: 'approved', label: 'معتمد', n: statusCounts.approved, cls: 'text-emerald-600' },
+            { id: 'rejected', label: 'مرفوض', n: statusCounts.rejected, cls: 'text-rose-600' },
+          ] as const).map((s) => {
+            const on = s.id === 'all' ? filterStatus === 'all' : filterStatus === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setFilterStatus(on && s.id !== 'all' ? 'all' : s.id)}
+                className={`text-right p-3 rounded-xl border transition-colors ${
+                  on ? 'border-primary-300 bg-primary-50/60' : 'border-line bg-surface hover:bg-slate-50'
+                }`}
+              >
+                <span className="text-[10px] font-bold text-slate-500 block">{s.label}</span>
+                <span className={`tnum text-xl font-bold block mt-0.5 ${s.cls}`}>{s.n}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ═══ شريط الاستعلام ═══ */}
+        <div className="px-6 pb-3 border-t border-line/60">
           <ErpQueryBar>
-            <ErpField label="الفرع" className="w-48">
-              <ErpSelect value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
-                <option value="all">جميع الفروع</option>
-                {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
+            <ErpField label="المورد" className="w-52">
+              <ErpSelect value={filterSupplier} onChange={(e) => setFilterSupplier(e.target.value)}>
+                <option value="all">كل الموردين</option>
+                {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </ErpSelect>
             </ErpField>
             <ErpField label="الحالة" className="w-40">
               <ErpSelect value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                 <option value="all">الكل</option>
+                <option value="submitted">مراجعة</option>
                 <option value="draft">مسودة</option>
-                <option value="submitted">قيد المراجعة</option>
                 <option value="approved">معتمد</option>
                 <option value="rejected">مرفوض</option>
               </ErpSelect>
             </ErpField>
-            <ErpField label="من تاريخ" className="w-40">
+            <ErpField label="الفرع" className="w-48">
+              <ErpSelect value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
+                <option value="all">كل الفروع</option>
+                {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
+              </ErpSelect>
+            </ErpField>
+            <ErpField label="من تاريخ" className="w-36">
               <ErpInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
             </ErpField>
-            <ErpField label="إلى تاريخ" className="w-40">
+            <ErpField label="إلى تاريخ" className="w-36">
               <ErpInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
             </ErpField>
-            <ErpField label="بحث" className="w-64">
+            <ErpField label="بحث حر" className="flex-1 min-w-[220px]">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-slate-400" />
-                <ErpInput value={search} onChange={(e) => setSearch(e.target.value)} className="pr-8" placeholder="المورد، رقم GRN، رقم الفاتورة" />
+                <ErpInput value={search} onChange={(e) => setSearch(e.target.value)} className="pr-8" placeholder="رقم GRN · فاتورة · مورد…" />
               </div>
             </ErpField>
-            <ErpButton variant="ghost" onClick={() => { setFilterBranch('all'); setFilterStatus('all'); setDateFrom(''); setDateTo(''); setSearch(''); }} title="مسح كل المرشّحات">
-              <RotateCcw className="w-3.5 h-3.5" /> إعادة تعيين
+            <ErpButton variant="ghost" onClick={() => { setFilterBranch('all'); setFilterStatus('all'); setFilterSupplier('all'); setDateFrom(''); setDateTo(''); setSearch(''); setQuickFilter(null); }}>
+              <RotateCcw className="w-3.5 h-3.5" /> مسح
             </ErpButton>
           </ErpQueryBar>
-        {/* عدّادات الحالات — التصميم المعتمد:总数 404 · 12 · 356 · 36.
-              لم تكن الترويسة تعرض أي عدد، فلم يعرف المستخدم أن 12 إشعاراً
-              ينتظر المراجعة إلا بعد فتح القائمة والبحث برقمه. */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {([
-              { id: 'all', label: 'كل الإشعارات', n: statusCounts.all, tone: 'default' },
-              { id: 'submitted', label: 'قيد المراجعة', n: statusCounts.submitted, tone: 'amber' },
-              { id: 'approved', label: 'معتمد', n: statusCounts.approved, tone: 'emerald' },
-              { id: 'rejected', label: 'مرفوض', n: statusCounts.rejected, tone: 'rose' },
-            ] as const).map((s) => {
-              const on = s.id === 'all' ? filterStatus === 'all' : filterStatus === s.id;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setFilterStatus(on && s.id !== 'all' ? 'all' : (s.id === 'all' ? 'all' : s.id))}
-                  className={`text-right p-3 rounded-xl border transition-colors ${
-                    on ? 'border-primary-300 bg-primary-50/60' : 'border-line bg-surface hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="text-[10px] font-bold text-slate-500 block">{s.label}</span>
-                  <span className={`tnum text-xl font-bold block mt-0.5 ${s.tone === 'amber' ? 'text-amber-600' : s.tone === 'emerald' ? 'text-emerald-600' : s.tone === 'rose' ? 'text-rose-600' : 'text-slate-900'}`}>
-                    {s.n}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 mt-3">
+          {/* مرشّحات جاهزة */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
             <span className="text-[11px] font-bold text-slate-500">مرشّحات جاهزة:</span>
             {QUICK_FILTERS.map((f) => (
               <button
@@ -653,46 +646,30 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               </button>
             ))}
           </div>
-
-          {/* شريط المحدَّد — التصميم المعتمد: «محدَّد 2 إشعار · 17,130.50 ر.س» */}
-          {selectedIds.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mt-3 px-3.5 py-2.5 rounded-xl border border-primary-200 bg-primary-50/50">
-              <span className="text-[11px] font-bold text-primary-800 tnum">
-                محدَّد {selectedIds.size} إشعار
-                {selectedTotal > 0 && ` · ${fmtMoney(selectedTotal)}`}
-              </span>
-              <Btn tone="success" onClick={bulkApprove}><Shield className="w-4 h-4" /> اعتماد</Btn>
-              <Btn tone="ghost" onClick={bulkReturnSelectedToDraft}><RotateCw className="w-4 h-4" /> تحويل لمسودة</Btn>
-              <Btn tone="ghost" onClick={openBulkReopen}><Settings className="w-4 h-4" /> إرجاع متقدّم</Btn>
-              <Btn tone="ghost" onClick={() => printSelectedLabels}><Printer className="w-4 h-4" /> طباعة مختارة</Btn>
-            </div>
-          )}
-
-          {/* تخصيص الأعمدة — القائمة 14 عموداً والمعتمد يعرض 10 */}
-          <div className="relative mt-3 flex items-center justify-end">
-            <button
-              onClick={() => setColsOpen((v) => !v)}
-              className="text-[11px] font-bold text-slate-600 hover:text-primary-600 transition-colors"
-            >
-              {colsOpen ? 'إخفاء التخصيص' : 'تخصيص الأعمدة'}
-            </button>
-            {colsOpen && (
-              <div className="absolute top-7 left-0 z-20 w-64 max-h-72 overflow-y-auto bg-surface border border-line rounded-xl shadow-card p-3 grid grid-cols-1 gap-1">
-                {COL_LABELS.map(([id, label]) => (
-                  <label key={id} className="flex items-center gap-2 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1">
-                    <input
-                      type="checkbox"
-                      checked={!hiddenCols.includes(id)}
-                      onChange={() => toggleCol(id)}
-                      className="w-3.5 h-3.5 accent-primary-600"
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
+
+        {/* ═══ شريط المحدَّد ═══
+            مع مجموع القيمة: العدد وحده لا يخبرك بحجم الالتزام المالي. */}
+        {selectedIds.size > 0 && (
+          <div className="mx-6 mb-3 flex flex-wrap items-center gap-2 px-3.5 py-2.5 rounded-xl border border-primary-200 bg-primary-50/50">
+            <span className="text-[11px] font-bold text-primary-800 tnum">
+              محدَّد {selectedIds.size} إشعار
+              {selectedTotal > 0 && ` · ${fmtMoney(selectedTotal)}`}
+            </span>
+            {filtered.some((g) => selectedIds.has(g.id) && g.status === 'draft') && (
+              <ErpButton onClick={bulkSubmitForReview}><Send className="w-3.5 h-3.5" /> إرسال للمراجعة</ErpButton>
+            )}
+            {filtered.some((g) => selectedIds.has(g.id) && g.status === 'submitted') && can('approve_grn') && (
+              <ErpButton variant="primary" onClick={bulkApprove}><Shield className="w-3.5 h-3.5" /> اعتماد</ErpButton>
+            )}
+            {filtered.some((g) => selectedIds.has(g.id) && (g.status === 'approved' || g.status === 'submitted')) && can('approve_grn') && (
+              <ErpButton onClick={bulkReturnSelectedToDraft}><RotateCw className="w-3.5 h-3.5" /> تحويل لمسودة</ErpButton>
+            )}
+            <ErpButton onClick={openBulkReopen}><Settings className="w-3.5 h-3.5" /> إرجاع متقدّم</ErpButton>
+            <ErpButton onClick={bulkCopySelected}><Copy className="w-3.5 h-3.5" /> نسخ كمسودات</ErpButton>
+            <ErpButton onClick={() => { const chosen = paged.filter((g) => selectedIds.has(g.id)); if (chosen.length) printSelectedLabels(); }}><Printer className="w-3.5 h-3.5" /> طباعة مختارة</ErpButton>
+          </div>
+        )}
       </ErpPanel>
 
       {/* Table */}
@@ -701,58 +678,71 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
           <table className="w-full text-right text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               <tr>
-                <th className="p-3 w-10"><input type="checkbox" checked={selectedIds.size === paged.length && paged.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(paged.map((g) => g.id))); else setSelectedIds(new Set()); }} /></th>
-                <th className="p-3">رقم GRN</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">تاريخ النظام</th><th className="p-3">تاريخ الفاتورة</th><th className="p-3">الفاتورة</th>
-                <th className="p-3"><span className="tnum" dir="ltr">الصافي (ر.س)</span></th><th className="p-3"><span className="tnum" dir="ltr">الضريبة (ر.س)</span></th><th className="p-3"><span className="tnum" dir="ltr">الإجمالي (ر.س)</span></th><th className="p-3">العملة</th><th className="p-3">الأصناف</th><th className="p-3">الحالة</th><th className="p-3">إجراءات</th>
+                <th className="p-3 w-10">
+                  <input type="checkbox" checked={selectedIds.size === paged.length && paged.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(paged.map((g) => g.id))); else setSelectedIds(new Set()); }} />
+                </th>
+                <th className="p-3 text-right">رقم GRN</th>
+                <th className="p-3 text-right">المورد</th>
+                <th className="p-3 text-right">الفرع</th>
+                <th className="p-3 text-left">التاريخ</th>
+                <th className="p-3 text-left">الفاتورة</th>
+                <th className="p-3 text-left">الصافي</th>
+                <th className="p-3 text-left">الضريبة</th>
+                <th className="p-3 text-left">الإجمالي</th>
+                <th className="p-3 text-center">الحالة</th>
+                <th className="p-3 text-center">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {paged.map((g) => (
                 <tr key={g.id} className="hover:bg-slate-50">
-                  <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(g.id)} onChange={(e) => { const next = new Set(selectedIds); if (e.target.checked) next.add(g.id); else next.delete(g.id); setSelectedIds(next); }} /></td>
-                  <td className="tnum text-left p-3 font-bold text-primary-700">{g.grnNumber}</td>
+                  <td className="p-3 text-center">
+                    <input type="checkbox" checked={selectedIds.has(g.id)} onChange={() => { const next = new Set(selectedIds); if (next.has(g.id)) next.delete(g.id); else next.add(g.id); setSelectedIds(next); }} />
+                  </td>
+                  <td className="p-3 font-mono font-bold text-primary-700">{g.grnNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{g.supplierName}</td>
                   <td className="p-3 text-slate-600">{g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchDisplayName(g.branchId)}</td>
-                  <td className="p-3"><DateText value={g.date} /></td>
-                  <td className="p-3"><DateText value={g.invoiceDate || ''} /></td>
-                  <td className="tnum text-left p-3">{g.invoiceNumber}</td>
-                  <td className="p-3"><span className="tnum" dir="ltr">{fmt(g.totalAmount - (g.vatAmount || 0))}</span></td>
-                  <td className="p-3"><span className="tnum text-amber-700" dir="ltr">{fmt(g.vatAmount || 0)}</span></td>
-                  <td className="p-3 font-extrabold"><span className="tnum" dir="ltr">{fmt(g.totalAmount)}</span></td>
-                  <td className="tnum text-left p-3 text-amber-700">{g.currencyCode || 'SAR'}</td>
-                  <td className="p-3 font-bold">{g.items.length}</td>
-                  <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${GRN_STATUS_COLORS[g.status]}`}>{GRN_STATUS_LABELS[g.status]}</span></td>
+                  <td className="p-3 text-left tnum text-slate-600">{g.date}</td>
+                  <td className="p-3 text-left tnum text-slate-600">{g.invoiceNumber || '—'}</td>
+                  <td className="p-3 text-left tnum">{fmt(g.totalAmount - (g.vatAmount || 0))}</td>
+                  <td className="p-3 text-left tnum text-amber-700">{fmt(g.vatAmount || 0)}</td>
+                  <td className="p-3 text-left tnum font-extrabold text-slate-900">{fmt(g.totalAmount)}</td>
+                  <td className="p-3 text-center">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${GRN_STATUS_COLORS[g.status]}`}>
+                      {GRN_STATUS_LABELS[g.status]}
+                    </span>
+                  </td>
                   <td className="p-3">
-                    <div className="flex flex-wrap gap-1 items-center">
-                      <button onClick={() => copyAsNew(g)} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg shrink-0" title="نسخ كقالب لإشعار جديد (نفس المورد والأصناف)"><Copy className="w-4 h-4" /></button>
+                    <span className="inline-flex items-center justify-center gap-2.5">
+                      <button onClick={() => copyAsNew(g)} className="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-primary-600 transition-colors" title="نسخ كإشعار جديد">
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
                       {g.status === 'draft' && (
-                        <div className="flex flex-wrap gap-1">
-                          {can('approve_grn') && <button onClick={() => updateGRNStatus(g.id, 'submitted')} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg shrink-0" title="إرسال للمراجعة (يسمح بالتعديل بعد المراجعة)"><Send className="w-4 h-4" /></button>}
-                          <button onClick={() => openEdit(g)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg shrink-0" title="تعديل"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => updateGRNStatus(g.id, 'rejected')} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0" title="رفض"><XCircle className="w-4 h-4" /></button>
-                        </div>
+                        <button onClick={() => openEdit(g)} className="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-primary-600 transition-colors" title="تعديل">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       )}
-                      {g.status === 'submitted' && (
-                        <div className="flex flex-wrap gap-1">
-                          {can('approve_grn') && <button onClick={() => updateGRNStatus(g.id, 'approved')} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg shrink-0" title="اعتماد نهائي (يرفع للمخزون والقيود - لا يمكن التعديل بعده)"><Shield className="w-4 h-4" /></button>}
-                          <button onClick={() => openEdit(g)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg shrink-0" title="تعديل (قيد المراجعة)"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => updateGRNStatus(g.id, 'rejected')} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0" title="رفض"><Ban className="w-4 h-4" /></button>
-                          <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline shrink-0">طباعة</button>
-                        </div>
-                      )}
-                      {g.status === 'approved' && (
-                        <div className="flex flex-wrap gap-1 items-center">
-                          <span className="text-emerald-600 text-[10px] font-bold"><CheckCircle2 className="w-3.5 h-3.5 inline ml-0.5" /> معتمد</span>
-                          <button onClick={() => { onNavigate?.('supplier_returns'); localStorage.setItem('preselectGrnId', g.id); }} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg shrink-0" title="إنشاء إرجاع لهذا الاستلام"><RotateCcw className="w-4 h-4" /></button>
-                          <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline shrink-0">طباعة</button>
-                        </div>
-                      )}
-                      {g.status === 'rejected' && <span className="text-rose-600 text-[10px] font-bold"><XCircle className="w-3.5 h-3.5 inline ml-0.5" /> مرفوض</span>}
-                    </div>
+                      <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline">طباعة</button>
+                      <button onClick={() => openEdit(g)} className="text-[11px] font-bold text-primary-600 hover:underline">تفاصيل</button>
+                    </span>
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={14} className="p-8">{search || filterBranch !== 'all' || filterStatus !== 'all' || dateFrom || dateTo ? <p className="text-center text-slate-500 font-bold">لا توجد نتائج مطابقة للفلاتر الحالية</p> : <div className="flex flex-col items-center gap-2"><PackageCheck className="w-10 h-10 text-slate-300" /><p className="text-center text-slate-500 font-bold">لا توجد إشعارات استلام بعد — أنشئ أول إشعار من زر أعلاه</p></div>}</td></tr>}
+              {paged.length === 0 && (
+                <tr>
+                  <td colSpan={11} className="p-10 text-center">
+                    {search || filterBranch !== 'all' || filterStatus !== 'all' || dateFrom || dateTo ? (
+                      <p className="text-slate-500 font-bold">لا توجد نتائج مطابقة</p>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <PackageCheck className="w-10 h-10 text-slate-300" />
+                        <p className="text-slate-500 font-bold">لا توجد إشعارات بعد</p>
+                        <p className="text-[11px] text-slate-400">اضغط «إشعار جديد» لتسجيل أول استلام</p>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )}
             </tbody>
             {filtered.length > 0 && (
               <tfoot>
