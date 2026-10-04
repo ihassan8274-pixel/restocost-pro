@@ -1,7 +1,8 @@
 ﻿import React, { useState } from 'react';
 import { PackageSearch, Plus, BadgeCheck, Truck, XCircle, Send, Ban, PackagePlus, RotateCcw, Package, ChevronDown, ChevronUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, PageHeader, Btn, Modal, Field, inputCls, StatusPill, CurrencySelect, AutocompleteSelect, EmptyState } from '../ui';
+import { Card, Btn, Modal, Field, inputCls, StatusPill, CurrencySelect, AutocompleteSelect, EmptyState } from '../ui';
+import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpSelect, ErpButton, ErpKpi } from '../ui/erp';
 import { SignaturePad } from '../ui/SignaturePad';
 import { fmt, fmtMoney, PO_STATUS_LABELS, downloadCSV, navOnEnter } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
@@ -134,40 +135,58 @@ export const PurchaseOrdersView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="أوامر الشراء (Purchase Orders)" subtitle="إنشاء أوامر الشراء ومتابعتها من التقديم حتى الاستلام مع ربط مباشر بالمخزون" icon={<PackageSearch className="w-6 h-6 text-indigo-300" />}
-        actions={<>
-          <ViewToolbar
-            filename="أوامر_الشراء"
-            sheets={[
-              { name: 'أوامر الشراء', header: ['رقم PO', 'المورد', 'الفرع', 'تاريخ الطلب', 'المتوقع', 'عدد الأصناف', 'المبلغ', 'العملة', 'معادل الريال', 'الحالة', 'طلب بواسطة', 'ملاحظات'], rows: filtered.map((p) => [p.poNumber, p.supplierName, p.branchId === 'b-ck' ? 'المطبخ المركزي' : p.branchId, p.orderDate, p.expectedDate, p.items.length, fmt(p.totalAmount), p.currencyCode || 'SAR', fmt(p.totalAmount * (p.exchangeRate || 0)), PO_STATUS_LABELS[p.status], p.requestedBy, p.notes || '']) },
-              { name: 'أصناف الأوامر', header: ['رقم PO', 'المورد', 'الصنف', 'الكمية بوحدة الشراء', 'المعادل بوحدة التخزين', 'سعر الوحدة', 'الإجمالي'], rows: filtered.flatMap((p) => p.items.map((i) => [p.poNumber, p.supplierName, i.materialName, i.purchaseQty && i.purchaseUnit ? `${i.purchaseQty} ${i.purchaseUnit}` : `${i.quantity} ${i.unit}`, `${i.quantity} ${i.unit}`, fmt(i.unitPrice), fmt(i.lineTotal)])) },
-            ]}
-          />
-          <Btn tone="ghost" onClick={() => downloadCSV('Purchase_Orders.csv', ['رقم PO', 'المورد', 'الفرع', 'التاريخ', 'الحالة', 'المبلغ'], filtered.map((p) => [p.poNumber, p.supplierName, p.branchId, p.orderDate, p.status, fmt(p.totalAmount)]))}>تصدير CSV</Btn>
-          <Btn onClick={() => setShowModal(true)}><Plus className="w-4 h-4" /> أمر شراء جديد</Btn>
-        </>} />
+      <ErpPanel>
+        <ErpPageHeader
+          icon={<PackageSearch className="w-6 h-6" />}
+          title="أوامر الشراء"
+          subtitle="إنشاء أوامر الشراء ومتابعتها من التقديم حتى الاستلام مع ربط مباشر بالمخزون"
+          actions={
+            <>
+              <ViewToolbar
+                filename="أوامر_الشراء"
+                sheets={[
+                  { name: 'أوامر الشراء', header: ['رقم PO', 'المورد', 'الفرع', 'تاريخ الطلب', 'المتوقع', 'عدد الأصناف', 'المبلغ', 'العملة', 'معادل الريال', 'الحالة', 'طلب بواسطة', 'ملاحظات'], rows: filtered.map((p) => [p.poNumber, p.supplierName, p.branchId === 'b-ck' ? 'المطبخ المركزي' : p.branchId, p.orderDate, p.expectedDate, p.items.length, fmt(p.totalAmount), p.currencyCode || 'SAR', fmt(p.totalAmount * (p.exchangeRate || 0)), PO_STATUS_LABELS[p.status], p.requestedBy, p.notes || '']) },
+                  { name: 'أصناف الأوامر', header: ['رقم PO', 'المورد', 'الصنف', 'الكمية بوحدة الشراء', 'المعادل بوحدة التخزين', 'سعر الوحدة', 'الإجمالي'], rows: filtered.flatMap((p) => p.items.map((i) => [p.poNumber, p.supplierName, i.materialName, i.purchaseQty && i.purchaseUnit ? `${i.purchaseQty} ${i.purchaseUnit}` : `${i.quantity} ${i.unit}`, `${i.quantity} ${i.unit}`, fmt(i.unitPrice), fmt(i.lineTotal)])) },
+                ]}
+              />
+              <ErpButton onClick={() => downloadCSV('Purchase_Orders.csv', ['رقم PO', 'المورد', 'الفرع', 'التاريخ', 'الحالة', 'المبلغ'], filtered.map((p) => [p.poNumber, p.supplierName, p.branchId, p.orderDate, p.status, fmt(p.totalAmount)]))}>CSV</ErpButton>
+              <ErpButton variant="primary" onClick={() => setShowModal(true)}><Plus className="w-3.5 h-3.5" /> أمر شراء جديد</ErpButton>
+            </>
+          }
+        />
 
-      <Card className="p-4 flex items-center gap-3 text-xs">
-        <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)} className={inputCls + ' !w-64'}>
-          <option value="all">جميع الفروع</option>
-          {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
-        </select>
-      </Card>
-
-      <div className="mb-2">
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-          <ApprovalPathBar caption="مسار اعتماد أوامر الشراء (الضغط على صف أي مستند يعرض مساره وأزرار التقدم)" steps={[PO_PATH.steps.draft, PO_PATH.steps.review, PO_PATH.steps.approve, PO_PATH.steps.post]} current="__legend__" terminal={PO_PATH.terminal} compact />
-          <div className="text-[11px] font-bold text-slate-500 mt-2">المسودات تنشأ من "إعادة الطلب الذكية" في التكلفة الحقيقية، أو يدوياً بـ"أمر شراء جديد".</div>
+        {/* مؤشرات الحالة — بدل divs بألوان متفرقة، لكل حالة دلالتها */}
+        <div className="px-6 pb-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          {(['draft', 'submitted', 'approved', 'partially_received', 'received', 'rejected'] as const).map((st) => (
+            <ErpKpi
+              key={st}
+              label={PO_STATUS_LABELS[st]}
+              value={String(purchaseOrders.filter((p) => p.status === st).length)}
+              sub={`${fmt(purchaseOrders.filter((p) => p.status === st).reduce((s, p) => s + (p.totalAmount || 0), 0), 0)} ر.س`}
+              subTone={st === 'rejected' ? 'down' : 'flat'}
+              highlight={st === 'draft'}
+            />
+          ))}
         </div>
-      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        {(['draft', 'submitted', 'approved', 'partially_received', 'received', 'rejected'] as const).map((st) => (
-          <div key={st} className={`bg-white p-4 rounded-xl border shadow-xs ${st === 'draft' ? 'border-amber-200' : st === 'rejected' ? 'border-rose-200' : 'border-slate-200'}`}>
-            <span className="text-slate-500 text-[11px] block">{PO_STATUS_LABELS[st]}</span>
-            <strong className={`text-lg font-extrabold block mt-1 ${st === 'draft' ? 'text-amber-600' : st === 'rejected' ? 'text-rose-600' : 'text-slate-900'}`}>{purchaseOrders.filter((p) => p.status === st).length}</strong>
-          </div>
-        ))}
+        <div className="px-6 pb-4 border-t border-line/60">
+          <ErpQueryBar>
+            <ErpField label="الفرع" className="w-64">
+              <ErpSelect value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
+                <option value="all">جميع الفروع</option>
+                {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
+              </ErpSelect>
+            </ErpField>
+            <span className="text-[11px] font-bold text-slate-500 tnum">
+              {filtered.length} أمر من {purchaseOrders.length}
+            </span>
+          </ErpQueryBar>
+        </div>
+      </ErpPanel>
+
+      <div className="bg-slate-50 border border-line rounded-xl p-3">
+        <ApprovalPathBar caption="مسار اعتماد أوامر الشراء — اضغط «تفاصيل» في أي صف لعرض مساره وأزرار التقدّم" steps={[PO_PATH.steps.draft, PO_PATH.steps.review, PO_PATH.steps.approve, PO_PATH.steps.post]} current="__legend__" terminal={PO_PATH.terminal} compact />
+        <div className="text-[11px] font-bold text-slate-500 mt-2">المسودات تنشأ من "إعادة الطلب الذكية" في التكلفة الحقيقية، أو يدوياً بـ"أمر شراء جديد".</div>
       </div>
 
       <Card className="overflow-hidden">
@@ -369,20 +388,20 @@ export const PurchaseOrdersView: React.FC = () => {
           <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200 space-y-1.5">
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-indigo-950">صافي قيمة الأصناف</span>
-              <span className="font-mono font-extrabold text-indigo-800">{fmtMoney(vatInclusive ? total - vatAmount : total)}{currencyCode !== 'SAR' && <span className="text-[10px] text-indigo-500 mr-1">({currencyCode})</span>}</span>
+              <span className="tnum font-extrabold text-indigo-800">{fmtMoney(vatInclusive ? total - vatAmount : total)}{currencyCode !== 'SAR' && <span className="text-[10px] text-indigo-500 mr-1">({currencyCode})</span>}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({vatPercent}%) {vatInclusive ? '(مشمولة)' : ''}</span>
-              <span className="font-mono font-extrabold text-amber-700">{fmtMoney(vatAmount)}{currencyCode !== 'SAR' && <span className="text-[10px] text-amber-500 mr-1">({currencyCode})</span>}</span>
+              <span className="tnum font-extrabold text-amber-700">{fmtMoney(vatAmount)}{currencyCode !== 'SAR' && <span className="text-[10px] text-amber-500 mr-1">({currencyCode})</span>}</span>
             </div>
             <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-1.5">
               <span className="font-black text-indigo-950">إجمالي الأمر:</span>
-              <span className="text-lg font-black text-indigo-800 font-mono">{fmtMoney(total)}</span>
+              <span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(total)}</span>
             </div>
             {currencyCode !== 'SAR' && (
               <div className="flex justify-between items-center text-xs bg-white/60 rounded-lg px-2 py-1">
                 <span className="font-bold text-indigo-950">المعادل بالريال (ر.س) — للقيد المحاسبي</span>
-                <span className="font-mono font-extrabold text-emerald-700">{fmtMoney(total * exchangeRate)}</span>
+                <span className="tnum font-extrabold text-emerald-700">{fmtMoney(total * exchangeRate)}</span>
               </div>
             )}
           </div>
@@ -400,13 +419,13 @@ export const PurchaseOrdersView: React.FC = () => {
             <p className="text-xs text-slate-500">المورد: {partialReceivePO.supplierName} | الفرع: {getBranchName(partialReceivePO.branchId)}</p>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr>
-                    <th className="p-3">الصنف</th>
-                    <th className="p-3">مطلوب</th>
-                    <th className="p-3">مستلم مسبقاً</th>
-                    <th className="p-3">باقي</th>
-                    <th className="p-3">الكمية المستلمة الآن</th>
+                    <th className="p-3 text-right">الصنف</th>
+                    <th className="p-3 text-left">مطلوب</th>
+                    <th className="p-3 text-left">مستلم مسبقاً</th>
+                    <th className="p-3 text-left">باقي</th>
+                    <th className="p-3 text-left">الكمية المستلمة الآن</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -416,11 +435,11 @@ export const PurchaseOrdersView: React.FC = () => {
                     return remaining > 0 && (
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="p-3 font-bold text-slate-900">{it.materialName}</td>
-                        <td className="p-3 font-mono">{fmt(it.quantity)}</td>
-                        <td className="p-3 font-mono">{fmt(received)}</td>
-                        <td className="p-3 font-mono font-bold text-amber-700">{fmt(remaining)}</td>
+                        <td className="p-3 text-left tnum">{fmt(it.quantity)}</td>
+                        <td className="p-3 text-left tnum">{fmt(received)}</td>
+                        <td className="p-3 text-left tnum font-bold text-amber-700">{fmt(remaining)}</td>
                         <td className="p-3">
-                          <input type="number" min="0" max={String(remaining)} step="any" data-nav value={partialReceiveQtys[idx] || ''} onChange={(e) => setPartialReceiveQtys((prev) => ({ ...prev, [idx]: parseFloat(e.target.value) || 0 }))} className={inputCls + ' w-full'} placeholder={String(remaining)} />
+                          <input type="number" min="0" max={String(remaining)} step="any" data-nav value={partialReceiveQtys[idx] || ''} onChange={(e) => setPartialReceiveQtys((prev) => ({ ...prev, [idx]: parseFloat(e.target.value) || 0 }))} className={inputCls + ' w-full tnum'} placeholder={String(remaining)} />
                         </td>
                       </tr>
                     );
@@ -444,7 +463,7 @@ export const PurchaseOrdersView: React.FC = () => {
                 <p className="font-extrabold text-indigo-950">{signPo.supplierName}</p>
                 <p className="text-[11px] text-indigo-600 font-bold">المسؤول: {currentUser?.name || 'مستخدم النظام'}</p>
               </div>
-              <span className="font-mono font-black text-indigo-800 text-sm">{fmtMoney(signPo.totalAmount)}</span>
+              <span className="tnum font-black text-indigo-800 text-sm">{fmtMoney(signPo.totalAmount)}</span>
             </div>
             <SignaturePad value={signature} onChange={setSignature} label="ارسم توقيعك هنا (باللمس أو الفأرة)" />
             <p className="text-[10px] text-slate-400 font-bold">بالمصادقة بالرسم هنا، تُقرّ بصحة أمر الشراء {signPo.poNumber} وموافقتك عليه بالكامل.</p>

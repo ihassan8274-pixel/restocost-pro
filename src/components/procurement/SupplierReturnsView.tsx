@@ -1,7 +1,8 @@
 ﻿import React, { useState, useMemo, useEffect } from 'react';
 import { RotateCcw, Plus, CheckCircle2, XCircle, Printer, Pencil, Send, Ban, Search, Shield } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, PageHeader, Btn, Modal, Field, inputCls, AutocompleteSelect, DocumentFingerprint } from '../ui';
+import { Card, Btn, Modal, Field, inputCls, AutocompleteSelect, DocumentFingerprint } from '../ui';
+import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton } from '../ui/erp';
 import { fmtMoney } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
 import { SupplierReturn, SupplierReturnItem } from '../../types';
@@ -246,56 +247,76 @@ export const SupplierReturnsView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="إذن إرجاع الموردين" subtitle="إنشاء وإدارة إخطارات إرجاع المواد للموردين مع اعتماد بمرحلتين (مراجعة → اعتماد نهائي)" icon={<RotateCcw className="w-6 h-6 text-indigo-300" />}
-        actions={<>
-          <ViewToolbar
-            filename="إرجاع_الموردين"
-            sheets={[
-              { name: 'الإرجاعات', header: ['رقم', 'المورد', 'الفرع', 'التاريخ', 'السبب', 'الأصناف', 'الإجمالي', 'العملة', 'الحالة'], rows: filtered.map((r) => [r.returnNumber, r.supplierName, r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId), r.date, r.reason, r.items.length, r.totalAmount, r.currencyCode || 'SAR', RETURN_STATUS_LABELS[r.status]]) },
-              { name: 'تفاصيل الأصناف', header: ['رقم الإرجاع', 'المورد', 'الصنف', 'الكمية', 'الوحدة', 'السعر', 'الإجمالي'], rows: supplierReturnItems.map((i) => [i.returnNumber, i.supplierName, i.itemName, i.quantity, i.unit, i.unitPrice, i.lineTotal]) },
-            ]}
-          />
-          <Btn tone="ghost" onClick={printSearchScreen}><Printer className="w-4 h-4" /> طباعة شاشة البحث</Btn>
-          {selectedIds.size > 0 && (
+    <div className="space-y-4">
+      <ErpPanel>
+        <ErpPageHeader
+          icon={<RotateCcw className="w-6 h-6" />}
+          title="إذن إرجاع الموردين"
+          subtitle="إنشاء وإدارة إخطارات إرجاع المواد للموردين مع اعتماد بمرحلتين (مراجعة ← اعتماد نهائي)"
+          actions={
             <>
-              {selectedOf('draft').length > 0 && (
-                <Btn tone="primary" onClick={bulkSubmitSelected}><Send className="w-4 h-4" /> إرسال المحدد للمراجعة ({selectedOf('draft').length})</Btn>
-              )}
-              {selectedOf('submitted').length > 0 && can('approve_purchase_orders') && (
-                <Btn tone="success" onClick={bulkApproveSelected}><Shield className="w-4 h-4" /> اعتماد المحدد ({selectedOf('submitted').length})</Btn>
-              )}
-              {filtered.some((r) => selectedIds.has(r.id) && (r.status === 'submitted' || r.status === 'approved')) && (
-                <Btn tone="danger" onClick={bulkRevertSelected}><RotateCcw className="w-4 h-4" /> إرجاع المحدد لمسودة ({filtered.filter((r) => selectedIds.has(r.id) && (r.status === 'submitted' || r.status === 'approved')).length})</Btn>
-              )}
+              <ViewToolbar
+                filename="إرجاع_الموردين"
+                sheets={[
+                  { name: 'الإرجاعات', header: ['رقم', 'المورد', 'الفرع', 'التاريخ', 'السبب', 'الأصناف', 'الإجمالي', 'العملة', 'الحالة'], rows: filtered.map((r) => [r.returnNumber, r.supplierName, r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId), r.date, r.reason, r.items.length, r.totalAmount, r.currencyCode || 'SAR', RETURN_STATUS_LABELS[r.status]]) },
+                  { name: 'تفاصيل الأصناف', header: ['رقم الإرجاع', 'المورد', 'الصنف', 'الكمية', 'الوحدة', 'السعر', 'الإجمالي'], rows: supplierReturnItems.map((i) => [i.returnNumber, i.supplierName, i.itemName, i.quantity, i.unit, i.unitPrice, i.lineTotal]) },
+                ]}
+              />
+              <ErpButton onClick={printSearchScreen}><Printer className="w-3.5 h-3.5" /> طباعة الشاشة</ErpButton>
+              <ErpButton variant="primary" onClick={() => setShowModal(true)}><Plus className="w-3.5 h-3.5" /> إرجاع جديد</ErpButton>
             </>
-          )}
-          <Btn onClick={() => setShowModal(true)}><Plus className="w-4 h-4" /> إرجاع جديد</Btn>
-        </>} />
+          }
+        />
 
-      {/* Search & Filters */}
-      <Card className="p-4 flex flex-wrap items-end gap-3 text-xs">
-        <Field label="الفرع">
-          <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)} className={inputCls + ' !w-48'}>
-            <option value="all">جميع الفروع</option>
-            {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
-          </select>
-        </Field>
-        <Field label="الحالة">
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={inputCls + ' !w-40'}>
-            <option value="all">الكل</option>
-            <option value="draft">مسودة</option>
-            <option value="submitted">قيد المراجعة</option>
-            <option value="approved">معتمد</option>
-            <option value="rejected">مرفوض</option>
-          </select>
-        </Field>
-        <Field label="من تاريخ"><input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={inputCls} /></Field>
-        <Field label="إلى تاريخ"><input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={inputCls} /></Field>
-        <Field label="بحث">
-          <div className="relative"><Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-slate-400" /><input type="text" value={search} onChange={(e) => setSearch(e.target.value)} className={inputCls + ' pr-8 !w-52'} placeholder="المورد، رقم، سبب" /></div>
-        </Field>
-      </Card>
+        {/* إجراءات جماعية */}
+        {selectedIds.size > 0 && (
+          <div className="mx-6 mb-3 flex flex-wrap items-center gap-2 px-3.5 py-2.5 rounded-xl border border-primary-200 bg-primary-50/50">
+            <span className="text-[11px] font-bold text-primary-800 tnum">محدَّد {selectedIds.size} من {filtered.length}</span>
+            {selectedOf('draft').length > 0 && (
+              <Btn tone="primary" onClick={bulkSubmitSelected}><Send className="w-4 h-4" /> إرسال للمراجعة ({selectedOf('draft').length})</Btn>
+            )}
+            {selectedOf('submitted').length > 0 && can('approve_purchase_orders') && (
+              <Btn tone="success" onClick={bulkApproveSelected}><Shield className="w-4 h-4" /> اعتماد ({selectedOf('submitted').length})</Btn>
+            )}
+            {filtered.some((r) => selectedIds.has(r.id) && (r.status === 'submitted' || r.status === 'approved')) && (
+              <Btn tone="danger" onClick={bulkRevertSelected}><RotateCcw className="w-4 h-4" /> إرجاع لمسودة</Btn>
+            )}
+          </div>
+        )}
+
+        <div className="px-6 pb-4 border-t border-line/60">
+          <ErpQueryBar>
+            <ErpField label="الفرع" className="w-48">
+              <ErpSelect value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
+                <option value="all">جميع الفروع</option>
+                {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
+              </ErpSelect>
+            </ErpField>
+            <ErpField label="الحالة" className="w-40">
+              <ErpSelect value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="all">الكل</option>
+                <option value="draft">مسودة</option>
+                <option value="submitted">قيد المراجعة</option>
+                <option value="approved">معتمد</option>
+                <option value="rejected">مرفوض</option>
+              </ErpSelect>
+            </ErpField>
+            <ErpField label="من تاريخ" className="w-40">
+              <ErpInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+            </ErpField>
+            <ErpField label="إلى تاريخ" className="w-40">
+              <ErpInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            </ErpField>
+            <ErpField label="بحث" className="w-64">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-slate-400" />
+                <ErpInput value={search} onChange={(e) => setSearch(e.target.value)} className="pr-8" placeholder="المورد، رقم، سبب" />
+              </div>
+            </ErpField>
+            <span className="text-[11px] font-bold text-slate-500 tnum">{filtered.length} إذن من {supplierReturns.length}</span>
+          </ErpQueryBar>
+        </div>
+      </ErpPanel>
 
       {/* Table */}
       <Card className="overflow-hidden">
@@ -415,7 +436,7 @@ export const SupplierReturnsView: React.FC = () => {
           {selectedGrnId && !editReturn && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs">
               <span className="font-bold text-emerald-950">تم تحميل أصناف GRN: </span>
-              <span className="font-mono text-emerald-700">{grnNotes.find((g) => g.id === selectedGrnId)?.grnNumber}</span>
+              <span className="tnum text-emerald-700">{grnNotes.find((g) => g.id === selectedGrnId)?.grnNumber}</span>
               <span className="ml-2 text-emerald-700">({editItems.length} صنف جاهز للإرجاع)</span>
               <button type="button" onClick={() => { setSelectedGrnId(''); setEditItems([]); }} className="ml-3 text-rose-600 hover:text-rose-800 text-[10px] font-bold underline">مسح الاختيار</button>
             </div>
@@ -507,9 +528,9 @@ export const SupplierReturnsView: React.FC = () => {
           </div>
 
           <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200 space-y-1.5">
-            <div className="flex justify-between items-center text-xs"><span className="font-bold text-indigo-950">الإجمالي قبل الضريبة</span><span className="font-mono font-extrabold text-indigo-800">{fmtMoney(calcTotalsWithVat(editItems)._subtotal)}</span></div>
-            <div className="flex justify-between items-center text-xs"><span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({retVatRate}%) {retVatIncl ? '(مشمولة)' : ''}</span><span className="font-mono font-extrabold text-amber-700">{fmtMoney(calcTotalsWithVat(editItems).vatAmt)}</span></div>
-            <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-1.5"><span className="font-black text-indigo-950">إجمالي الإرجاع</span><span className="text-lg font-black text-indigo-800 font-mono">{fmtMoney(calcTotalsWithVat(editItems).total)}</span></div>
+            <div className="flex justify-between items-center text-xs"><span className="font-bold text-indigo-950">الإجمالي قبل الضريبة</span><span className="tnum font-extrabold text-indigo-800">{fmtMoney(calcTotalsWithVat(editItems)._subtotal)}</span></div>
+            <div className="flex justify-between items-center text-xs"><span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({retVatRate}%) {retVatIncl ? '(مشمولة)' : ''}</span><span className="tnum font-extrabold text-amber-700">{fmtMoney(calcTotalsWithVat(editItems).vatAmt)}</span></div>
+            <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-1.5"><span className="font-black text-indigo-950">إجمالي الإرجاع</span><span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(calcTotalsWithVat(editItems).total)}</span></div>
           </div>
 
           <div className="pt-2 flex justify-end gap-2">

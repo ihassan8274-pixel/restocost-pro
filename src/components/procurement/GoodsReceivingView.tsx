@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useRef } from 'react';
+﻿import React, { useState, useMemo, useRef } from 'react';
 import { PackageCheck, Plus, CheckCircle2, XCircle, Receipt, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, PageHeader, Btn, Modal, Field, inputCls, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
+import { Card, Btn, Modal, Field, inputCls, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
+import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton } from '../ui/erp';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
 import { fmt, fmtMoney } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
@@ -469,69 +470,84 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="استلام المواد الخام (GRN)" subtitle="تسجيل إشعارات الاستلام واعتمادها بمرحلتين (مراجعة → اعتماد نهائي) مع تحديث المخزون تلقائياً" icon={<PackageCheck className="w-6 h-6 text-indigo-300" />} subtitleNoWrap
-        actions={
-          <div className="flex flex-col gap-3">
-            {/* Row 1: Export / Print tools */}
-            <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-4">
+      <ErpPanel>
+        <ErpPageHeader
+          icon={<PackageCheck className="w-6 h-6" />}
+          title="استلام المواد الخام (GRN)"
+          subtitle="تسجيل إشعارات الاستلام واعتمادها بمرحلتين (مراجعة ← اعتماد نهائي) مع تحديث المخزون تلقائياً"
+          actions={
+            <>
               <ViewToolbar
                 filename="إشعارات_الاستلام"
                 sheets={[
                   { name: 'الإشعارات', header: ['رقم GRN', 'المورد', 'الفرع', 'تاريخ النظام', 'تاريخ الفاتورة', 'الفاتورة', 'الصافي', 'الضريبة', 'الإجمالي', 'العملة', 'معادل الريال', 'الأصناف', 'الحالة', 'استلمها', 'ملاحظات'], rows: filtered.map((g) => [g.grnNumber, g.supplierName, g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchDisplayName(g.branchId), g.date, g.invoiceDate || '—', g.invoiceNumber, fmtMoney(g.totalAmount - (g.vatAmount || 0)), fmtMoney(g.vatAmount || 0), fmtMoney(g.totalAmount), g.currencyCode || 'SAR', fmtMoney(g.totalAmount * (g.exchangeRate || 0)), g.items.length, GRN_STATUS_LABELS[g.status], g.receivedBy, g.notes || '']) },
                 ]}
               />
-              <Btn tone="ghost" onClick={printSelectedLabels}><Printer className="w-4 h-4" /> ملصقات باركود</Btn>
-              <Btn tone="ghost" onClick={openPrintModal}><Printer className="w-4 h-4" /> طباعة مخصصة</Btn>
-            </div>
-            {/* Row 2: Bulk actions (when selection) + New GRN */}
-            <div className="flex flex-wrap items-center gap-2 justify-between">
-              {selectedIds.size > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Btn tone="ghost" onClick={bulkCopySelected}><Copy className="w-4 h-4" /> نسخ المحدد كمسودات ({filtered.filter((g) => selectedIds.has(g.id)).length})</Btn>
-                  {filtered.some((g) => selectedIds.has(g.id) && g.status === 'draft') && (
-                    <Btn tone="primary" onClick={bulkSubmitForReview}><Send className="w-4 h-4" /> اعتماد المراجعة ({filtered.filter((g) => selectedIds.has(g.id) && g.status === 'draft').length})</Btn>
-                  )}
-                  {filtered.some((g) => selectedIds.has(g.id) && g.status === 'submitted') && (
-                    <Btn tone="success" onClick={bulkApprove}><Shield className="w-4 h-4" /> اعتماد المحدد ({filtered.filter((g) => selectedIds.has(g.id) && g.status === 'submitted').length})</Btn>
-                  )}
-                  {filtered.some((g) => selectedIds.has(g.id) && (g.status === 'approved' || g.status === 'submitted')) && can('approve_grn') && (
-                    <>
-                      <Btn tone="danger" onClick={bulkReturnSelectedToDraft}><RotateCw className="w-4 h-4" /> إرجاع المحدد لمسودة ({filtered.filter((g) => selectedIds.has(g.id) && (g.status === 'approved' || g.status === 'submitted')).length})</Btn>
-                      <Btn tone="dark" onClick={openBulkReopen}><Settings className="w-4 h-4" /> إرجاع متقدم (تحديد الحركات)</Btn>
-                    </>
-                  )}
-                </div>
-              )}
-              <Btn onClick={() => { setCopySource(''); setShowModal(true); }}><Plus className="w-4 h-4" /> إشعار استلام جديد</Btn>
-            </div>
-          </div>
-        }
-      />
+              <ErpButton onClick={printSelectedLabels}><Printer className="w-3.5 h-3.5" /> ملصقات</ErpButton>
+              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> طباعة مخصصة</ErpButton>
+              <ErpButton variant="primary" onClick={() => { setCopySource(''); setShowModal(true); }}><Plus className="w-3.5 h-3.5" /> إشعار جديد</ErpButton>
+            </>
+          }
+        />
 
-      {/* Search & Filters */}
-      <Card className="p-4 flex flex-wrap items-end gap-3 text-xs">
-        <Field label="الفرع">
-          <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)} className={inputCls + ' !w-48'}>
-            <option value="all">جميع الفروع</option>
-            {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
-          </select>
-        </Field>
-        <Field label="الحالة">
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={inputCls + ' !w-40'}>
-            <option value="all">الكل</option>
-            <option value="draft">مسودة</option>
-            <option value="submitted">قيد المراجعة</option>
-            <option value="approved">معتمد</option>
-            <option value="rejected">مرفوض</option>
-          </select>
-        </Field>
-        <Field label="من تاريخ"><input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={inputCls} /></Field>
-        <Field label="إلى تاريخ"><input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={inputCls} /></Field>
-        <Field label="بحث">
-          <div className="relative"><Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-slate-400" /><input type="text" value={search} onChange={(e) => setSearch(e.target.value)} className={inputCls + ' pr-8 !w-52'} placeholder="المورد، رقم GRN، رقم الفاتورة" /></div>
-        </Field>
-      </Card>
+        {/* إجراءات جماعية — تظهر فقط عند تحديد سجلات */}
+        {selectedIds.size > 0 && (
+          <div className="mx-6 mb-3 flex flex-wrap items-center gap-2 px-3.5 py-2.5 rounded-xl border border-primary-200 bg-primary-50/50">
+            <span className="text-[11px] font-bold text-primary-800 tnum">
+              محدَّد {selectedIds.size} من {filtered.length}
+            </span>
+            <Btn tone="ghost" onClick={bulkCopySelected}><Copy className="w-4 h-4" /> نسخ كمسودات</Btn>
+            {filtered.some((g) => selectedIds.has(g.id) && g.status === 'draft') && (
+              <Btn tone="primary" onClick={bulkSubmitForReview}><Send className="w-4 h-4" /> اعتماد المراجعة</Btn>
+            )}
+            {filtered.some((g) => selectedIds.has(g.id) && g.status === 'submitted') && (
+              <Btn tone="success" onClick={bulkApprove}><Shield className="w-4 h-4" /> اعتماد نهائي</Btn>
+            )}
+            {filtered.some((g) => selectedIds.has(g.id) && (g.status === 'approved' || g.status === 'submitted')) && can('approve_grn') && (
+              <>
+                <Btn tone="danger" onClick={bulkReturnSelectedToDraft}><RotateCw className="w-4 h-4" /> إرجاع لمسودة</Btn>
+                <Btn tone="dark" onClick={openBulkReopen}><Settings className="w-4 h-4" /> إرجاع متقدّم</Btn>
+              </>
+            )}
+          </div>
+        )}
+
+        <div className="px-6 pb-4 border-t border-line/60">
+          <ErpQueryBar>
+            <ErpField label="الفرع" className="w-48">
+              <ErpSelect value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}>
+                <option value="all">جميع الفروع</option>
+                {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
+              </ErpSelect>
+            </ErpField>
+            <ErpField label="الحالة" className="w-40">
+              <ErpSelect value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="all">الكل</option>
+                <option value="draft">مسودة</option>
+                <option value="submitted">قيد المراجعة</option>
+                <option value="approved">معتمد</option>
+                <option value="rejected">مرفوض</option>
+              </ErpSelect>
+            </ErpField>
+            <ErpField label="من تاريخ" className="w-40">
+              <ErpInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+            </ErpField>
+            <ErpField label="إلى تاريخ" className="w-40">
+              <ErpInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            </ErpField>
+            <ErpField label="بحث" className="w-64">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-slate-400" />
+                <ErpInput value={search} onChange={(e) => setSearch(e.target.value)} className="pr-8" placeholder="المورد، رقم GRN، رقم الفاتورة" />
+              </div>
+            </ErpField>
+            <ErpButton variant="ghost" onClick={() => { setFilterBranch('all'); setFilterStatus('all'); setDateFrom(''); setDateTo(''); setSearch(''); }} title="مسح كل المرشّحات">
+              <RotateCcw className="w-3.5 h-3.5" /> إعادة تعيين
+            </ErpButton>
+          </ErpQueryBar>
+        </div>
+      </ErpPanel>
 
       {/* Table */}
       <Card className="overflow-hidden">
@@ -747,20 +763,20 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                   <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                     <span className="font-bold text-indigo-950">الإجمالي قبل الضريبة</span>
-                    <span className="font-mono font-extrabold text-indigo-800">{fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}{currencyCode !== 'SAR' && <span className="text-[10px] text-indigo-500 ml-1">({currencyCode})</span>}</span>
+                    <span className="tnum font-extrabold text-indigo-800">{fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}{currencyCode !== 'SAR' && <span className="text-[10px] text-indigo-500 ml-1">({currencyCode})</span>}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                     <span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({vatRate}%) {vatIncl ? '(مشمولة)' : ''}</span>
-                    <span className="font-mono font-extrabold text-amber-700">{fmtMoney(vatAmount)}{currencyCode !== 'SAR' && <span className="text-[10px] text-amber-500 ml-1">({currencyCode})</span>}</span>
+                    <span className="tnum font-extrabold text-amber-700">{fmtMoney(vatAmount)}{currencyCode !== 'SAR' && <span className="text-[10px] text-amber-500 ml-1">({currencyCode})</span>}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                     <span className="font-black text-indigo-950">إجمالي الفاتورة: <Receipt className="w-4 h-4 inline" /></span>
-                    <span className="text-lg font-black text-indigo-800 font-mono">{fmtMoney(totalAmount)}</span>
+                    <span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(totalAmount)}</span>
                   </div>
                   {currencyCode !== 'SAR' && (
                     <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                       <span className="font-bold text-indigo-950">المعادل بالريال (ر.س)</span>
-                      <span className="font-mono font-extrabold text-emerald-700">{fmtMoney(totalAmount * exchangeRate)}</span>
+                      <span className="tnum font-extrabold text-emerald-700">{fmtMoney(totalAmount * exchangeRate)}</span>
                     </div>
                   )}
                 </div>
@@ -871,15 +887,15 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                   <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                     <span className="font-bold text-indigo-950">إجمالي الأصناف</span>
-                    <span className="font-mono font-extrabold text-indigo-800">{editItems.length}</span>
+                    <span className="tnum font-extrabold text-indigo-800">{editItems.length}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                     <span className="font-bold text-indigo-950">إجمالي الكميات</span>
-                    <span className="font-mono font-extrabold text-indigo-800">{fmt(editItems.reduce((s, i) => s + i.quantityReceived, 0))}</span>
+                    <span className="tnum font-extrabold text-indigo-800">{fmt(editItems.reduce((s, i) => s + i.quantityReceived, 0))}</span>
                   </div>
                   <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
                     <span className="font-black text-indigo-950">إجمالي القيمة</span>
-                    <span className="text-lg font-black text-indigo-800 font-mono">{fmtMoney(editItems.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0))}</span>
+                    <span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(editItems.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0))}</span>
                   </div>
                 </div>
               </div>
