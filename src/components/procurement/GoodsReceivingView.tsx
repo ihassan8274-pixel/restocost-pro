@@ -1,8 +1,8 @@
 ﻿import React, { useState, useMemo, useRef } from 'react';
-import { PackageCheck, Plus, CheckCircle2, XCircle, Receipt, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
+import { PackageCheck, Plus, CheckCircle2, XCircle, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, Btn, Modal, Field, inputCls, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
-import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton } from '../ui/erp';
+import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi } from '../ui/erp';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
 import { fmt, fmtMoney } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
@@ -759,29 +759,25 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               </div>
 
               {/* Totals Summary */}
-              <div className="bg-indigo-50 rounded-xl border border-indigo-200 p-4 space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                  <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                    <span className="font-bold text-indigo-950">الإجمالي قبل الضريبة</span>
-                    <span className="tnum font-extrabold text-indigo-800">{fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}{currencyCode !== 'SAR' && <span className="text-[10px] text-indigo-500 ml-1">({currencyCode})</span>}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                    <span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({vatRate}%) {vatIncl ? '(مشمولة)' : ''}</span>
-                    <span className="tnum font-extrabold text-amber-700">{fmtMoney(vatAmount)}{currencyCode !== 'SAR' && <span className="text-[10px] text-amber-500 ml-1">({currencyCode})</span>}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                    <span className="font-black text-indigo-950">إجمالي الفاتورة: <Receipt className="w-4 h-4 inline" /></span>
-                    <span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(totalAmount)}</span>
-                  </div>
-                  {currencyCode !== 'SAR' && (
-                    <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                      <span className="font-bold text-indigo-950">المعادل بالريال (ر.س)</span>
-                      <span className="tnum font-extrabold text-emerald-700">{fmtMoney(totalAmount * exchangeRate)}</span>
-                    </div>
-                  )}
-                </div>
+              {/* الإجماليات — ErpKpi. كانت لوحة indigo-950 على bg-indigo-50،
+                  خارج نظام التصميم ورموزه. وهي أعلى أربع قيم في النافذة:
+                  إن بقيت غير مقروءة لم تُقرأ. الإجمالي وحده يميّز نفسه
+                  بـhighlight، والضريبة والمعادلة بلونيهما الدلاليين. */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <ErpKpi
+                  label={`الإجمالي قبل الضريبة${currencyCode !== 'SAR' ? ` (${currencyCode})` : ''}`}
+                  value={fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}
+                />
+                <ErpKpi
+                  label={`ضريبة القيمة المضافة ${vatRate}%${vatIncl ? ' (مشمولة)' : ''}`}
+                  value={fmtMoney(vatAmount)}
+                  subTone="down"
+                />
+                <ErpKpi label="إجمالي الفاتورة" value={fmtMoney(totalAmount)} highlight />
+                {currencyCode !== 'SAR' && (
+                  <ErpKpi label="المعادل بالريال" value={fmtMoney(totalAmount * exchangeRate)} subTone="up" />
+                )}
               </div>
-
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
                 <button type="button" onClick={() => setShowModal(false)} className="px-6 py-2.5 border border-slate-300 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors">إلغاء</button>
@@ -883,22 +879,11 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             {/* Section 3: Totals & Actions - Sticky Footer */}
             <div className="sticky bottom-0 z-10 bg-white border-t border-slate-200 py-4 px-6 space-y-4">
               {/* Totals Summary */}
-              <div className="bg-indigo-50 rounded-xl border border-indigo-200 p-4 space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                  <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                    <span className="font-bold text-indigo-950">إجمالي الأصناف</span>
-                    <span className="tnum font-extrabold text-indigo-800">{editItems.length}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                    <span className="font-bold text-indigo-950">إجمالي الكميات</span>
-                    <span className="tnum font-extrabold text-indigo-800">{fmt(editItems.reduce((s, i) => s + i.quantityReceived, 0))}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-white/60 rounded-lg">
-                    <span className="font-black text-indigo-950">إجمالي القيمة</span>
-                    <span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(editItems.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0))}</span>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <ErpKpi label="عدد الأصناف" value={String(editItems.length)} />
+                  <ErpKpi label="إجمالي الكميات" value={fmt(editItems.reduce((s, i) => s + i.quantityReceived, 0))} />
+                  <ErpKpi label="إجمالي التكلفة" value={fmtMoney(editItems.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0))} highlight />
                 </div>
-              </div>
 
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
