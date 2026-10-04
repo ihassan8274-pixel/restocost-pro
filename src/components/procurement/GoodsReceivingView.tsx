@@ -858,7 +858,7 @@ export const GoodsReceivingView: React.FC = () => {
           <div className="border-b border-line bg-surface">
             <div className="px-6 py-4 flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="w-11 h-11 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
+                <span className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
                   <PackageCheck className="w-6 h-6" />
                 </span>
                 <div>
@@ -907,56 +907,79 @@ export const GoodsReceivingView: React.FC = () => {
 
           {/* محتوى النموذج */}
           <div className="space-y-5">
-            {/* Section 1: Header Info */}
-            <section className="bg-surface rounded-2xl p-5 border border-line">
-              <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-primary-600" /> بيانات الإشعار</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="lg:col-span-2">
-                  <ErpField label="المورد *" required>
-                    <div className="flex gap-2">
-                      <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${erpInputCls} flex-1`}>
-                        {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                      </select>
-                      <Btn type="button" tone="ghost" onClick={() => fillFromSupplierHistory(supplierId)} disabled={!supplierId} className="text-xs px-3 py-2 whitespace-nowrap shrink-0"><History className="w-3.5 h-3.5" /> تعبئة أصناف سابقة</Btn>
-                    </div>
-                  </ErpField>
-                </div>
-                <ErpField label="الفرع *" required>
-                  <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={erpInputCls}>
-                    {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
-                  </select>
+            {/* ═══ ① بيانات الإشعار (المعتمد: شبكة رباعية، والضريبة داخلها) ═══
+                كانت الضريبة في صندوق منفصل بين شبكتين، فينتشر «المستلم» وحده في
+                صف ويصبح eleven حقلاً على أربعة صفوف بدل ثلاثة. */}
+            <section className="border border-line rounded-xl px-4 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <ErpField label="المورد" required className="lg:col-span-2">
+                  <div className="flex gap-2">
+                    <ErpSelect value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className="flex-1">
+                      {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </ErpSelect>
+                    <ErpButton onClick={() => fillFromSupplierHistory(supplierId)} disabled={!supplierId} className="shrink-0 whitespace-nowrap">
+                      <History className="w-3.5 h-3.5" /> تعبئة أصناف سابقة
+                    </ErpButton>
+                  </div>
                 </ErpField>
+
+                <ErpField label="الفرع" required>
+                  <ErpSelect value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+                    {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
+                  </ErpSelect>
+                </ErpField>
+
                 <ErpField label="أمر الشراء المرتبط">
-                  <select value={purchaseOrderId} onChange={(e) => applyPO(e.target.value)} className={erpInputCls}>
+                  <ErpSelect value={purchaseOrderId} onChange={(e) => applyPO(e.target.value)}>
                     <option value="">بدون أمر شراء</option>
                     {availablePOs.map((p) => {
                       const remCount = p.items.filter((i) => (i.receivedQty || 0) < (i.quantity || 0)).length;
                       return <option key={p.id} value={p.id}>{p.poNumber} — {p.supplierName} — {fmtMoney(p.totalAmount)}{p.status === 'partially_received' ? ` — متبقي ${remCount} بند` : ''}</option>;
                     })}
                     {availablePOs.length === 0 && <option value="" disabled>لا توجد أوامر شراء مفتوحة لهذا المورد</option>}
-                  </select>
+                  </ErpSelect>
                 </ErpField>
-                <ErpField label="المستلم"><input value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} className={erpInputCls} placeholder="اسم الموظف" /></ErpField>
-                <ErpField label="ملاحظات" className="lg:col-span-4">
-                  <input
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className={erpInputCls}
-                    placeholder="مثال: وصل ناقص صنف واحد · تم agreed الكمية مع المندوب"
-                  />
+
+                <ErpField label="المستلم">
+                  <ErpInput value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} placeholder="اسم الموظف" />
                 </ErpField>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-                <ErpField label="رقم فاتورة المورد"><input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className={erpInputCls} placeholder="اختياري" /></ErpField>
-                <ErpField label="تاريخ الفاتورة"><input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className={erpInputCls} /></ErpField>
-                <ErpField label="عملة المستند">
+
+                <ErpField label="تاريخ النظام" hint="يُضبط على اليوم">
+                  <ErpInput value={new Date().toISOString().split('T')[0]} readOnly className="bg-slate-50 text-slate-500" />
+                </ErpField>
+
+                <ErpField label="رقم فاتورة المورد">
+                  <ErpInput value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder="اختياري" />
+                </ErpField>
+
+                <ErpField label="تاريخ الفاتورة">
+                  <ErpInput type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} />
+                </ErpField>
+
+                <ErpField label="عملة المستند" required>
                   <CurrencySelect value={currencyCode} onChange={(code) => { setCurrencyCode(code); setExchangeRate(getCurrencyRate(code)); }} />
                 </ErpField>
+
                 {currencyCode !== 'SAR' && (
                   <ErpField label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
-                    <input type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} className={erpInputCls} required />
+                    <ErpInput type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} required />
                   </ErpField>
                 )}
+
+                <ErpField label="الأسعار شاملة الضريبة؟">
+                  <div className="flex gap-1.5">
+                    <button type="button" onClick={() => setVatIncl(true)} className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${vatIncl ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}>شاملة</button>
+                    <button type="button" onClick={() => setVatIncl(false)} className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${!vatIncl ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}>غير شاملة</button>
+                  </div>
+                </ErpField>
+
+                <ErpField label="نسبة ضريبة القيمة المضافة %">
+                  <ErpInput type="number" min="0" max="100" value={vatRate || ''} onChange={(e) => setVatRate(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} />
+                </ErpField>
+
+                <ErpField label="ملاحظات" className="lg:col-span-2">
+                  <ErpInput value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="مثال: وصل ناقص صنف واحد · اتفق على الكمية مع مندوب المورد" />
+                </ErpField>
               </div>
             </section>
 
@@ -965,12 +988,12 @@ export const GoodsReceivingView: React.FC = () => {
               <div className="flex items-center justify-between mb-3 gap-2">
                 {/* العنوان بعدّاد — المعتمد: «الأصناف المستلمة (4)» */}
                 <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                  <PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة
+                  <PackageCheck className="w-4 h-4 text-indigo-600" /> الأصناف المستلمة
                   <span className="tnum text-[11px] font-bold text-slate-500">({items.length})</span>
                 </h4>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">الكمية بوحدة التخزين</span>
-                  <button type="button" onClick={() => showToast('تحويل الوحدة يُطبَّق من جدول الأصناف أدناه')} className="text-[11px] font-bold text-primary-600 hover:underline">تحويل وحدة ▾</button>
+                  <button type="button" onClick={() => showToast('تحويل الوحدة يُطبَّق من جدول الأصناف أدناه')} className="text-[11px] font-bold text-indigo-600 hover:underline">تحويل وحدة ▾</button>
                   <ErpButton onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</ErpButton>
                   <ErpButton onClick={() => addItems(5)}><Plus className="w-3.5 h-3.5" /> 5 أصناف</ErpButton>
                   <ErpButton onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</ErpButton>
@@ -1002,28 +1025,6 @@ export const GoodsReceivingView: React.FC = () => {
 
             {/* Section 3: Totals & Actions - Sticky Footer */}
             <div className="sticky bottom-0 z-10 bg-surface border-t border-line py-4 px-6 space-y-4">
-              {/* VAT Settings */}
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <ErpField label="الأسعار">
-                    <div className="flex items-center gap-3">
-                      <button type="button" onClick={() => setVatIncl(true)} className={`px-4 py-2 rounded-lg text-xs font-extrabold border transition-colors ${vatIncl ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>شاملة الضريبة</button>
-                      <button type="button" onClick={() => setVatIncl(false)} className={`px-4 py-2 rounded-lg text-xs font-extrabold border transition-colors ${!vatIncl ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>غير شاملة</button>
-                    </div>
-                  </ErpField>
-                  <ErpField label="نسبة ضريبة القيمة المضافة %">
-                    <input type="number" min="0" max="100" value={vatRate || ''} onChange={(e) => setVatRate(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} className={erpInputCls} />
-                  </ErpField>
-                  <ErpField label="عملة المستند">
-                    <CurrencySelect value={currencyCode} onChange={(code) => { setCurrencyCode(code); setExchangeRate(getCurrencyRate(code)); }} />
-                  </ErpField>
-                  {currencyCode !== 'SAR' && (
-                    <ErpField label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
-                      <input type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} className={erpInputCls} required />
-                    </ErpField>
-                  )}
-                </div>
-              </div>
 
               {/* Invoice Total Distribution */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
@@ -1063,7 +1064,7 @@ export const GoodsReceivingView: React.FC = () => {
                 <span className="text-amber-600">
                   ضريبة {vatRate}%: <span className="tnum">{fmtMoney(vatAmount)}</span>
                 </span>
-                <span className="text-primary-700">
+                <span className="text-indigo-700">
                   الإجمالي: <span className="tnum text-[12px] font-extrabold">{fmtMoney(totalAmount)} ر.س</span>
                 </span>
               </div>
@@ -1086,7 +1087,7 @@ export const GoodsReceivingView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => doSubmit(true)}
-                    className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-card transition-all"
+                    className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-card transition-all"
                   >
                     حفظ واعتماد
                   </button>
@@ -1137,13 +1138,13 @@ export const GoodsReceivingView: React.FC = () => {
               <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Pencil className="w-4 h-4 text-amber-600" /> بيانات الإشعار</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="lg:col-span-2">
-                  <ErpField label="المورد *" required>
+                  <ErpField label="المورد" required>
                     <select value={editGrn?.supplierId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { supplierId: e.target.value, supplierName: suppliers.find((s) => s.id === e.target.value)?.name || '' })} disabled={editGrn?.status !== 'draft'} className={erpInputCls}>
                       {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </ErpField>
                 </div>
-                <ErpField label="الفرع *" required>
+                <ErpField label="الفرع" required>
                   <select value={editGrn?.branchId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { branchId: e.target.value })} disabled={editGrn?.status !== 'draft'} className={erpInputCls}>
                     {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
                     <option value="b-ck">المطبخ المركزي</option>
