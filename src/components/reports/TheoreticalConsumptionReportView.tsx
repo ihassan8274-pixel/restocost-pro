@@ -421,10 +421,10 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
                     })();
                     return (
                       <tr key={recipe.id} className={`border-b border-slate-100 hover:bg-slate-50 ${selectedRecipe?.id === recipe.id ? 'bg-amber-100/50 font-bold' : ''}`}>
-                        <td className="p-2 font-mono font-bold text-amber-700">{recipe.code}</td>
+                        <td className="tnum text-left p-2 font-bold text-amber-700">{recipe.code}</td>
                         <td className="p-2">{recipe.nameAr}</td>
                         <td className="p-2 text-slate-600">{recipe.portionSize || 'وحدة'}</td>
-                        <td className="p-2 font-mono font-bold text-amber-700">{fmt(qty, 3)}</td>
+                        <td className="tnum text-left p-2 font-bold text-amber-700">{fmt(qty, 3)}</td>
                         <td className="p-2 text-slate-500 text-[10px]">{matCount} مادة خام</td>
                       </tr>
                     );
@@ -463,17 +463,17 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
                         <td className="p-2 font-bold">{m.nameAr}</td>
                         <td className="p-2 text-slate-600 text-[10px]">{categoryLabel(m.category, materialCategories)}</td>
                         <td className="p-2">{m.unit}</td>
-                        <td className="p-2 font-mono font-bold text-emerald-700">{fmt(qty, 3)}</td>
-                        <td className="p-2 font-mono">{fmtMoney(getAverageUnitCost(matId))}</td>
-                        <td className="p-2 font-mono font-bold text-emerald-700">{fmtMoney(qty * getAverageUnitCost(matId))}</td>
+                        <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(qty, 3)}</td>
+                        <td className="tnum text-left p-2">{fmtMoney(getAverageUnitCost(matId))}</td>
+                        <td className="tnum text-left p-2 font-bold text-emerald-700">{fmtMoney(qty * getAverageUnitCost(matId))}</td>
                       </tr>
                     );
                   })}
                 <tr className="bg-emerald-50 font-extrabold border-t-2 border-emerald-200">
                   <td className="p-2" colSpan={3}>الإجمالي</td>
-                  <td className="p-2 font-mono">{fmt(Object.values(grandTotals).reduce((s, v) => s + v, 0), 3)}</td>
+                  <td className="tnum text-left p-2">{fmt(Object.values(grandTotals).reduce((s, v) => s + v, 0), 3)}</td>
                   <td className="p-2">—</td>
-                  <td className="p-2 font-mono">{fmtMoney(Object.entries(grandTotals).reduce((s, [id, q]) => s + q * getAverageUnitCost(id), 0))}</td>
+                  <td className="tnum text-left p-2">{fmtMoney(Object.entries(grandTotals).reduce((s, [id, q]) => s + q * getAverageUnitCost(id), 0))}</td>
                 </tr>
               </tbody>
             </table>

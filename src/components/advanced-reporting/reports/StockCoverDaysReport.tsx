@@ -243,16 +243,16 @@ export const StockCoverDaysReport: React.FC = () => {
                 <tr key={r.materialId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.name}</td>
                   <td className="p-2 text-center text-slate-500">{r.category}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmt(r.ending)}</td>
-                  <td className="p-2 text-center font-mono">{fmt(r.outQty)}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{fmt(r.avgDaily, 2)}</td>
-                  <td className="p-2 text-center font-mono font-bold">{r.coverDays >= 999 ? '∞' : fmt(r.coverDays, 0)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmt(r.ending)}</td>
+                  <td className="tnum p-2 text-left">{fmt(r.outQty)}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{fmt(r.avgDaily, 2)}</td>
+                  <td className="tnum p-2 text-left font-bold">{r.coverDays >= 999 ? '∞' : fmt(r.coverDays, 0)}</td>
                   <td className="p-2 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.bucket === 'active' ? 'bg-emerald-100 text-emerald-700' : r.bucket === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
                       {r.bucket === 'active' ? 'نشط' : r.bucket === 'medium' ? 'متوسط' : 'بطيء'}
                     </span>
                   </td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.value)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.value)}</td>
                 </tr>
               ))}
               {!rows.length && (

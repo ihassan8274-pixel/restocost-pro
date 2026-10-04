@@ -442,7 +442,7 @@ export const BackupCenterView: React.FC = () => {
                         <td className="p-2.5 font-bold text-slate-700 whitespace-nowrap">{fmtDate(b.createdAt)}</td>
                         <td className="p-2.5 text-slate-600 max-w-[180px] truncate">{b.label || '—'}</td>
                         <td className="p-2.5 text-slate-600 whitespace-nowrap">{b.units} وحدة / {b.records} سجل</td>
-                        <td className="p-2.5 font-mono font-bold text-slate-700">{fmtSize(b.size)}</td>
+                        <td className="tnum text-left p-2.5 font-bold text-slate-700">{fmtSize(b.size)}</td>
                         <td className="p-2.5 text-slate-600">{b.createdBy || '—'}</td>
                         <td className="p-2.5">
                           <div className="flex items-center justify-center gap-1">
@@ -551,15 +551,15 @@ export const BackupCenterView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {verifyLog.slice(0, 20).map((v, i) => (
                   <tr key={i} className="hover:bg-slate-50">
-                    <td className="p-2.5 font-mono text-[10px]">{fmtDate(v.verifiedAt)}</td>
-                    <td className="p-2.5 font-mono text-[10px]">{v.backupFile}</td>
+                    <td className="tnum text-left p-2.5 text-[10px]">{fmtDate(v.verifiedAt)}</td>
+                    <td className="tnum text-left p-2.5 text-[10px]">{v.backupFile}</td>
                     <td className="p-2.5">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${v.allMatch ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                         {v.allMatch ? 'مطابق' : `عدم تطابق (${v.mismatchedKeys})`}
                       </span>
                     </td>
-                    <td className="p-2.5 font-mono">{v.totalKeys} مفتاح</td>
-                    <td className="p-2.5 font-mono">{v.allMatch ? '100%' : `${((v.totalKeys - v.mismatchedKeys) / v.totalKeys * 100).toFixed(1)}%`}</td>
+                    <td className="tnum text-left p-2.5">{v.totalKeys} مفتاح</td>
+                    <td className="tnum text-left p-2.5">{v.allMatch ? '100%' : `${((v.totalKeys - v.mismatchedKeys) / v.totalKeys * 100).toFixed(1)}%`}</td>
                   </tr>
                 ))}
               </tbody>

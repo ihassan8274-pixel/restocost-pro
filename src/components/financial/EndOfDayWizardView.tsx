@@ -212,13 +212,13 @@ export const EndOfDayWizardView: React.FC = () => {
                 {sel.map((s) => (
                   <tr key={s.branchId} className="hover:bg-slate-50">
                     <td className="p-3 font-bold text-slate-900">{s.branchName}</td>
-                    <td className="p-3 font-mono">{s.orders}</td>
-                    <td className="p-3 font-mono font-bold text-emerald-700">{fmtMoney(s.posRevenue + s.batchRevenue)}</td>
-                    <td className="p-3 font-mono">{fmtMoney(s.posCost + s.batchFoodCost)}</td>
-                    <td className="p-3 font-mono text-rose-700">{fmtMoney(s.wastage)}</td>
-                    <td className="p-3 font-mono">{fmtMoney(s.laborCost)}</td>
-                    <td className="p-3 font-mono">{fmtMoney(s.expenses)}</td>
-                    <td className="p-3 font-mono font-bold">{fmtMoney(s.posRevenue + s.batchRevenue - s.posCost - s.batchFoodCost - s.wastage - s.laborCost - s.expenses)}</td>
+                    <td className="tnum text-left p-3">{s.orders}</td>
+                    <td className="tnum text-left p-3 font-bold text-emerald-700">{fmtMoney(s.posRevenue + s.batchRevenue)}</td>
+                    <td className="tnum text-left p-3">{fmtMoney(s.posCost + s.batchFoodCost)}</td>
+                    <td className="tnum text-left p-3 text-rose-700">{fmtMoney(s.wastage)}</td>
+                    <td className="tnum text-left p-3">{fmtMoney(s.laborCost)}</td>
+                    <td className="tnum text-left p-3">{fmtMoney(s.expenses)}</td>
+                    <td className="tnum text-left p-3 font-bold">{fmtMoney(s.posRevenue + s.batchRevenue - s.posCost - s.batchFoodCost - s.wastage - s.laborCost - s.expenses)}</td>
                     <td className="p-3">{isClosedDay ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">مُقفَل</span> : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">مفتوح</span>}</td>
                   </tr>
                 ))}

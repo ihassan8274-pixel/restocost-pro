@@ -531,21 +531,21 @@ export const CostReportsView: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">رقم GRN</th><th className="p-2">المورد</th><th className="p-2">الفرع</th><th className="p-2">التاريخ</th><th className="p-2">الفاتورة</th><th className="p-2">الصافي</th><th className="p-2">الضريبة %</th><th className="p-2">الضريبة</th><th className="p-2">الإجمالي</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {vatRows.map((r) => (
                     <tr key={r.g.id} className="hover:bg-slate-50">
-                      <td className="p-2 font-mono font-bold text-indigo-700">{r.g.grnNumber}</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.g.grnNumber}</td>
                       <td className="p-2 font-bold">{r.g.supplierName}</td>
                       <td className="p-2 text-slate-600">{r.g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.g.branchId)}</td>
-                      <td className="p-2 font-mono">{r.g.date}</td>
-                      <td className="p-2 font-mono">{r.g.invoiceNumber || '—'}</td>
-                      <td className="p-2 font-mono">{fmt(r.net, 2)}</td>
-                      <td className="p-2 font-mono">{r.rate}%</td>
-                      <td className="p-2 font-mono text-amber-700">{fmt(r.vat, 2)}</td>
-                      <td className="p-2 font-mono font-extrabold">{fmt(r.g.totalAmount, 2)}</td>
+                      <td className="tnum text-left p-2">{r.g.date}</td>
+                      <td className="tnum text-left p-2">{r.g.invoiceNumber || '—'}</td>
+                      <td className="tnum text-left p-2">{fmt(r.net, 2)}</td>
+                      <td className="tnum text-left p-2">{r.rate}%</td>
+                      <td className="tnum text-left p-2 text-amber-700">{fmt(r.vat, 2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold">{fmt(r.g.totalAmount, 2)}</td>
                     </tr>
                   ))}
                   {vatRows.length === 0 && <tr><td colSpan={9} className="p-6 text-center text-slate-400 text-xs"><Receipt className="w-4 h-4 inline ml-1" />لا توجد إشعارات استلام مسجلة بعد</td></tr>}
@@ -564,17 +564,17 @@ export const CostReportsView: React.FC = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                 <tr><th className="p-2">الصنف</th><th className="p-2">سعر المنيو</th><th className="p-2">التكلفة</th><th className="p-2">FC %</th><th className="p-2">المستهدف %</th><th className="p-2">الفجوة %</th><th className="p-2">الخسارة/وجبة</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recipeCostRows.map((r) => (
                   <tr key={r.name} className="hover:bg-slate-50">
                     <td className="p-2 font-bold text-slate-900">{r.name}</td>
-                    <td className="p-2 font-mono">{fmt(r.price, 2)}</td>
-                    <td className="p-2 font-mono">{fmt(r.cost, 2)}</td>
+                    <td className="tnum text-left p-2">{fmt(r.price, 2)}</td>
+                    <td className="tnum text-left p-2">{fmt(r.cost, 2)}</td>
                     <td className={`p-2 font-mono font-bold ${r.pct > r.targetFc ? 'text-rose-700' : 'text-emerald-700'}`}>{r.pct.toFixed(2)}%</td>
-                    <td className="p-2 font-mono">{r.targetFc.toFixed(2)}%</td>
+                    <td className="tnum text-left p-2">{r.targetFc.toFixed(2)}%</td>
                     <td className={`p-2 font-mono font-extrabold ${r.gap > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{r.gap > 0 ? '+' : ''}{r.gap.toFixed(2)}%</td>
                     <td className={`p-2 font-mono font-extrabold ${r.excessPerPortion > 0 ? 'text-rose-700' : 'text-slate-400'}`}>{fmt(r.excessPerPortion, 2)}</td>
                   </tr>

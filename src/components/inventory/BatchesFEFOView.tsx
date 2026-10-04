@@ -116,7 +116,7 @@ export const BatchesFEFOView: React.FC = () => {
                     <td className="py-2.5 text-xs text-slate-600 font-bold">{getBranchName(b.branchId)}</td>
                     <td className="py-2.5"><span className="font-mono text-xs font-extrabold text-indigo-700" dir="ltr">{b.batchNumber}</span></td>
                     <td className="py-2.5"><span className="font-mono text-xs font-bold text-slate-600">{b.expiryDate ? b.expiryDate.slice(0, 10) : '—'}</span></td>
-                    <td className="py-2.5 font-mono text-xs font-extrabold text-slate-800">{fmt(b.remainingQty, 2)}</td>
+                    <td className="tnum text-left py-2.5 text-xs font-extrabold text-slate-800">{fmt(b.remainingQty, 2)}</td>
                     <td className="py-2.5"><span className={`text-[10px] font-extrabold px-2 py-1 rounded-full ${tone}`}>{status}</span></td>
                     <td className="py-2.5"><button onClick={() => printLabels([b.id])} className="text-[10px] font-bold text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded-lg flex items-center gap-1"><Printer className="w-3 h-3" /> ملصق</button></td>
                   </tr>

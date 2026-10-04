@@ -204,9 +204,9 @@ export const CashFlowView: React.FC = () => {
               {monthly.map((m) => (
                 <tr key={m.month} className="border-b border-slate-50 hover:bg-slate-50">
                   <td className="p-2 font-bold text-slate-800">{m.month}</td>
-                  <td className="p-2 font-mono font-bold text-emerald-700">{fmt(m.inflows)}</td>
-                  <td className="p-2 font-mono font-bold text-rose-600">{fmt(m.outflows)}</td>
-                  <td className="p-2 font-mono font-bold text-amber-700">{fmt(m.investing)}</td>
+                  <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(m.inflows)}</td>
+                  <td className="tnum text-left p-2 font-bold text-rose-600">{fmt(m.outflows)}</td>
+                  <td className="tnum text-left p-2 font-bold text-amber-700">{fmt(m.investing)}</td>
                   <td className={`p-2 font-mono font-bold ${m.net < 0 ? 'text-rose-600' : 'text-indigo-700'}`}>{fmt(m.net)}</td>
                 </tr>
               ))}

@@ -228,8 +228,8 @@ export const MonthEndCloseWizardView: React.FC = () => {
                         </span>
                       ) : <span className="text-slate-500">لا يوجد جرد</span>}
                     </td>
-                    <td className="p-3 font-mono">{b.itemsCount}</td>
-                    <td className="p-3 font-mono font-bold">{fmtMoney(b.totalVarianceCost)}</td>
+                    <td className="tnum text-left p-3">{b.itemsCount}</td>
+                    <td className="tnum text-left p-3 font-bold">{fmtMoney(b.totalVarianceCost)}</td>
                     <td className="p-3">
                       {b.hasOpenPeriod && b.status === 'counting'
                         ? <CheckCircle className="w-5 h-5 text-emerald-600 mx-auto" />
@@ -269,7 +269,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
                     {branchStatuses.filter((b) => selectedBranches.includes(b.branchId) && b.hasOpenPeriod && b.status === 'counting').map((b) => (
                       <tr key={b.branchId}>
                         <td className="p-2 font-bold">{b.branchName}</td>
-                        <td className="p-2 font-mono">{fmtMoney(b.totalVarianceCost)}</td>
+                        <td className="tnum text-left p-2">{fmtMoney(b.totalVarianceCost)}</td>
                         <td className="p-2">
 {closingResults[b.branchId]?.ok ? <CheckCircle className="w-5 h-5 text-emerald-600 mx-auto" /> :
                             closingResults[b.branchId]?.ok === false ? <XCircle className="w-5 h-5 text-rose-600 mx-auto" /> :

@@ -655,12 +655,12 @@ const FoodicsIntegrationView: React.FC = () => {
                       <td className="p-2">
                         {branchLinked ? <span className="text-emerald-600 font-bold text-[10px]">✓ مربوط</span> : <span className="text-rose-500 font-bold text-[10px]">✕ غير مربوط</span>}
                       </td>
-                      <td className="p-2 font-mono text-indigo-700">{r.productEn}</td>
+                      <td className="tnum text-left p-2 text-indigo-700">{r.productEn}</td>
                       <td className="p-2 font-bold text-slate-700">{r.matched ? r.recipeNameAr : <span className="text-rose-500">غير مربوط</span>}</td>
-                      <td className="p-2 font-mono">{fmtNum(r.netQuantity, 0)}</td>
-                      <td className="p-2 font-mono text-emerald-700">{price > 0 ? fmt(price) : '—'}</td>
-                      <td className="p-2 font-mono">{fmt(price * r.netQuantity)}</td>
-                      <td className="p-2 font-mono text-amber-700">{fmt(cost * r.netQuantity)}</td>
+                      <td className="tnum text-left p-2">{fmtNum(r.netQuantity, 0)}</td>
+                      <td className="tnum text-left p-2 text-emerald-700">{price > 0 ? fmt(price) : '—'}</td>
+                      <td className="tnum text-left p-2">{fmt(price * r.netQuantity)}</td>
+                      <td className="tnum text-left p-2 text-amber-700">{fmt(cost * r.netQuantity)}</td>
                       <td className="p-2">{r.matched && branchLinked ? <span className="text-emerald-600 font-bold">✓</span> : <span className="text-rose-500 font-bold">✕</span>}</td>
                     </tr>
                   );
@@ -720,11 +720,11 @@ const FoodicsIntegrationView: React.FC = () => {
                   {branchTotals.map((g) => (
                     <tr key={g.name} className="hover:bg-slate-50 border-b border-slate-100">
                       <td className="p-2 font-bold text-slate-800">{g.name}</td>
-                      <td className="p-2 font-mono">{fmtNum(g.records, 0)}</td>
-                      <td className="p-2 font-mono">{fmtNum(g.qty, 0)}</td>
-                      <td className="p-2 font-mono">{fmt(g.revenue)}</td>
-                      <td className="p-2 font-mono text-amber-700">{fmt(g.cost)}</td>
-                      <td className="p-2 font-mono font-bold text-emerald-700">{g.fcPct}%</td>
+                      <td className="tnum text-left p-2">{fmtNum(g.records, 0)}</td>
+                      <td className="tnum text-left p-2">{fmtNum(g.qty, 0)}</td>
+                      <td className="tnum text-left p-2">{fmt(g.revenue)}</td>
+                      <td className="tnum text-left p-2 text-amber-700">{fmt(g.cost)}</td>
+                      <td className="tnum text-left p-2 font-bold text-emerald-700">{g.fcPct}%</td>
                     </tr>
                   ))}
                   {!branchTotals.length && <tr><td colSpan={6} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -744,11 +744,11 @@ const FoodicsIntegrationView: React.FC = () => {
                   {productTotals.slice(0, 15).map((p) => (
                     <tr key={p.nameEn} className="hover:bg-slate-50 border-b border-slate-100">
                       <td className="p-2 font-bold text-slate-800">{p.nameAr}</td>
-                      <td className="p-2 font-mono text-indigo-600 text-[10px]">{p.nameEn}</td>
-                      <td className="p-2 font-mono">{fmtNum(p.qty, 0)}</td>
-                      <td className="p-2 font-mono">{fmt(p.revenue)}</td>
-                      <td className="p-2 font-mono text-amber-700">{fmt(p.cost)}</td>
-                      <td className="p-2 font-mono font-bold text-emerald-700">{p.fcPct}%</td>
+                      <td className="tnum text-left p-2 text-indigo-600 text-[10px]">{p.nameEn}</td>
+                      <td className="tnum text-left p-2">{fmtNum(p.qty, 0)}</td>
+                      <td className="tnum text-left p-2">{fmt(p.revenue)}</td>
+                      <td className="tnum text-left p-2 text-amber-700">{fmt(p.cost)}</td>
+                      <td className="tnum text-left p-2 font-bold text-emerald-700">{p.fcPct}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -784,18 +784,18 @@ const FoodicsIntegrationView: React.FC = () => {
               <tbody>
                 {filteredRecords.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50 border-b border-slate-100">
-                    <td className="p-2 font-mono whitespace-nowrap">{r.date}</td>
+                    <td className="tnum text-left p-2 whitespace-nowrap">{r.date}</td>
                     <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
                     <td className="p-2">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${r.type === 'batch' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
                         {r.type === 'batch' ? 'مبيعات مجمعة' : 'توصيل'}
                       </span>
                     </td>
-                    <td className="p-2 font-mono">{r.items.length}</td>
-                    <td className="p-2 font-mono">{fmtNum(r.items.reduce((s, it) => s + it.quantitySold, 0), 0)}</td>
-                    <td className="p-2 font-mono">{fmt(r.revenue)}</td>
-                    <td className="p-2 font-mono text-amber-700">{fmt(r.cost)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{round2(r.fcPct)}%</td>
+                    <td className="tnum text-left p-2">{r.items.length}</td>
+                    <td className="tnum text-left p-2">{fmtNum(r.items.reduce((s, it) => s + it.quantitySold, 0), 0)}</td>
+                    <td className="tnum text-left p-2">{fmt(r.revenue)}</td>
+                    <td className="tnum text-left p-2 text-amber-700">{fmt(r.cost)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{round2(r.fcPct)}%</td>
                     <td className="p-2">
                       <div className="flex gap-1">
                         <button onClick={() => deleteRecord(r.id, r.type)} className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600" title="حذف"><Trash2 className="w-3.5 h-3.5" /></button>

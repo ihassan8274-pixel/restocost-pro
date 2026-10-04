@@ -404,10 +404,10 @@ export const StockTransferView: React.FC = () => {
               {filtered.map((t) => (
                 <tr key={t.id} className={`hover:bg-slate-50 align-top ${selectedIds.has(t.id) ? 'bg-indigo-50/50' : ''}`}>
                   <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(t.id)} onChange={(e) => { const next = new Set(selectedIds); if (e.target.checked) next.add(t.id); else next.delete(t.id); setSelectedIds(next); }} className="w-4 h-4 accent-indigo-600" /></td>
-                  <td className="p-3 font-mono font-bold text-indigo-700">{t.transferNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-indigo-700">{t.transferNumber}</td>
                   <td className="p-3 font-bold text-slate-800">{t.fromBranchId === 'b-ck' ? 'المطبخ المركزي' : branches.find((b) => b.id === t.fromBranchId)?.nameAr || t.fromBranchId}</td>
                   <td className="p-3 font-bold text-slate-800">{t.toBranchId === 'b-ck' ? 'المطبخ المركزي' : branches.find((b) => b.id === t.toBranchId)?.nameAr || t.toBranchId}</td>
-                  <td className="p-3 font-mono text-slate-600">{t.date}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{t.date}</td>
                   <td className="p-3 space-y-1">
                     {t.items.map((it, idx) => (
                       <div key={idx} className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export const StockTransferView: React.FC = () => {
                     {t.approvedBy && <span className="block text-[9px] text-slate-400 font-bold">اعتمد بواسطة: {t.approvedBy}</span>}
                     {t.rejectReason && <span className="block text-[9px] text-rose-500 font-bold">سبب الرفض: {t.rejectReason}</span>}
                   </td>
-                  <td className="p-3 font-mono font-bold text-indigo-700">{fmt(t.items.reduce((s, it) => s + it.quantity * it.unitCost, 0))}</td>
+                  <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(t.items.reduce((s, it) => s + it.quantity * it.unitCost, 0))}</td>
                   <td className="p-3"><span className={statusPill(t.status)}>{TRANSFER_STATUS_LABELS[t.status]}</span></td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">

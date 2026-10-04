@@ -233,7 +233,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-slate-100 text-slate-700 font-bold">
+            <tr className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               {costHeaders.map((h) => (
                 <th key={h} className="p-2 text-right">{h}</th>
               ))}
@@ -243,22 +243,22 @@ export const FoodCostByCategoryReport: React.FC = () => {
             {rows.map((r, i) => (
               <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                 <td className="p-2 font-bold text-slate-800">{r.name}</td>
-                <td className="p-2 font-mono">{fmt(r.quantity)}</td>
-                <td className="p-2 font-mono text-emerald-700">{fmtMoney(r.revenue)}</td>
-                <td className="p-2 font-mono text-rose-600">{fmtMoney(r.cost)}</td>
-                <td className="p-2 font-mono text-amber-700">{r.costPct.toFixed(1)}%</td>
-                <td className="p-2 font-mono text-emerald-700">{fmtMoney(r.profit)}</td>
-                <td className="p-2 font-mono text-slate-700">{r.profitPct.toFixed(1)}%</td>
+                <td className="tnum text-left p-2">{fmt(r.quantity)}</td>
+                <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(r.revenue)}</td>
+                <td className="tnum text-left p-2 text-rose-600">{fmtMoney(r.cost)}</td>
+                <td className="tnum text-left p-2 text-amber-700">{r.costPct.toFixed(1)}%</td>
+                <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(r.profit)}</td>
+                <td className="tnum text-left p-2 text-slate-700">{r.profitPct.toFixed(1)}%</td>
               </tr>
             ))}
             <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
               <td className="p-2">الإجمالي</td>
-              <td className="p-2 font-mono">{fmt(totals.quantity)}</td>
-              <td className="p-2 font-mono text-emerald-700">{fmtMoney(totals.revenue)}</td>
-              <td className="p-2 font-mono text-rose-600">{fmtMoney(totals.cost)}</td>
-              <td className="p-2 font-mono text-amber-700">{totals.costPct.toFixed(1)}%</td>
-              <td className="p-2 font-mono text-emerald-700">{fmtMoney(totals.profit)}</td>
-              <td className="p-2 font-mono text-slate-700">{totals.profitPct.toFixed(1)}%</td>
+              <td className="tnum text-left p-2">{fmt(totals.quantity)}</td>
+              <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(totals.revenue)}</td>
+              <td className="tnum text-left p-2 text-rose-600">{fmtMoney(totals.cost)}</td>
+              <td className="tnum text-left p-2 text-amber-700">{totals.costPct.toFixed(1)}%</td>
+              <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(totals.profit)}</td>
+              <td className="tnum text-left p-2 text-slate-700">{totals.profitPct.toFixed(1)}%</td>
             </tr>
           </tbody>
         </table>
@@ -371,7 +371,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold">
+                  <tr className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                     <th className="p-2 text-right">المجموعة</th>
                     <th className="p-2 text-right">الكمية</th>
                     <th className="p-2 text-right">الإيراد</th>
@@ -384,30 +384,30 @@ export const FoodCostByCategoryReport: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   <tr className="bg-blue-50 font-bold">
                     <td className="p-2">المأكولات</td>
-                    <td className="p-2 font-mono">{fmt(foodTotals.quantity)}</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmtMoney(foodTotals.revenue)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmtMoney(foodTotals.cost)}</td>
-                    <td className="p-2 font-mono text-amber-700">{foodTotals.costPct.toFixed(1)}%</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmtMoney(foodTotals.profit)}</td>
-                    <td className="p-2 font-mono text-slate-700">{foodTotals.profitPct.toFixed(1)}%</td>
+                    <td className="tnum text-left p-2">{fmt(foodTotals.quantity)}</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(foodTotals.revenue)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmtMoney(foodTotals.cost)}</td>
+                    <td className="tnum text-left p-2 text-amber-700">{foodTotals.costPct.toFixed(1)}%</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(foodTotals.profit)}</td>
+                    <td className="tnum text-left p-2 text-slate-700">{foodTotals.profitPct.toFixed(1)}%</td>
                   </tr>
                   <tr className="bg-red-50 font-bold">
                     <td className="p-2">المشروبات</td>
-                    <td className="p-2 font-mono">{fmt(bevTotals.quantity)}</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmtMoney(bevTotals.revenue)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmtMoney(bevTotals.cost)}</td>
-                    <td className="p-2 font-mono text-amber-700">{bevTotals.costPct.toFixed(1)}%</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmtMoney(bevTotals.profit)}</td>
-                    <td className="p-2 font-mono text-slate-700">{bevTotals.profitPct.toFixed(1)}%</td>
+                    <td className="tnum text-left p-2">{fmt(bevTotals.quantity)}</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(bevTotals.revenue)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmtMoney(bevTotals.cost)}</td>
+                    <td className="tnum text-left p-2 text-amber-700">{bevTotals.costPct.toFixed(1)}%</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(bevTotals.profit)}</td>
+                    <td className="tnum text-left p-2 text-slate-700">{bevTotals.profitPct.toFixed(1)}%</td>
                   </tr>
                   <tr className="bg-emerald-50 font-bold border-t-2 border-emerald-200">
                     <td className="p-2">الإجمالي</td>
-                    <td className="p-2 font-mono">{fmt(grandTotals.quantity)}</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmtMoney(grandTotals.revenue)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmtMoney(grandTotals.cost)}</td>
-                    <td className="p-2 font-mono text-amber-700">{grandTotals.costPct.toFixed(1)}%</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmtMoney(grandTotals.profit)}</td>
-                    <td className="p-2 font-mono text-slate-700">{grandTotals.profitPct.toFixed(1)}%</td>
+                    <td className="tnum text-left p-2">{fmt(grandTotals.quantity)}</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(grandTotals.revenue)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmtMoney(grandTotals.cost)}</td>
+                    <td className="tnum text-left p-2 text-amber-700">{grandTotals.costPct.toFixed(1)}%</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmtMoney(grandTotals.profit)}</td>
+                    <td className="tnum text-left p-2 text-slate-700">{grandTotals.profitPct.toFixed(1)}%</td>
                   </tr>
                 </tbody>
               </table>
@@ -417,7 +417,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
           <Card className="p-4 overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-slate-100 text-slate-700 font-bold">
+                <tr className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <th className="p-2 text-right">النسبة</th>
                   <th className="p-2 text-center">الماكولات</th>
                   <th className="p-2 text-center">المشروبات</th>
@@ -426,13 +426,13 @@ export const FoodCostByCategoryReport: React.FC = () => {
               <tbody>
                 <tr>
                   <td className="p-2 font-bold">نسبة الإيراد</td>
-                  <td className="p-2 text-center font-mono">{foodRatio.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono">{bevRatio.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left">{foodRatio.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left">{bevRatio.toFixed(1)}%</td>
                 </tr>
                 <tr className="bg-slate-50">
                   <td className="p-2 font-bold">نسبة التكلفة</td>
-                  <td className="p-2 text-center font-mono">{foodTotals.costPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono">{bevTotals.costPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left">{foodTotals.costPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left">{bevTotals.costPct.toFixed(1)}%</td>
                 </tr>
               </tbody>
             </table>
@@ -452,7 +452,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold">
+                  <tr className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                     <th className="p-2 text-right sticky right-0 bg-slate-100 z-10">الصنف</th>
                     {branchQuantityData.branchNames.map((bn) => (
                       <th key={bn} className="p-2 text-center font-mono">{bn}</th>
@@ -467,7 +467,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
                       {row.branches.map((val, bi) => (
                         <td key={bi} className="p-2 text-center font-mono">{fmt(val)}</td>
                       ))}
-                      <td className="p-2 text-right font-bold font-mono text-indigo-700">{fmt(row.total)}</td>
+                      <td className="tnum p-2 text-left font-bold text-indigo-700">{fmt(row.total)}</td>
                     </tr>
                   ))}
                   <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
@@ -475,7 +475,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
                     {branchQuantityData.branchNames.map((_, bi) => (
                       <td key={bi} className="p-2 text-center font-mono">{fmt(branchQuantityData.data.reduce((s, r) => s + r.branches[bi], 0))}</td>
                     ))}
-                    <td className="p-2 text-right font-bold font-mono text-indigo-700">{fmt(branchQuantityData.data.reduce((s, r) => s + r.total, 0))}</td>
+                    <td className="tnum p-2 text-left font-bold text-indigo-700">{fmt(branchQuantityData.data.reduce((s, r) => s + r.total, 0))}</td>
                   </tr>
                 </tbody>
               </table>

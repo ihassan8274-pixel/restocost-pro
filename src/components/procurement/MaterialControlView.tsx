@@ -291,11 +291,11 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                     <tr key={r.q.id} className="hover:bg-slate-50">
                       <td className="p-2 font-bold text-slate-800">{r.supName}</td>
                       <td className="p-2 font-bold">{r.matName}</td>
-                      <td className="p-2 font-mono font-extrabold text-indigo-700">{fmt(r.q.price)} <span className="text-[9px] text-slate-400">{r.q.currencyCode || 'ر.س'}</span></td>
-                      <td className="p-2 font-mono text-amber-700">{r.q.currencyCode || 'SAR'}</td>
-                      <td className="p-2 font-mono text-slate-600">{fmtMoney(r.base)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmt(r.q.price)} <span className="text-[9px] text-slate-400">{r.q.currencyCode || 'ر.س'}</span></td>
+                      <td className="tnum text-left p-2 text-amber-700">{r.q.currencyCode || 'SAR'}</td>
+                      <td className="tnum text-left p-2 text-slate-600">{fmtMoney(r.base)}</td>
                       <td className="p-2 text-slate-500">{r.q.validFrom}{r.q.validTo ? ` → ${r.q.validTo}` : ' (مفتوح)'}{r.q.updatedAt ? <span className="block text-[9px] text-slate-400">آخر تحديث: {new Date(r.q.updatedAt).toLocaleString()}</span> : null}</td>
-                      <td className="p-2 font-mono">{fmtMoney(r.avg)}</td>
+                      <td className="tnum text-left p-2">{fmtMoney(r.avg)}</td>
                       <td className={`p-2 font-mono font-bold ${r.vsAvg <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{r.vsAvg > 0 ? '+' : ''}{r.vsAvg.toFixed(2)}%</td>
                       <td className="p-2">
                         <div className="flex gap-1">
@@ -367,15 +367,15 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                 <tbody className="divide-y divide-slate-100">
                   {recRows.map((r, idx) => (
                     <tr key={idx} className={r.over ? 'bg-amber-50/50' : r.short ? 'bg-rose-50/40' : ''}>
-                      <td className="p-2 font-mono font-bold text-indigo-700">{r.grn.grnNumber}</td>
-                      <td className="p-2 font-mono">{r.po?.poNumber || '—'}</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.grn.grnNumber}</td>
+                      <td className="tnum text-left p-2">{r.po?.poNumber || '—'}</td>
                       <td className="p-2 font-bold">{rawMaterials.find((m) => m.id === r.mat.rawMaterialId)?.nameAr || r.mat.rawMaterialId}</td>
-                      <td className="p-2 font-mono">{r.poQty ?? '—'}</td>
-                      <td className="p-2 font-mono font-extrabold">{r.mat.quantityReceived}</td>
-                      <td className="p-2 font-mono">{r.diffPct !== null ? `${r.diffPct > 0 ? '+' : ''}${r.diffPct.toFixed(2)}%` : '—'}</td>
+                      <td className="tnum text-left p-2">{r.poQty ?? '—'}</td>
+                      <td className="tnum text-left p-2 font-extrabold">{r.mat.quantityReceived}</td>
+                      <td className="tnum text-left p-2">{r.diffPct !== null ? `${r.diffPct > 0 ? '+' : ''}${r.diffPct.toFixed(2)}%` : '—'}</td>
                       <td className="p-2">{r.over ? <span className="text-amber-700 font-extrabold">زائد (أكثر من {tolerance}%)</span> : r.short ? <span className="text-rose-600 font-extrabold">ناقص</span> : <span className="text-emerald-600 font-extrabold">مطابق</span>}</td>
-                      <td className="p-2 font-mono">{r.po && r.poPriceRaw !== null ? fmtMoney(r.poPriceRaw) : '—'}{r.hasCurrencyDiff && r.po && r.poPriceBase !== null && <div className="text-[9px] text-slate-400">{fmtMoney(r.poPriceBase)} ر.س</div>}</td>
-                      <td className="p-2 font-mono">{fmtMoney(r.grnPriceRaw)}{r.hasCurrencyDiff && <div className="text-[9px] text-slate-400">{fmtMoney(r.grnPriceBase)} ر.س</div>}</td>
+                      <td className="tnum text-left p-2">{r.po && r.poPriceRaw !== null ? fmtMoney(r.poPriceRaw) : '—'}{r.hasCurrencyDiff && r.po && r.poPriceBase !== null && <div className="text-[9px] text-slate-400">{fmtMoney(r.poPriceBase)} ر.س</div>}</td>
+                      <td className="tnum text-left p-2">{fmtMoney(r.grnPriceRaw)}{r.hasCurrencyDiff && <div className="text-[9px] text-slate-400">{fmtMoney(r.grnPriceBase)} ر.س</div>}</td>
                       <td className={`p-2 font-mono font-bold ${r.priceDiff > 0 ? 'text-rose-600' : r.priceDiff < 0 ? 'text-emerald-600' : ''}`}>{r.priceDiff > 0 ? '+' : ''}{fmtMoney(r.priceDiff)}{r.hasCurrencyDiff && <div className="text-[9px] text-slate-400">بالمعادل الريالي</div>}</td>
                     </tr>
                   ))}
@@ -401,13 +401,13 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                 <tbody className="divide-y divide-slate-100">
                   {supplierReturns.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
-                      <td className="p-2 font-mono font-bold text-indigo-700">{r.returnNumber}</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.returnNumber}</td>
                       <td className="p-2 font-bold">{r.supplierName}</td>
                       <td className="p-2 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
-                      <td className="p-2 font-mono text-slate-600">{r.date}</td>
+                      <td className="tnum text-left p-2 text-slate-600">{r.date}</td>
                       <td className="p-2 font-bold">{r.items.length}</td>
-                      <td className="p-2 font-mono font-extrabold">{fmtMoney(r.totalAmount)}</td>
-                      <td className="p-2 font-mono text-amber-700">{r.currencyCode || 'SAR'}</td>
+                      <td className="tnum text-left p-2 font-extrabold">{fmtMoney(r.totalAmount)}</td>
+                      <td className="tnum text-left p-2 text-amber-700">{r.currencyCode || 'SAR'}</td>
                       <td className="p-2 text-slate-500 max-w-40 truncate">{r.reason || '—'}</td>
                       <td className="p-2"><StatusPill status={r.status} map={RETURN_STATUS_LABELS} /></td>
                       <td className="p-2">

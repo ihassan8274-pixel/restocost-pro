@@ -49,7 +49,7 @@ export const AuditLogView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((l) => (
                 <tr key={l.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono text-slate-500 whitespace-nowrap">{l.timestamp}</td>
+                  <td className="tnum text-left p-3 text-slate-500 whitespace-nowrap">{l.timestamp}</td>
                   <td className="p-3 font-bold text-slate-900">{l.userName}</td>
                   <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{l.action}</span></td>
                   <td className="p-3 text-indigo-700 font-bold">{l.module}</td>

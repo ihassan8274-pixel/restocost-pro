@@ -153,13 +153,13 @@ export const WastageView: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map((w: any) => (
                     <tr key={w.id} className="hover:bg-slate-50">
-                      <td className="p-3 font-mono text-slate-600">{w.date}</td>
+                      <td className="tnum text-left p-3 text-slate-600">{w.date}</td>
                       <td className="p-3 font-bold text-slate-900">{w.itemName}</td>
                       <td className="p-3 text-slate-600">{branchName(w.branchId)}</td>
-                      <td className="p-3 font-mono">{fmt(w.quantity)} {w.unit}</td>
+                      <td className="tnum text-left p-3">{fmt(w.quantity)} {w.unit}</td>
                       <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{CATEGORY_LABELS[w.category as WastageCategory] || w.category}</span></td>
-                      <td className="p-3 font-mono">{fmt(w.costPerUnit, 2)}</td>
-                      <td className="p-3 font-mono font-extrabold text-rose-700">{fmt(w.totalCostImpact, 2)} ر.س</td>
+                      <td className="tnum text-left p-3">{fmt(w.costPerUnit, 2)}</td>
+                      <td className="tnum text-left p-3 font-extrabold text-rose-700">{fmt(w.totalCostImpact, 2)} ر.س</td>
                       <td className="p-3 max-w-[200px]"><span className="block truncate text-slate-600">{w.reason}</span></td>
                       <td className="p-3 font-bold text-slate-700">{w.responsibleStaff}</td>
                       <td className="p-3">

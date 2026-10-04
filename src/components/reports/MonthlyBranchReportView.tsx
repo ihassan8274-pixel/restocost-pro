@@ -92,7 +92,7 @@ export const MonthlyBranchReportView: React.FC = () => {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               <tr>
                 <th className="p-3">الفرع</th>
                 <th className="p-3">إيراد المبيعات</th>
@@ -109,12 +109,12 @@ export const MonthlyBranchReportView: React.FC = () => {
               {reportData.map((r) => (
                 <tr key={r.branchId} className="hover:bg-slate-50">
                   <td className="p-3 font-bold text-slate-900">{r.branch}</td>
-                  <td className="p-3 font-mono">{fmtMoney(r.totalRevenue)}</td>
-                  <td className="p-3 font-mono text-slate-500">{fmtMoney(r.openingValue)}</td>
-                  <td className="p-3 font-mono text-slate-500">{fmtMoney(r.purchases)}</td>
-                  <td className="p-3 font-mono text-slate-500">{fmtMoney(r.closingValue)}</td>
-                  <td className="p-3 font-mono font-bold text-rose-700">{fmtMoney(r.costOfSales)}</td>
-                  <td className="p-3 font-mono font-bold text-emerald-700">{fmtMoney(r.totalRevenue)}</td>
+                  <td className="tnum text-left p-3">{fmtMoney(r.totalRevenue)}</td>
+                  <td className="tnum text-left p-3 text-slate-500">{fmtMoney(r.openingValue)}</td>
+                  <td className="tnum text-left p-3 text-slate-500">{fmtMoney(r.purchases)}</td>
+                  <td className="tnum text-left p-3 text-slate-500">{fmtMoney(r.closingValue)}</td>
+                  <td className="tnum text-left p-3 font-bold text-rose-700">{fmtMoney(r.costOfSales)}</td>
+                  <td className="tnum text-left p-3 font-bold text-emerald-700">{fmtMoney(r.totalRevenue)}</td>
                   <td className={`p-3 font-mono font-extrabold ${r.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(r.grossProfit)}</td>
                   <td className="p-3">
                     <span className={`font-extrabold px-2 py-0.5 rounded-lg ${r.grossMargin >= 30 ? 'bg-emerald-50 text-emerald-700' : r.grossMargin >= 15 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'}`}>
@@ -125,12 +125,12 @@ export const MonthlyBranchReportView: React.FC = () => {
               ))}
               <tr className="bg-slate-50 font-extrabold border-t-2 border-slate-300">
                 <td className="p-3">الإجمالي</td>
-                <td className="p-3 font-mono">{fmtMoney(totals.totalRevenue)}</td>
-                <td className="p-3 font-mono text-slate-500">{fmtMoney(totals.openingValue)}</td>
-                <td className="p-3 font-mono text-slate-500">{fmtMoney(totals.purchases)}</td>
-                <td className="p-3 font-mono text-slate-500">{fmtMoney(totals.closingValue)}</td>
-                <td className="p-3 font-mono text-rose-700">{fmtMoney(totals.costOfSales)}</td>
-                <td className="p-3 font-mono text-emerald-700">{fmtMoney(totals.totalRevenue)}</td>
+                <td className="tnum text-left p-3">{fmtMoney(totals.totalRevenue)}</td>
+                <td className="tnum text-left p-3 text-slate-500">{fmtMoney(totals.openingValue)}</td>
+                <td className="tnum text-left p-3 text-slate-500">{fmtMoney(totals.purchases)}</td>
+                <td className="tnum text-left p-3 text-slate-500">{fmtMoney(totals.closingValue)}</td>
+                <td className="tnum text-left p-3 text-rose-700">{fmtMoney(totals.costOfSales)}</td>
+                <td className="tnum text-left p-3 text-emerald-700">{fmtMoney(totals.totalRevenue)}</td>
                 <td className={`p-3 font-mono ${totals.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(totals.grossProfit)}</td>
                 <td className="p-3">
                   <span className={`px-2 py-0.5 rounded-lg ${totals.grossMargin >= 30 ? 'bg-emerald-100 text-emerald-700' : totals.grossMargin >= 15 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>

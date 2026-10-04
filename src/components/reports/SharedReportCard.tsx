@@ -121,7 +121,7 @@ export const SharedReportCard: React.FC<{
                   </tr>
                 ) : (
                   <tr key={ri} className={`hover:bg-blue-50/30 transition-colors ${ri % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                    <td className="p-2 text-center text-[10px] text-slate-300 font-mono">{ri + 1}</td>
+                    <td className="tnum p-2 text-left text-[10px] text-slate-300">{ri + 1}</td>
                     {ex.columns.map((c, ci) => (
                       <td key={ci} className={`p-2 whitespace-nowrap ${c.type === 'money' || c.type === 'num' ? 'font-mono font-bold text-slate-800' : 'text-slate-600'}`}>
                         {cellText(r[c.key], c.type)}

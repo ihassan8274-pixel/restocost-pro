@@ -274,21 +274,21 @@ export const PeriodOverPeriodReport: React.FC = () => {
               {rows.map((r, i) => (
                 <tr key={r.branchId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.a.net)}</td>
-                  <td className="p-2 text-center font-mono text-blue-700 font-bold">{fmtMoney(r.b.net)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.a.net)}</td>
+                  <td className="tnum p-2 text-left text-blue-700 font-bold">{fmtMoney(r.b.net)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${posNeg(r.revDelta)}`}>{r.revDelta > 0 ? '+' : ''}{r.revDelta.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono">{r.a.foodPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono text-amber-700">{r.b.foodPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left">{r.a.foodPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left text-amber-700">{r.b.foodPct.toFixed(1)}%</td>
                   <td className={`p-2 text-center font-mono ${goodBad(-r.pctDelta)}`}>{r.pctDelta > 0 ? '+' : ''}{r.pctDelta.toFixed(1)}</td>
                 </tr>
               ))}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">الإجمالي</td>
-                <td className="p-2 text-center font-mono">{fmtMoney(totalA.net)}</td>
-                <td className="p-2 text-center font-mono text-blue-700 text-lg">{fmtMoney(totalB.net)}</td>
+                <td className="tnum p-2 text-left">{fmtMoney(totalA.net)}</td>
+                <td className="tnum p-2 text-left text-blue-700 text-lg">{fmtMoney(totalB.net)}</td>
                 <td className={`p-2 text-center font-mono text-lg ${posNeg(totRevDelta)}`}>{totRevDelta > 0 ? '+' : ''}{totRevDelta.toFixed(1)}%</td>
-                <td className="p-2 text-center font-mono">{totalA.foodPct.toFixed(1)}%</td>
-                <td className="p-2 text-center font-mono text-lg text-amber-700">{totalB.foodPct.toFixed(1)}%</td>
+                <td className="tnum p-2 text-left">{totalA.foodPct.toFixed(1)}%</td>
+                <td className="tnum p-2 text-left text-lg text-amber-700">{totalB.foodPct.toFixed(1)}%</td>
                 <td className={`p-2 text-center font-mono text-lg ${goodBad(-totPctDelta)}`}>{totPctDelta > 0 ? '+' : ''}{totPctDelta.toFixed(1)}</td>
               </tr>
             </tbody>

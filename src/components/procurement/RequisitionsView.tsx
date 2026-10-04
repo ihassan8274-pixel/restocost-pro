@@ -94,13 +94,13 @@ export const RequisitionsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono font-bold text-indigo-700">{r.reqNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-indigo-700">{r.reqNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{r.department}</td>
                   <td className="p-3 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
-                  <td className="p-3 font-mono text-slate-600">{r.date}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
                   <td className="p-3 font-bold">{r.items.length}</td>
-                  <td className="p-3 font-mono font-bold">{fmt(r.totalQty)}</td>
-                  <td className="p-3 font-mono font-extrabold text-slate-900">{fmtMoney(costOf(r))}</td>
+                  <td className="tnum text-left p-3 font-bold">{fmt(r.totalQty)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmtMoney(costOf(r))}</td>
                   <td className="p-3"><StatusPill status={r.status} map={REQ_STATUS_LABELS} /></td>
                   <td className="p-3">
                     <div className="flex gap-1 items-center">

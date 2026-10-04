@@ -208,15 +208,15 @@ export const ProductionPlanningView: React.FC = () => {
                 {forecasts.map((r) => (
                   <tr key={r.recipeId} className="border-b border-slate-50 hover:bg-slate-50">
                     <td className="p-2"><input type="checkbox" checked={r.selected} onChange={() => toggleRow(r.recipeId)} /></td>
-                    <td className="p-2 font-mono font-bold text-indigo-700">{r.code}</td>
+                    <td className="tnum text-left p-2 font-bold text-indigo-700">{r.code}</td>
                     <td className="p-2 font-bold text-slate-800">{r.nameAr}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(r.historyQty, 0)}</td>
-                    <td className="p-2 font-mono text-slate-600">{nf(r.dailyAvg)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{nf(r.forecast)}</td>
-                    <td className="p-2 font-mono text-slate-700">{fmt(r.stock, 1)}</td>
-                    <td className="p-2 font-mono text-amber-700">{fmt(r.openWO, 0)}</td>
-                    <td className="p-2 font-mono font-bold text-indigo-700">{nf(r.netNeed)}</td>
-                    <td className="p-2 font-mono font-extrabold text-slate-900">{fmt(r.suggested, 0)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(r.historyQty, 0)}</td>
+                    <td className="tnum text-left p-2 text-slate-600">{nf(r.dailyAvg)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{nf(r.forecast)}</td>
+                    <td className="tnum text-left p-2 text-slate-700">{fmt(r.stock, 1)}</td>
+                    <td className="tnum text-left p-2 text-amber-700">{fmt(r.openWO, 0)}</td>
+                    <td className="tnum text-left p-2 font-bold text-indigo-700">{nf(r.netNeed)}</td>
+                    <td className="tnum text-left p-2 font-extrabold text-slate-900">{fmt(r.suggested, 0)}</td>
                     <td className="p-2"><Btn tone="ghost" className="!p-1.5" onClick={() => manufactureNow(r)}><PackageCheck className="w-3.5 h-3.5" /></Btn></td>
                   </tr>
                 ))}
@@ -257,11 +257,11 @@ export const ProductionPlanningView: React.FC = () => {
                     {materialNeeds.map((r) => (
                       <tr key={r.m.id} className="border-b border-slate-50 hover:bg-slate-50">
                         <td className="p-2 font-bold text-slate-800">{r.m.nameAr}</td>
-                        <td className="p-2 font-mono text-slate-500">{r.m.unit}</td>
-                        <td className="p-2 font-mono font-bold text-indigo-700">{fmt(r.need, 2)}</td>
-                        <td className="p-2 font-mono text-slate-600">{fmt(r.onHand, 2)}</td>
+                        <td className="tnum text-left p-2 text-slate-500">{r.m.unit}</td>
+                        <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(r.need, 2)}</td>
+                        <td className="tnum text-left p-2 text-slate-600">{fmt(r.onHand, 2)}</td>
                         <td className={`p-2 font-mono font-extrabold ${r.shortfall > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{fmt(r.shortfall, 2)}</td>
-                        <td className="p-2 font-mono text-slate-700">{fmtMoney(r.value)}</td>
+                        <td className="tnum text-left p-2 text-slate-700">{fmtMoney(r.value)}</td>
                       </tr>
                     ))}
                   </tbody>

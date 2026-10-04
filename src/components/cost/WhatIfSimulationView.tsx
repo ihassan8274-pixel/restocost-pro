@@ -209,16 +209,16 @@ export const WhatIfSimulationView: React.FC = () => {
                             {x.pr.nameAr}
                           </div>
                         </td>
-                        <td className="p-3 font-mono text-slate-600">{fmtMoney(x.orig.totalCost)}</td>
-                        <td className="p-3 font-mono font-bold text-slate-900">{fmtMoney(x.newCosts.totalCost)}</td>
+                        <td className="tnum text-left p-3 text-slate-600">{fmtMoney(x.orig.totalCost)}</td>
+                        <td className="tnum text-left p-3 font-bold text-slate-900">{fmtMoney(x.newCosts.totalCost)}</td>
                         <td className={`p-3 font-mono font-black ${up ? 'text-rose-700' : 'text-emerald-700'}`}>{up ? '+' : ''}{fmtMoney(delta)}</td>
                         <td className="p-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${up ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                             {up ? '+' : ''}{pct.toFixed(1)}%
                           </span>
                         </td>
-                        <td className="p-3 font-mono text-slate-500">{fmtMoney(x.orig.suggestedPrice)}</td>
-                        <td className="p-3 font-mono font-extrabold text-violet-700">{fmtMoney(x.newCosts.suggestedPrice)}</td>
+                        <td className="tnum text-left p-3 text-slate-500">{fmtMoney(x.orig.suggestedPrice)}</td>
+                        <td className="tnum text-left p-3 font-extrabold text-violet-700">{fmtMoney(x.newCosts.suggestedPrice)}</td>
                       </tr>
                     );
                   })}

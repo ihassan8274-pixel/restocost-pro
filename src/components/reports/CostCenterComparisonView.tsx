@@ -163,17 +163,17 @@ export const CostCenterComparisonView: React.FC = () => {
                       <span className="font-bold text-slate-800">{c.name}</span>
                     </div>
                   </td>
-                  <td className="p-2 font-mono font-bold text-emerald-700">{fmtMoney(c.revenue)}</td>
-                  <td className="p-2 font-mono text-rose-600">{fmtMoney(c.foodCost)}</td>
-                  <td className="p-2 font-mono font-bold text-rose-600">{c.fcPct.toFixed(2)}%</td>
-                  <td className="p-2 font-mono text-amber-700">{fmtMoney(c.labor)}</td>
-                  <td className="p-2 font-mono font-bold text-amber-700">{c.laborPct.toFixed(2)}%</td>
-                  <td className="p-2 font-mono text-slate-600">{fmtMoney(c.operating)}</td>
-                  <td className="p-2 font-mono text-slate-500">{fmtMoney(c.wastage)}</td>
-                  <td className="p-2 font-mono font-extrabold text-slate-800">{fmtMoney(c.totalCost)}</td>
+                  <td className="tnum text-left p-2 font-bold text-emerald-700">{fmtMoney(c.revenue)}</td>
+                  <td className="tnum text-left p-2 text-rose-600">{fmtMoney(c.foodCost)}</td>
+                  <td className="tnum text-left p-2 font-bold text-rose-600">{c.fcPct.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 text-amber-700">{fmtMoney(c.labor)}</td>
+                  <td className="tnum text-left p-2 font-bold text-amber-700">{c.laborPct.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 text-slate-600">{fmtMoney(c.operating)}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{fmtMoney(c.wastage)}</td>
+                  <td className="tnum text-left p-2 font-extrabold text-slate-800">{fmtMoney(c.totalCost)}</td>
                   <td className={`p-2 font-mono font-extrabold ${c.profit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{fmtMoney(c.profit)}</td>
                   <td className={`p-2 font-mono font-extrabold ${c.margin >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{c.margin.toFixed(2)}%</td>
-                  <td className="p-2 font-mono text-indigo-700">{fmtMoney(c.avgTicket)}</td>
+                  <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(c.avgTicket)}</td>
                 </tr>
               ))}
               {centers.length === 0 && <tr><td colSpan={cols.length + 1} className="p-8 text-center text-slate-500 font-bold">لا توجد بيانات مراكز في النطاق المحدد</td></tr>}

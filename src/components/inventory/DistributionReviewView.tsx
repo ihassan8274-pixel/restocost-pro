@@ -197,7 +197,7 @@ export const DistributionReviewView: React.FC = () => {
                 const hasWarn = (d.warnings && d.warnings.length > 0) || (d.unknownTargets && d.unknownTargets.length > 0) || (d.multiSource && d.multiSource.length >= 2);
                 return (
                   <tr key={d.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{d.id.replace('dist-', '')}</td>
+                    <td className="tnum text-left px-4 py-3 text-xs text-slate-500">{d.id.replace('dist-', '')}</td>
                     <td className="px-4 py-3 text-slate-600">{d.date || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center flex-wrap gap-1.5">

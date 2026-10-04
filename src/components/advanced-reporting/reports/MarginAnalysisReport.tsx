@@ -353,13 +353,13 @@ export const MarginAnalysisReport: React.FC = () => {
               {branchData.rows.map((r, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
-                  <td className="p-2 text-center font-mono text-indigo-700">{fmtMoney(r.netRevenue)}</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{fmtMoney(r.variableCost)}</td>
-                  <td className="p-2 text-center font-mono text-amber-600">{fmtMoney(r.fixedCost)}</td>
+                  <td className="tnum p-2 text-left text-indigo-700">{fmtMoney(r.netRevenue)}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{fmtMoney(r.variableCost)}</td>
+                  <td className="tnum p-2 text-left text-amber-600">{fmtMoney(r.fixedCost)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${r.cmPct >= 60 ? 'text-emerald-700' : r.cmPct >= 45 ? 'text-sky-700' : 'text-rose-700'}`}>
                     {r.cmPct.toFixed(1)}%
                   </td>
-                  <td className="p-2 text-center font-mono font-bold text-purple-700">
+                  <td className="tnum p-2 text-left font-bold text-purple-700">
                     {r.beOk ? fmtMoney(r.breakEven) : '—'}
                   </td>
                   <td className={`p-2 text-center font-mono font-bold ${safetyColor(r.safetyMargin)}`}>
@@ -372,11 +372,11 @@ export const MarginAnalysisReport: React.FC = () => {
               ))}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">الإجمالي</td>
-                <td className="p-2 text-center font-mono text-indigo-700">{fmtMoney(total.netRevenue)}</td>
-                <td className="p-2 text-center font-mono text-rose-600">{fmtMoney(total.variableCost)}</td>
-                <td className="p-2 text-center font-mono text-amber-600">{fmtMoney(total.fixedCost)}</td>
-                <td className="p-2 text-center font-mono text-sky-700 text-lg">{total.cmPct.toFixed(1)}%</td>
-                <td className="p-2 text-center font-mono text-purple-700 text-lg">
+                <td className="tnum p-2 text-left text-indigo-700">{fmtMoney(total.netRevenue)}</td>
+                <td className="tnum p-2 text-left text-rose-600">{fmtMoney(total.variableCost)}</td>
+                <td className="tnum p-2 text-left text-amber-600">{fmtMoney(total.fixedCost)}</td>
+                <td className="tnum p-2 text-left text-sky-700 text-lg">{total.cmPct.toFixed(1)}%</td>
+                <td className="tnum p-2 text-left text-purple-700 text-lg">
                   {total.beOk ? fmtMoney(total.breakEven) : '—'}
                 </td>
                 <td className={`p-2 text-center font-mono font-bold ${safetyColor(total.safetyMargin)} text-lg`}>
@@ -517,15 +517,15 @@ export const MarginAnalysisReport: React.FC = () => {
                 return (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
-                    <td className="p-2 text-center font-mono text-indigo-700">{fmtMoney(r.netRevenue)}</td>
-                    <td className="p-2 text-center font-mono text-rose-600">{fmtMoney(r.foodCost)}</td>
-                    <td className="p-2 text-center font-mono text-amber-600">{fmtMoney(r.laborCost)}</td>
-                    <td className="p-2 text-center font-mono text-amber-600">{fmtMoney(r.opexCost)}</td>
-                    <td className="p-2 text-center font-mono text-rose-500">{fmtMoney(r.wastageCost)}</td>
+                    <td className="tnum p-2 text-left text-indigo-700">{fmtMoney(r.netRevenue)}</td>
+                    <td className="tnum p-2 text-left text-rose-600">{fmtMoney(r.foodCost)}</td>
+                    <td className="tnum p-2 text-left text-amber-600">{fmtMoney(r.laborCost)}</td>
+                    <td className="tnum p-2 text-left text-amber-600">{fmtMoney(r.opexCost)}</td>
+                    <td className="tnum p-2 text-left text-rose-500">{fmtMoney(r.wastageCost)}</td>
                     <td className={`p-2 text-center font-mono font-bold ${foodPct <= 30 ? 'text-emerald-700' : 'text-rose-600'}`}>
                       {foodPct.toFixed(1)}%
                     </td>
-                    <td className="p-2 text-center font-mono">{fixedPct.toFixed(1)}%</td>
+                    <td className="tnum p-2 text-left">{fixedPct.toFixed(1)}%</td>
                     <td className={`p-2 text-center font-mono font-bold ${primePct <= 55 ? 'text-emerald-700' : primePct <= 65 ? 'text-amber-600' : 'text-rose-600'}`}>
                       {primePct.toFixed(1)}%
                     </td>

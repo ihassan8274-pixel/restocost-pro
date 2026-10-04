@@ -122,10 +122,10 @@ export const ManufacturingView: React.FC = () => {
                         return (
                           <tr key={r.rawMaterialId} className="hover:bg-slate-50">
                             <td className="p-2.5 font-bold text-slate-800">{r.materialName}</td>
-                            <td className="p-2.5 font-mono font-extrabold text-indigo-700">{fmt(r.requiredQty)} {r.unit}</td>
-                            <td className="p-2.5 font-mono text-slate-700">{fmt(r.availableQty)} {r.unit}</td>
-                            <td className="p-2.5 font-mono">{fmt(r.unitCost)}</td>
-                            <td className="p-2.5 font-mono font-bold">{fmtMoney(r.requiredQty * r.unitCost)}</td>
+                            <td className="tnum text-left p-2.5 font-extrabold text-indigo-700">{fmt(r.requiredQty)} {r.unit}</td>
+                            <td className="tnum text-left p-2.5 text-slate-700">{fmt(r.availableQty)} {r.unit}</td>
+                            <td className="tnum text-left p-2.5">{fmt(r.unitCost)}</td>
+                            <td className="tnum text-left p-2.5 font-bold">{fmtMoney(r.requiredQty * r.unitCost)}</td>
                             <td className="p-2.5">{short ? <span className="text-[9px] font-extrabold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full flex items-center gap-1 w-fit"><AlertTriangle className="w-3 h-3" /> ناقص</span> : <span className="text-[9px] font-extrabold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full flex items-center gap-1 w-fit"><CheckCircle2 className="w-3 h-3" /> متوفر</span>}</td>
                           </tr>
                         );
@@ -164,12 +164,12 @@ export const ManufacturingView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {productionRuns.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-mono font-bold text-indigo-700">{r.recipeCode}</td>
+                    <td className="tnum text-left p-3 font-bold text-indigo-700">{r.recipeCode}</td>
                     <td className="p-3 font-bold text-slate-900">{r.recipeName}</td>
                     <td className="p-3 text-slate-600">{getBranchName(r.branchId)}</td>
-                    <td className="p-3 font-mono text-slate-600">{r.date}</td>
-                    <td className="p-3 font-mono font-extrabold text-amber-700">{fmt(r.producedQty)} {r.unit}</td>
-                    <td className="p-3 font-mono font-bold">{fmtMoney(r.totalCost)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-amber-700">{fmt(r.producedQty)} {r.unit}</td>
+                    <td className="tnum text-left p-3 font-bold">{fmtMoney(r.totalCost)}</td>
                     <td className="p-3 text-slate-600">{r.producedBy}</td>
                     <td className="p-3"><StatusPill status={r.status} map={{ completed: 'مكتمل', cancelled: 'ملغي' }} /></td>
                     <td className="p-3">
@@ -209,10 +209,10 @@ export const ManufacturingView: React.FC = () => {
                     {viewRun.items.map((it) => (
                       <tr key={it.rawMaterialId}>
                         <td className="p-2 font-bold text-slate-800">{it.materialName}</td>
-                        <td className="p-2 font-mono font-extrabold text-indigo-700">{fmt(it.requiredQty)} {it.unit}</td>
-                        <td className="p-2 font-mono">{fmt(it.availableQty)} {it.unit}</td>
-                        <td className="p-2 font-mono">{fmt(it.unitCost)}</td>
-                        <td className="p-2 font-mono font-bold">{fmtMoney(it.requiredQty * it.unitCost)}</td>
+                        <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmt(it.requiredQty)} {it.unit}</td>
+                        <td className="tnum text-left p-2">{fmt(it.availableQty)} {it.unit}</td>
+                        <td className="tnum text-left p-2">{fmt(it.unitCost)}</td>
+                        <td className="tnum text-left p-2 font-bold">{fmtMoney(it.requiredQty * it.unitCost)}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -223,14 +223,14 @@ export const StockCoverView: React.FC = () => {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="p-2 font-mono font-bold text-indigo-700">{r.code}</td>
+                    <td className="tnum text-left p-2 font-bold text-indigo-700">{r.code}</td>
                     <td className="p-2 font-bold text-slate-800">{r.nameAr}</td>
-                    <td className="p-2 font-mono text-slate-800">{fmt(r.stock, 2)} {r.unit}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(r.avgDaily, 2)}</td>
+                    <td className="tnum text-left p-2 text-slate-800">{fmt(r.stock, 2)} {r.unit}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(r.avgDaily, 2)}</td>
                     <td className={`p-2 font-mono font-extrabold ${r.status === 'critical' ? 'text-rose-600' : r.status === 'warning' ? 'text-amber-600' : r.status === 'overstock' ? 'text-indigo-600' : 'text-emerald-700'}`}>{Number.isFinite(r.days) ? r.days.toFixed(1) : '∞'}</td>
-                    <td className="p-2 font-mono text-slate-600">{fmtMoney(r.stockValue)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(r.minLevel, 2)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(r.maxLevel, 2)}</td>
+                    <td className="tnum text-left p-2 text-slate-600">{fmtMoney(r.stockValue)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(r.minLevel, 2)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(r.maxLevel, 2)}</td>
                     <td className="p-2"><span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${STATUS_TONE[r.status]}`}>{STATUS_LABEL[r.status]}</span></td>
                   </tr>
                 ))}

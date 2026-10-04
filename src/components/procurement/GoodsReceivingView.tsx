@@ -564,16 +564,16 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               {filtered.map((g) => (
                 <tr key={g.id} className="hover:bg-slate-50">
                   <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(g.id)} onChange={(e) => { const next = new Set(selectedIds); if (e.target.checked) next.add(g.id); else next.delete(g.id); setSelectedIds(next); }} /></td>
-                  <td className="p-3 font-mono font-bold text-primary-700">{g.grnNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-primary-700">{g.grnNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{g.supplierName}</td>
                   <td className="p-3 text-slate-600">{g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchDisplayName(g.branchId)}</td>
                   <td className="p-3"><DateText value={g.date} /></td>
                   <td className="p-3"><DateText value={g.invoiceDate || ''} /></td>
-                  <td className="p-3 font-mono">{g.invoiceNumber}</td>
+                  <td className="tnum text-left p-3">{g.invoiceNumber}</td>
                   <td className="p-3"><span className="tnum" dir="ltr">{fmt(g.totalAmount - (g.vatAmount || 0))}</span></td>
                   <td className="p-3"><span className="tnum text-amber-700" dir="ltr">{fmt(g.vatAmount || 0)}</span></td>
                   <td className="p-3 font-extrabold"><span className="tnum" dir="ltr">{fmt(g.totalAmount)}</span></td>
-                  <td className="p-3 font-mono text-amber-700">{g.currencyCode || 'SAR'}</td>
+                  <td className="tnum text-left p-3 text-amber-700">{g.currencyCode || 'SAR'}</td>
                   <td className="p-3 font-bold">{g.items.length}</td>
                   <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${GRN_STATUS_COLORS[g.status]}`}>{GRN_STATUS_LABELS[g.status]}</span></td>
                   <td className="p-3">

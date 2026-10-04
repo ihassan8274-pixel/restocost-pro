@@ -360,26 +360,26 @@ export const BranchScorecardReport: React.FC = () => {
               {rows.map((r, i) => (
                 <tr key={r.branchId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(r.netRevenue)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(r.netRevenue)}</td>
                   <td className={`p-2 text-center font-mono ${r.deltaRevPct != null ? posNegColor(r.deltaRevPct) : 'text-slate-400'}`}>
                     {r.deltaRevPct != null ? `${r.deltaRevPct > 0 ? '+' : ''}${r.deltaRevPct.toFixed(1)}%` : '—'}
                   </td>
-                  <td className="p-2 text-center font-mono">{fmt(r.qtySold)}</td>
+                  <td className="tnum p-2 text-left">{fmt(r.qtySold)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${pctColor(r.foodCostPct, targetFoodCost)}`}>{r.foodCostPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{fmtMoney(r.wastage)}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.labor)}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.opex)}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{fmtMoney(r.wastage)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.labor)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.opex)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${posNegColor(r.profit)}`}>{fmtMoney(r.profit)}</td>
                   <td className={`p-2 text-center font-mono ${posNegColor(r.profitPct)}`}>{r.profitPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{r.beOk ? fmtMoney(r.breakEven) : '—'}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{r.beOk ? fmtMoney(r.breakEven) : '—'}</td>
                   <td className={`p-2 text-center font-mono ${r.safetyMargin >= 20 ? 'text-emerald-600' : r.safetyMargin >= 10 ? 'text-amber-600' : 'text-rose-600'}`}>{r.safetyMargin.toFixed(1)}%</td>
                 </tr>
               ))}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">الإجمالي</td>
-                <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(totals.netRevenue)}</td>
+                <td className="tnum p-2 text-left text-blue-700">{fmtMoney(totals.netRevenue)}</td>
                 <td className="p-2 text-center text-slate-400">—</td>
-                <td className="p-2 text-center font-mono">{fmt(totals.qtySold)}</td>
+                <td className="tnum p-2 text-left">{fmt(totals.qtySold)}</td>
                 <td className={`p-2 text-center font-mono text-lg ${pctColor(totals.foodCostPct, targetFoodCost)}`}>{totals.foodCostPct.toFixed(1)}%</td>
                 <td className="p-2 text-center text-slate-400">—</td>
                 <td className="p-2 text-center text-slate-400">—</td>

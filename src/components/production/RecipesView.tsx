@@ -1117,10 +1117,10 @@ export const RecipesView: React.FC = () => {
                                 {r.type === 'direct' ? 'مباشر' : `عبر: ${r.subPrepName || '—'}`}
                               </span>
                             </td>
-                            <td className="p-2 font-mono text-slate-700">{fmt(r.quantity, 3)}</td>
-                            <td className="p-2 font-mono font-bold text-indigo-700">{r.totalSold}</td>
-                            <td className="p-2 font-mono text-amber-700">{fmt(r.consumedQty, 3)} {wuMat?.unit}</td>
-                            <td className="p-2 font-mono font-bold text-emerald-700">{fmt(r.consumedValue, 2)} ر.س</td>
+                            <td className="tnum text-left p-2 text-slate-700">{fmt(r.quantity, 3)}</td>
+                            <td className="tnum text-left p-2 font-bold text-indigo-700">{r.totalSold}</td>
+                            <td className="tnum text-left p-2 text-amber-700">{fmt(r.consumedQty, 3)} {wuMat?.unit}</td>
+                            <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(r.consumedValue, 2)} ر.س</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1128,9 +1128,9 @@ export const RecipesView: React.FC = () => {
                         <tr className="bg-slate-50 font-extrabold border-t-2 border-slate-200">
                           <td className="p-2" colSpan={3}>الإجمالي</td>
                           <td className="p-2">—</td>
-                          <td className="p-2 font-mono text-indigo-800">{whereUsedResults.reduce((s, r) => s + r.totalSold, 0)}</td>
-                          <td className="p-2 font-mono text-amber-800">{fmt(whereUsedResults.reduce((s, r) => s + r.consumedQty, 0), 3)} {wuMat?.unit}</td>
-                          <td className="p-2 font-mono text-emerald-800">{fmt(whereUsedResults.reduce((s, r) => s + r.consumedValue, 0), 2)} ر.س</td>
+                          <td className="tnum text-left p-2 text-indigo-800">{whereUsedResults.reduce((s, r) => s + r.totalSold, 0)}</td>
+                          <td className="tnum text-left p-2 text-amber-800">{fmt(whereUsedResults.reduce((s, r) => s + r.consumedQty, 0), 3)} {wuMat?.unit}</td>
+                          <td className="tnum text-left p-2 text-emerald-800">{fmt(whereUsedResults.reduce((s, r) => s + r.consumedValue, 0), 2)} ر.س</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -1205,32 +1205,32 @@ export const RecipesView: React.FC = () => {
                           <span className="font-bold text-slate-800">{row.r.nameAr}</span>
                           <span className="block text-[10px] text-slate-400 font-mono">{row.r.code}</span>
                         </td>
-                        <td className="p-2 font-mono">{row.gross ? fmt(row.gross, 2) : '—'}</td>
-                        <td className="p-2 font-mono text-indigo-700">{row.net ? fmt(row.net, 2) : '—'}</td>
-                        <td className="p-2 font-mono">{fmt(row.foodCost, 2)}</td>
-                        <td className="p-2 font-mono">{fmt(row.packaging, 2)}</td>
-                        <td className="p-2 font-mono font-bold text-slate-800">{fmt(row.totalCost, 2)}</td>
+                        <td className="tnum text-left p-2">{row.gross ? fmt(row.gross, 2) : '—'}</td>
+                        <td className="tnum text-left p-2 text-indigo-700">{row.net ? fmt(row.net, 2) : '—'}</td>
+                        <td className="tnum text-left p-2">{fmt(row.foodCost, 2)}</td>
+                        <td className="tnum text-left p-2">{fmt(row.packaging, 2)}</td>
+                        <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(row.totalCost, 2)}</td>
                         <td className={`p-2 font-mono font-bold ${row.net && row.foodCostPct > TARGET_FC_PCT ? 'text-rose-600' : 'text-emerald-700'}`}>{row.net ? `${row.foodCostPct.toFixed(2)}%` : '—'}</td>
-                        <td className="p-2 font-mono text-amber-700">{row.net ? `${row.totalCostPct.toFixed(2)}%` : '—'}</td>
-                        <td className="p-2 font-mono font-bold text-rose-600">{row.sugg.gross ? fmt(row.sugg.gross, 0) : '—'}</td>
-                        <td className="p-2 font-mono text-indigo-700">{row.sugg.net ? fmt(row.sugg.net, 2) : '—'}</td>
-                        <td className="p-2 font-mono text-emerald-700">{row.sugg.net ? `${row.totalCostPctAfter.toFixed(2)}%` : '—'}</td>
+                        <td className="tnum text-left p-2 text-amber-700">{row.net ? `${row.totalCostPct.toFixed(2)}%` : '—'}</td>
+                        <td className="tnum text-left p-2 font-bold text-rose-600">{row.sugg.gross ? fmt(row.sugg.gross, 0) : '—'}</td>
+                        <td className="tnum text-left p-2 text-indigo-700">{row.sugg.net ? fmt(row.sugg.net, 2) : '—'}</td>
+                        <td className="tnum text-left p-2 text-emerald-700">{row.sugg.net ? `${row.totalCostPctAfter.toFixed(2)}%` : '—'}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="bg-slate-50 font-extrabold border-t-2 border-slate-200">
                       <td className="p-2" colSpan={4}>الإجمالي ({reportRows.length} صنف)</td>
-                      <td className="p-2 font-mono">{reportTotals.gross ? fmt(reportTotals.gross, 2) : '—'}</td>
-                      <td className="p-2 font-mono text-indigo-700">{reportTotals.net ? fmt(reportTotals.net, 2) : '—'}</td>
-                      <td className="p-2 font-mono">{fmt(reportTotals.foodCost, 2)}</td>
-                      <td className="p-2 font-mono">{fmt(reportTotals.packaging, 2)}</td>
-                      <td className="p-2 font-mono text-indigo-800">{fmt(reportTotals.totalCost, 2)}</td>
-                      <td className="p-2 font-mono">{reportTotals.foodCostPct !== null ? `${reportTotals.foodCostPct.toFixed(2)}%` : '—'}</td>
-                      <td className="p-2 font-mono">{reportTotals.totalCostPct !== null ? `${reportTotals.totalCostPct.toFixed(2)}%` : '—'}</td>
-                      <td className="p-2 font-mono">{reportTotals.suggGross ? fmt(reportTotals.suggGross, 0) : '—'}</td>
-                      <td className="p-2 font-mono">{reportTotals.suggNet ? fmt(reportTotals.suggNet, 2) : '—'}</td>
-                      <td className="p-2 font-mono text-emerald-700">{reportTotals.totalCostPctAfter !== null ? `${reportTotals.totalCostPctAfter.toFixed(2)}%` : '—'}</td>
+                      <td className="tnum text-left p-2">{reportTotals.gross ? fmt(reportTotals.gross, 2) : '—'}</td>
+                      <td className="tnum text-left p-2 text-indigo-700">{reportTotals.net ? fmt(reportTotals.net, 2) : '—'}</td>
+                      <td className="tnum text-left p-2">{fmt(reportTotals.foodCost, 2)}</td>
+                      <td className="tnum text-left p-2">{fmt(reportTotals.packaging, 2)}</td>
+                      <td className="tnum text-left p-2 text-indigo-800">{fmt(reportTotals.totalCost, 2)}</td>
+                      <td className="tnum text-left p-2">{reportTotals.foodCostPct !== null ? `${reportTotals.foodCostPct.toFixed(2)}%` : '—'}</td>
+                      <td className="tnum text-left p-2">{reportTotals.totalCostPct !== null ? `${reportTotals.totalCostPct.toFixed(2)}%` : '—'}</td>
+                      <td className="tnum text-left p-2">{reportTotals.suggGross ? fmt(reportTotals.suggGross, 0) : '—'}</td>
+                      <td className="tnum text-left p-2">{reportTotals.suggNet ? fmt(reportTotals.suggNet, 2) : '—'}</td>
+                      <td className="tnum text-left p-2 text-emerald-700">{reportTotals.totalCostPctAfter !== null ? `${reportTotals.totalCostPctAfter.toFixed(2)}%` : '—'}</td>
                     </tr>
                   </tfoot>
                 </table>

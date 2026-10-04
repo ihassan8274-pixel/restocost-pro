@@ -81,11 +81,11 @@ export const InventoryViewMigrated: React.FC = () => {
                       <td className="p-3 font-bold text-slate-900">{getRawMaterialName(i.rawMaterialId)}</td>
                       <td className="p-3">-</td>
                       <td className="p-3 text-slate-600">{i.branchId === 'b-ck' ? 'المطبخ المركزي' : i.branchId}</td>
-                      <td className="p-3 font-mono font-extrabold text-slate-900">{fmt(i.quantity)}</td>
+                      <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
                       <td className="p-3 text-slate-500">-</td>
-                      <td className="p-3 font-mono font-bold text-indigo-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
-                      <td className="p-3 font-mono text-slate-500">-</td>
-                      <td className="p-3 font-mono font-bold text-indigo-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
+                      <td className="tnum text-left p-3 text-slate-500">-</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
                       <td className="p-3">{isLow ? <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">منخفض</span> : <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>}</td>
                     </tr>
                   );

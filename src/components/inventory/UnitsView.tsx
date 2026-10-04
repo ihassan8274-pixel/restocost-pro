@@ -51,11 +51,11 @@ export const UnitsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {unitsOfMeasure.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono font-extrabold text-indigo-700">{u.code}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-indigo-700">{u.code}</td>
                   <td className="p-3 font-bold text-slate-900">{u.nameAr}</td>
                   <td className="p-3 text-slate-500">{u.nameEn}</td>
                   <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{UOM_CLASS_LABELS[u.uomClass]}</span></td>
-                  <td className="p-3 font-mono text-slate-600">{linkedCount(u) || '—'}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{linkedCount(u) || '—'}</td>
                   <td className="p-3">{u.isActive ? <span className="text-emerald-600 font-bold">نشطة</span> : <span className="text-slate-400 font-bold">موقوفة</span>}</td>
                   <td className="p-3">
                     <div className="flex gap-1">

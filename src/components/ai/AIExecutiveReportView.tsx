@@ -349,16 +349,16 @@ export const AIExecutiveReportView: React.FC = () => {
                 <tr><th className="p-2">البند</th><th className="p-2">المبلغ</th><th className="p-2">النسبة من الإيراد</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                <tr><td className="p-2 font-bold">الإيراد</td><td className="p-2 font-mono font-extrabold">{fmtMoney(revenue)}</td><td className="p-2 font-mono">100%</td></tr>
-                <tr><td className="p-2 font-bold">تكلفة الطعام</td><td className="p-2 font-mono">{fmtMoney(foodCost)}</td><td className="p-2 font-mono">{fcPct.toFixed(2)}%</td></tr>
-                <tr><td className="p-2 font-bold">العمالة</td><td className="p-2 font-mono">{fmtMoney(labor)}</td><td className="p-2 font-mono">{laborPct.toFixed(2)}%</td></tr>
-                <tr><td className="p-2 font-bold">التشغيلية المدفوعة</td><td className="p-2 font-mono">{fmtMoney(opex)}</td><td className="p-2 font-mono">{opexPct.toFixed(2)}%</td></tr>
-                <tr><td className="p-2 font-bold">الهوالك</td><td className="p-2 font-mono">{fmtMoney(wastage)}</td><td className="p-2 font-mono">{wastagePct.toFixed(2)}%</td></tr>
-                <tr className="bg-indigo-50/60"><td className="p-2 font-extrabold">إجمالي التكاليف</td><td className="p-2 font-mono font-extrabold">{fmtMoney(totalCost)}</td><td className="p-2 font-mono font-extrabold">{revenue ? ((totalCost / revenue) * 100).toFixed(2) : '0'}%</td></tr>
-                <tr className="bg-emerald-50/60"><td className="p-2 font-extrabold text-emerald-800">الربح الصافي</td><td className="p-2 font-mono font-extrabold text-emerald-800">{fmtMoney(profit)}</td><td className="p-2 font-mono font-extrabold text-emerald-800">{margin.toFixed(2)}%</td></tr>
-                <tr><td className="p-2 font-bold">ضريبة خرج (مبيعات)</td><td className="p-2 font-mono">{fmtMoney(vatOutput)}</td><td className="p-2 font-mono">—</td></tr>
-                <tr><td className="p-2 font-bold">ضريبة دخل (مشتريات)</td><td className="p-2 font-mono">{fmtMoney(vatInput)}</td><td className="p-2 font-mono">—</td></tr>
-                <tr><td className="p-2 font-bold">صافي الضريبة المستحقة ({vatPercent}%)</td><td className="p-2 font-mono font-extrabold text-amber-700">{fmtMoney(vatNet)}</td><td className="p-2 font-mono">—</td></tr>
+                <tr><td className="p-2 font-bold">الإيراد</td><td className="tnum text-left p-2 font-extrabold">{fmtMoney(revenue)}</td><td className="tnum text-left p-2">100%</td></tr>
+                <tr><td className="p-2 font-bold">تكلفة الطعام</td><td className="tnum text-left p-2">{fmtMoney(foodCost)}</td><td className="tnum text-left p-2">{fcPct.toFixed(2)}%</td></tr>
+                <tr><td className="p-2 font-bold">العمالة</td><td className="tnum text-left p-2">{fmtMoney(labor)}</td><td className="tnum text-left p-2">{laborPct.toFixed(2)}%</td></tr>
+                <tr><td className="p-2 font-bold">التشغيلية المدفوعة</td><td className="tnum text-left p-2">{fmtMoney(opex)}</td><td className="tnum text-left p-2">{opexPct.toFixed(2)}%</td></tr>
+                <tr><td className="p-2 font-bold">الهوالك</td><td className="tnum text-left p-2">{fmtMoney(wastage)}</td><td className="tnum text-left p-2">{wastagePct.toFixed(2)}%</td></tr>
+                <tr className="bg-indigo-50/60"><td className="p-2 font-extrabold">إجمالي التكاليف</td><td className="tnum text-left p-2 font-extrabold">{fmtMoney(totalCost)}</td><td className="tnum text-left p-2 font-extrabold">{revenue ? ((totalCost / revenue) * 100).toFixed(2) : '0'}%</td></tr>
+                <tr className="bg-emerald-50/60"><td className="p-2 font-extrabold text-emerald-800">الربح الصافي</td><td className="tnum text-left p-2 font-extrabold text-emerald-800">{fmtMoney(profit)}</td><td className="tnum text-left p-2 font-extrabold text-emerald-800">{margin.toFixed(2)}%</td></tr>
+                <tr><td className="p-2 font-bold">ضريبة خرج (مبيعات)</td><td className="tnum text-left p-2">{fmtMoney(vatOutput)}</td><td className="tnum text-left p-2">—</td></tr>
+                <tr><td className="p-2 font-bold">ضريبة دخل (مشتريات)</td><td className="tnum text-left p-2">{fmtMoney(vatInput)}</td><td className="tnum text-left p-2">—</td></tr>
+                <tr><td className="p-2 font-bold">صافي الضريبة المستحقة ({vatPercent}%)</td><td className="tnum text-left p-2 font-extrabold text-amber-700">{fmtMoney(vatNet)}</td><td className="tnum text-left p-2">—</td></tr>
               </tbody>
             </table>
           </div>

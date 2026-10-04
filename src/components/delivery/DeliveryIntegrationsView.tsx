@@ -544,27 +544,27 @@ const DeliveryIntegrationsView: React.FC = () => {
                 {branchTotals.map((g) => (
                   <tr key={g.name} className="hover:bg-slate-50 border-b border-slate-100">
                     <td className="p-2 font-bold text-slate-800">{g.name}</td>
-                    <td className="p-2 font-mono">{fmtNum(g.records, 0)}</td>
-                    <td className="p-2 font-mono">{fmtNum(g.orders, 0)}</td>
-                    <td className="p-2 font-mono">{fmt(g.gross)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(g.vat)}</td>
-                    <td className="p-2 font-mono text-indigo-700">{fmt(g.net)}</td>
-                    <td className="p-2 font-mono text-rose-600">{g.net ? pctFmt((g.comm / g.net) * 100) : '—'}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmt(g.comm)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{fmt(g.payout)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(g.records, 0)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(g.orders, 0)}</td>
+                    <td className="tnum text-left p-2">{fmt(g.gross)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(g.vat)}</td>
+                    <td className="tnum text-left p-2 text-indigo-700">{fmt(g.net)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{g.net ? pctFmt((g.comm / g.net) * 100) : '—'}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmt(g.comm)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(g.payout)}</td>
                   </tr>
                 ))}
                 {branchTotals.length > 1 && (
                   <tr className="bg-slate-100 font-extrabold">
                     <td className="p-2">الإجمالي العام</td>
-                    <td className="p-2 font-mono">{fmtNum(filteredRecords.length, 0)}</td>
-                    <td className="p-2 font-mono">{fmtNum(tOrders, 0)}</td>
-                    <td className="p-2 font-mono">{fmt(tGross)}</td>
-                    <td className="p-2 font-mono">{fmt(tGross - tNet)}</td>
-                    <td className="p-2 font-mono text-indigo-700">{fmt(tNet)}</td>
-                    <td className="p-2 font-mono text-rose-600">{pctFmt(avgCommPct)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmt(tComm)}</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmt(tPayout)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(filteredRecords.length, 0)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(tOrders, 0)}</td>
+                    <td className="tnum text-left p-2">{fmt(tGross)}</td>
+                    <td className="tnum text-left p-2">{fmt(tGross - tNet)}</td>
+                    <td className="tnum text-left p-2 text-indigo-700">{fmt(tNet)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{pctFmt(avgCommPct)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmt(tComm)}</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmt(tPayout)}</td>
                   </tr>
                 )}
                 {!branchTotals.length && <tr><td colSpan={9} className="p-4 text-center text-slate-400">لا توجد سجلات في هذه الفترة</td></tr>}
@@ -586,22 +586,22 @@ const DeliveryIntegrationsView: React.FC = () => {
                     {rowsArr.map(([bk, v]) => (
                       <tr key={bk} className="hover:bg-slate-50 border-b border-slate-100">
                         <td className="p-2 font-bold text-slate-800">{bk}</td>
-                        <td className="p-2 font-mono">{fmtNum(v.orders, 0)}</td>
-                        <td className="p-2 font-mono">{fmt(v.gross)}</td>
-                        <td className="p-2 font-mono text-slate-500">{fmt(v.vat)}</td>
-                        <td className="p-2 font-mono text-indigo-700">{fmt(v.net)}</td>
-                        <td className="p-2 font-mono text-rose-600">{fmt(v.comm)}</td>
-                        <td className="p-2 font-mono font-bold text-emerald-700">{fmt(v.payout)}</td>
+                        <td className="tnum text-left p-2">{fmtNum(v.orders, 0)}</td>
+                        <td className="tnum text-left p-2">{fmt(v.gross)}</td>
+                        <td className="tnum text-left p-2 text-slate-500">{fmt(v.vat)}</td>
+                        <td className="tnum text-left p-2 text-indigo-700">{fmt(v.net)}</td>
+                        <td className="tnum text-left p-2 text-rose-600">{fmt(v.comm)}</td>
+                        <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(v.payout)}</td>
                       </tr>
                     ))}
                     <tr className="bg-emerald-50 font-extrabold">
                       <td className="p-2">إجمالي {platform}</td>
-                      <td className="p-2 font-mono">{fmtNum(tot.orders, 0)}</td>
-                      <td className="p-2 font-mono">{fmt(tot.gross)}</td>
-                      <td className="p-2 font-mono">{fmt(tot.vat)}</td>
-                      <td className="p-2 font-mono text-indigo-700">{fmt(tot.net)}</td>
-                      <td className="p-2 font-mono text-rose-600">{fmt(tot.comm)}</td>
-                      <td className="p-2 font-mono text-emerald-700">{fmt(tot.payout)}</td>
+                      <td className="tnum text-left p-2">{fmtNum(tot.orders, 0)}</td>
+                      <td className="tnum text-left p-2">{fmt(tot.gross)}</td>
+                      <td className="tnum text-left p-2">{fmt(tot.vat)}</td>
+                      <td className="tnum text-left p-2 text-indigo-700">{fmt(tot.net)}</td>
+                      <td className="tnum text-left p-2 text-rose-600">{fmt(tot.comm)}</td>
+                      <td className="tnum text-left p-2 text-emerald-700">{fmt(tot.payout)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -679,14 +679,14 @@ const DeliveryIntegrationsView: React.FC = () => {
                 {platformRows.map((p) => (
                   <tr key={p.name} className="hover:bg-slate-50 border-b border-slate-100">
                     <td className="p-2 font-bold text-slate-800">{p.name}</td>
-                    <td className="p-2 font-mono">{fmtNum(p.records, 0)}</td>
-                    <td className="p-2 font-mono">{fmtNum(p.orders, 0)}</td>
-                    <td className="p-2 font-mono">{fmt(p.gross)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(p.vat)}</td>
-                    <td className="p-2 font-mono">{fmt(p.net)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmt(p.comm)}</td>
-                    <td className="p-2 font-mono text-rose-600">{pctFmt(p.net ? (p.comm / p.net) * 100 : 0)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{fmt(p.payout)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(p.records, 0)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(p.orders, 0)}</td>
+                    <td className="tnum text-left p-2">{fmt(p.gross)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(p.vat)}</td>
+                    <td className="tnum text-left p-2">{fmt(p.net)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmt(p.comm)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{pctFmt(p.net ? (p.comm / p.net) * 100 : 0)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(p.payout)}</td>
                   </tr>
                 ))}
                 {!platformRows.length && <tr><td colSpan={9} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -722,7 +722,7 @@ const DeliveryIntegrationsView: React.FC = () => {
                     <tr key={rc.id} className="hover:bg-slate-50 border-b border-slate-100">
                       <td className="p-2 font-bold text-slate-800">{rc.nameAr}</td>
                       <td className="p-2 text-slate-500">{String(rc.category)}</td>
-                      <td className="p-2 font-mono text-slate-500">{rc.actualMenuPrice ? fmt(rc.actualMenuPrice) : '—'}</td>
+                      <td className="tnum text-left p-2 text-slate-500">{rc.actualMenuPrice ? fmt(rc.actualMenuPrice) : '—'}</td>
                       <td className="p-2 w-44">
                         <input
                           type="number"
@@ -794,14 +794,14 @@ const DeliveryIntegrationsView: React.FC = () => {
                     )}
                   </td>
                   <td className="p-2 text-slate-500 whitespace-nowrap">{d.category}</td>
-                  <td className="p-2 font-mono">{fmtNum(d.qty, 0)}</td>
-                  <td className="p-2 font-mono">{fmt(d.avgPrice)}</td>
-                  <td className="p-2 font-mono text-slate-500">{d.dinePrice > 0 ? fmt(d.dinePrice) : '—'}</td>
+                  <td className="tnum text-left p-2">{fmtNum(d.qty, 0)}</td>
+                  <td className="tnum text-left p-2">{fmt(d.avgPrice)}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{d.dinePrice > 0 ? fmt(d.dinePrice) : '—'}</td>
                   <td className={`p-2 font-mono font-bold ${(d.priceGapPct ?? 0) > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{d.priceGapPct != null ? pctFmt(d.priceGapPct) : '—'}</td>
-                  <td className="p-2 font-mono">{fmt(d.unitCost)}</td>
-                  <td className="p-2 font-mono">{fmt(d.unitPayout)}</td>
+                  <td className="tnum text-left p-2">{fmt(d.unitCost)}</td>
+                  <td className="tnum text-left p-2">{fmt(d.unitPayout)}</td>
                   <td className={`p-2 font-mono font-bold ${d.marginAfter >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{fmt(d.marginAfter)}</td>
-                  <td className="p-2 font-mono font-bold text-slate-900">{fmt(d.payout)}</td>
+                  <td className="tnum text-left p-2 font-bold text-slate-900">{fmt(d.payout)}</td>
                 </tr>
               ))}
               {!dishRows.length && <tr><td colSpan={10} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -842,16 +842,16 @@ const DeliveryIntegrationsView: React.FC = () => {
               <tbody>
                 {filteredRecords.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50 border-b border-slate-100">
-                    <td className="p-2 font-mono whitespace-nowrap">{s.date}</td>
+                    <td className="tnum text-left p-2 whitespace-nowrap">{s.date}</td>
                     <td className="p-2 font-bold text-slate-800 whitespace-nowrap">{s.platformName}</td>
                     <td className="p-2 whitespace-nowrap">{s.branchName}</td>
-                    <td className="p-2 font-mono">{fmtNum(s.ordersCount, 0)}</td>
-                    <td className="p-2 font-mono">{fmt(s.grossRevenue)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(s.vatAmount)}</td>
-                    <td className="p-2 font-mono">{fmt(s.netRevenue)}</td>
-                    <td className="p-2 font-mono text-rose-600">{pctFmt(s.commissionPercent)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmt(s.commissionAmount)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{fmt(s.payoutAmount)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(s.ordersCount, 0)}</td>
+                    <td className="tnum text-left p-2">{fmt(s.grossRevenue)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(s.vatAmount)}</td>
+                    <td className="tnum text-left p-2">{fmt(s.netRevenue)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{pctFmt(s.commissionPercent)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmt(s.commissionAmount)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(s.payoutAmount)}</td>
                     <td className="p-2">
                       <div className="flex gap-1">
                         <button onClick={() => printSaleRecord(s)} className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600" title="طباعة السجل"><Printer className="w-3.5 h-3.5" /></button>

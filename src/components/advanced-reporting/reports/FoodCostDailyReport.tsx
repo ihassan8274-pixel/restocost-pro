@@ -224,13 +224,13 @@ export const FoodCostDailyReport: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {days.map((d, i) => (
                 <tr key={d.date} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-2 font-mono text-slate-600 text-[11px]">{d.date.slice(8, 10)} / {d.date.slice(5, 7)} / {d.date.slice(0, 4)}</td>
-                  <td className="p-2 text-center font-mono">{d.records}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(d.net)}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(d.food)}</td>
+                  <td className="tnum text-left p-2 text-slate-600 text-[11px]">{d.date.slice(8, 10)} / {d.date.slice(5, 7)} / {d.date.slice(0, 4)}</td>
+                  <td className="tnum p-2 text-left">{d.records}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(d.net)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(d.food)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${d.pct <= target ? 'text-emerald-600' : d.pct <= target * 1.1 ? 'text-amber-600' : 'text-rose-600'}`}>{d.pct.toFixed(1)}%</td>
                   <td className={`p-2 text-center font-mono ${posNeg(-d.deltaPct)}`}>{d.deltaPct > 0 ? '+' : ''}{d.deltaPct.toFixed(1)}</td>
-                  <td className="p-2 text-center font-mono text-indigo-700">{d.cumPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left text-indigo-700">{d.cumPct.toFixed(1)}%</td>
                 </tr>
               ))}
               {!days.length && (
@@ -241,9 +241,9 @@ export const FoodCostDailyReport: React.FC = () => {
               {!!days.length && (
                 <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
-                  <td className="p-2 text-center font-mono">{totals.records}</td>
-                  <td className="p-2 text-center font-mono text-blue-700 text-lg">{fmtMoney(totals.net)}</td>
-                  <td className="p-2 text-center font-mono">{fmtMoney(totals.food)}</td>
+                  <td className="tnum p-2 text-left">{totals.records}</td>
+                  <td className="tnum p-2 text-left text-blue-700 text-lg">{fmtMoney(totals.net)}</td>
+                  <td className="tnum p-2 text-left">{fmtMoney(totals.food)}</td>
                   <td className={`p-2 text-center font-mono text-lg ${totals.pct <= target ? 'text-emerald-700' : 'text-amber-700'}`}>{totals.pct.toFixed(1)}%</td>
                   <td className="p-2 text-center text-slate-400">—</td>
                   <td className="p-2 text-center text-slate-400">—</td>

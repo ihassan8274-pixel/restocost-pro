@@ -219,13 +219,13 @@ const closeWithSettlement = (id: string) => {
             <tbody className="divide-y divide-slate-100">
               {branchPeriods.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono font-bold text-slate-800">{monthLabelFor(p.monthKey)}</td>
+                  <td className="tnum text-left p-3 font-bold text-slate-800">{monthLabelFor(p.monthKey)}</td>
                   <td className="p-3">{p.status === 'closed' ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 flex items-center gap-1 w-fit"><Lock className="w-3 h-3" /> مقفل</span> : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">قيد الجرد</span>}</td>
                   <td className="p-3 text-slate-600">{getBranchName(p.branchId)}</td>
-                  <td className="p-3 font-mono">{fmt(p.totalTheoreticalUsage)}</td>
-                  <td className="p-3 font-mono">{fmt(p.totalActualUsage)}</td>
-                  <td className="p-3 font-mono">{fmt(p.totalUsageVariance)}</td>
-                  <td className="p-3 font-mono font-extrabold text-amber-700">{fmtMoney(p.totalVarianceCost)}</td>
+                  <td className="tnum text-left p-3">{fmt(p.totalTheoreticalUsage)}</td>
+                  <td className="tnum text-left p-3">{fmt(p.totalActualUsage)}</td>
+                  <td className="tnum text-left p-3">{fmt(p.totalUsageVariance)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-amber-700">{fmtMoney(p.totalVarianceCost)}</td>
                   <td className="p-3">
 <div className="flex gap-1 items-center">
                        <button onClick={() => openActive(p)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إدخال الأعداد / التعديل"><Calculator className="w-4 h-4" /></button>
@@ -269,10 +269,10 @@ const closeWithSettlement = (id: string) => {
                     <tr key={it.rawMaterialId} className={varQty !== 0 ? 'bg-amber-50/40' : ''}>
                       <td className="border border-slate-300 p-1.5 font-bold text-slate-800">{it.itemName}</td>
                       <td className="border border-slate-300 p-1.5">{it.unit}</td>
-                      <td className="border border-slate-300 p-1.5 font-mono">{fmt(it.theoreticalQty)}</td>
+                      <td className="tnum text-left border border-slate-300 p-1.5">{fmt(it.theoreticalQty)}</td>
                       <td className="border border-slate-300 p-1.5"><input type="text" inputMode="decimal" value={counts[it.rawMaterialId] ?? String(it.countedQty)} onChange={(e) => setCount(it.rawMaterialId, e.target.value)} className={inputCls + ' !p-1 w-24'} /></td>
                       <td className={`border border-slate-300 p-1.5 font-mono font-bold ${varQty === 0 ? 'text-slate-400' : varQty > 0 ? 'text-emerald-700' : 'text-amber-700'}`}>{fmt(varQty)}</td>
-                      <td className="border border-slate-300 p-1.5 font-mono">{fmtMoney(varQty * it.unitCost)}</td>
+                      <td className="tnum text-left border border-slate-300 p-1.5">{fmtMoney(varQty * it.unitCost)}</td>
                     </tr>
                   );
                 })}
@@ -305,10 +305,10 @@ const closeWithSettlement = (id: string) => {
                   {sortByCode(confirmCloseId.items).filter((it) => it.varianceQty !== 0).map((it) => (
                     <tr key={it.rawMaterialId}>
                       <td className="border border-slate-300 p-1.5 font-bold">{it.itemName}</td>
-                      <td className="border border-slate-300 p-1.5 font-mono">{fmt(it.theoreticalQty)}</td>
-                      <td className="border border-slate-300 p-1.5 font-mono">{fmt(it.countedQty)}</td>
+                      <td className="tnum text-left border border-slate-300 p-1.5">{fmt(it.theoreticalQty)}</td>
+                      <td className="tnum text-left border border-slate-300 p-1.5">{fmt(it.countedQty)}</td>
                       <td className={`border border-slate-300 p-1.5 font-mono font-bold ${it.varianceQty > 0 ? 'text-emerald-700' : 'text-amber-700'}`}>{fmt(it.varianceQty)}</td>
-                      <td className="border border-slate-300 p-1.5 font-mono">{fmtMoney(it.varianceCost)}</td>
+                      <td className="tnum text-left border border-slate-300 p-1.5">{fmtMoney(it.varianceCost)}</td>
                     </tr>
                   ))}
                   {sortByCode(confirmCloseId.items).filter((it) => it.varianceQty !== 0).length === 0 && <tr><td colSpan={5} className="border border-slate-300 p-3 text-center text-slate-400 font-bold">لا توجد انحرافات — الأرصدة مطابقة تماماً</td></tr>}

@@ -240,16 +240,16 @@ export const PurchaseSuggestionsView: React.FC = () => {
                     <div className="font-bold text-slate-800">{r.material.nameAr}</div>
                     <div className="text-[10px] text-slate-400 font-mono">{r.material.code} · {suppliers.find((s) => s.id === r.supplierId)?.name || ''}</div>
                   </td>
-                  <td className="p-3 font-mono text-slate-600">{fmt(r.consumed, 1)}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{fmt(r.consumed, 1)}</td>
                   <td className={`p-3 font-mono font-bold ${r.stock < r.minLvl ? 'text-rose-600' : 'text-slate-900'}`}>{fmt(r.stock, 1)} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
-                  <td className="p-3 font-mono text-slate-600">{fmt(r.openPO, 1)}</td>
-                  <td className="p-3 font-mono text-slate-600">{r.minLvl} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
-                  <td className="p-3 font-mono text-slate-600">{r.maxLvl} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
+                  <td className="tnum text-left p-3 text-slate-600">{fmt(r.openPO, 1)}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{r.minLvl} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
+                  <td className="tnum text-left p-3 text-slate-600">{r.maxLvl} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
                   <td className={`p-3 font-mono font-extrabold ${r.suggested > 0 ? 'text-amber-700' : 'text-slate-400'}`}>
                     {r.purchaseQty > 0 ? `${r.purchaseQty} × ${r.material.purchaseUnit}` : `${r.suggested} ${r.material.unit}`}
                   </td>
-                  <td className="p-3 font-mono text-slate-600">{r.suggested} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
-                  <td className="p-3 font-mono font-bold text-slate-800">{fmt(r.estCost)}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{r.suggested} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
+                  <td className="tnum text-left p-3 font-bold text-slate-800">{fmt(r.estCost)}</td>
                   <td className="p-3">
                     {r.fullMax
                       ? <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">طلب كامل (مستثنى)</span>

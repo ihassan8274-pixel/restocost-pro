@@ -364,7 +364,7 @@ export const ReportsAnalyticsView: React.FC = () => {
             <table className="w-full text-xs mt-2">
               <thead><tr>{['اليوم', 'المبيعات', 'الطلبات'].map((h) => <th key={h} className="p-2 text-right font-bold text-slate-600 border-b border-slate-200 bg-slate-50">{h}</th>)}</tr></thead>
               <tbody>{dayOfWeek.map((d) => (
-                <tr key={d.name} className="border-b border-slate-50"><td className="p-2 font-bold">{d.name}</td><td className="p-2 font-mono">{fmt(d.مبيعات)}</td><td className="p-2 font-mono">{fmtNum(d.طلبات, 0)}</td></tr>
+                <tr key={d.name} className="border-b border-slate-50"><td className="p-2 font-bold">{d.name}</td><td className="tnum text-left p-2">{fmt(d.مبيعات)}</td><td className="tnum text-left p-2">{fmtNum(d.طلبات, 0)}</td></tr>
               ))}</tbody>
             </table>
           </Card>
@@ -396,13 +396,13 @@ export const ReportsAnalyticsView: React.FC = () => {
             <tbody>
               {dishProfit.slice(0, 25).map((d, i) => (
                 <tr key={d.id} className={`border-b border-slate-50 hover:bg-slate-50 ${i < 3 ? 'bg-emerald-50/50' : ''} ${i >= dishProfit.slice(0, 25).length - 3 ? 'bg-rose-50/50' : ''}`}>
-                  <td className="p-2 font-mono text-slate-400">{i + 1}</td>
+                  <td className="tnum text-left p-2 text-slate-400">{i + 1}</td>
                   <td className="p-2 font-bold text-slate-800">{d.name}</td>
-                  <td className="p-2 font-mono">{fmtNum(d.qty, 0)}</td>
-                  <td className="p-2 font-mono">{fmt(d.rev)}</td>
-                  <td className="p-2 font-mono text-slate-500">{fmt(d.cost)}</td>
+                  <td className="tnum text-left p-2">{fmtNum(d.qty, 0)}</td>
+                  <td className="tnum text-left p-2">{fmt(d.rev)}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{fmt(d.cost)}</td>
                   <td className={`p-2 font-mono font-bold ${d.profit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{fmt(d.profit)}</td>
-                  <td className="p-2 font-mono">{d.marginPct.toFixed(1)}%</td>
+                  <td className="tnum text-left p-2">{d.marginPct.toFixed(1)}%</td>
                 </tr>
               ))}
             </tbody>
@@ -423,7 +423,7 @@ export const ReportsAnalyticsView: React.FC = () => {
                 <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50">
                   <td className="p-2 font-bold text-slate-700">{d.name}</td>
                   <td className="p-2 text-slate-500">{d.category}</td>
-                  <td className="p-2 font-mono">{fmt(d.price)}</td>
+                  <td className="tnum text-left p-2">{fmt(d.price)}</td>
                 </tr>
               ))}
               {!deadDishes.length && <tr><td colSpan={3} className="p-4 text-center text-emerald-600 font-bold">كل الأطباق نشطة البيع خلال آخر 30 يوماً</td></tr>}
@@ -443,10 +443,10 @@ export const ReportsAnalyticsView: React.FC = () => {
             <tbody>
               {topCustomers.map((c, i) => (
                 <tr key={c.id} className="border-b border-slate-50 hover:bg-slate-50">
-                  <td className="p-2 font-mono text-slate-400">{i + 1}</td>
+                  <td className="tnum text-left p-2 text-slate-400">{i + 1}</td>
                   <td className="p-2 font-bold text-slate-800">{c.name}</td>
-                  <td className="p-2 font-mono text-violet-700">{fmt(c.totalSpent || 0)}</td>
-                  <td className="p-2 font-mono text-slate-500">{topCustomers[0]?.totalSpent ? (((c.totalSpent || 0) / topCustomers[0].totalSpent) * 100).toFixed(1) : '0'}%</td>
+                  <td className="tnum text-left p-2 text-violet-700">{fmt(c.totalSpent || 0)}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{topCustomers[0]?.totalSpent ? (((c.totalSpent || 0) / topCustomers[0].totalSpent) * 100).toFixed(1) : '0'}%</td>
                 </tr>
               ))}
               {!topCustomers.length && <tr><td colSpan={4} className="p-4 text-center text-slate-400">لا يوجد عملاء مسجلون</td></tr>}
@@ -509,8 +509,8 @@ export const ReportsAnalyticsView: React.FC = () => {
                 {expenseByCat.map((c) => (
                   <tr key={c.name} className="border-b border-slate-50">
                     <td className="p-2 font-bold text-slate-700">{c.name}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmt(c.value)}</td>
-                    <td className="p-2 font-mono text-slate-500">{expenseTotal ? ((c.value / expenseTotal) * 100).toFixed(1) : '0'}%</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmt(c.value)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{expenseTotal ? ((c.value / expenseTotal) * 100).toFixed(1) : '0'}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -551,22 +551,22 @@ export const ReportsAnalyticsView: React.FC = () => {
                 <tr key={b.id} className={`border-b border-slate-50 hover:bg-slate-50 ${i === 0 && branchPerf.length > 1 ? 'bg-emerald-50/50' : ''}`}>
                   <td className="p-2 font-bold text-slate-800">{b.name}</td>
                   <td className="p-2 text-[11px] font-bold text-indigo-700">{b.region}</td>
-                  <td className="p-2 font-mono text-indigo-700">{fmt(b.net)}</td>
-                  <td className="p-2 font-mono text-slate-500">{fmt(b.cost)}</td>
+                  <td className="tnum text-left p-2 text-indigo-700">{fmt(b.net)}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{fmt(b.cost)}</td>
                   <td className={`p-2 font-mono ${b.fcPct > 40 ? 'text-rose-600 font-bold' : 'text-emerald-600'}`}>{b.fcPct.toFixed(1)}%</td>
-                  <td className="p-2 font-mono">{fmtNum(b.orders, 0)}</td>
-                  <td className="p-2 font-mono">{fmt(b.avgTicket)}</td>
-                  <td className="p-2 font-mono text-slate-500">{branchTotalNet ? ((b.net / branchTotalNet) * 100).toFixed(1) : '0'}%</td>
+                  <td className="tnum text-left p-2">{fmtNum(b.orders, 0)}</td>
+                  <td className="tnum text-left p-2">{fmt(b.avgTicket)}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{branchTotalNet ? ((b.net / branchTotalNet) * 100).toFixed(1) : '0'}%</td>
                 </tr>
               ))}
               <tr className="bg-slate-900 text-white font-extrabold">
                 <td className="p-2" colSpan={2}>إجمالي الشركة</td>
-                <td className="p-2 font-mono">{fmt(companyTotal.net)}</td>
-                <td className="p-2 font-mono">{fmt(companyTotal.cost)}</td>
-                <td className="p-2 font-mono">{companyTotal.net ? ((companyTotal.cost / companyTotal.net) * 100).toFixed(1) : '0'}%</td>
-                <td className="p-2 font-mono">{fmtNum(companyTotal.orders, 0)}</td>
-                <td className="p-2 font-mono">{companyTotal.orders ? fmt(companyTotal.net / companyTotal.orders) : '—'}</td>
-                <td className="p-2 font-mono">100%</td>
+                <td className="tnum text-left p-2">{fmt(companyTotal.net)}</td>
+                <td className="tnum text-left p-2">{fmt(companyTotal.cost)}</td>
+                <td className="tnum text-left p-2">{companyTotal.net ? ((companyTotal.cost / companyTotal.net) * 100).toFixed(1) : '0'}%</td>
+                <td className="tnum text-left p-2">{fmtNum(companyTotal.orders, 0)}</td>
+                <td className="tnum text-left p-2">{companyTotal.orders ? fmt(companyTotal.net / companyTotal.orders) : '—'}</td>
+                <td className="tnum text-left p-2">100%</td>
               </tr>
             </tbody>
           </table>
@@ -589,9 +589,9 @@ export const ReportsAnalyticsView: React.FC = () => {
                 {poAnalysis.suppliers.map((s) => (
                   <tr key={s.name} className="border-b border-slate-50 hover:bg-slate-50">
                     <td className="p-2 font-bold text-slate-800">{s.name}</td>
-                    <td className="p-2 font-mono">{fmtNum(s.count, 0)}</td>
-                    <td className="p-2 font-mono text-indigo-700">{fmt(s.total)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(s.avgOrder)}</td>
+                    <td className="tnum text-left p-2">{fmtNum(s.count, 0)}</td>
+                    <td className="tnum text-left p-2 text-indigo-700">{fmt(s.total)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(s.avgOrder)}</td>
                     <td className={`p-2 font-mono ${s.fillPct >= 95 ? 'text-emerald-600' : s.fillPct >= 80 ? 'text-amber-600' : 'text-rose-600 font-bold'}`}>{s.fillPct.toFixed(1)}%</td>
                   </tr>
                 ))}
@@ -607,8 +607,8 @@ export const ReportsAnalyticsView: React.FC = () => {
                 {poAnalysis.materials.slice(0, 15).map((mm) => (
                   <tr key={mm.name} className="border-b border-slate-50 hover:bg-slate-50">
                     <td className="p-2 font-bold text-slate-700">{mm.name}</td>
-                    <td className="p-2 font-mono">{fmt(mm.ordered)}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(mm.received)}</td>
+                    <td className="tnum text-left p-2">{fmt(mm.ordered)}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(mm.received)}</td>
                     <td className={`p-2 font-mono ${mm.shortfall > 0.01 ? 'text-rose-600 font-bold' : 'text-emerald-600'}`}>{fmt(mm.shortfall)}</td>
                     <td className={`p-2 font-mono ${mm.receivedPct >= 95 ? 'text-emerald-600' : mm.receivedPct >= 80 ? 'text-amber-600' : 'text-rose-600'}`}>{mm.receivedPct.toFixed(1)}%</td>
                   </tr>
@@ -690,8 +690,8 @@ export const ReportsAnalyticsView: React.FC = () => {
               {categoryMix.map((c) => (
                 <tr key={c.name} className="border-b border-slate-50 hover:bg-slate-50">
                   <td className="p-2 font-bold text-slate-800">{c.name}</td>
-                  <td className="p-2 font-mono text-indigo-700">{fmt(c.الإيراد)}</td>
-                  <td className="p-2 font-mono text-emerald-700">{fmt(c.الهامش)}</td>
+                  <td className="tnum text-left p-2 text-indigo-700">{fmt(c.الإيراد)}</td>
+                  <td className="tnum text-left p-2 text-emerald-700">{fmt(c.الهامش)}</td>
                   <td className={`p-2 font-mono ${c.هامشPct >= 60 ? 'text-emerald-600' : c.هامشPct >= 40 ? 'text-amber-600' : 'text-rose-600 font-bold'}`}>{c.هامشPct}%</td>
                 </tr>
               ))}

@@ -438,12 +438,12 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                       <span className={`w-6 h-6 inline-flex items-center justify-center rounded-lg font-extrabold ${p.rank === 1 ? 'bg-amber-400 text-white' : 'bg-slate-100 text-slate-600'}`}>{p.rank}</span>
                     </td>
                     <td className="p-2 font-bold text-slate-800">{p.branchName.replace('فرع ', '')}</td>
-                    <td className="p-2 font-mono font-bold text-indigo-700">{fmt(p.totalSales)}</td>
-                    <td className="p-2 font-mono font-bold text-rose-600">{p.foodCostPercent.toFixed(2)}%</td>
-                    <td className="p-2 font-mono font-bold text-amber-700">{p.laborCostPercent.toFixed(2)}%</td>
-                    <td className="p-2 font-mono font-bold text-slate-600">{fmt(p.operatingExpenses)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{fmt(p.netProfit)}</td>
-                    <td className="p-2 font-mono font-bold text-slate-900">{p.netProfitPercent.toFixed(2)}%</td>
+                    <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(p.totalSales)}</td>
+                    <td className="tnum text-left p-2 font-bold text-rose-600">{p.foodCostPercent.toFixed(2)}%</td>
+                    <td className="tnum text-left p-2 font-bold text-amber-700">{p.laborCostPercent.toFixed(2)}%</td>
+                    <td className="tnum text-left p-2 font-bold text-slate-600">{fmt(p.operatingExpenses)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(p.netProfit)}</td>
+                    <td className="tnum text-left p-2 font-bold text-slate-900">{p.netProfitPercent.toFixed(2)}%</td>
                     <td className="p-2">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 rounded-full" style={{ width: `${share}%` }} /></div>

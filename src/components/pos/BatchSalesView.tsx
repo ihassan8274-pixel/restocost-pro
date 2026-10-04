@@ -250,23 +250,23 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
               {branchCostRows.map((r) => (
                 <tr key={r.name}>
                   <td className="p-2 font-bold text-slate-900">{r.name}</td>
-                  <td className="p-2 font-mono text-indigo-700">{fmtMoney(r.dNet)}</td>
-                  <td className="p-2 font-mono">{fmtMoney(r.dFood)}</td>
+                  <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(r.dNet)}</td>
+                  <td className="tnum text-left p-2">{fmtMoney(r.dFood)}</td>
                   <td className={'p-2 font-mono ' + (r.dNet && (r.dFood / r.dNet) * 100 > 35 ? 'text-rose-600 font-bold' : 'text-emerald-700')}>{fmtPct(r.dNet ? (r.dFood / r.dNet) * 100 : 0)}</td>
-                  <td className="p-2 font-mono text-indigo-700">{fmtMoney(r.mNet)}</td>
-                  <td className="p-2 font-mono">{fmtMoney(r.mFood)}</td>
+                  <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(r.mNet)}</td>
+                  <td className="tnum text-left p-2">{fmtMoney(r.mFood)}</td>
                   <td className={'p-2 font-mono ' + (r.mNet && (r.mFood / r.mNet) * 100 > 35 ? 'text-rose-600 font-bold' : 'text-emerald-700')}>{fmtPct(r.mNet ? (r.mFood / r.mNet) * 100 : 0)}</td>
                 </tr>
               ))}
               {branchCostRows.length > 0 && (
                 <tr className="bg-slate-50 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
-                  <td className="p-2 font-mono text-indigo-800">{fmtMoney(bcTotals.dNet)}</td>
-                  <td className="p-2 font-mono">{fmtMoney(bcTotals.dFood)}</td>
-                  <td className="p-2 font-mono">{fmtPct(bcTotals.dNet ? (bcTotals.dFood / bcTotals.dNet) * 100 : 0)}</td>
-                  <td className="p-2 font-mono text-indigo-800">{fmtMoney(bcTotals.mNet)}</td>
-                  <td className="p-2 font-mono">{fmtMoney(bcTotals.mFood)}</td>
-                  <td className="p-2 font-mono">{fmtPct(bcTotals.mNet ? (bcTotals.mFood / bcTotals.mNet) * 100 : 0)}</td>
+                  <td className="tnum text-left p-2 text-indigo-800">{fmtMoney(bcTotals.dNet)}</td>
+                  <td className="tnum text-left p-2">{fmtMoney(bcTotals.dFood)}</td>
+                  <td className="tnum text-left p-2">{fmtPct(bcTotals.dNet ? (bcTotals.dFood / bcTotals.dNet) * 100 : 0)}</td>
+                  <td className="tnum text-left p-2 text-indigo-800">{fmtMoney(bcTotals.mNet)}</td>
+                  <td className="tnum text-left p-2">{fmtMoney(bcTotals.mFood)}</td>
+                  <td className="tnum text-left p-2">{fmtPct(bcTotals.mNet ? (bcTotals.mFood / bcTotals.mNet) * 100 : 0)}</td>
                 </tr>
               )}
               {branchCostRows.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-slate-400 font-bold">لا توجد بيانات لهذا اليوم — اختر يوماً آخر</td></tr>}
@@ -303,13 +303,13 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
             <tbody className="divide-y divide-slate-100">
               {filteredRecords.map((b) => (
                 <tr key={b.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono font-bold text-indigo-700">{b.batchNumber}</td>
-                  <td className="p-3 font-mono text-slate-600">{b.date}</td>
+                  <td className="tnum text-left p-3 font-bold text-indigo-700">{b.batchNumber}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{b.date}</td>
                   <td className="p-3 font-bold text-slate-900">{b.branchName}</td>
-                  <td className="p-3 font-mono font-extrabold text-emerald-700">{fmt(b.totalRevenue, 2)}</td>
-                  <td className="p-3 font-mono font-bold text-indigo-700">{fmt(netOf(b), 2)}</td>
-                  <td className="p-3 font-mono text-amber-700">{fmt(vatOf(b), 2)}</td>
-                  <td className="p-3 font-mono">{fmt(b.totalFoodCost, 2)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-emerald-700">{fmt(b.totalRevenue, 2)}</td>
+                  <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(netOf(b), 2)}</td>
+                  <td className="tnum text-left p-3 text-amber-700">{fmt(vatOf(b), 2)}</td>
+                  <td className="tnum text-left p-3">{fmt(b.totalFoodCost, 2)}</td>
                   <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${fcNet(b) > 35 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{fcNet(b).toFixed(2)}%</span></td>
                   <td className="p-3"><span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">مخصوم المخزون</span></td>
                   <td className="p-3">

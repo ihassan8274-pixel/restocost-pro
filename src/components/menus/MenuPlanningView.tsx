@@ -235,10 +235,10 @@ export const MenuPlanningView: React.FC = () => {
                   return (
                     <tr key={p.id + i.recipeId} className="border-b border-slate-50 hover:bg-slate-50">
                       <td className="p-2 font-bold text-slate-800">{i.recipeNameAr} <span className="text-[9px] text-slate-400 font-bold">({getBranchName(p.branchId)} · {MEAL_LABELS[p.mealType]})</span></td>
-                      <td className="p-2 font-mono font-bold text-indigo-700">{fmt(i.plannedQty, 0)}</td>
-                      <td className="p-2 font-mono text-slate-500">—</td>
-                      <td className="p-2 font-mono text-slate-600">—</td>
-                      <td className="p-2 font-mono text-slate-400">—</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(i.plannedQty, 0)}</td>
+                      <td className="tnum text-left p-2 text-slate-500">—</td>
+                      <td className="tnum text-left p-2 text-slate-600">—</td>
+                      <td className="tnum text-left p-2 text-slate-400">—</td>
                     </tr>
                   );
                 }))}

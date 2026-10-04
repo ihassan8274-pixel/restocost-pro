@@ -214,7 +214,7 @@ export const SupplierPricingView: React.FC = () => {
                       </div>
                     ) : <span className="text-slate-300 text-[10px] font-bold">—</span>}
                   </td>
-                  <td className="p-3 font-mono text-[10px] text-slate-500 font-bold">{fmt(r.onHand, 0)} / {fmt(r.onOrder, 0)}</td>
+                  <td className="tnum text-left p-3 text-[10px] text-slate-500 font-bold">{fmt(r.onHand, 0)} / {fmt(r.onOrder, 0)}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-1">
                       <input type="number" min="0" value={qtyOver[r.material.id] ?? (selected[r.material.id] ? r.suggested : '')}

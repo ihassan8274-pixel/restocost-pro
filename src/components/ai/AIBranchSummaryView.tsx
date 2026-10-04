@@ -241,16 +241,16 @@ export const AIBranchSummaryView: React.FC = () => {
               {rows.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="p-2 font-extrabold text-slate-900">{r.name}</td>
-                  <td className="p-2 font-mono font-bold">{fmt(r.revenue, 0)}</td>
-                  <td className="p-2 font-mono">{fmt(r.foodCost, 0)}</td>
+                  <td className="tnum text-left p-2 font-bold">{fmt(r.revenue, 0)}</td>
+                  <td className="tnum text-left p-2">{fmt(r.foodCost, 0)}</td>
                   <td className={`p-2 font-mono font-bold ${r.fcPct > 35 ? 'text-rose-700' : 'text-emerald-700'}`}>{r.fcPct.toFixed(2)}%</td>
-                  <td className="p-2 font-mono">{fmt(r.labor, 0)}</td>
-                  <td className="p-2 font-mono">{fmt(r.operating, 0)}</td>
+                  <td className="tnum text-left p-2">{fmt(r.labor, 0)}</td>
+                  <td className="tnum text-left p-2">{fmt(r.operating, 0)}</td>
                   <td className={`p-2 font-mono ${r.wastagePct > 2 ? 'text-rose-700' : 'text-slate-600'}`}>{r.wastagePct.toFixed(2)}%</td>
-                  <td className="p-2 font-mono font-extrabold">{fmt(r.totalCost, 0)}</td>
+                  <td className="tnum text-left p-2 font-extrabold">{fmt(r.totalCost, 0)}</td>
                   <td className={`p-2 font-mono font-extrabold ${r.profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmt(r.profit, 0)}</td>
                   <td className={`p-2 font-mono font-extrabold ${r.margin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{r.margin.toFixed(2)}%</td>
-                  <td className="p-2 font-mono text-slate-600">{fmt(r.avgOrder, 2)}</td>
+                  <td className="tnum text-left p-2 text-slate-600">{fmt(r.avgOrder, 2)}</td>
                 </tr>
               ))}
               {rows.length === 0 && <tr><td colSpan={11} className="p-8 text-center text-slate-400 text-xs">لا توجد بيانات للفروع — أدخل مبيعات وفروعاً أولاً</td></tr>}

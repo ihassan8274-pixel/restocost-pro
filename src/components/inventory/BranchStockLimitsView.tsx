@@ -236,7 +236,7 @@ export const BranchStockLimitsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (
                 <tr key={r.mat.id} className={`hover:bg-slate-50 ${r.needsOrder ? 'bg-rose-50/40' : ''}`}>
-                  <td className="p-3 font-mono text-indigo-700">{r.mat.code}</td>
+                  <td className="tnum text-left p-3 text-indigo-700">{r.mat.code}</td>
                   <td className="p-3 font-bold text-slate-900">
                     {r.mat.nameAr}
                     {(r.isOverride || r.alwaysOrderFullMax) && (
@@ -244,7 +244,7 @@ export const BranchStockLimitsView: React.FC = () => {
                     )}
                   </td>
                   <td className="p-3 text-slate-500">{r.mat.unit}</td>
-                  <td className="p-3 font-mono font-extrabold text-slate-900">{fmt(r.qty)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(r.qty)}</td>
                   <td className="p-3 bg-indigo-50/30">
                     <input type="number" min="0" step="any" value={r.minStockLevel || ''}
                       onChange={(e) => upsertBranchStockLimit(branchId, r.mat.id, { minStockLevel: parseFloat(e.target.value) || 0 })}
@@ -272,10 +272,10 @@ export const BranchStockLimitsView: React.FC = () => {
                       <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>
                     )}
                   </td>
-                  <td className="p-3 font-mono font-extrabold text-indigo-700">
+                  <td className="tnum text-left p-3 font-extrabold text-indigo-700">
                     {r.needsOrder ? `${fmt(r.suggestedQty)} ${r.mat.unit}` : '—'}
                   </td>
-                  <td className="p-3 font-mono text-slate-600">{r.needsOrder ? fmtMoney(r.value) : '—'}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{r.needsOrder ? fmtMoney(r.value) : '—'}</td>
                   <td className="p-3">
                     {r.isOverride || r.alwaysOrderFullMax ? (
                       <button onClick={() => removeBranchStockLimit(branchId, r.mat.id)}

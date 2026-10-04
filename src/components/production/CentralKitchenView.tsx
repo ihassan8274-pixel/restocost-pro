@@ -52,11 +52,11 @@ export const CentralKitchenView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((w) => (
                 <tr key={w.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono font-bold text-indigo-700">{w.orderNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-indigo-700">{w.orderNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{w.recipeName}</td>
                   <td className="p-3 text-slate-600">{getBranchName(w.targetBranchId)}</td>
-                  <td className="p-3 font-mono">{w.targetQuantity}</td>
-                  <td className="p-3 font-mono font-bold text-emerald-700">{w.producedQuantity}</td>
+                  <td className="tnum text-left p-3">{w.targetQuantity}</td>
+                  <td className="tnum text-left p-3 font-bold text-emerald-700">{w.producedQuantity}</td>
                   <td className="p-3 text-slate-600">{w.prepChef}</td>
                   <td className="p-3"><StatusPill status={w.status} map={{ planned: 'مخطط', in_progress: 'قيد التنفيذ', completed: 'مكتمل', cancelled: 'ملغي' }} /></td>
                   <td className="p-3">

@@ -77,13 +77,13 @@ export const EodBoardView: React.FC = () => {
               <tbody className="divide-y divide-slate-50">
                 {stats.list.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50">
-                    <td className="p-2 font-mono font-bold text-slate-800">{c.date}</td>
+                    <td className="tnum text-left p-2 font-bold text-slate-800">{c.date}</td>
                     <td className="p-2 font-bold">{getBranchName(c.branchId)}</td>
-                    <td className="p-2 font-mono font-bold text-emerald-700">{fmtMoney(c.revenue ?? 0)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(c.foodCost ?? 0)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(c.laborCost ?? 0)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(c.operatingCost ?? 0)}</td>
-                    <td className="p-2 font-mono text-rose-600">{fmtMoney(c.wastageCost ?? 0)}</td>
+                    <td className="tnum text-left p-2 font-bold text-emerald-700">{fmtMoney(c.revenue ?? 0)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(c.foodCost ?? 0)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(c.laborCost ?? 0)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(c.operatingCost ?? 0)}</td>
+                    <td className="tnum text-left p-2 text-rose-600">{fmtMoney(c.wastageCost ?? 0)}</td>
                     <td className={`p-2 font-mono font-black ${(c.profit ?? 0) >= 0 ? 'text-indigo-700' : 'text-rose-700'}`}>{fmtMoney(c.profit ?? 0)}</td>
                     <td className={`p-2 font-mono font-bold ${(c.marginPct ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{c.marginPct ?? 0}%</td>
                     <td className="p-2 text-slate-500 font-bold">{c.closedBy}<span className="block text-[9px] text-slate-400">{new Date(c.closedAt).toLocaleString()}</span></td>

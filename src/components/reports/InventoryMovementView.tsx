@@ -271,15 +271,15 @@ export const InventoryMovementView: React.FC = () => {
           </div>
           <div className="overflow-x-auto max-h-[65vh]">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 sticky top-0">
+              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line sticky top-0">
                 <tr><th className="p-2.5">التاريخ</th><th className="p-2.5">النوع</th><th className="p-2.5">المرجع</th><th className="p-2.5">الفرع</th><th className="p-2.5">الصنف</th><th className="p-2.5">التغيير</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {liveRows.slice(0, 300).map((m) => (
                   <tr key={m.id} className="hover:bg-slate-50">
-                    <td className="p-2.5 font-mono text-slate-500">{m.date.replace('T', ' ').slice(0, 16)}</td>
+                    <td className="tnum text-left p-2.5 text-slate-500">{m.date.replace('T', ' ').slice(0, 16)}</td>
                     <td className="p-2.5"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.delta > 0 ? 'bg-emerald-100 text-emerald-700' : m.type === 'هدر' ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700'}`}>{m.type}</span></td>
-                    <td className="p-2.5 font-mono text-slate-500">{m.ref || '-'}</td>
+                    <td className="tnum text-left p-2.5 text-slate-500">{m.ref || '-'}</td>
                     <td className="p-2.5">{getBranchName(m.branchId)}</td>
                     <td className="p-2.5 font-bold">{m.itemName}</td>
                     <td className={`p-2.5 font-mono font-extrabold ${m.delta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{(m.delta > 0 ? '+' : '') + fmt(m.delta, 3)}</td>
@@ -326,19 +326,19 @@ export const InventoryMovementView: React.FC = () => {
                 <tbody>
                   {summary.map((r) => (
                     <tr key={r.m.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="p-2 font-mono font-bold text-indigo-700">{r.m.code}</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.m.code}</td>
                       <td className="p-2 font-bold text-slate-800">{r.m.nameAr}</td>
                       <td className="p-2 text-slate-500">{categoryLabel(r.m.category, materialCategories)}</td>
-                      <td className="p-2 font-mono text-slate-600">{fmt(r.opening, 2)}</td>
-                      <td className="p-2 font-mono text-emerald-700">{fmt(r.purchases, 2)}</td>
-                      <td className="p-2 font-mono text-emerald-700">{fmt(r.transIn, 2)}</td>
-                      <td className="p-2 font-mono text-rose-600">{fmt(r.transOut, 2)}</td>
-                      <td className="p-2 font-mono text-rose-600">{fmt(r.production, 2)}</td>
-                      <td className="p-2 font-mono text-rose-600">{fmt(r.wastage, 2)}</td>
+                      <td className="tnum text-left p-2 text-slate-600">{fmt(r.opening, 2)}</td>
+                      <td className="tnum text-left p-2 text-emerald-700">{fmt(r.purchases, 2)}</td>
+                      <td className="tnum text-left p-2 text-emerald-700">{fmt(r.transIn, 2)}</td>
+                      <td className="tnum text-left p-2 text-rose-600">{fmt(r.transOut, 2)}</td>
+                      <td className="tnum text-left p-2 text-rose-600">{fmt(r.production, 2)}</td>
+                      <td className="tnum text-left p-2 text-rose-600">{fmt(r.wastage, 2)}</td>
                       <td className={`p-2 font-mono ${r.adjustment < 0 ? 'text-rose-600' : r.adjustment > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.adjustment, 2)}</td>
-                      <td className="p-2 font-mono text-rose-600">{fmt(r.supplierReturnsQty, 2)}</td>
-                      <td className="p-2 font-mono font-bold text-indigo-700">{fmt(r.calculated, 2)}</td>
-                      <td className="p-2 font-mono font-bold text-slate-800">{fmt(r.current, 2)}</td>
+                      <td className="tnum text-left p-2 text-rose-600">{fmt(r.supplierReturnsQty, 2)}</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(r.calculated, 2)}</td>
+                      <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(r.current, 2)}</td>
                       <td className={`p-2 font-mono font-bold ${r.diff < -0.001 ? 'text-rose-600' : r.diff > 0.001 ? 'text-amber-600' : 'text-slate-400'}`}>{fmt(r.diff, 2)}</td>
                     </tr>
                   ))}
@@ -402,14 +402,14 @@ export const InventoryMovementView: React.FC = () => {
                 <tbody>
                   {ledger.rows.map((r, i) => (
                     <tr key={i} className={`border-b border-slate-50 ${r.type === 'رصيد افتتاحي' ? 'bg-indigo-50/60' : 'hover:bg-slate-50'}`}>
-                      <td className="p-2 font-mono text-slate-600">{r.date}</td>
+                      <td className="tnum text-left p-2 text-slate-600">{r.date}</td>
                       <td className="p-2 font-bold text-slate-800">{r.type}</td>
                       <td className="p-2 text-slate-500">{r.reference}</td>
                       <td className="p-2 text-slate-500">{r.branchName}</td>
                       <td className={`p-2 font-mono font-bold ${r.qty > 0.001 ? 'text-emerald-700' : r.qty < -0.001 ? 'text-rose-600' : 'text-slate-400'}`}>{r.qty > 0.001 ? '+' : ''}{fmt(r.qty, 2)}</td>
-                      <td className="p-2 font-mono text-slate-500">{fmt(r.cost, 2)}</td>
+                      <td className="tnum text-left p-2 text-slate-500">{fmt(r.cost, 2)}</td>
                       <td className={`p-2 font-mono ${r.value < -0.001 ? 'text-rose-600' : r.value > 0.001 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.value, 2)}</td>
-                      <td className="p-2 font-mono font-extrabold text-indigo-700">{fmt(r.running, 2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmt(r.running, 2)}</td>
                     </tr>
                   ))}
                   {ledger.rows.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-slate-500 font-bold">لا توجد حركة لهذا الصنف في الفترة المحددة</td></tr>}

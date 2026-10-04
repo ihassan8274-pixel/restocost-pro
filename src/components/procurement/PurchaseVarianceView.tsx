@@ -222,11 +222,11 @@ export const PurchaseVarianceView: React.FC = () => {
                     return (
                       <tr key={l.rawMaterialId} className={`hover:bg-slate-50 ${hasV ? 'bg-amber-50/40' : ''}`}>
                         <td className="p-3 font-bold text-slate-900">{l.materialName}</td>
-                        <td className="p-3 font-mono">{fmt(l.orderedQty)}</td>
-                        <td className="p-3 font-mono font-bold">{fmt(l.receivedQty)}</td>
+                        <td className="tnum text-left p-3">{fmt(l.orderedQty)}</td>
+                        <td className="tnum text-left p-3 font-bold">{fmt(l.receivedQty)}</td>
                         <td className={`p-3 font-mono font-extrabold ${l.qtyVariance > 0.01 ? 'text-rose-700' : l.qtyVariance < -0.01 ? 'text-amber-700' : 'text-emerald-700'}`}>{l.qtyVariance > 0.01 ? '+' : ''}{fmt(l.qtyVariance)}</td>
-                        <td className="p-3 font-mono">{fmt(l.orderedPrice)}</td>
-                        <td className="p-3 font-mono font-bold">{l.receivedQty > 0 ? fmt(l.receivedPrice) : '—'}</td>
+                        <td className="tnum text-left p-3">{fmt(l.orderedPrice)}</td>
+                        <td className="tnum text-left p-3 font-bold">{l.receivedQty > 0 ? fmt(l.receivedPrice) : '—'}</td>
                         <td className={`p-3 font-mono font-extrabold ${l.priceVariance > 0.01 ? 'text-rose-700' : l.priceVariance < -0.01 ? 'text-emerald-700' : 'text-slate-500'}`}>{hasP ? (l.priceVariance > 0 ? '+' : '') + fmt(l.priceVariance) : '—'}</td>
                         <td className={`p-3 font-mono font-extrabold ${hasV ? (l.valueVariance > 0 ? 'text-rose-700' : 'text-emerald-700') : 'text-slate-400'}`}>{hasV ? (l.valueVariance > 0 ? '+' : '') + fmt(l.valueVariance) : 'مطابق'}</td>
                       </tr>
@@ -287,14 +287,14 @@ export const PurchaseVarianceView: React.FC = () => {
                       {linesWithInvoice.map((l) => (
                         <tr key={l.rawMaterialId} className="hover:bg-slate-50">
                           <td className="p-3 font-bold text-slate-900">{l.materialName}</td>
-                          <td className="p-3 font-mono">{fmt(l.orderedQty)}</td>
-                          <td className="p-3 font-mono font-bold">{fmt(l.receivedQty)}</td>
-                          <td className="p-3 font-mono font-bold text-emerald-700">{fmt(l.invoicedQty)}</td>
+                          <td className="tnum text-left p-3">{fmt(l.orderedQty)}</td>
+                          <td className="tnum text-left p-3 font-bold">{fmt(l.receivedQty)}</td>
+                          <td className="tnum text-left p-3 font-bold text-emerald-700">{fmt(l.invoicedQty)}</td>
                           <td className={`p-3 font-mono font-extrabold ${l.qtyVariance > 0.01 ? 'text-rose-700' : l.qtyVariance < -0.01 ? 'text-amber-700' : 'text-emerald-700'}`}>{l.qtyVariance > 0.01 ? '+' : ''}{fmt(l.qtyVariance)}</td>
                           <td className={`p-3 font-mono font-extrabold ${(l.invoiceQtyVariance || 0) > 0.01 ? 'text-rose-700' : (l.invoiceQtyVariance || 0) < -0.01 ? 'text-amber-700' : 'text-emerald-700'}`}>{(l.invoiceQtyVariance || 0) > 0.01 ? '+' : ''}{fmt(l.invoiceQtyVariance || 0)}</td>
-                          <td className="p-3 font-mono">{fmt(l.orderedPrice)}</td>
-                          <td className="p-3 font-mono font-bold">{l.receivedQty > 0 ? fmt(l.receivedPrice) : '—'}</td>
-                          <td className="p-3 font-mono font-bold text-emerald-700">{l.invoicedQty > 0 ? fmt(l.invoicedPrice) : '—'}</td>
+                          <td className="tnum text-left p-3">{fmt(l.orderedPrice)}</td>
+                          <td className="tnum text-left p-3 font-bold">{l.receivedQty > 0 ? fmt(l.receivedPrice) : '—'}</td>
+                          <td className="tnum text-left p-3 font-bold text-emerald-700">{l.invoicedQty > 0 ? fmt(l.invoicedPrice) : '—'}</td>
                           <td className={`p-3 font-mono font-extrabold ${(l.invoiceValueVariance || 0) > 0 ? 'text-rose-700' : (l.invoiceValueVariance || 0) < 0 ? 'text-emerald-700' : 'text-slate-500'}`}>{(l.invoiceValueVariance || 0) > 0 ? '+' : ''}{fmt(l.invoiceValueVariance || 0)}</td>
                         </tr>
                       ))}
@@ -326,10 +326,10 @@ export const PurchaseVarianceView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {unmatchedGRNs.map((g) => (
                   <tr key={g.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-mono font-bold text-indigo-700">{g.grnNumber}</td>
+                    <td className="tnum text-left p-3 font-bold text-indigo-700">{g.grnNumber}</td>
                     <td className="p-3 font-bold text-slate-800">{g.supplierName}</td>
-                    <td className="p-3 font-mono text-slate-600">{g.date}</td>
-                    <td className="p-3 font-mono font-bold">{fmt(g.totalAmount)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{g.date}</td>
+                    <td className="tnum text-left p-3 font-bold">{fmt(g.totalAmount)}</td>
                   </tr>
                 ))}
               </tbody>

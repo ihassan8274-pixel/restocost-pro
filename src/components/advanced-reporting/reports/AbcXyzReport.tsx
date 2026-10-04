@@ -252,12 +252,12 @@ export const AbcXyzReport: React.FC = () => {
                 <tr key={r.materialId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.name}</td>
                   <td className="p-2 text-center text-slate-500">{r.category}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.value)}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{r.cumPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono font-bold text-indigo-700">{r.abc}</td>
-                  <td className="p-2 text-center font-mono">{r.daysActive}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{r.regularity.toFixed(0)}%</td>
-                  <td className="p-2 text-center font-mono font-bold text-emerald-700">{r.xyz}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.value)}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{r.cumPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left font-bold text-indigo-700">{r.abc}</td>
+                  <td className="tnum p-2 text-left">{r.daysActive}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{r.regularity.toFixed(0)}%</td>
+                  <td className="tnum p-2 text-left font-bold text-emerald-700">{r.xyz}</td>
                   <td className="p-2 text-center">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
                       {r.abc}{r.xyz} — {r.abc === 'A' ? 'مراقبة قريبة' : r.abc === 'B' ? 'مراقبة دورية' : 'منخفض التركيز'} / {XYZ_LABEL[r.xyz]}

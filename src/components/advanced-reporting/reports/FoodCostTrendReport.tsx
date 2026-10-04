@@ -332,8 +332,8 @@ export const FoodCostTrendReport: React.FC = () => {
                 return (
                   <tr key={m.month} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{m.label}</td>
-                    <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(m.revenue)}</td>
-                    <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(m.foodCost)}</td>
+                    <td className="tnum p-2 text-left text-blue-700">{fmtMoney(m.revenue)}</td>
+                    <td className="tnum p-2 text-left text-rose-700">{fmtMoney(m.foodCost)}</td>
                     <td className={`p-2 text-center font-mono font-bold ${pctColor(m.pct, targetFoodCost)}`}>{m.pct.toFixed(1)}%</td>
                     <td className="p-2 text-center text-slate-600">{m.deltaPct != null ? <ArrowDelta v={m.deltaPct} invert /> : '—'}</td>
                     <td className={`p-2 text-center font-mono ${m.vsTarget != null && m.vsTarget > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
@@ -353,8 +353,8 @@ export const FoodCostTrendReport: React.FC = () => {
               })}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">الإجمالي / المتوسط</td>
-                <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(totals.revenue)}</td>
-                <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(totals.foodCost)}</td>
+                <td className="tnum p-2 text-left text-blue-700">{fmtMoney(totals.revenue)}</td>
+                <td className="tnum p-2 text-left text-rose-700">{fmtMoney(totals.foodCost)}</td>
                 <td className={`p-2 text-center font-mono text-lg ${pctColor(totals.avgPct, targetFoodCost)}`}>{totals.avgPct.toFixed(1)}%</td>
                 <td className="p-2 text-center text-slate-400">—</td>
                 <td className={`p-2 text-center font-mono ${totals.avgPct <= targetFoodCost ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -387,8 +387,8 @@ export const FoodCostTrendReport: React.FC = () => {
               {branchRows.map((b, i) => (
                 <tr key={b.branchId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{b.branchName}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(b.revenue)}</td>
-                  <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(b.foodCost)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(b.revenue)}</td>
+                  <td className="tnum p-2 text-left text-rose-700">{fmtMoney(b.foodCost)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${pctColor(b.lastPct, targetFoodCost)}`}>{b.lastPct.toFixed(1)}%</td>
                   <td className={`p-2 text-center font-mono ${pctColor(b.avgPct, targetFoodCost)}`}>{b.avgPct.toFixed(1)}%</td>
                   <td className={`p-2 text-center font-mono ${b.lastPct <= targetFoodCost ? 'text-emerald-600' : 'text-rose-600'}`}>

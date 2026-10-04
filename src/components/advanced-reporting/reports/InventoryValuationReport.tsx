@@ -263,18 +263,18 @@ export const InventoryValuationReport: React.FC = () => {
                 {byCat.map((c, i) => (
                   <tr key={c.categoryId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{c.categoryName}</td>
-                    <td className="p-2 text-center font-mono">{c.items}</td>
-                    <td className="p-2 text-center font-mono">{fmt(c.qty)}</td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(c.value)}</td>
-                    <td className="p-2 text-center font-mono">{totalValue > 0 ? ((c.value / totalValue) * 100).toFixed(1) : 0}%</td>
+                    <td className="tnum p-2 text-left">{c.items}</td>
+                    <td className="tnum p-2 text-left">{fmt(c.qty)}</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(c.value)}</td>
+                    <td className="tnum p-2 text-left">{totalValue > 0 ? ((c.value / totalValue) * 100).toFixed(1) : 0}%</td>
                   </tr>
                 ))}
                 <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
-                  <td className="p-2 text-center font-mono">{byCat.length}</td>
-                  <td className="p-2 text-center font-mono">{fmt(totalQty)}</td>
-                  <td className="p-2 text-center font-mono text-lg text-emerald-700">{fmtMoney(totalValue)}</td>
-                  <td className="p-2 text-center font-mono">100%</td>
+                  <td className="tnum p-2 text-left">{byCat.length}</td>
+                  <td className="tnum p-2 text-left">{fmt(totalQty)}</td>
+                  <td className="tnum p-2 text-left text-lg text-emerald-700">{fmtMoney(totalValue)}</td>
+                  <td className="tnum p-2 text-left">100%</td>
                 </tr>
               </tbody>
             </table>
@@ -298,18 +298,18 @@ export const InventoryValuationReport: React.FC = () => {
                 {byBranch.map((b, i) => (
                   <tr key={b.branchId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{b.branchName}</td>
-                    <td className="p-2 text-center font-mono">{b.items}</td>
-                    <td className="p-2 text-center font-mono">{fmt(b.qty)}</td>
-                    <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(b.value)}</td>
-                    <td className="p-2 text-center font-mono">{totalValue > 0 ? ((b.value / totalValue) * 100).toFixed(1) : 0}%</td>
+                    <td className="tnum p-2 text-left">{b.items}</td>
+                    <td className="tnum p-2 text-left">{fmt(b.qty)}</td>
+                    <td className="tnum p-2 text-left text-blue-700">{fmtMoney(b.value)}</td>
+                    <td className="tnum p-2 text-left">{totalValue > 0 ? ((b.value / totalValue) * 100).toFixed(1) : 0}%</td>
                   </tr>
                 ))}
                 <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
-                  <td className="p-2 text-center font-mono">{byBranch.length}</td>
-                  <td className="p-2 text-center font-mono">{fmt(totalQty)}</td>
-                  <td className="p-2 text-center font-mono text-lg text-blue-700">{fmtMoney(totalValue)}</td>
-                  <td className="p-2 text-center font-mono">100%</td>
+                  <td className="tnum p-2 text-left">{byBranch.length}</td>
+                  <td className="tnum p-2 text-left">{fmt(totalQty)}</td>
+                  <td className="tnum p-2 text-left text-lg text-blue-700">{fmtMoney(totalValue)}</td>
+                  <td className="tnum p-2 text-left">100%</td>
                 </tr>
               </tbody>
             </table>

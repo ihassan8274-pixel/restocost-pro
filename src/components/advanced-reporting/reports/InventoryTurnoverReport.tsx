@@ -261,12 +261,12 @@ export const InventoryTurnoverReport: React.FC = () => {
                 <tr key={r.materialId + r.branchId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.name}</td>
                   <td className="p-2 text-center text-slate-500">{r.category}</td>
-                  <td className="p-2 text-center font-mono">{fmt(r.outQty)} {r.unit}</td>
-                  <td className="p-2 text-center font-mono">{fmt(r.ending)} {r.unit}</td>
-                  <td className="p-2 text-center font-mono text-indigo-700">{r.turnover != null ? r.turnover.toFixed(2) : '—'}</td>
+                  <td className="tnum p-2 text-left">{fmt(r.outQty)} {r.unit}</td>
+                  <td className="tnum p-2 text-left">{fmt(r.ending)} {r.unit}</td>
+                  <td className="tnum p-2 text-left text-indigo-700">{r.turnover != null ? r.turnover.toFixed(2) : '—'}</td>
                   <td className={`p-2 text-center font-mono font-bold ${r.daysCover >= 999 ? 'text-rose-600' : r.daysCover > 60 ? 'text-rose-600' : r.daysCover > 30 ? 'text-amber-600' : 'text-emerald-600'}`}>{r.daysCover >= 999 ? '∞' : `${r.daysCover.toFixed(0)}`}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.valueOut)}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(r.valueEnd)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.valueOut)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(r.valueEnd)}</td>
                 </tr>
               ))}
               {!rows.length && (

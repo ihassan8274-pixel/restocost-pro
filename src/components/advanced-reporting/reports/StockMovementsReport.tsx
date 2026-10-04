@@ -225,18 +225,18 @@ export const StockMovementsReport: React.FC = () => {
               {byType.map((t, i) => (
                 <tr key={t.type} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{t.type}</td>
-                  <td className="p-2 text-center font-mono text-emerald-700">{fmt(t.in)}</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{fmt(t.out)}</td>
+                  <td className="tnum p-2 text-left text-emerald-700">{fmt(t.in)}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{fmt(t.out)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${t.net >= 0 ? 'text-blue-700' : 'text-rose-700'}`}>{fmt(t.net)}</td>
-                  <td className="p-2 text-center font-mono">{t.count}</td>
+                  <td className="tnum p-2 text-left">{t.count}</td>
                 </tr>
               ))}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">الإجمالي</td>
-                <td className="p-2 text-center font-mono text-emerald-700">{fmt(inQty)}</td>
-                <td className="p-2 text-center font-mono text-rose-600">{fmt(outQty)}</td>
+                <td className="tnum p-2 text-left text-emerald-700">{fmt(inQty)}</td>
+                <td className="tnum p-2 text-left text-rose-600">{fmt(outQty)}</td>
                 <td className={`p-2 text-center font-mono text-lg ${netQty >= 0 ? 'text-blue-700' : 'text-rose-700'}`}>{fmt(netQty)}</td>
-                <td className="p-2 text-center font-mono">{filtered.length}</td>
+                <td className="tnum p-2 text-left">{filtered.length}</td>
               </tr>
             </tbody>
           </table>
@@ -258,11 +258,11 @@ export const StockMovementsReport: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filtered.slice(0, 500).map((m, i) => (
                 <tr key={m.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-2 font-mono text-slate-500 text-[10px]">{m.date}</td>
+                  <td className="tnum text-left p-2 text-slate-500 text-[10px]">{m.date}</td>
                   <td className="p-2 text-center text-slate-700">{m.type}</td>
                   <td className="p-2 text-center">{getBranchName(m.branchId)}</td>
                   <td className="p-2 text-center font-bold text-slate-800">{matName(m.rawMaterialId)}</td>
-                  <td className="p-2 text-center font-mono text-blue-600 text-[10px]">{m.ref || '—'}</td>
+                  <td className="tnum p-2 text-left text-blue-600 text-[10px]">{m.ref || '—'}</td>
                   <td className={`p-2 text-center font-mono font-bold ${m.delta >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{m.delta > 0 ? '+' : ''}{fmt(m.delta)}</td>
                 </tr>
               ))}

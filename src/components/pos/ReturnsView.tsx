@@ -138,10 +138,10 @@ export const ReturnsView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {posReturns.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50 align-top">
-                    <td className="p-3 font-mono font-bold text-rose-700">{r.returnNumber}</td>
-                    <td className="p-3 font-mono text-indigo-700">{r.orderNumber}</td>
+                    <td className="tnum text-left p-3 font-bold text-rose-700">{r.returnNumber}</td>
+                    <td className="tnum text-left p-3 text-indigo-700">{r.orderNumber}</td>
                     <td className="p-3 text-slate-600">{branchName(r.branchId)}</td>
-                    <td className="p-3 font-mono text-slate-600">{r.date}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
                     <td className="p-3 space-y-1">
                       {r.items.map((i, idx) => (
                         <div key={idx} className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export const ReturnsView: React.FC = () => {
                         </div>
                       ))}
                     </td>
-                    <td className="p-3 font-mono font-extrabold text-rose-700">{fmt(r.totalAmount)}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-rose-700">{fmt(r.totalAmount)}</td>
                     <td className="p-3 text-slate-500">{r.reason}</td>
                   </tr>
                 ))}

@@ -361,7 +361,7 @@ export const COGSBranchReport: React.FC = () => {
                       {formatCell(getCellValue(row, bi))}
                     </td>
                   ))}
-                  <td className="p-2 text-right font-bold font-mono text-indigo-700">
+                  <td className="tnum p-2 text-left font-bold text-indigo-700">
                     {formatCell(
                       viewMode === 'quantity' ? row.totalQuantity :
                       viewMode === 'revenue' ? row.totalRevenue :
@@ -377,7 +377,7 @@ export const COGSBranchReport: React.FC = () => {
                     {formatCell(getTotalCell(getTotals(), bi))}
                   </td>
                 ))}
-                <td className="p-2 text-right font-bold font-mono text-indigo-700">
+                <td className="tnum p-2 text-left font-bold text-indigo-700">
                   {formatCell(
                     viewMode === 'quantity' ? getTotals().totalQuantity :
                     viewMode === 'revenue' ? getTotals().totalRevenue :

@@ -226,15 +226,15 @@ export const GrnRegisterReport: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((g, i) => (
                 <tr key={g.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-2 font-mono text-blue-600 font-bold text-[10px]">{g.grnNumber}</td>
+                  <td className="tnum text-left p-2 text-blue-600 font-bold text-[10px]">{g.grnNumber}</td>
                   <td className="p-2 text-center">{g.supplierName}</td>
                   <td className="p-2 text-center">{getBranchName(g.branchId)}</td>
-                  <td className="p-2 text-center font-mono text-slate-500 text-[10px]">{g.date}</td>
-                  <td className="p-2 text-center font-mono text-slate-500 text-[10px]">{g.invoiceNumber || '—'}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(g.totalAmount || 0)}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{fmtMoney(g.vatAmount || 0)}</td>
+                  <td className="tnum p-2 text-left text-slate-500 text-[10px]">{g.date}</td>
+                  <td className="tnum p-2 text-left text-slate-500 text-[10px]">{g.invoiceNumber || '—'}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(g.totalAmount || 0)}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{fmtMoney(g.vatAmount || 0)}</td>
                   <td className="p-2 text-center">{g.vatInclusive ? 'نعم' : 'لا'}</td>
-                  <td className="p-2 text-center font-mono">{fmt((g.items || []).length)}</td>
+                  <td className="tnum p-2 text-left">{fmt((g.items || []).length)}</td>
                   <td className="p-2 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_LABEL[g.status]?.cls ?? 'bg-slate-100 text-slate-500'}`}>{STATUS_LABEL[g.status]?.ar ?? g.status}</span>
                   </td>
@@ -252,10 +252,10 @@ export const GrnRegisterReport: React.FC = () => {
                   <td className="p-2 text-center">—</td>
                   <td className="p-2 text-center">—</td>
                   <td className="p-2 text-center">—</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(totalAmount)}</td>
-                  <td className="p-2 text-center font-mono">{fmtMoney(totalVat)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(totalAmount)}</td>
+                  <td className="tnum p-2 text-left">{fmtMoney(totalVat)}</td>
                   <td className="p-2 text-center">—</td>
-                  <td className="p-2 text-center font-mono">{rows.length}</td>
+                  <td className="tnum p-2 text-left">{rows.length}</td>
                   <td className="p-2 text-center">—</td>
                 </tr>
               )}

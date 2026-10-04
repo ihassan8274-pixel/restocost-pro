@@ -136,13 +136,13 @@ export const CategoryManagementView: React.FC = () => {
             <tbody>
               {allCategories.map((cat, idx) => (
                 <tr key={cat.id} className="hover:bg-slate-50">
-                  <td className="border border-slate-300 p-2 font-mono font-bold text-slate-700">{idx + 1}</td>
+                  <td className="tnum text-left border border-slate-300 p-2 font-bold text-slate-700">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cat.isDefault ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
                       {cat.isDefault ? 'افتراضي' : 'مخصص'}
                     </span>
                   </td>
-                  <td className="border border-slate-300 p-2 font-mono text-slate-800">{cat.key}</td>
+                  <td className="tnum text-left border border-slate-300 p-2 text-slate-800">{cat.key}</td>
                   <td className="border border-slate-300 p-2 font-bold text-slate-900">{cat.labelAr}</td>
                   <td className="border border-slate-300 p-2 text-slate-600">{cat.labelEn}</td>
                   <td className="border border-slate-300 p-2">
@@ -151,13 +151,13 @@ export const CategoryManagementView: React.FC = () => {
                       <span className="text-[10px] font-mono">{cat.color}</span>
                     </div>
                   </td>
-                  <td className="border border-slate-300 p-2 font-mono">{cat.order}</td>
+                  <td className="tnum text-left border border-slate-300 p-2">{cat.order}</td>
                   <td className="border border-slate-300 p-2">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cat.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                       {cat.isActive ? 'نشط' : 'غير نشط'}
                     </span>
                   </td>
-                  <td className="border border-slate-300 p-2 font-mono font-bold text-indigo-700">{usedByMaterials[cat.key] || 0} صنف</td>
+                  <td className="tnum text-left border border-slate-300 p-2 font-bold text-indigo-700">{usedByMaterials[cat.key] || 0} صنف</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex items-center gap-1">
                       {!cat.isDefault && (

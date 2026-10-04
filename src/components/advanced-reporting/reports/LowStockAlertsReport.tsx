@@ -246,10 +246,10 @@ export const LowStockAlertsReport: React.FC = () => {
                 <tr key={r.materialId + r.branchId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.name}</td>
                   <td className="p-2 text-center">{r.branchName}</td>
-                  <td className="p-2 text-center font-mono font-bold text-blue-700">{fmt(r.qty)} {r.unit}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{r.min != null ? fmt(r.min) : '—'}</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{r.shortage > 0 ? fmt(r.shortage) : '—'}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{r.shortage > 0 ? fmtMoney(r.valueShort) : '—'}</td>
+                  <td className="tnum p-2 text-left font-bold text-blue-700">{fmt(r.qty)} {r.unit}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{r.min != null ? fmt(r.min) : '—'}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{r.shortage > 0 ? fmt(r.shortage) : '—'}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{r.shortage > 0 ? fmtMoney(r.valueShort) : '—'}</td>
                   <td className="p-2 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'under' ? 'bg-rose-100 text-rose-700' : r.status === 'near' ? 'bg-orange-100 text-orange-700' : r.status === 'ok' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
                       {r.status === 'under' ? 'تحت الحد' : r.status === 'near' ? 'قريب' : r.status === 'ok' ? 'آمن' : 'بلا حد'}

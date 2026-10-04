@@ -272,13 +272,13 @@ export const PriceHistoryReport: React.FC = () => {
                 const dev = avgPrice > 0 ? ((e.unitPrice - avgPrice) / avgPrice) * 100 : 0;
                 return (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                    <td className="p-2 font-mono text-slate-600">{e.date}</td>
-                    <td className="p-2 text-center font-mono text-blue-600">{e.grnNumber}</td>
+                    <td className="tnum text-left p-2 text-slate-600">{e.date}</td>
+                    <td className="tnum p-2 text-left text-blue-600">{e.grnNumber}</td>
                     <td className="p-2 text-center">{e.supplierName}</td>
                     <td className="p-2 text-center">{e.branchName}</td>
-                    <td className="p-2 text-center font-mono">{fmt(e.qty)}</td>
+                    <td className="tnum p-2 text-left">{fmt(e.qty)}</td>
                     <td className="p-2 text-center text-slate-500">{e.unit}</td>
-                    <td className="p-2 text-center font-mono font-bold text-slate-800">{fmtMoney(e.unitPrice)}</td>
+                    <td className="tnum p-2 text-left font-bold text-slate-800">{fmtMoney(e.unitPrice)}</td>
                     <td className={`p-2 text-center font-mono ${posNeg(dev)}`}>{dev > 0 ? '+' : ''}{dev.toFixed(1)}%</td>
                   </tr>
                 );
@@ -311,12 +311,12 @@ export const PriceHistoryReport: React.FC = () => {
               {supplierRows.map((s, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{s.name}</td>
-                  <td className="p-2 text-center font-mono">{s.count}</td>
-                  <td className="p-2 text-center font-mono">{fmt(s.qty)}</td>
-                  <td className="p-2 text-center font-mono">{fmtMoney(s.avg)}</td>
-                  <td className="p-2 text-center font-mono text-emerald-600">{fmtMoney(s.min)}</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{fmtMoney(s.max)}</td>
-                  <td className="p-2 text-center font-mono">{s.volatility.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left">{s.count}</td>
+                  <td className="tnum p-2 text-left">{fmt(s.qty)}</td>
+                  <td className="tnum p-2 text-left">{fmtMoney(s.avg)}</td>
+                  <td className="tnum p-2 text-left text-emerald-600">{fmtMoney(s.min)}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{fmtMoney(s.max)}</td>
+                  <td className="tnum p-2 text-left">{s.volatility.toFixed(1)}%</td>
                   <td className="p-2 text-center">
                     {s.isBest ? <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">الأفضل</span> : <span className="text-slate-300">—</span>}
                   </td>

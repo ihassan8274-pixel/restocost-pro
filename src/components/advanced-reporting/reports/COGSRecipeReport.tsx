@@ -269,32 +269,32 @@ export const COGSRecipeReport: React.FC = () => {
             {rows.map((r, i) => (
               <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                 <td className="p-2 font-bold text-slate-800">{r.recipeNameAr}</td>
-                <td className="p-2 text-center font-mono">{fmt(r.quantitySold)}</td>
-                <td className="p-2 text-center font-mono text-blue-700">{r.stdCostPerUnit.toFixed(2)}</td>
-                <td className="p-2 text-center font-mono text-rose-700">{r.actualCostPerUnit.toFixed(2)}</td>
+                <td className="tnum p-2 text-left">{fmt(r.quantitySold)}</td>
+                <td className="tnum p-2 text-left text-blue-700">{r.stdCostPerUnit.toFixed(2)}</td>
+                <td className="tnum p-2 text-left text-rose-700">{r.actualCostPerUnit.toFixed(2)}</td>
                 <td className={`p-2 text-center font-mono font-bold ${varianceColor(r.variancePerUnit)}`}>
                   {varianceIcon(r.variancePerUnit)}{r.variancePerUnit.toFixed(2)}
                 </td>
                 <td className={`p-2 text-center font-mono font-bold ${varianceColor(r.variancePct)}`}>
                   {r.variancePct.toFixed(1)}%
                 </td>
-                <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(r.revenue)}</td>
-                <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(r.profit)}</td>
-                <td className="p-2 text-center font-mono text-slate-700">{r.profitPct.toFixed(1)}%</td>
+                <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(r.revenue)}</td>
+                <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(r.profit)}</td>
+                <td className="tnum p-2 text-left text-slate-700">{r.profitPct.toFixed(1)}%</td>
               </tr>
             ))}
             <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
               <td className="p-2">الإجمالي</td>
-              <td className="p-2 text-center font-mono">{fmt(totals.quantitySold)}</td>
+              <td className="tnum p-2 text-left">{fmt(totals.quantitySold)}</td>
               <td className="p-2 text-center text-slate-400">-</td>
               <td className="p-2 text-center text-slate-400">-</td>
               <td className="p-2 text-center text-slate-400">-</td>
               <td className={`p-2 text-center font-mono ${varianceColor(totals.totalVariancePct)} text-lg`}>
                 {totals.totalVariancePct.toFixed(1)}%
               </td>
-              <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(totals.revenue)}</td>
-              <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(totals.profit)}</td>
-              <td className="p-2 text-center font-mono text-slate-700">{totals.profitPct.toFixed(1)}%</td>
+              <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(totals.revenue)}</td>
+              <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(totals.profit)}</td>
+              <td className="tnum p-2 text-left text-slate-700">{totals.profitPct.toFixed(1)}%</td>
             </tr>
           </tbody>
         </table>
@@ -410,48 +410,48 @@ export const COGSRecipeReport: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   <tr className="bg-blue-50 font-bold">
                     <td className="p-2"><span className="inline-flex items-center gap-1"><UtensilsCrossed className="w-3.5 h-3.5" /> المأكولات</span></td>
-                    <td className="p-2 text-center font-mono">{fmt(foodTotals.quantitySold)}</td>
-                    <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(foodTotals.totalStdCost)}</td>
-                    <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(foodTotals.totalActualCost)}</td>
+                    <td className="tnum p-2 text-left">{fmt(foodTotals.quantitySold)}</td>
+                    <td className="tnum p-2 text-left text-blue-700">{fmtMoney(foodTotals.totalStdCost)}</td>
+                    <td className="tnum p-2 text-left text-rose-700">{fmtMoney(foodTotals.totalActualCost)}</td>
                     <td className={`p-2 text-center font-mono font-bold ${varianceColor(foodTotals.totalVariance)}`}>
                       {foodTotals.totalVariance > 0 ? '+' : ''}{fmtMoney(foodTotals.totalVariance)}
                     </td>
                     <td className={`p-2 text-center font-mono font-bold ${varianceColor(foodTotals.totalVariancePct)}`}>
                       {foodTotals.totalVariancePct.toFixed(1)}%
                     </td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(foodTotals.revenue)}</td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(foodTotals.profit)}</td>
-                    <td className="p-2 text-center font-mono">{foodTotals.profitPct.toFixed(1)}%</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(foodTotals.revenue)}</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(foodTotals.profit)}</td>
+                    <td className="tnum p-2 text-left">{foodTotals.profitPct.toFixed(1)}%</td>
                   </tr>
                   <tr className="bg-red-50 font-bold">
                     <td className="p-2"><span className="inline-flex items-center gap-1"><CupSoda className="w-3.5 h-3.5" /> المشروبات</span></td>
-                    <td className="p-2 text-center font-mono">{fmt(bevTotals.quantitySold)}</td>
-                    <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(bevTotals.totalStdCost)}</td>
-                    <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(bevTotals.totalActualCost)}</td>
+                    <td className="tnum p-2 text-left">{fmt(bevTotals.quantitySold)}</td>
+                    <td className="tnum p-2 text-left text-blue-700">{fmtMoney(bevTotals.totalStdCost)}</td>
+                    <td className="tnum p-2 text-left text-rose-700">{fmtMoney(bevTotals.totalActualCost)}</td>
                     <td className={`p-2 text-center font-mono font-bold ${varianceColor(bevTotals.totalVariance)}`}>
                       {bevTotals.totalVariance > 0 ? '+' : ''}{fmtMoney(bevTotals.totalVariance)}
                     </td>
                     <td className={`p-2 text-center font-mono font-bold ${varianceColor(bevTotals.totalVariancePct)}`}>
                       {bevTotals.totalVariancePct.toFixed(1)}%
                     </td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(bevTotals.revenue)}</td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(bevTotals.profit)}</td>
-                    <td className="p-2 text-center font-mono">{bevTotals.profitPct.toFixed(1)}%</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(bevTotals.revenue)}</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(bevTotals.profit)}</td>
+                    <td className="tnum p-2 text-left">{bevTotals.profitPct.toFixed(1)}%</td>
                   </tr>
                   <tr className="bg-emerald-50 font-bold border-t-2 border-emerald-200">
                     <td className="p-2">الإجمالي</td>
-                    <td className="p-2 text-center font-mono">{fmt(grandTotals.quantitySold)}</td>
-                    <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(grandTotals.totalStdCost)}</td>
-                    <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(grandTotals.totalActualCost)}</td>
+                    <td className="tnum p-2 text-left">{fmt(grandTotals.quantitySold)}</td>
+                    <td className="tnum p-2 text-left text-blue-700">{fmtMoney(grandTotals.totalStdCost)}</td>
+                    <td className="tnum p-2 text-left text-rose-700">{fmtMoney(grandTotals.totalActualCost)}</td>
                     <td className={`p-2 text-center font-mono font-bold text-lg ${varianceColor(grandTotals.totalVariance)}`}>
                       {grandTotals.totalVariance > 0 ? '+' : ''}{fmtMoney(grandTotals.totalVariance)}
                     </td>
                     <td className={`p-2 text-center font-mono font-bold text-lg ${varianceColor(grandTotals.totalVariancePct)}`}>
                       {grandTotals.totalVariancePct.toFixed(1)}%
                     </td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(grandTotals.revenue)}</td>
-                    <td className="p-2 text-center font-mono text-emerald-700">{fmtMoney(grandTotals.profit)}</td>
-                    <td className="p-2 text-center font-mono">{grandTotals.profitPct.toFixed(1)}%</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(grandTotals.revenue)}</td>
+                    <td className="tnum p-2 text-left text-emerald-700">{fmtMoney(grandTotals.profit)}</td>
+                    <td className="tnum p-2 text-left">{grandTotals.profitPct.toFixed(1)}%</td>
                   </tr>
                 </tbody>
               </table>

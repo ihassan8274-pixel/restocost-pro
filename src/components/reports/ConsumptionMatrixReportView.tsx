@@ -348,7 +348,7 @@ export const ConsumptionMatrixReportView: React.FC = () => {
                           </td>
                         );
                       })}
-                      <td className="p-2 font-mono font-bold bg-indigo-50 border-l border-indigo-100 text-indigo-700 whitespace-nowrap">{fmtCell(rowTotals[d] || 0)}</td>
+                      <td className="tnum text-left p-2 font-bold bg-indigo-50 border-l border-indigo-100 text-indigo-700 whitespace-nowrap">{fmtCell(rowTotals[d] || 0)}</td>
                     </tr>
                   ))}
                   <tr className="bg-indigo-100 border-t-2 border-indigo-300 font-extrabold">
@@ -356,7 +356,7 @@ export const ConsumptionMatrixReportView: React.FC = () => {
                     {matrixBranches.map((b) => (
                       <td key={b.id} className="p-2 border-l border-indigo-200 font-mono whitespace-nowrap">{fmtCell(columnTotals[b.id] || 0)}</td>
                     ))}
-                    <td className="p-2 font-mono bg-indigo-200 border-l border-indigo-300 whitespace-nowrap">{fmtCell(grandTotal)}</td>
+                    <td className="tnum text-left p-2 bg-indigo-200 border-l border-indigo-300 whitespace-nowrap">{fmtCell(grandTotal)}</td>
                   </tr>
                 </tbody>
               </table>

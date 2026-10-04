@@ -558,14 +558,14 @@ export const PurchasesReportView: React.FC = () => {
                     <tbody className="divide-y divide-slate-100">
                       <tr className="hover:bg-slate-50">
                         <td className="p-2 whitespace-nowrap font-bold text-slate-700">الإجمالي</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-slate-600">{d.count}</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-slate-600">{fmt(d.qty)} {d.unit}</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-slate-700">{fmtMoney(d.first)}</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-slate-700">{fmtMoney(d.last)}</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-emerald-700">{fmtMoney(d.min)}</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-rose-700">{fmtMoney(d.max)}</td>
-                        <td className="p-2 whitespace-nowrap font-mono font-bold text-indigo-700">{fmtMoney(d.avg)}</td>
-                        <td className="p-2 whitespace-nowrap font-mono text-slate-600">{fmtMoney(d.spread)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{d.count}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmt(d.qty)} {d.unit}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-slate-700">{fmtMoney(d.first)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-slate-700">{fmtMoney(d.last)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-emerald-700">{fmtMoney(d.min)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-rose-700">{fmtMoney(d.max)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap font-bold text-indigo-700">{fmtMoney(d.avg)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmtMoney(d.spread)}</td>
                         <td className="p-2 whitespace-nowrap">
                           <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${d.spreadPct > DEV_THRESHOLD ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{d.spreadPct.toFixed(1)}%</span>
                         </td>
@@ -587,11 +587,11 @@ export const PurchasesReportView: React.FC = () => {
                                   <td className="p-2 whitespace-nowrap font-bold text-slate-700">
                                     <span className="inline-flex items-center gap-1">{bOpen ? <ChevronDown className="w-3 h-3 text-indigo-500" /> : <ChevronLeft className="w-3 h-3 text-slate-400" />} {getBranchName(b.branchId)}</span>
                                   </td>
-                                  <td className="p-2 whitespace-nowrap font-mono text-slate-600">{b.count}</td>
-                                  <td className="p-2 whitespace-nowrap font-mono text-slate-600">{fmt(b.qty)} {d.unit}</td>
-                                  <td className="p-2 whitespace-nowrap font-mono text-emerald-700">{fmtMoney(b.min)}</td>
-                                  <td className="p-2 whitespace-nowrap font-mono text-rose-700">{fmtMoney(b.max)}</td>
-                                  <td className="p-2 whitespace-nowrap font-mono font-bold text-indigo-700">{fmtMoney(b.avg)}</td>
+                                  <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{b.count}</td>
+                                  <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmt(b.qty)} {d.unit}</td>
+                                  <td className="tnum text-left p-2 whitespace-nowrap text-emerald-700">{fmtMoney(b.min)}</td>
+                                  <td className="tnum text-left p-2 whitespace-nowrap text-rose-700">{fmtMoney(b.max)}</td>
+                                  <td className="tnum text-left p-2 whitespace-nowrap font-bold text-indigo-700">{fmtMoney(b.avg)}</td>
                                   <td className="p-2 whitespace-nowrap">
                                     <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${b.spreadPct > DEV_THRESHOLD ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{b.spreadPct.toFixed(1)}%</span>
                                   </td>
@@ -607,9 +607,9 @@ export const PurchasesReportView: React.FC = () => {
                                             <tr key={ri} className={Math.abs(r.price - b.avg) / Math.max(0.0001, b.avg) > DEV_THRESHOLD / 100 ? 'bg-rose-50/60' : ''}>
                                               <td className="p-1.5 whitespace-nowrap font-bold text-slate-700">{r.invoice}</td>
                                               <td className="p-1.5 whitespace-nowrap text-slate-500">{r.date}</td>
-                                              <td className="p-1.5 whitespace-nowrap font-mono text-slate-600">{fmt(r.qty)} {d.unit}</td>
-                                              <td className="p-1.5 whitespace-nowrap font-mono text-slate-700">{fmtMoney(r.price)}</td>
-                                              <td className="p-1.5 whitespace-nowrap font-mono font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
+                                              <td className="tnum text-left p-1.5 whitespace-nowrap text-slate-600">{fmt(r.qty)} {d.unit}</td>
+                                              <td className="tnum text-left p-1.5 whitespace-nowrap text-slate-700">{fmtMoney(r.price)}</td>
+                                              <td className="tnum text-left p-1.5 whitespace-nowrap font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
                                             </tr>
                                           ))}
                                         </tbody>
@@ -655,7 +655,7 @@ export const PurchasesReportView: React.FC = () => {
                               {PO_STATUS_LABELS[p.status] || p.status}
                             </span>
                           </td>
-                          <td className="p-2 whitespace-nowrap font-mono font-bold text-slate-800">{fmtMoney(p.totalAmount)}</td>
+                          <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmtMoney(p.totalAmount)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -684,13 +684,13 @@ export const PurchasesReportView: React.FC = () => {
                           <td className="p-2 whitespace-nowrap font-bold text-slate-700">{g.invoiceNumber || g.grnNumber}</td>
                           <td className="p-2 whitespace-nowrap text-slate-600">{g.invoiceDate || g.date}</td>
                           <td className="p-2 whitespace-nowrap text-slate-600">{getBranchName(g.branchId)}</td>
-                          <td className="p-2 whitespace-nowrap font-mono font-bold text-slate-800">{fmtMoney(grnNet(g))}</td>
-                          <td className="p-2 whitespace-nowrap font-mono text-slate-600">{fmtMoney(vat(g))}</td>
-                          <td className="p-2 whitespace-nowrap font-mono font-bold text-emerald-700">{fmtMoney(g.totalAmount)}</td>
+                          <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmtMoney(grnNet(g))}</td>
+                          <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmtMoney(vat(g))}</td>
+                          <td className="tnum text-left p-2 whitespace-nowrap font-bold text-emerald-700">{fmtMoney(g.totalAmount)}</td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot><tr className="bg-slate-800 text-white font-extrabold"><td className="p-2">إجمالي {s.name}</td><td className="p-2">{s.invoices.length} فاتورة</td><td className="p-2"></td><td className="p-2 font-mono">{fmtMoney(s.net)}</td><td className="p-2 font-mono">{fmtMoney(s.vat)}</td><td className="p-2 font-mono">{fmtMoney(s.gross)}</td></tr></tfoot>
+                    <tfoot><tr className="bg-slate-800 text-white font-extrabold"><td className="p-2">إجمالي {s.name}</td><td className="p-2">{s.invoices.length} فاتورة</td><td className="p-2"></td><td className="tnum text-left p-2">{fmtMoney(s.net)}</td><td className="tnum text-left p-2">{fmtMoney(s.vat)}</td><td className="tnum text-left p-2">{fmtMoney(s.gross)}</td></tr></tfoot>
                   </table>
                 </div>
               )}
@@ -720,18 +720,18 @@ export const PurchasesReportView: React.FC = () => {
                             <td className="p-2 whitespace-nowrap font-bold text-slate-700">{r.invoice}</td>
                             <td className="p-2 whitespace-nowrap text-slate-600">{r.supplier}</td>
                             <td className="p-2 whitespace-nowrap text-slate-600">{getBranchName(r.branchId)}</td>
-                            <td className="p-2 whitespace-nowrap font-mono font-bold text-slate-800">{fmt(r.qty)} {a.unit}</td>
-                            <td className="p-2 whitespace-nowrap font-mono text-slate-600">{fmtMoney(r.price)}</td>
+                            <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmt(r.qty)} {a.unit}</td>
+                            <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmtMoney(r.price)}</td>
                             <td className="p-2 whitespace-nowrap">
                               <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${dp > DEV_THRESHOLD ? (r.price > a.avg ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700') : 'bg-slate-100 text-slate-500'}`}>{dp.toFixed(1)}%</span>
                             </td>
-                            <td className="p-2 whitespace-nowrap font-mono text-indigo-700 font-bold">{fmtMoney(a.avg)}</td>
-                            <td className="p-2 whitespace-nowrap font-mono font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
+                            <td className="tnum text-left p-2 whitespace-nowrap text-indigo-700 font-bold">{fmtMoney(a.avg)}</td>
+                            <td className="tnum text-left p-2 whitespace-nowrap font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
                           </tr>
                         );
                       })}
                     </tbody>
-                    <tfoot><tr className="bg-slate-800 text-white font-extrabold"><td className="p-2">إجمالي {a.name}</td><td className="p-2"></td><td className="p-2"></td><td className="p-2"></td><td className="p-2 font-mono">{fmt(a.qty)}</td><td className="p-2"></td><td className="p-2"></td><td className="p-2 font-mono">{fmtMoney(a.avg)}</td><td className="p-2 font-mono">{fmtMoney(a.value)}</td></tr></tfoot>
+                    <tfoot><tr className="bg-slate-800 text-white font-extrabold"><td className="p-2">إجمالي {a.name}</td><td className="p-2"></td><td className="p-2"></td><td className="p-2"></td><td className="tnum text-left p-2">{fmt(a.qty)}</td><td className="p-2"></td><td className="p-2"></td><td className="tnum text-left p-2">{fmtMoney(a.avg)}</td><td className="tnum text-left p-2">{fmtMoney(a.value)}</td></tr></tfoot>
                   </table>
                 </div>
               )}
@@ -751,17 +751,17 @@ export const PurchasesReportView: React.FC = () => {
                 <tr key={a.rank} className="hover:bg-slate-50">
                   <td className="p-2 whitespace-nowrap font-bold text-slate-500">{a.rank}</td>
                   <td className="p-2 whitespace-nowrap font-bold text-slate-700">{a.name}</td>
-                  <td className="p-2 whitespace-nowrap font-mono text-slate-600">{fmt(a.qty)}</td>
-                  <td className="p-2 whitespace-nowrap font-mono text-slate-600">{a.pctNo.toFixed(2)}%</td>
-                  <td className="p-2 whitespace-nowrap font-mono font-bold text-slate-800">{fmtMoney(a.value)}</td>
-                  <td className="p-2 whitespace-nowrap font-mono text-indigo-700 font-bold">{a.cumPct.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmt(a.qty)}</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{a.pctNo.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmtMoney(a.value)}</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-indigo-700 font-bold">{a.cumPct.toFixed(2)}%</td>
                   <td className="p-2 whitespace-nowrap"><span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${ABC_CLASS[a.cls]}`}>{a.cls}</span></td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="bg-slate-800 text-white font-extrabold">
-                <td className="p-2"></td><td className="p-2">الإجمالي</td><td className="p-2 font-mono">{fmt(abc.reduce((s, a) => s + a.qty, 0))}</td>
+                <td className="p-2"></td><td className="p-2">الإجمالي</td><td className="tnum text-left p-2">{fmt(abc.reduce((s, a) => s + a.qty, 0))}</td>
                 <td className={tdN}>100%</td><td className={tdN}>{fmtMoney(grandGross)}</td><td className="p-2"></td>
                 <td className="p-2">
                   <span className="inline-flex gap-1 text-[10px]">
@@ -790,15 +790,15 @@ export const PurchasesReportView: React.FC = () => {
               {receivSummary.map((r) => (
                 <tr key={r.name} className="hover:bg-slate-50">
                   <td className="p-2 whitespace-nowrap font-bold text-slate-700">{r.name}</td>
-                  <td className="p-2 whitespace-nowrap font-mono text-slate-600">{r.count}</td>
-                  <td className="p-2 whitespace-nowrap font-mono font-bold text-slate-800">{fmtMoney(r.net)}</td>
-                  <td className="p-2 whitespace-nowrap font-mono text-slate-600">{r.qAll}</td>
-                  <td className="p-2 whitespace-nowrap font-mono font-bold text-emerald-700">{r.quality}%</td>
-                  <td className="p-2 whitespace-nowrap font-mono text-indigo-700 font-bold">{r.haccpPct}%</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{r.count}</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmtMoney(r.net)}</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{r.qAll}</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap font-bold text-emerald-700">{r.quality}%</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-indigo-700 font-bold">{r.haccpPct}%</td>
                 </tr>
               ))}
             </tbody>
-            <tfoot><tr className="bg-slate-800 text-white font-extrabold"><td className="p-2">الإجمالي</td><td className="p-2 font-mono">{approvedGrns.length}</td><td className="p-2 font-mono">{fmtMoney(grandNet)}</td><td className="p-2 font-mono">{abc.reduce((s, a) => s + a.qty, 0)}</td><td className="p-2"></td><td className="p-2"></td></tr></tfoot>
+            <tfoot><tr className="bg-slate-800 text-white font-extrabold"><td className="p-2">الإجمالي</td><td className="tnum text-left p-2">{approvedGrns.length}</td><td className="tnum text-left p-2">{fmtMoney(grandNet)}</td><td className="tnum text-left p-2">{abc.reduce((s, a) => s + a.qty, 0)}</td><td className="p-2"></td><td className="p-2"></td></tr></tfoot>
           </table>
         </div>
       </SectionShell>

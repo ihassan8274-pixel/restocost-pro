@@ -48,10 +48,10 @@ export const CurrenciesView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {currencies.map((c) => (
                   <tr key={c.code} className="hover:bg-slate-50">
-                    <td className="p-3 font-mono font-extrabold text-indigo-700">{c.code}{c.isBase && <span className="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full mr-1">الأساس</span>}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-indigo-700">{c.code}{c.isBase && <span className="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full mr-1">الأساس</span>}</td>
                     <td className="p-3 font-bold text-slate-900">{c.nameAr}</td>
-                    <td className="p-3 font-mono font-bold">{c.symbol}</td>
-                    <td className="p-3 font-mono font-extrabold text-slate-900">{fmtNum(c.rateToBase, 4)}</td>
+                    <td className="tnum text-left p-3 font-bold">{c.symbol}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmtNum(c.rateToBase, 4)}</td>
                     <td className="p-3">{c.isActive ? <span className="text-emerald-600 font-bold">نشطة</span> : <span className="text-slate-400 font-bold">موقوفة</span>}</td>
                     <td className="p-3">
                       <div className="flex gap-1">

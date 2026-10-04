@@ -262,11 +262,11 @@ export const PreliminarySupplyOrderView: React.FC = () => {
                       return (
                         <tr key={i.rawMaterialId + i.materialName}>
                           <td className="p-2 font-bold text-slate-900">{i.materialName}</td>
-                          <td className="p-2 font-mono font-bold text-indigo-700">{fmt(i.purchaseQty ?? i.quantity / conv)} {i.purchaseUnit || i.unit}</td>
-                          <td className="p-2 font-mono text-slate-700">{fmtMoney(puPrice)}</td>
-                          <td className="p-2 font-mono text-slate-700">{fmtMoney(i.lineTotal)}</td>
-                          <td className="p-2 font-mono text-emerald-700 font-bold">{recv > 0 ? fmt(recv) : '—'}</td>
-                          <td className="p-2 font-mono text-slate-500">{remaining > 0 ? fmt(remaining) : <span className="text-emerald-600 font-bold">مكتمل</span>}</td>
+                          <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(i.purchaseQty ?? i.quantity / conv)} {i.purchaseUnit || i.unit}</td>
+                          <td className="tnum text-left p-2 text-slate-700">{fmtMoney(puPrice)}</td>
+                          <td className="tnum text-left p-2 text-slate-700">{fmtMoney(i.lineTotal)}</td>
+                          <td className="tnum text-left p-2 text-emerald-700 font-bold">{recv > 0 ? fmt(recv) : '—'}</td>
+                          <td className="tnum text-left p-2 text-slate-500">{remaining > 0 ? fmt(remaining) : <span className="text-emerald-600 font-bold">مكتمل</span>}</td>
                         </tr>
                       );
                     })}

@@ -306,7 +306,7 @@ export const ProfessionalReportsView: React.FC = () => {
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-xs min-w-max">
-              <thead><tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">{ex.columns.map((c, i) => <th key={i} className="p-2 text-right whitespace-nowrap">{c.label}</th>)}</tr></thead>
+              <thead><tr className="bg-slate-50 text-slate-500 font-bold border-b border-line">{ex.columns.map((c, i) => <th key={i} className="p-2 text-right whitespace-nowrap">{c.label}</th>)}</tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {bodyRows.map((r, ri) => (
                   <tr key={ri} className="hover:bg-slate-50">

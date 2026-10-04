@@ -232,11 +232,11 @@ export const InventoryView: React.FC = () => {
                       <td className="p-3 font-bold text-slate-900">{getRawMaterialName(i.rawMaterialId)}</td>
                       <td className="p-3">{mat ? categoryLabel(mat.category, materialCategories) : ''}</td>
                       <td className="p-3 text-slate-600">{i.branchId === 'b-ck' ? 'المطبخ المركزي' : i.branchId}</td>
-                      <td className="p-3 font-mono font-extrabold text-slate-900">{fmt(i.quantity)}</td>
+                      <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
                       <td className="p-3 text-slate-500">{mat?.unit}</td>
-                      <td className="p-3 font-mono font-bold text-indigo-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
-                      <td className="p-3 font-mono text-slate-500">{fmt(mat?.standardPrice || 0)}</td>
-                      <td className="p-3 font-mono font-bold text-indigo-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
+                      <td className="tnum text-left p-3 text-slate-500">{fmt(mat?.standardPrice || 0)}</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
                       <td className="p-3">{isLow ? <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">منخفض</span> : <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>}</td>
                     </tr>
                   );
@@ -265,15 +265,15 @@ export const InventoryView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {rawMaterials.map((m) => (
                   <tr key={m.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-mono font-bold text-indigo-700">{m.code}</td>
+                    <td className="tnum text-left p-3 font-bold text-indigo-700">{m.code}</td>
                     <td className="p-3 font-bold text-slate-900">{m.nameAr}</td>
                     <td className="p-3 text-slate-600">{categoryLabel(m.category, materialCategories)}</td>
                     <td className="p-3 text-slate-500">{m.unit}</td>
                     <td className="p-3 text-amber-700">{m.tradeUomName ? `${m.tradeUomName} ×${m.tradeUomConversion}` : m.unit}</td>
-                    <td className="p-3 font-mono font-bold">{fmt(m.standardPrice)}</td>
-                    <td className="p-3 font-mono text-slate-600">{fmt(m.minStockLevel)}</td>
-                    <td className="p-3 font-mono text-slate-600">{fmt(m.maxStockLevel)}</td>
-                    <td className="p-3 font-mono text-slate-600">{m.yieldPercentage}%</td>
+                    <td className="tnum text-left p-3 font-bold">{fmt(m.standardPrice)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{fmt(m.minStockLevel)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{fmt(m.maxStockLevel)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{m.yieldPercentage}%</td>
                     <td className="p-3 text-slate-500">{{ frozen: 'مجمد', chilled: 'مبرد', dry: 'جاف' }[m.storageType]}</td>
                     <td className="p-3">{m.isActive ? <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">نشط</span> : <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">موقوف</span>}</td>
                     <td className="p-3">
@@ -305,10 +305,10 @@ export const InventoryView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {stockTransfers.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-mono font-bold text-indigo-700">{t.transferNumber}</td>
+                    <td className="tnum text-left p-3 font-bold text-indigo-700">{t.transferNumber}</td>
                     <td className="p-3">{getBranchName(t.fromBranchId)}</td>
                     <td className="p-3">{getBranchName(t.toBranchId)}</td>
-                    <td className="p-3 font-mono text-slate-600">{t.date}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{t.date}</td>
                     <td className="p-3">{t.items.length} صنف</td>
                     <td className="p-3"><span className="text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                       t.status === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -362,8 +362,8 @@ export const InventoryView: React.FC = () => {
                         {c.items.map((it) => (
                           <tr key={it.rawMaterialId} className="hover:bg-slate-50">
                             <td className="p-2.5 font-bold text-slate-900">{getRawMaterialName(it.rawMaterialId)}</td>
-                            <td className="p-2.5 font-mono text-slate-600">{fmt(it.theoreticalQty)}</td>
-                            <td className="p-2.5 font-mono font-extrabold text-slate-900">{fmt(it.actualQty)}</td>
+                            <td className="tnum text-left p-2.5 text-slate-600">{fmt(it.theoreticalQty)}</td>
+                            <td className="tnum text-left p-2.5 font-extrabold text-slate-900">{fmt(it.actualQty)}</td>
                             <td className={`p-2.5 font-mono font-extrabold ${it.varianceQty === 0 ? 'text-slate-400' : it.varianceQty > 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
                               {it.varianceQty === 0 ? '—' : `${it.varianceQty > 0 ? '+' : ''}${fmt(it.varianceQty)}`}
                             </td>
@@ -372,9 +372,9 @@ export const InventoryView: React.FC = () => {
                         ))}
                         <tr className="bg-slate-50 font-extrabold">
                           <td className="p-2.5">الإجمالي</td>
-                          <td className="p-2.5 font-mono">{fmt(totalTheoretical)}</td>
-                          <td className="p-2.5 font-mono">{fmt(totalActual)}</td>
-                          <td className="p-2.5 font-mono">{fmt(totalActual - totalTheoretical)}</td>
+                          <td className="tnum text-left p-2.5">{fmt(totalTheoretical)}</td>
+                          <td className="tnum text-left p-2.5">{fmt(totalActual)}</td>
+                          <td className="tnum text-left p-2.5">{fmt(totalActual - totalTheoretical)}</td>
                           <td className={`p-2.5 font-mono ${c.totalVarianceCost >= 0 ? 'text-emerald-700' : 'text-amber-700'}`}>{fmt(c.totalVarianceCost)} ر.س</td>
                         </tr>
                       </tbody>
@@ -418,9 +418,9 @@ export const InventoryView: React.FC = () => {
                         <tr key={i.id} className="hover:bg-slate-50">
                           <td className="p-3 font-bold text-slate-900">{getRawMaterialName(i.rawMaterialId)}</td>
                       <td className="p-3 text-slate-600">{getBranchName(i.branchId)}</td>
-                          <td className="p-3 font-mono font-extrabold text-slate-900">{fmt(i.quantity)}</td>
-                          <td className="p-3 font-mono text-indigo-700">{i.batchNumber || '—'}</td>
-                          <td className="p-3 font-mono text-slate-600">{i.expiryDate}</td>
+                          <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
+                          <td className="tnum text-left p-3 text-indigo-700">{i.batchNumber || '—'}</td>
+                          <td className="tnum text-left p-3 text-slate-600">{i.expiryDate}</td>
                           <td className={`p-3 font-mono font-extrabold ${d <= 0 ? 'text-rose-700' : d <= 14 ? 'text-amber-700' : 'text-emerald-700'}`}>{d <= 0 ? `منتهية منذ ${Math.abs(d)} يوم` : `${d} يوم`}</td>
                           <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badge.c}`}>{badge.t}</span></td>
                         </tr>
@@ -493,10 +493,10 @@ export const InventoryView: React.FC = () => {
                   const variance = actual - theoretical;
                   return (
                     <tr key={m.id} className="hover:bg-slate-50">
-                      <td className="p-2 font-mono font-bold text-indigo-700">{m.code}</td>
+                      <td className="tnum text-left p-2 font-bold text-indigo-700">{m.code}</td>
                       <td className="p-2 font-bold text-slate-800">{m.nameAr}</td>
                       <td className="p-2 text-slate-500">{m.unit}</td>
-                      <td className="p-2 font-mono text-slate-600">{fmt(theoretical)}</td>
+                      <td className="tnum text-left p-2 text-slate-600">{fmt(theoretical)}</td>
                       <td className="p-2">
                         <input type="number" min="0" step="any" data-nav value={countValues[m.id] !== undefined ? countValues[m.id] : ''}
                           onChange={(e) => setCountValues({ ...countValues, [m.id]: e.target.value })}
@@ -625,10 +625,10 @@ export const InventoryView: React.FC = () => {
                   <tbody>
                     {itemBarcodes.map((b) => (
                       <tr key={b.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-1.5 px-2 font-mono font-bold text-indigo-700 dir-ltr text-left">{b.barcode}</td>
+                        <td className="tnum py-1.5 px-2 font-bold text-indigo-700 dir-ltr text-left">{b.barcode}</td>
                         <td className="py-1.5 px-2">{b.supplierId ? (suppliers.find((s) => s.id === b.supplierId)?.name || '—') : 'عام'}</td>
                         <td className="py-1.5 px-2 text-slate-600">{b.packagingLevel === 'unit' ? 'وحدة' : b.packagingLevel === 'carton' ? 'كرتون' : b.packagingLevel === 'pallet' ? 'باليت' : 'مخصص'}</td>
-                        <td className="py-1.5 px-2 font-mono">{b.packagingQty || '—'}</td>
+                        <td className="tnum text-left py-1.5 px-2">{b.packagingQty || '—'}</td>
                         <td className="py-1.5 px-2">
                           <button type="button" onClick={() => updateMaterialBarcode(b.id, { isPrimary: !b.isPrimary })} className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${b.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
                             {b.isPrimary ? 'الافتراضي' : 'جعله أساسي'}

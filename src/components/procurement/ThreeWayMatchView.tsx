@@ -255,13 +255,13 @@ export const ThreeWayMatchView: React.FC = () => {
                             <div className="text-[10px] text-slate-400">{r.inv.date}{confirmed && <span className="text-emerald-600 font-bold mr-1">· مؤكدة</span>}</div>
                           </td>
                           <td className="p-3 font-bold text-slate-800">{r.inv.partyName}</td>
-                          <td className="p-3 font-mono text-slate-600">{r.po ? <span className="text-sky-700 font-bold">{r.po.poNumber}</span> : '—'}</td>
-                          <td className="p-3 font-mono text-slate-600">{r.grn ? <span className="text-emerald-700 font-bold">{r.grn.grnNumber}</span> : '—'}</td>
-                          <td className="p-3 font-mono">{fmt(r.poQty)}</td>
+                          <td className="tnum text-left p-3 text-slate-600">{r.po ? <span className="text-sky-700 font-bold">{r.po.poNumber}</span> : '—'}</td>
+                          <td className="tnum text-left p-3 text-slate-600">{r.grn ? <span className="text-emerald-700 font-bold">{r.grn.grnNumber}</span> : '—'}</td>
+                          <td className="tnum text-left p-3">{fmt(r.poQty)}</td>
                           <td className={`p-3 font-mono font-extrabold ${r.qtyOk ? 'text-slate-700' : 'text-amber-700'}`}>{fmt(r.grnQty)}</td>
-                          <td className="p-3 font-mono">{fmt(r.poTotal)}</td>
-                          <td className="p-3 font-mono font-bold">{fmt(r.grnTotal)}</td>
-                          <td className="p-3 font-mono font-extrabold text-slate-900">{fmt(r.inv.totalAmount)}</td>
+                          <td className="tnum text-left p-3">{fmt(r.poTotal)}</td>
+                          <td className="tnum text-left p-3 font-bold">{fmt(r.grnTotal)}</td>
+                          <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(r.inv.totalAmount)}</td>
                           <td className="p-3">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${meta.cls}`}>{meta.icon}{meta.label}</span>
                           </td>
@@ -309,14 +309,14 @@ export const ThreeWayMatchView: React.FC = () => {
                             <div className="font-bold text-slate-900">{a.name}</div>
                             <div className="text-[10px] text-slate-400">{a.oldestDue ? `أقدم استحقاق: ${a.oldestDue}` : ''}</div>
                           </td>
-                          <td className="p-3 font-mono text-slate-600">{a.termsDays} يوم</td>
-                          <td className="p-3 font-mono font-bold">{a.count}</td>
-                          <td className="p-3 font-mono text-emerald-700">{fmtMoney(a.dCurrent)}</td>
+                          <td className="tnum text-left p-3 text-slate-600">{a.termsDays} يوم</td>
+                          <td className="tnum text-left p-3 font-bold">{a.count}</td>
+                          <td className="tnum text-left p-3 text-emerald-700">{fmtMoney(a.dCurrent)}</td>
                           <td className={`p-3 font-mono ${a.d30 > 0 ? 'font-bold text-amber-700' : 'text-slate-400'}`}>{fmtMoney(a.d30)}</td>
                           <td className={`p-3 font-mono ${a.d60 > 0 ? 'font-bold text-orange-600' : 'text-slate-400'}`}>{fmtMoney(a.d60)}</td>
                           <td className={`p-3 font-mono ${a.d90 > 0 ? 'font-bold text-rose-600' : 'text-slate-400'}`}>{fmtMoney(a.d90)}</td>
                           <td className={`p-3 font-mono ${a.d90Plus > 0 ? 'font-bold text-rose-700' : 'text-slate-400'}`}>{fmtMoney(a.d90Plus)}</td>
-                          <td className="p-3 font-mono font-extrabold text-slate-900">{fmtMoney(a.total)}</td>
+                          <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmtMoney(a.total)}</td>
                         </tr>
                       );
                     })}
@@ -324,12 +324,12 @@ export const ThreeWayMatchView: React.FC = () => {
                   <tfoot>
                     <tr className="bg-slate-50 font-extrabold text-slate-900">
                       <td className="p-3" colSpan={3}>الإجمالي</td>
-                      <td className="p-3 font-mono">{fmtMoney(aging.reduce((s, a) => s + a.dCurrent, 0))}</td>
-                      <td className="p-3 font-mono">{fmtMoney(aging.reduce((s, a) => s + a.d30, 0))}</td>
-                      <td className="p-3 font-mono">{fmtMoney(aging.reduce((s, a) => s + a.d60, 0))}</td>
-                      <td className="p-3 font-mono">{fmtMoney(aging.reduce((s, a) => s + a.d90, 0))}</td>
-                      <td className="p-3 font-mono">{fmtMoney(aging.reduce((s, a) => s + a.d90Plus, 0))}</td>
-                      <td className="p-3 font-mono">{fmtMoney(aging.reduce((s, a) => s + a.total, 0))}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(aging.reduce((s, a) => s + a.dCurrent, 0))}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(aging.reduce((s, a) => s + a.d30, 0))}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(aging.reduce((s, a) => s + a.d60, 0))}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(aging.reduce((s, a) => s + a.d90, 0))}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(aging.reduce((s, a) => s + a.d90Plus, 0))}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(aging.reduce((s, a) => s + a.total, 0))}</td>
                     </tr>
                   </tfoot>
                 </table>

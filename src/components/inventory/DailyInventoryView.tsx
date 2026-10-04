@@ -270,11 +270,11 @@ export const DailyInventoryView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {dailyCounts.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-mono text-slate-600">{c.date}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{c.date}</td>
                     <td className="p-3 font-bold text-slate-900">{getBranchName(c.branchId)}</td>
                     <td className="p-3">{c.countedBy}</td>
-                    <td className="p-3 font-mono font-extrabold text-indigo-700">{fmt(c.totalConsumedQty)}</td>
-                    <td className="p-3 font-mono font-bold text-indigo-700">{fmtMoney(c.totalConsumedValue)}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-indigo-700">{fmt(c.totalConsumedQty)}</td>
+                    <td className="tnum text-left p-3 font-bold text-indigo-700">{fmtMoney(c.totalConsumedValue)}</td>
                     <td className="p-3">{c.items.length} صنف</td>
                     <td className="p-3">
                       <div className="flex items-center gap-1">

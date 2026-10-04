@@ -194,14 +194,14 @@ export const PurchaseRequestView: React.FC = () => {
                         onChange={(e) => setQtyOverride((p) => ({ ...p, [r.rawMaterialId]: parseFloat(e.target.value) || 0 }))}
                         className={inputCls + ' !w-24 !h-8'} />
                     </td>
-                    <td className="p-3 bg-amber-50/30 font-mono font-bold text-slate-800">
+                    <td className="tnum text-left p-3 bg-amber-50/30 font-bold text-slate-800">
                       {r.lastPricePU > 0 ? fmtMoney(r.lastPricePU) : '—'}
                       {r.lastPriceDate ? <span className="block text-[9px] text-slate-400 font-bold">{r.lastPriceDate}</span> : null}
                     </td>
                     <td className="p-3 font-bold text-slate-700">{r.lastSupplierName}</td>
-                    <td className="p-3 bg-rose-50/30 font-mono text-rose-700 font-bold">{fmt(r.minPU)}</td>
-                    <td className="p-3 bg-emerald-50/30 font-mono text-emerald-700 font-bold">{fmt(r.maxPU)}</td>
-                    <td className="p-3 font-mono text-slate-600">{fmt(r.currentPU)} {r.purchaseUnit}</td>
+                    <td className="tnum text-left p-3 bg-rose-50/30 text-rose-700 font-bold">{fmt(r.minPU)}</td>
+                    <td className="tnum text-left p-3 bg-emerald-50/30 text-emerald-700 font-bold">{fmt(r.maxPU)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{fmt(r.currentPU)} {r.purchaseUnit}</td>
                   </tr>
                 );
               })}
@@ -271,10 +271,10 @@ export const PurchaseRequestView: React.FC = () => {
                 {viewReq?.items.map((i) => (
                   <tr key={i.rawMaterialId}>
                     <td className="p-2 font-bold text-slate-900">{i.materialName}</td>
-                    <td className="p-2 font-mono font-bold text-indigo-700">{fmt(i.quantityPU)} {i.purchaseUnit}</td>
-                    <td className="p-2 font-mono text-slate-700">{fmtMoney(i.lastPricePU)}</td>
+                    <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(i.quantityPU)} {i.purchaseUnit}</td>
+                    <td className="tnum text-left p-2 text-slate-700">{fmtMoney(i.lastPricePU)}</td>
                     <td className="p-2">{i.lastSupplierName}</td>
-                    <td className="p-2 font-mono text-slate-700">{fmtMoney(i.quantityPU * i.lastPricePU)}</td>
+                    <td className="tnum text-left p-2 text-slate-700">{fmtMoney(i.quantityPU * i.lastPricePU)}</td>
                   </tr>
                 ))}
               </tbody>

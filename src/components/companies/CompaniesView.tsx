@@ -138,11 +138,11 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     const linked = branches.filter((b) => b.companyId === c.id);
                     return (
                       <tr key={c.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-mono font-extrabold text-indigo-700">{c.code}</td>
+                        <td className="tnum text-left p-3 font-extrabold text-indigo-700">{c.code}</td>
                         <td className="p-3 font-bold text-slate-900">{c.nameAr}</td>
                         <td className="p-3 text-slate-500">{c.nameEn || '—'}</td>
                         <td className="p-3 text-slate-500">{c.address || '—'}</td>
-                        <td className="p-3 font-mono">{c.vatNumber || '—'}</td>
+                        <td className="tnum text-left p-3">{c.vatNumber || '—'}</td>
                         <td className="p-3">
                           {linked.length ? <span className="font-bold text-indigo-700">{linked.map((b) => b.nameAr).join('، ')}</span> : <span className="text-slate-400">لا يوجد</span>}
                         </td>

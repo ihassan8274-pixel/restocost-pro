@@ -122,7 +122,7 @@ export const ProfitHeatmapView: React.FC = () => {
                         </td>
                       );
                     })}
-                    <td className="p-2 text-center font-mono font-black text-slate-800 border-b border-slate-50">{metrics === 'margin' ? totalV.toFixed(1) + '%' : fmtMoney(totalV)}</td>
+                    <td className="tnum p-2 text-left font-black text-slate-800 border-b border-slate-50">{metrics === 'margin' ? totalV.toFixed(1) + '%' : fmtMoney(totalV)}</td>
                   </tr>
                 );
               })}

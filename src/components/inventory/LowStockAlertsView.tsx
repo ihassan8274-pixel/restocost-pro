@@ -168,13 +168,13 @@ export const LowStockAlertsView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {alerts.map((a) => (
                   <tr key={a.id} className={`hover:bg-slate-50 ${a.quantity <= 0 ? 'bg-rose-50' : a.severity === 'critical' ? 'bg-amber-50/40' : ''}`}>
-                    <td className="p-3 font-mono text-indigo-700">{a.code}</td>
+                    <td className="tnum text-left p-3 text-indigo-700">{a.code}</td>
                     <td className="p-3 font-bold text-slate-900">{a.nameAr}</td>
                     <td className="p-3 text-slate-600">{categoryLabel(a.category, materialCategories)}</td>
                     <td className="p-3 text-slate-600">{getBranchName(a.branchId)}</td>
-                    <td className="p-3 font-mono font-extrabold text-slate-900">{fmt(a.quantity)} <span className="text-[10px] text-slate-400">{a.unit}</span></td>
-                    <td className="p-3 font-mono text-slate-600">{fmt(a.minStockLevel)}</td>
-                    <td className="p-3 font-mono font-extrabold text-rose-600">{fmt(a.suggestedQty)}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(a.quantity)} <span className="text-[10px] text-slate-400">{a.unit}</span></td>
+                    <td className="tnum text-left p-3 text-slate-600">{fmt(a.minStockLevel)}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-rose-600">{fmt(a.suggestedQty)}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -192,7 +192,7 @@ export const LowStockAlertsView: React.FC = () => {
                             ? <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">حرجة</span>
                             : <span className="text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full">منخفض</span>}
                     </td>
-                    <td className="p-3 font-mono text-indigo-700">{fmtMoney(a.reorderValue)}</td>
+                    <td className="tnum text-left p-3 text-indigo-700">{fmtMoney(a.reorderValue)}</td>
                     <td className="p-3">
                       <Btn tone="ghost" className="!py-1 !px-2 text-[11px]" onClick={() => { setShowTransfer({ matId: a.matId, branchId: a.branchId, shortage: a.suggestedQty }); setTransferQty(a.suggestedQty); }}>
                         <ArrowRightLeft className="w-3.5 h-3.5" /> طلب تحويل من المركزي

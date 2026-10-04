@@ -241,16 +241,16 @@ export const DistributionsReport: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((r, i) => (
                 <tr key={r.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-2 font-mono text-slate-500 text-[10px]">{r.createdAt.slice(0, 10)}</td>
+                  <td className="tnum text-left p-2 text-slate-500 text-[10px]">{r.createdAt.slice(0, 10)}</td>
                   <td className="p-2 text-center">{r.source}</td>
                   <td className="p-2 text-center">{r.fromBranch}</td>
                   <td className="p-2 text-center font-bold text-slate-800">{r.itemName}</td>
-                  <td className="p-2 text-center font-mono">{r.rows}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmt(r.inventoryTotal)}</td>
-                  <td className="p-2 text-center font-mono text-emerald-600">{r.exact + r.alias}</td>
-                  <td className="p-2 text-center font-mono text-amber-600">{r.fuzzy}</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{r.none}</td>
-                  <td className="p-2 text-center font-mono text-rose-500">{r.unknowns}</td>
+                  <td className="tnum p-2 text-left">{r.rows}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmt(r.inventoryTotal)}</td>
+                  <td className="tnum p-2 text-left text-emerald-600">{r.exact + r.alias}</td>
+                  <td className="tnum p-2 text-left text-amber-600">{r.fuzzy}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{r.none}</td>
+                  <td className="tnum p-2 text-left text-rose-500">{r.unknowns}</td>
                   <td className={`p-2 text-center font-mono font-bold ${r.coveragePct >= 95 ? 'text-emerald-600' : r.coveragePct >= 75 ? 'text-amber-600' : 'text-rose-600'}`}>{r.coveragePct.toFixed(0)}%</td>
                   <td className="p-2 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'approved' || r.status === 'converted' ? 'bg-emerald-100 text-emerald-700' : r.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>

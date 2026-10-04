@@ -238,12 +238,12 @@ export const SalesByItemReport: React.FC = () => {
                 <tr key={i.recipeId} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{i.name}</td>
                   <td className="p-2 text-center text-slate-500">{i.category}</td>
-                  <td className="p-2 text-center font-mono">{fmt(i.qty)}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(i.revenue)}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(i.cost)}</td>
+                  <td className="tnum p-2 text-left">{fmt(i.qty)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(i.revenue)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(i.cost)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${posNeg(i.margin)}`}>{fmtMoney(i.margin)}</td>
                   <td className={`p-2 text-center font-mono ${posNeg(i.marginPct)}`}>{i.marginPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{i.sharePct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left text-slate-500">{i.sharePct.toFixed(1)}%</td>
                 </tr>
               ))}
               {!items.length && (
@@ -255,12 +255,12 @@ export const SalesByItemReport: React.FC = () => {
                 <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
                   <td className="p-2 text-center">—</td>
-                  <td className="p-2 text-center font-mono">{fmt(totalQty)}</td>
-                  <td className="p-2 text-center font-mono text-blue-700 text-lg">{fmtMoney(totalRevenue)}</td>
-                  <td className="p-2 text-center font-mono">{fmtMoney(totalCost)}</td>
+                  <td className="tnum p-2 text-left">{fmt(totalQty)}</td>
+                  <td className="tnum p-2 text-left text-blue-700 text-lg">{fmtMoney(totalRevenue)}</td>
+                  <td className="tnum p-2 text-left">{fmtMoney(totalCost)}</td>
                   <td className={`p-2 text-center font-mono text-lg ${posNeg(totalMargin)}`}>{fmtMoney(totalMargin)}</td>
                   <td className={`p-2 text-center font-mono text-lg ${posNeg(totalMarginPct)}`}>{totalMarginPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono">100%</td>
+                  <td className="tnum p-2 text-left">100%</td>
                 </tr>
               )}
             </tbody>

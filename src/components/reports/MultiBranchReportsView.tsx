@@ -121,7 +121,7 @@ export const MultiBranchReportsView: React.FC = () => {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               <tr>
                 <th className="p-3">الفرع</th>
                 <th className="p-3">الإيراد</th>
@@ -141,7 +141,7 @@ export const MultiBranchReportsView: React.FC = () => {
               {perBranch.map((r) => (
                 <tr key={r.branchId} className="hover:bg-slate-50">
                   <td className="p-3 font-bold text-slate-900 whitespace-nowrap">{r.branch}</td>
-                  <td className="p-3 font-mono">{fmtMoney(r.revenue)}</td>
+                  <td className="tnum text-left p-3">{fmtMoney(r.revenue)}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -150,32 +150,32 @@ export const MultiBranchReportsView: React.FC = () => {
                       <span className="text-[10px] font-mono text-slate-400">{maxRevenue > 0 ? ((r.revenue / maxRevenue) * 100).toFixed(0) : 0}%</span>
                     </div>
                   </td>
-                  <td className="p-3 font-mono text-sky-700">{fmtMoney(r.purchases)}</td>
-                  <td className="p-3 font-mono text-slate-500">{fmtMoney(r.openingValue)}</td>
-                  <td className="p-3 font-mono text-slate-500">{fmtMoney(r.closingValue)}</td>
-                  <td className="p-3 font-mono font-bold text-rose-700">{fmtMoney(r.costOfSales)}</td>
+                  <td className="tnum text-left p-3 text-sky-700">{fmtMoney(r.purchases)}</td>
+                  <td className="tnum text-left p-3 text-slate-500">{fmtMoney(r.openingValue)}</td>
+                  <td className="tnum text-left p-3 text-slate-500">{fmtMoney(r.closingValue)}</td>
+                  <td className="tnum text-left p-3 font-bold text-rose-700">{fmtMoney(r.costOfSales)}</td>
                   <td className={`p-3 font-mono font-extrabold ${r.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(r.grossProfit)}</td>
                   <td className="p-3">
                     <span className={`font-extrabold px-2 py-0.5 rounded-lg ${r.grossMargin >= 30 ? 'bg-emerald-50 text-emerald-700' : r.grossMargin >= 15 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'}`}>{r.grossMargin.toFixed(1)}%</span>
                   </td>
                   <td className={`p-3 font-mono ${r.wastage > 0 ? 'text-amber-700' : 'text-slate-400'}`}>{fmtMoney(r.wastage)}</td>
-                  <td className="p-3 font-mono text-violet-700">{fmtMoney(r.inventoryValue)}</td>
-                  <td className="p-3 font-mono">{r.orderCount}</td>
+                  <td className="tnum text-left p-3 text-violet-700">{fmtMoney(r.inventoryValue)}</td>
+                  <td className="tnum text-left p-3">{r.orderCount}</td>
                 </tr>
               ))}
               <tr className="bg-slate-50 font-extrabold border-t-2 border-slate-300">
                 <td className="p-3">الإجمالي الموحد</td>
-                <td className="p-3 font-mono">{fmtMoney(totals.revenue)}</td>
+                <td className="tnum text-left p-3">{fmtMoney(totals.revenue)}</td>
                 <td className="p-3 text-[10px] text-slate-400">—</td>
-                <td className="p-3 font-mono text-sky-700">{fmtMoney(totals.purchases)}</td>
-                <td className="p-3 font-mono text-slate-500">{fmtMoney(totals.openingValue)}</td>
-                <td className="p-3 font-mono text-slate-500">{fmtMoney(totals.closingValue)}</td>
-                <td className="p-3 font-mono text-rose-700">{fmtMoney(totals.costOfSales)}</td>
+                <td className="tnum text-left p-3 text-sky-700">{fmtMoney(totals.purchases)}</td>
+                <td className="tnum text-left p-3 text-slate-500">{fmtMoney(totals.openingValue)}</td>
+                <td className="tnum text-left p-3 text-slate-500">{fmtMoney(totals.closingValue)}</td>
+                <td className="tnum text-left p-3 text-rose-700">{fmtMoney(totals.costOfSales)}</td>
                 <td className={`p-3 font-mono ${totals.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(totals.grossProfit)}</td>
                 <td className="p-3"><span className="font-extrabold text-indigo-700">{totals.grossMargin.toFixed(1)}%</span></td>
-                <td className="p-3 font-mono text-amber-700">{fmtMoney(totals.wastage)}</td>
-                <td className="p-3 font-mono text-violet-700">{fmtMoney(totals.inventoryValue)}</td>
-                <td className="p-3 font-mono">{totals.orderCount}</td>
+                <td className="tnum text-left p-3 text-amber-700">{fmtMoney(totals.wastage)}</td>
+                <td className="tnum text-left p-3 text-violet-700">{fmtMoney(totals.inventoryValue)}</td>
+                <td className="tnum text-left p-3">{totals.orderCount}</td>
               </tr>
             </tbody>
           </table>

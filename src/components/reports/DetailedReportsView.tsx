@@ -189,17 +189,17 @@ export const DetailedReportsView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><tr><th className="p-3">المادة</th><th className="p-3">الفرع</th><th className="p-3">الكمية</th><th className="p-3">الدفعة</th><th className="p-3">الانتهاء</th><th className="p-3">أيام متبقية</th><th className="p-3">القيمة</th><th className="p-3">الحالة</th></tr></thead>
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line"><tr><th className="p-3">المادة</th><th className="p-3">الفرع</th><th className="p-3">الكمية</th><th className="p-3">الدفعة</th><th className="p-3">الانتهاء</th><th className="p-3">أيام متبقية</th><th className="p-3">القيمة</th><th className="p-3">الحالة</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {agingRows.map((r, idx) => (
                     <tr key={idx} className={r.days !== null && r.days <= 0 ? 'bg-rose-50/50' : r.days !== null && r.days <= 7 ? 'bg-amber-50/50' : ''}>
                       <td className="p-3 font-bold text-slate-900">{r.matName}</td>
                       <td className="p-3 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
-                      <td className="p-3 font-mono font-bold">{r.qty} {r.unit}</td>
-                      <td className="p-3 font-mono text-slate-500">{r.batch}</td>
-                      <td className="p-3 font-mono">{r.expiry}</td>
-                      <td className="p-3 font-mono font-extrabold">{r.days !== null ? r.days : '—'}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.value)}</td>
+                      <td className="tnum text-left p-3 font-bold">{r.qty} {r.unit}</td>
+                      <td className="tnum text-left p-3 text-slate-500">{r.batch}</td>
+                      <td className="tnum text-left p-3">{r.expiry}</td>
+                      <td className="tnum text-left p-3 font-extrabold">{r.days !== null ? r.days : '—'}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.value)}</td>
                       <td className="p-3">{r.days !== null && r.days <= 0 ? <span className="text-rose-600 font-bold">منتهية</span> : r.days !== null && r.days <= 7 ? <span className="text-amber-700 font-bold">قريب الانتهاء</span> : <span className="text-emerald-600 font-bold">يُتابع</span>}</td>
                     </tr>
                   ))}
@@ -220,20 +220,20 @@ export const DetailedReportsView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><tr><th className="p-3">GRN</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">التاريخ</th><th className="p-3">الصنف</th><th className="p-3">الكمية</th><th className="p-3">سعر الوحدة</th><th className="p-3">الإجمالي</th><th className="p-3">العملة</th><th className="p-3">فاتورة</th></tr></thead>
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line"><tr><th className="p-3">GRN</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">التاريخ</th><th className="p-3">الصنف</th><th className="p-3">الكمية</th><th className="p-3">سعر الوحدة</th><th className="p-3">الإجمالي</th><th className="p-3">العملة</th><th className="p-3">فاتورة</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {receivingRows.map((r, idx) => (
                     <tr key={idx} className="hover:bg-slate-50">
-                      <td className="p-3 font-mono font-bold text-indigo-700">{r.grn}</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{r.grn}</td>
                       <td className="p-3 font-bold text-slate-900">{r.supplier}</td>
                       <td className="p-3 text-slate-600">{r.branch}</td>
-                      <td className="p-3 font-mono text-slate-600">{r.date}</td>
+                      <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
                       <td className="p-3 font-bold">{r.mat}</td>
-                      <td className="p-3 font-mono font-bold">{r.qty}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.price)}</td>
-                      <td className="p-3 font-mono font-extrabold text-slate-900">{fmtMoney(r.total)}</td>
-                      <td className="p-3 font-mono text-amber-700">{r.currency || 'ر.س'}</td>
-                      <td className="p-3 font-mono text-slate-500">{r.invoice}</td>
+                      <td className="tnum text-left p-3 font-bold">{r.qty}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.price)}</td>
+                      <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmtMoney(r.total)}</td>
+                      <td className="tnum text-left p-3 text-amber-700">{r.currency || 'ر.س'}</td>
+                      <td className="tnum text-left p-3 text-slate-500">{r.invoice}</td>
                     </tr>
                   ))}
                   {receivingRows.length === 0 && <tr><td colSpan={10} className="p-8 text-center text-slate-500 font-bold">لا توجد إشعارات استلام معتمدة</td></tr>}
@@ -259,19 +259,19 @@ export const DetailedReportsView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><tr><th className="p-3">الكود</th><th className="p-3">الطبق</th><th className="p-3">الحصة</th><th className="p-3">مكونات</th><th className="p-3">تكلفة الطعام</th><th className="p-3">التكلفة الكلية</th><th className="p-3">سعر البيع</th><th className="p-3">الهامش %</th><th className="p-3">المستهدف %</th><th className="p-3">الحالة</th></tr></thead>
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line"><tr><th className="p-3">الكود</th><th className="p-3">الطبق</th><th className="p-3">الحصة</th><th className="p-3">مكونات</th><th className="p-3">تكلفة الطعام</th><th className="p-3">التكلفة الكلية</th><th className="p-3">سعر البيع</th><th className="p-3">الهامش %</th><th className="p-3">المستهدف %</th><th className="p-3">الحالة</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {menuRows.map((r, idx) => (
                     <tr key={idx} className={r.status === 'low' ? 'bg-rose-50/50' : r.status === 'ok' ? 'bg-emerald-50/30' : ''}>
-                      <td className="p-3 font-mono font-bold text-indigo-700">{r.code}</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{r.code}</td>
                       <td className="p-3 font-bold text-slate-900">{r.name}</td>
                       <td className="p-3 text-slate-500">{r.portion}</td>
                       <td className="p-3 font-bold">{r.ingredients}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.foodCost)}</td>
-                      <td className="p-3 font-mono font-extrabold">{fmtMoney(r.totalCost)}</td>
-                      <td className="p-3 font-mono">{r.price ? fmtMoney(r.price) : '—'}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.foodCost)}</td>
+                      <td className="tnum text-left p-3 font-extrabold">{fmtMoney(r.totalCost)}</td>
+                      <td className="tnum text-left p-3">{r.price ? fmtMoney(r.price) : '—'}</td>
                       <td className={`p-3 font-mono font-extrabold ${r.price && r.margin < r.targetMargin ? 'text-rose-600' : 'text-emerald-600'}`}>{r.price ? `${r.margin.toFixed(2)}%` : '—'}</td>
-                      <td className="p-3 font-mono text-slate-500">{r.targetMargin}%</td>
+                      <td className="tnum text-left p-3 text-slate-500">{r.targetMargin}%</td>
                       <td className="p-3">{r.status === 'low' ? <span className="text-rose-600 font-bold">أقل من المستهدف</span> : r.status === 'ok' ? <span className="text-emerald-600 font-bold">سليم</span> : <span className="text-amber-700 font-bold">بدون سعر</span>}</td>
                     </tr>
                   ))}
@@ -297,18 +297,18 @@ export const DetailedReportsView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><tr><th className="p-3">الفرع</th><th className="p-3">الشهر</th><th className="p-3">الافتتاحي</th><th className="p-3">المشتريات</th><th className="p-3">الاستهلاك النظري</th><th className="p-3">الفعلي</th><th className="p-3">فرق الاستهلاك</th><th className="p-3">الختامي</th><th className="p-3">فرق القيمة</th><th className="p-3">الحالة</th></tr></thead>
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line"><tr><th className="p-3">الفرع</th><th className="p-3">الشهر</th><th className="p-3">الافتتاحي</th><th className="p-3">المشتريات</th><th className="p-3">الاستهلاك النظري</th><th className="p-3">الفعلي</th><th className="p-3">فرق الاستهلاك</th><th className="p-3">الختامي</th><th className="p-3">فرق القيمة</th><th className="p-3">الحالة</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {closingRows.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="p-3 font-bold text-slate-900">{r.branch}</td>
-                      <td className="p-3 font-mono font-bold text-indigo-700">{r.month}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.totalOpening)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.totalPurchased)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.totalUsage)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.totalActual)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.usageVariance)}</td>
-                      <td className="p-3 font-mono font-extrabold">{fmtMoney(r.totalClosing)}</td>
+                      <td className="tnum text-left p-3 font-bold text-indigo-700">{r.month}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.totalOpening)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.totalPurchased)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.totalUsage)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.totalActual)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.usageVariance)}</td>
+                      <td className="tnum text-left p-3 font-extrabold">{fmtMoney(r.totalClosing)}</td>
                       <td className={`p-3 font-mono font-bold ${r.varianceCost > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{fmtMoney(r.varianceCost)}</td>
                       <td className="p-3">{r.status === 'closed' ? <span className="text-emerald-600 font-bold">مقفل</span> : <span className="text-amber-700 font-bold">جاري</span>}</td>
                     </tr>
@@ -336,20 +336,20 @@ export const DetailedReportsView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200"><tr><th className="p-3">الشركة</th><th className="p-3">الفروع</th><th className="p-3">الإيراد</th><th className="p-3">تكلفة الطعام</th><th className="p-3">العمالة</th><th className="p-3">التشغيلية</th><th className="p-3">الهالك</th><th className="p-3">صافي الربح</th><th className="p-3">الهامش %</th><th className="p-3">قيمة المخزون</th></tr></thead>
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line"><tr><th className="p-3">الشركة</th><th className="p-3">الفروع</th><th className="p-3">الإيراد</th><th className="p-3">تكلفة الطعام</th><th className="p-3">العمالة</th><th className="p-3">التشغيلية</th><th className="p-3">الهالك</th><th className="p-3">صافي الربح</th><th className="p-3">الهامش %</th><th className="p-3">قيمة المخزون</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {consolidation.rowsOut.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="p-3"><div className="font-bold text-slate-900">{r.nameAr}</div><div className="text-[9px] font-mono text-slate-400">{r.code}</div></td>
                       <td className="p-3 font-bold">{r.branchCount}</td>
-                      <td className="p-3 font-mono font-bold">{fmtMoney(r.sales)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.food)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.labor)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.opex)}</td>
-                      <td className="p-3 font-mono">{fmtMoney(r.wastage)}</td>
+                      <td className="tnum text-left p-3 font-bold">{fmtMoney(r.sales)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.food)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.labor)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.opex)}</td>
+                      <td className="tnum text-left p-3">{fmtMoney(r.wastage)}</td>
                       <td className={`p-3 font-mono font-extrabold ${r.net >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(r.net)}</td>
-                      <td className="p-3 font-mono">{r.sales ? `${((r.net / r.sales) * 100).toFixed(2)}%` : '—'}</td>
-                      <td className="p-3 font-mono text-amber-700">{fmtMoney(r.inventoryValue)}</td>
+                      <td className="tnum text-left p-3">{r.sales ? `${((r.net / r.sales) * 100).toFixed(2)}%` : '—'}</td>
+                      <td className="tnum text-left p-3 text-amber-700">{fmtMoney(r.inventoryValue)}</td>
                     </tr>
                   ))}
                   {consolidation.rowsOut.length === 0 && <tr><td colSpan={10} className="p-8 text-center text-slate-500 font-bold">لا توجد شركات — أنشئ الشركات واربط الفروع بها من شاشة "شركات النظام"</td></tr>}

@@ -330,7 +330,7 @@ export const SupplierReturnsView: React.FC = () => {
               {filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} /></td>
-                  <td className="p-3 font-mono font-bold text-primary-700">{r.returnNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-primary-700">{r.returnNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{r.supplierName}</td>
                   <td className="p-3 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
                   <td className="p-3 text-left tnum text-slate-600">{r.date}</td>

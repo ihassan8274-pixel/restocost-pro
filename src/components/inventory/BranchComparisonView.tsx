@@ -143,7 +143,7 @@ export const BranchComparisonView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (
                 <tr key={r.mat.id} className={`hover:bg-slate-50 ${r.anyNeed ? '' : 'opacity-70'}`}>
-                  <td className="p-3 font-mono text-indigo-700">{r.mat.code}</td>
+                  <td className="tnum text-left p-3 text-indigo-700">{r.mat.code}</td>
                   <td className="p-3 font-bold text-slate-900">
                     {r.mat.nameAr}
                     {r.anyCustom && <span className="ml-1 text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">حدود مخصصة</span>}
@@ -162,8 +162,8 @@ export const BranchComparisonView: React.FC = () => {
                       )}
                     </td>
                   ))}
-                  <td className="p-3 font-mono font-extrabold text-indigo-700 bg-emerald-50/40">{r.totalSuggested > 0 ? `${fmt(r.totalSuggested)} ${r.mat.unit}` : '—'}</td>
-                  <td className="p-3 font-mono text-slate-600">{r.totalSuggested > 0 ? fmtMoney(r.value) : '—'}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-indigo-700 bg-emerald-50/40">{r.totalSuggested > 0 ? `${fmt(r.totalSuggested)} ${r.mat.unit}` : '—'}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{r.totalSuggested > 0 ? fmtMoney(r.value) : '—'}</td>
                 </tr>
               ))}
               {rows.length === 0 && (

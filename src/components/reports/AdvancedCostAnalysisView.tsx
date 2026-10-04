@@ -278,18 +278,18 @@ export const AdvancedCostAnalysisView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">الفرع</th><th className="p-2">النظري (من المبيعات)</th><th className="p-2">الفعلي (المستهلك)</th><th className="p-2">الانحراف</th><th className="p-2">الانحراف %</th><th className="p-2">الفعلي من النظري</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {varianceRows.map((r) => (
                     <tr key={r.id} className={r.variance > 0 ? 'bg-rose-50/50' : ''}>
                       <td className="p-2 font-bold">{r.name}</td>
-                      <td className="p-2 font-mono">{fmtMoney(r.theoretical)}</td>
-                      <td className="p-2 font-mono">{fmtMoney(r.actual)}</td>
+                      <td className="tnum text-left p-2">{fmtMoney(r.theoretical)}</td>
+                      <td className="tnum text-left p-2">{fmtMoney(r.actual)}</td>
                       <td className={`p-2 font-mono font-extrabold ${r.variance > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{r.variance > 0 ? '+' : ''}{fmt(r.variance, 0)}</td>
                       <td className={`p-2 font-mono font-extrabold ${r.variance > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{r.variance > 0 ? '+' : ''}{r.variancePct.toFixed(2)}%</td>
-                      <td className="p-2 font-mono">{r.actualPctOfTheoretical.toFixed(2)}%</td>
+                      <td className="tnum text-left p-2">{r.actualPctOfTheoretical.toFixed(2)}%</td>
                     </tr>
                   ))}
                   {varianceRows.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -301,17 +301,17 @@ export const AdvancedCostAnalysisView: React.FC = () => {
             <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><ShieldAlert className="w-4 h-4 text-rose-600" /> مواد باستهلاك زائد عن النظري (مشتبهة)</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">المادة</th><th className="p-2">نظري</th><th className="p-2">فعلي</th><th className="p-2">الفرق</th><th className="p-2">القيمة ر.س</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {matSuspectRows.filter((r) => r.diff > 0.001).slice(0, 15).map((r) => (
                     <tr key={r.name} className="bg-rose-50/40">
                       <td className="p-2 font-bold">{r.name} ({r.unit})</td>
-                      <td className="p-2 font-mono">{fmt(r.theoretical, 2)}</td>
-                      <td className="p-2 font-mono">{fmt(r.actual, 2)}</td>
-                      <td className="p-2 font-mono font-extrabold text-rose-700">+{fmt(r.diff, 2)}</td>
-                      <td className="p-2 font-mono font-extrabold text-rose-700">{fmtMoney(r.value)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.theoretical, 2)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.actual, 2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-rose-700">+{fmt(r.diff, 2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-rose-700">{fmtMoney(r.value)}</td>
                     </tr>
                   ))}
                   {matSuspectRows.filter((r) => r.diff > 0.001).length === 0 && <tr><td colSpan={5} className="p-4 text-center text-emerald-600 font-bold">لا توجد انحرافات — الصرف مطابق للنظري.</td></tr>}
@@ -329,16 +329,16 @@ export const AdvancedCostAnalysisView: React.FC = () => {
             <h3 className="font-bold text-slate-800 text-xs p-3 border-b border-slate-100">سجل أسعار المواد (حسب التغير)</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">المادة</th><th className="p-2">استلامات</th><th className="p-2">أول سعر</th><th className="p-2">آخر سعر</th><th className="p-2">التغير %</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {priceRows.map((p) => (
                     <tr key={p.id} className={p.change > 15 ? 'bg-amber-50/50' : ''}>
                       <td className="p-2 font-bold">{p.name}</td>
-                      <td className="p-2 font-mono">{p.count}</td>
-                      <td className="p-2 font-mono">{p.first.toFixed(2)}</td>
-                      <td className="p-2 font-mono font-extrabold">{p.last.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{p.count}</td>
+                      <td className="tnum text-left p-2">{p.first.toFixed(2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold">{p.last.toFixed(2)}</td>
                       <td className={`p-2 font-mono font-extrabold ${p.change > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{p.change > 0 ? '+' : ''}{p.change.toFixed(2)}%</td>
                     </tr>
                   ))}
@@ -427,20 +427,20 @@ export const AdvancedCostAnalysisView: React.FC = () => {
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                 <tr><th className="p-2">الفرع</th><th className="p-2">الإيراد</th><th className="p-2">العمليات</th><th className="p-2">تكلفة الطعام</th><th className="p-2">العمالة</th><th className="p-2">تشغيلية مباشرة</th><th className="p-2">مخصص مركزي</th><th className="p-2">خدمة / عملية</th><th className="p-2">ربح / عملية</th><th className="p-2">الهامش %</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {serviceRows.map((s) => (
                   <tr key={s.id}>
                     <td className="p-2 font-bold">{s.name}</td>
-                    <td className="p-2 font-mono">{fmtMoney(s.rev)}</td>
-                    <td className="p-2 font-mono">{s.orders}</td>
-                    <td className="p-2 font-mono">{fmtMoney(s.foodCost)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(s.labor)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(s.directOpex)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(s.centralShare)}</td>
-                    <td className="p-2 font-mono font-extrabold text-violet-700">{fmtMoney(s.servicePerOrder)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(s.rev)}</td>
+                    <td className="tnum text-left p-2">{s.orders}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(s.foodCost)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(s.labor)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(s.directOpex)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(s.centralShare)}</td>
+                    <td className="tnum text-left p-2 font-extrabold text-violet-700">{fmtMoney(s.servicePerOrder)}</td>
                     <td className={`p-2 font-mono font-extrabold ${s.profitPerOrder >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(s.profitPerOrder)}</td>
                     <td className={`p-2 font-mono font-extrabold ${s.margin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{s.margin.toFixed(2)}%</td>
                   </tr>

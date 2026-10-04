@@ -271,14 +271,14 @@ export const CostCentersView: React.FC = () => {
                   {rows.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="p-2 font-extrabold text-slate-900">{r.name}</td>
-                      <td className="p-2 font-mono font-bold">{fmt(r.revenue, 0)}</td>
-                      <td className="p-2 font-mono">{fmt(r.foodCost, 0)}</td>
+                      <td className="tnum text-left p-2 font-bold">{fmt(r.revenue, 0)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.foodCost, 0)}</td>
                       <td className={`p-2 font-mono font-bold ${r.fcPct > 35 ? 'text-rose-700' : 'text-emerald-700'}`}>{r.fcPct.toFixed(2)}%</td>
-                      <td className="p-2 font-mono">{fmt(r.labor, 0)}</td>
-                      <td className="p-2 font-mono">{fmt(r.opex, 0)}</td>
-                      <td className="p-2 font-mono text-rose-700">{fmt(r.wastage, 0)}</td>
-                      <td className="p-2 font-mono text-slate-500">{fmt(r.sharedShare, 0)}</td>
-                      <td className="p-2 font-mono font-extrabold">{fmt(r.totalCost, 0)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.labor, 0)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.opex, 0)}</td>
+                      <td className="tnum text-left p-2 text-rose-700">{fmt(r.wastage, 0)}</td>
+                      <td className="tnum text-left p-2 text-slate-500">{fmt(r.sharedShare, 0)}</td>
+                      <td className="tnum text-left p-2 font-extrabold">{fmt(r.totalCost, 0)}</td>
                       <td className={`p-2 font-mono font-extrabold ${r.profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmt(r.profit, 0)}</td>
                       <td className={`p-2 font-mono font-extrabold ${r.margin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{r.margin.toFixed(2)}%</td>
                     </tr>
@@ -302,10 +302,10 @@ export const CostCentersView: React.FC = () => {
                     return (
                       <tr key={r.id} className={!r.coversBreakEven ? 'bg-rose-50/40' : ''}>
                         <td className="p-2 font-bold">{r.name}</td>
-                        <td className="p-2 font-mono">{r.orders}</td>
-                        <td className="p-2 font-mono">{fmt(r.labor + r.opex + r.sharedShare, 0)}</td>
-                        <td className="p-2 font-mono">{varRatio.toFixed(2)}%</td>
-                        <td className="p-2 font-mono font-extrabold">{Number.isFinite(r.breakEven) ? fmt(r.breakEven, 0) : '—'}</td>
+                        <td className="tnum text-left p-2">{r.orders}</td>
+                        <td className="tnum text-left p-2">{fmt(r.labor + r.opex + r.sharedShare, 0)}</td>
+                        <td className="tnum text-left p-2">{varRatio.toFixed(2)}%</td>
+                        <td className="tnum text-left p-2 font-extrabold">{Number.isFinite(r.breakEven) ? fmt(r.breakEven, 0) : '—'}</td>
                         <td className="p-2">
                           {r.coversBreakEven ? <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1">يغطي التعادل ✓</span> : <span className="text-[10px] font-extrabold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1">تحت التعادل</span>}
                         </td>
@@ -423,8 +423,8 @@ export const CostCentersView: React.FC = () => {
                     return (
                       <tr key={r.name} className="hover:bg-slate-50">
                         <td className="p-2 font-bold text-slate-900 flex items-center gap-2">{r.name} {execPct > 110 && <span className="flex items-center gap-1 text-[9px] font-extrabold text-rose-700 bg-rose-100 border border-rose-200 rounded-lg px-1.5 py-0.5"><AlertTriangle className="w-3 h-3" /> تجاوز</span>}</td>
-                        <td className="p-2 font-mono">{fmt(r['الموازنة'], 0)}</td>
-                        <td className="p-2 font-mono font-bold">{fmt(r['الفعلي'], 0)}</td>
+                        <td className="tnum text-left p-2">{fmt(r['الموازنة'], 0)}</td>
+                        <td className="tnum text-left p-2 font-bold">{fmt(r['الفعلي'], 0)}</td>
                         <td className={`p-2 font-mono font-extrabold ${diff > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{diff >= 0 ? '+' : ''}{fmt(diff, 0)}</td>
                         <td className={`p-2 font-mono font-bold ${execPct > 100 ? 'text-rose-700' : 'text-emerald-700'}`}>{execPct.toFixed(2)}%</td>
                       </tr>

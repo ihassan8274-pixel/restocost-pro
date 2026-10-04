@@ -202,7 +202,7 @@ export const PurchaseOrdersView: React.FC = () => {
                 {/* الصف لا يفتح بالنقر — قاعدة النظام: الفتح بزر «تفاصيل» صريح. كان
                     onClick على الصف، فينفتح أثناء سحب النص أو نقر عابر. */}
                 <tr className={`hover:bg-slate-50 ${expandedPo === p.id ? 'bg-primary-50/50' : ''}`}>
-                  <td className="p-3 font-mono font-bold text-primary-700">{p.poNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-primary-700">{p.poNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{p.supplierName}</td>
                   <td className="p-3 text-slate-600">{p.branchId === 'b-ck' ? 'المطبخ المركزي' : p.branchId}</td>
                   <td className="p-3 text-left tnum text-slate-600">{p.orderDate}</td>

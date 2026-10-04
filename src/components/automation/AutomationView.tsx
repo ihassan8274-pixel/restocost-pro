@@ -137,8 +137,8 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
                     <td className="p-3 font-bold text-slate-900">{r.name}</td>
                     <td className="p-3 text-slate-600">{REPORT_LABELS[r.type]}</td>
                     <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{FREQ_LABELS[r.frequency]}</span></td>
-                    <td className="p-3 font-mono text-slate-600">{r.lastRun || '—'}</td>
-                    <td className="p-3 font-mono">{nextRun(r)}</td>
+                    <td className="tnum text-left p-3 text-slate-600">{r.lastRun || '—'}</td>
+                    <td className="tnum text-left p-3">{nextRun(r)}</td>
                     <td className="p-3">
                       <button onClick={() => setScheduledReport(r.id, { enabled: !r.enabled })} className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${r.enabled ? (due ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') : 'bg-slate-100 text-slate-500'}`}>
                         {r.enabled ? (due ? 'مستحق' : 'نشط') : 'موقوف'}

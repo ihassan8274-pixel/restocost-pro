@@ -277,7 +277,7 @@ export const ProfitCenterPLReport: React.FC = () => {
                   <tr key={i} className={`${i === 2 || i === 5 || i === 8 ? 'font-bold bg-slate-50' : ''} ${s.value < 0 && i !== 3 && i !== 4 && i !== 6 && i !== 7 ? '' : ''}`}>
                     <td className="p-2 font-bold text-slate-800">{s.label}</td>
                     <td className={`p-2 text-center font-mono ${s.value >= 0 ? 'text-slate-700' : 'text-rose-600'}`}>{s.value >= 0 ? fmtMoney(s.value) : `(${fmtMoney(-s.value)})`}</td>
-                    <td className="p-2 text-center font-mono text-amber-700">{s.pct != null ? `${s.pct.toFixed(1)}%` : '—'}</td>
+                    <td className="tnum p-2 text-left text-amber-700">{s.pct != null ? `${s.pct.toFixed(1)}%` : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -332,28 +332,28 @@ export const ProfitCenterPLReport: React.FC = () => {
               {activeCenters.map((c, i) => (
                 <tr key={c.center + periodValue} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{c.centerName}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(c.net)}</td>
-                  <td className="p-2 text-center font-mono text-amber-700">{c.net > 0 ? ((c.food / c.net) * 100).toFixed(1) : 0}%</td>
-                  <td className="p-2 text-center font-mono text-indigo-700">{c.cmPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(c.labor)}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(c.opex)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(c.net)}</td>
+                  <td className="tnum p-2 text-left text-amber-700">{c.net > 0 ? ((c.food / c.net) * 100).toFixed(1) : 0}%</td>
+                  <td className="tnum p-2 text-left text-indigo-700">{c.cmPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(c.labor)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(c.opex)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${posNeg(c.profit)}`}>{fmtMoney(c.profit)}</td>
                   <td className={`p-2 text-center font-mono ${posNeg(c.profitPct)}`}>{c.profitPct.toFixed(1)}%</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{c.beOk ? fmtMoney(c.breakEven) : '—'}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{c.beOk ? fmtMoney(c.breakEven) : '—'}</td>
                   <td className={`p-2 text-center font-mono ${c.safety >= 20 ? 'text-emerald-600' : c.safety >= 10 ? 'text-amber-600' : 'text-rose-600'}`}>{c.safety.toFixed(1)}%</td>
                 </tr>
               ))}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">{centers[0].centerName}</td>
-                <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(centers[0].net)}</td>
-                <td className="p-2 text-center font-mono text-lg text-amber-700">{centers[0].net > 0 ? ((centers[0].food / centers[0].net) * 100).toFixed(1) : 0}%</td>
-                <td className="p-2 text-center font-mono">{centers[0].cmPct.toFixed(1)}%</td>
-                <td className="p-2 text-center font-mono">{fmtMoney(centers[0].labor)}</td>
-                <td className="p-2 text-center font-mono">{fmtMoney(centers[0].opex)}</td>
+                <td className="tnum p-2 text-left text-blue-700">{fmtMoney(centers[0].net)}</td>
+                <td className="tnum p-2 text-left text-lg text-amber-700">{centers[0].net > 0 ? ((centers[0].food / centers[0].net) * 100).toFixed(1) : 0}%</td>
+                <td className="tnum p-2 text-left">{centers[0].cmPct.toFixed(1)}%</td>
+                <td className="tnum p-2 text-left">{fmtMoney(centers[0].labor)}</td>
+                <td className="tnum p-2 text-left">{fmtMoney(centers[0].opex)}</td>
                 <td className={`p-2 text-center font-mono text-lg ${posNeg(centers[0].profit)}`}>{fmtMoney(centers[0].profit)}</td>
                 <td className={`p-2 text-center font-mono text-lg ${posNeg(centers[0].profitPct)}`}>{centers[0].profitPct.toFixed(1)}%</td>
-                <td className="p-2 text-center font-mono text-slate-600">{centers[0].beOk ? fmtMoney(centers[0].breakEven) : '—'}</td>
-                <td className="p-2 text-center font-mono">{centers[0].safety.toFixed(1)}%</td>
+                <td className="tnum p-2 text-left text-slate-600">{centers[0].beOk ? fmtMoney(centers[0].breakEven) : '—'}</td>
+                <td className="tnum p-2 text-left">{centers[0].safety.toFixed(1)}%</td>
               </tr>
             </tbody>
           </table>

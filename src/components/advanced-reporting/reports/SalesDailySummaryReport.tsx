@@ -224,13 +224,13 @@ export const SalesDailySummaryReport: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((r, i) => (
                 <tr key={r.date} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-2 font-bold text-slate-800 font-mono">{r.date}</td>
-                  <td className="p-2 text-center font-mono">{r.records}</td>
-                  <td className="p-2 text-center font-mono">{fmtMoney(r.gross)}</td>
-                  <td className="p-2 text-center font-mono text-slate-400">{fmtMoney(r.vat)}</td>
-                  <td className="p-2 text-center font-mono font-bold text-emerald-700">{fmtMoney(r.net)}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{fmtMoney(r.avgPerRecord)}</td>
-                  <td className="p-2 text-center font-mono text-rose-600">{fmtMoney(r.foodCost)}</td>
+                  <td className="tnum text-left p-2 font-bold text-slate-800">{r.date}</td>
+                  <td className="tnum p-2 text-left">{r.records}</td>
+                  <td className="tnum p-2 text-left">{fmtMoney(r.gross)}</td>
+                  <td className="tnum p-2 text-left text-slate-400">{fmtMoney(r.vat)}</td>
+                  <td className="tnum p-2 text-left font-bold text-emerald-700">{fmtMoney(r.net)}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{fmtMoney(r.avgPerRecord)}</td>
+                  <td className="tnum p-2 text-left text-rose-600">{fmtMoney(r.foodCost)}</td>
                   <td className="p-2 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.foodPct > 35 ? 'bg-rose-100 text-rose-700' : r.foodPct > 32 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
                       {r.foodPct.toFixed(1)}%

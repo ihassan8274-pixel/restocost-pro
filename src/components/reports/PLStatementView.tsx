@@ -177,12 +177,12 @@ export const PLStatementView: React.FC = () => {
                 <tr key={b.branchId} className={`border-b border-slate-50 hover:bg-slate-50 ${i === 0 ? 'bg-amber-50/60' : ''}`}>
                   <td className="p-2"><span className={`w-6 h-6 inline-flex items-center justify-center rounded-lg font-extrabold ${i === 0 ? 'bg-amber-400 text-white' : 'bg-slate-100 text-slate-600'}`}>{i + 1}</span></td>
                   <td className="p-2 font-bold text-slate-800">{b.branchName}</td>
-                  <td className="p-2 font-mono font-bold text-indigo-700">{fmt(b.totalSales)}</td>
-                  <td className="p-2 font-mono font-bold text-rose-600">{b.foodCostPercent.toFixed(2)}%</td>
-                  <td className="p-2 font-mono font-bold text-amber-700">{b.laborCostPercent.toFixed(2)}%</td>
-                  <td className="p-2 font-mono font-bold text-slate-600">{fmt(b.operatingExpenses)}</td>
-                  <td className="p-2 font-mono font-bold text-emerald-700">{fmt(b.netProfit)}</td>
-                  <td className="p-2 font-mono font-bold text-slate-900">{b.netProfitPercent.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(b.totalSales)}</td>
+                  <td className="tnum text-left p-2 font-bold text-rose-600">{b.foodCostPercent.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 font-bold text-amber-700">{b.laborCostPercent.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 font-bold text-slate-600">{fmt(b.operatingExpenses)}</td>
+                  <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(b.netProfit)}</td>
+                  <td className="tnum text-left p-2 font-bold text-slate-900">{b.netProfitPercent.toFixed(2)}%</td>
                 </tr>
               ))}
               {branchRows.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-slate-500 font-bold">لا توجد بيانات لهذه الفترة</td></tr>}

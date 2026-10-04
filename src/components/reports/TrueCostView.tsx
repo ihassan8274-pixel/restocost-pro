@@ -425,22 +425,22 @@ export const TrueCostView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">الصنف</th><th className="p-2">السعر</th><th className="p-2">تكلفة طعام</th><th className="p-2">إجمالية</th><th className="p-2">كاملة (خدمة)</th><th className="p-2">FC %</th><th className="p-2">هامش كامل %</th><th className="p-2">المستهدف %</th><th className="p-2">كميات</th><th className="p-2">مساهمة</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {absorptionRows.map((r) => (
                     <tr key={r.id} className={r.fullMargin < 0 ? 'bg-rose-50/50' : ''}>
                       <td className="p-2 font-bold">{r.name}</td>
-                      <td className="p-2 font-mono">{r.price.toFixed(2)}</td>
-                      <td className="p-2 font-mono">{r.unitFood.toFixed(2)}</td>
-                      <td className="p-2 font-mono">{r.unitTotal.toFixed(2)}</td>
-                      <td className="p-2 font-mono font-extrabold text-violet-700">{r.unitFull.toFixed(2)}</td>
-                      <td className="p-2 font-mono">{((r.unitFood / r.price) * 100).toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{r.price.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{r.unitFood.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{r.unitTotal.toFixed(2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-violet-700">{r.unitFull.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{((r.unitFood / r.price) * 100).toFixed(2)}</td>
                       <td className={`p-2 font-mono font-extrabold ${r.fullMargin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{r.fullMargin.toFixed(2)}</td>
-                      <td className="p-2 font-mono">{r.targetFc.toFixed(2)}</td>
-                      <td className="p-2 font-mono">{fmt(r.qty)}</td>
-                      <td className="p-2 font-mono font-extrabold text-indigo-700">{fmtMoney(r.totalContrib)}</td>
+                      <td className="tnum text-left p-2">{r.targetFc.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.qty)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmtMoney(r.totalContrib)}</td>
                     </tr>
                   ))}
                   {absorptionRows.length === 0 && <tr><td colSpan={10} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -455,21 +455,21 @@ export const TrueCostView: React.FC = () => {
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                 <tr><th className="p-2">الدفعة</th><th className="p-2">التاريخ</th><th className="p-2">الكمية</th><th className="p-2">تكلفة فعلية</th><th className="p-2">معيارية</th><th className="p-2">الانحراف</th><th className="p-2">الانحراف %</th><th className="p-2">فعلية / وحدة</th><th className="p-2">معيارية / وحدة</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {batchRows.map((b) => (
                   <tr key={b.id} className={b.variance > 0 ? 'bg-amber-50/50' : ''}>
                     <td className="p-2 font-bold">{b.name}</td>
-                    <td className="p-2 font-mono">{b.date}</td>
-                    <td className="p-2 font-mono">{fmt(b.batchSize)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(b.actual)}</td>
-                    <td className="p-2 font-mono">{fmtMoney(b.stdFoodCost)}</td>
+                    <td className="tnum text-left p-2">{b.date}</td>
+                    <td className="tnum text-left p-2">{fmt(b.batchSize)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(b.actual)}</td>
+                    <td className="tnum text-left p-2">{fmtMoney(b.stdFoodCost)}</td>
                     <td className={`p-2 font-mono font-extrabold ${b.variance > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{b.variance > 0 ? '+' : ''}{fmt(b.variance, 0)}</td>
                     <td className={`p-2 font-mono font-extrabold ${b.variance > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{b.variance > 0 ? '+' : ''}{b.variancePct.toFixed(2)}%</td>
-                    <td className="p-2 font-mono">{b.actualPerUnit.toFixed(2)}</td>
-                    <td className="p-2 font-mono">{b.stdPerUnit.toFixed(2)}</td>
+                    <td className="tnum text-left p-2">{b.actualPerUnit.toFixed(2)}</td>
+                    <td className="tnum text-left p-2">{b.stdPerUnit.toFixed(2)}</td>
                   </tr>
                 ))}
                 {batchRows.length === 0 && <tr><td colSpan={9} className="p-4 text-center text-slate-400">لا توجد دفعات إنتاج مسجلة</td></tr>}
@@ -498,20 +498,20 @@ export const TrueCostView: React.FC = () => {
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">المادة</th><th className="p-2">الاستهلاك اليومي</th><th className="p-2">المتاح</th><th className="p-2">أوامر مفتوحة</th><th className="p-2">أمان</th><th className="p-2">المقترح</th><th className="p-2">أفضل مورد</th><th className="p-2">متوسط التكلفة</th><th className="p-2">إجراء</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {reorderRows.slice(0, 40).map((r) => (
                     <tr key={r.id} className={r.suggested > 0 ? 'bg-amber-50/50' : ''}>
                       <td className="p-2 font-bold">{r.name}</td>
-                      <td className="p-2 font-mono">{r.daily.toFixed(2)}</td>
-                      <td className="p-2 font-mono">{fmt(r.available, 1)}</td>
-                      <td className="p-2 font-mono">{fmt(r.openPO, 1)}</td>
-                      <td className="p-2 font-mono">{fmt(r.safety, 1)}</td>
-                      <td className="p-2 font-mono font-extrabold text-amber-700">{r.suggested > 0 ? `${fmt(r.suggested, 1)} ${r.unit}` : '—'}</td>
+                      <td className="tnum text-left p-2">{r.daily.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.available, 1)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.openPO, 1)}</td>
+                      <td className="tnum text-left p-2">{fmt(r.safety, 1)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-amber-700">{r.suggested > 0 ? `${fmt(r.suggested, 1)} ${r.unit}` : '—'}</td>
                       <td className="p-2 font-bold">{r.bestSupplier} {r.supplierRating > 0 ? `(${r.supplierRating}★)` : ''}</td>
-                      <td className="p-2 font-mono">{r.avgCost.toFixed(2)}</td>
+                      <td className="tnum text-left p-2">{r.avgCost.toFixed(2)}</td>
                       <td className="p-2">{r.suggested > 0 && <button onClick={() => createPO([r])} className="text-[10px] px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold"><PlusCircle className="w-3 h-3 inline ml-1" />PO</button>}</td>
                     </tr>
                   ))}
@@ -612,18 +612,18 @@ export const TrueCostView: React.FC = () => {
             <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs p-3 border-b border-slate-100"><Handshake className="w-4 h-4 text-indigo-600" /> تحليل الموردين</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                   <tr><th className="p-2">المورد</th><th className="p-2">مشتريات</th><th className="p-2">استلامات</th><th className="p-2">تغير أسعار</th><th className="p-2">تقييم</th><th className="p-2">سداد (أيام)</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {supplierRows.map((s) => (
                     <tr key={s.id} className={s.change > 15 ? 'bg-rose-50/50' : ''}>
                       <td className="p-2 font-bold">{s.name}</td>
-                      <td className="p-2 font-mono font-extrabold">{fmtMoney(s.spend)}</td>
-                      <td className="p-2 font-mono">{s.count}</td>
+                      <td className="tnum text-left p-2 font-extrabold">{fmtMoney(s.spend)}</td>
+                      <td className="tnum text-left p-2">{s.count}</td>
                       <td className={`p-2 font-mono font-extrabold ${s.change > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{s.change > 0 ? '+' : ''}{s.change.toFixed(2)}%</td>
-                      <td className="p-2 font-mono">{s.rating}★</td>
-                      <td className="p-2 font-mono">{s.terms}</td>
+                      <td className="tnum text-left p-2">{s.rating}★</td>
+                      <td className="tnum text-left p-2">{s.terms}</td>
                     </tr>
                   ))}
                   {supplierRows.length === 0 && <tr><td colSpan={6} className="p-4 text-center text-slate-400">لا توجد مشتريات</td></tr>}

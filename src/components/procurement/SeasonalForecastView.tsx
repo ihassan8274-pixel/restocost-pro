@@ -286,9 +286,9 @@ export const SeasonalForecastView: React.FC = () => {
               {topForecast.map((t) => (
                 <tr key={t.id} className="hover:bg-slate-50">
                   <td className="p-3 font-bold text-slate-800">{t.name}</td>
-                  <td className="p-3 font-mono font-extrabold text-emerald-700">{fmt(Math.round(t.qty), 0)} طبق</td>
-                  <td className="p-3 font-mono text-slate-600">{fmt(Math.max(1, Math.round(t.qty / daysToCoverage)), 0)} طبق/يوم</td>
-                  <td className="p-3 font-mono text-slate-600">{coverageDate}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-emerald-700">{fmt(Math.round(t.qty), 0)} طبق</td>
+                  <td className="tnum text-left p-3 text-slate-600">{fmt(Math.max(1, Math.round(t.qty / daysToCoverage)), 0)} طبق/يوم</td>
+                  <td className="tnum text-left p-3 text-slate-600">{coverageDate}</td>
                   <td className="p-3"><span className="text-[10px] font-bold text-slate-600 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">تنبؤ كمّي</span></td>
                 </tr>
               ))}
@@ -328,16 +328,16 @@ export const SeasonalForecastView: React.FC = () => {
                     <div className="font-bold text-slate-800">{r.material.nameAr}</div>
                     <div className="text-[10px] text-slate-400 font-mono">{r.material.code}</div>
                   </td>
-                  <td className="p-3 font-mono font-extrabold text-emerald-700">{fmt(r.demand, 1)} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
-                  <td className="p-3 font-mono text-slate-600">{fmt(r.onHand, 1)}</td>
-                  <td className="p-3 font-mono text-slate-600">{fmt(r.onOrder, 1)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-emerald-700">{fmt(r.demand, 1)} <span className="text-[10px] text-slate-400">{r.material.unit}</span></td>
+                  <td className="tnum text-left p-3 text-slate-600">{fmt(r.onHand, 1)}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{fmt(r.onOrder, 1)}</td>
                   <td className={`p-3 font-mono font-extrabold ${effQty(r) > 0 ? 'text-amber-700' : 'text-slate-400'}`}>{effQty(r) > 0 ? `${fmt(effQty(r), 0)} ${r.material.unit}` : 'مغطى'}</td>
                   {smartMode && <td className="p-3 text-center">
                     <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${r.peakFactor > 1.3 ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>× {r.peakFactor}</span>
                     {r.peakFactor > 1.3 && <span className="block text-[9px] text-slate-400 font-bold mt-0.5">ذروة واضحة</span>}
                   </td>}
-                  <td className="p-3 font-mono text-slate-600">{effPurchaseUnits(r) > 0 ? `${fmt(effPurchaseUnits(r), 0)} ${r.material.purchaseUnit || '×'}` : '—'}</td>
-                  <td className="p-3 font-mono font-bold text-slate-800">{fmt(poCost(r))}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{effPurchaseUnits(r) > 0 ? `${fmt(effPurchaseUnits(r), 0)} ${r.material.purchaseUnit || '×'}` : '—'}</td>
+                  <td className="tnum text-left p-3 font-bold text-slate-800">{fmt(poCost(r))}</td>
                   <td className="p-3">
                     <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{r.demandSource} وصفة · {r.topRecipe}</span>
                   </td>

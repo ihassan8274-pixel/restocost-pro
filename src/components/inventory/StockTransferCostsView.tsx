@@ -97,10 +97,10 @@ export const StockTransferCostsView: React.FC = () => {
             <tbody className="divide-y divide-slate-50">
               {list.map((t) => (
                 <tr key={t.id} className="hover:bg-slate-50">
-                  <td className="p-2 font-mono font-bold text-slate-800 whitespace-nowrap">{String(t.date).slice(0, 10)}</td>
+                  <td className="tnum text-left p-2 font-bold text-slate-800 whitespace-nowrap">{String(t.date).slice(0, 10)}</td>
                   <td className="p-2 font-bold"><ArrowRightLeft className="w-3.5 h-3.5 inline text-slate-400" /> {getBranchName(t.fromBranchId)} ← {getBranchName(t.toBranchId)}</td>
                   <td className="p-2"><StatusPill status={t.status} map={{ draft: 'مسودة', submitted: 'مقدمة', approved: 'معتمدة', rejected: 'مرفوضة' }} /></td>
-                  <td className="p-2 font-mono">{t.items?.reduce((s, i) => s + i.quantity, 0) || 0}</td>
+                  <td className="tnum text-left p-2">{t.items?.reduce((s, i) => s + i.quantity, 0) || 0}</td>
                   <td className={`p-2 font-mono font-black ${Number(t.transportCost) > 0 ? 'text-indigo-700' : 'text-slate-400'}`}>{t.transportCost ? fmtMoney(Number(t.transportCost)) : '—'}</td>
                   <td className="p-2 text-slate-500 font-bold">{t.transportNote || '—'}</td>
                   <td className="p-2 text-slate-500 font-bold">{t.approvedBy || '—'}</td>

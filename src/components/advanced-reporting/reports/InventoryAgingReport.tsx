@@ -265,10 +265,10 @@ export const InventoryAgingReport: React.FC = () => {
                 <tr key={r.materialId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.name}</td>
                   <td className="p-2 text-center text-slate-500">{r.category}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{r.lastActivity}</td>
-                  <td className="p-2 text-center font-mono font-bold">{r.age >= 999 ? '∞' : fmt(r.age, 0)}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmt(r.ending)} {r.unit}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.value)}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{r.lastActivity}</td>
+                  <td className="tnum p-2 text-left font-bold">{r.age >= 999 ? '∞' : fmt(r.age, 0)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmt(r.ending)} {r.unit}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.value)}</td>
                   <td className="p-2 text-center">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ backgroundColor: BUCKETS[r.bucket].color + '22', color: BUCKETS[r.bucket].color }}>
                       {BUCKETS[r.bucket].label}

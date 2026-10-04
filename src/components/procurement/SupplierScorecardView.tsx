@@ -168,11 +168,11 @@ export const SupplierScorecardView: React.FC = () => {
                     <p className="font-bold text-slate-800">{r.name}</p>
                     <p className="text-[10px] text-slate-400 font-medium">{r.contactPerson} — {r.phone}</p>
                   </td>
-                  <td className="p-2 font-mono text-slate-600">{r.grnCount} / {r.poCount} PO</td>
-                  <td className="p-2 font-mono font-bold text-slate-700">{fmt(r.totalAmount)} ر.س</td>
-                  <td className="p-2 font-mono font-bold text-emerald-700">{r.quality === null ? '—' : `${fmt(r.quality, 1)}%`}</td>
-                  <td className="p-2 font-mono font-bold text-sky-700">{r.onTime === null ? '—' : `${fmt(r.onTime, 1)}%`}</td>
-                  <td className="p-2 font-mono font-bold text-indigo-700">{r.accuracy === null ? '—' : `${fmt(r.accuracy, 1)}%`}</td>
+                  <td className="tnum text-left p-2 text-slate-600">{r.grnCount} / {r.poCount} PO</td>
+                  <td className="tnum text-left p-2 font-bold text-slate-700">{fmt(r.totalAmount)} ر.س</td>
+                  <td className="tnum text-left p-2 font-bold text-emerald-700">{r.quality === null ? '—' : `${fmt(r.quality, 1)}%`}</td>
+                  <td className="tnum text-left p-2 font-bold text-sky-700">{r.onTime === null ? '—' : `${fmt(r.onTime, 1)}%`}</td>
+                  <td className="tnum text-left p-2 font-bold text-indigo-700">{r.accuracy === null ? '—' : `${fmt(r.accuracy, 1)}%`}</td>
                   <td className={`p-2 font-mono font-bold ${r.priceDev === null ? 'text-slate-400' : (r.priceDev || 0) > 0.001 ? 'text-rose-600' : 'text-emerald-700'}`}>{r.priceDev === null ? '—' : `${(r.priceDev! * 100).toFixed(2)}%`}</td>
                   <td className="p-2">
                     <div className="flex items-center gap-2">

@@ -249,16 +249,16 @@ export const ApAgingReport: React.FC = () => {
                 {bucketRows.map((b, i) => (
                   <tr key={b.bucket} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{b.bucket}</td>
-                    <td className="p-2 text-center font-mono">{b.count}</td>
+                    <td className="tnum p-2 text-left">{b.count}</td>
                     <td className={`p-2 text-center font-mono ${i === 0 ? 'text-emerald-700' : i === 4 ? 'text-rose-600 font-bold' : 'text-slate-700'}`}>{fmtMoney(b.amount)}</td>
-                    <td className="p-2 text-center font-mono">{totalAp > 0 ? ((b.amount / totalAp) * 100).toFixed(1) : 0}%</td>
+                    <td className="tnum p-2 text-left">{totalAp > 0 ? ((b.amount / totalAp) * 100).toFixed(1) : 0}%</td>
                   </tr>
                 ))}
                 <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
-                  <td className="p-2 text-center font-mono">{lines.length}</td>
-                  <td className="p-2 text-center font-mono text-lg">{fmtMoney(totalAp)}</td>
-                  <td className="p-2 text-center font-mono">100%</td>
+                  <td className="tnum p-2 text-left">{lines.length}</td>
+                  <td className="tnum p-2 text-left text-lg">{fmtMoney(totalAp)}</td>
+                  <td className="tnum p-2 text-left">100%</td>
                 </tr>
               </tbody>
             </table>
@@ -282,9 +282,9 @@ export const ApAgingReport: React.FC = () => {
                 {supplierRows.map((s, i) => (
                   <tr key={s.name} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{s.name}</td>
-                    <td className="p-2 text-center font-mono">{s.count}</td>
-                    <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(s.amount)}</td>
-                    <td className="p-2 text-center font-mono text-slate-500 text-[10px]">{s.dueDate}</td>
+                    <td className="tnum p-2 text-left">{s.count}</td>
+                    <td className="tnum p-2 text-left text-blue-700">{fmtMoney(s.amount)}</td>
+                    <td className="tnum p-2 text-left text-slate-500 text-[10px]">{s.dueDate}</td>
                     <td className={`p-2 text-center font-mono ${s.oldest > 60 ? 'text-rose-600 font-bold' : 'text-slate-600'}`}>{s.oldest} يوم</td>
                   </tr>
                 ))}
@@ -318,12 +318,12 @@ export const ApAgingReport: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {lines.map((l, i) => (
                 <tr key={l.grn} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                  <td className="p-2 font-mono text-blue-600 text-[10px]">{l.grnNumber}</td>
+                  <td className="tnum text-left p-2 text-blue-600 text-[10px]">{l.grnNumber}</td>
                   <td className="p-2 text-center font-bold text-slate-800">{l.supplierName}</td>
                   <td className="p-2 text-center">{l.branchName}</td>
-                  <td className="p-2 text-center font-mono text-slate-500 text-[10px]">{l.invoiceDate}</td>
-                  <td className="p-2 text-center font-mono text-slate-500 text-[10px]">{l.dueDate}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(l.amount)}</td>
+                  <td className="tnum p-2 text-left text-slate-500 text-[10px]">{l.invoiceDate}</td>
+                  <td className="tnum p-2 text-left text-slate-500 text-[10px]">{l.dueDate}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(l.amount)}</td>
                   <td className={`p-2 text-center font-mono ${l.overdueDays > 60 ? 'text-rose-600 font-bold' : l.overdueDays > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{l.overdueDays} يوم</td>
                   <td className="p-2 text-center text-slate-600">{l.bucket}</td>
                 </tr>

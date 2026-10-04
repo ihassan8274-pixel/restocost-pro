@@ -165,14 +165,14 @@ export const InventoryValuationView: React.FC = () => {
               <tbody>
                 {valuation.map((r) => (
                   <tr key={r.m.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="p-2 font-mono font-bold text-indigo-700">{r.m.code}</td>
+                    <td className="tnum text-left p-2 font-bold text-indigo-700">{r.m.code}</td>
                     <td className="p-2 font-bold text-slate-800">{r.m.nameAr}</td>
-                    <td className="p-2 font-mono text-slate-800">{fmt(r.currentQty, 2)} {r.m.unit}</td>
-                    <td className="p-2 font-mono text-slate-500">{fmt(r.totalReceived, 2)}</td>
-                    <td className="p-2 font-mono text-indigo-700">{fmt(r.avgCost, 2)}</td>
-                    <td className="p-2 font-mono text-indigo-700">{fmt(r.avgValue, 2)}</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmt(r.fifoCost, 2)}</td>
-                    <td className="p-2 font-mono text-emerald-700">{fmt(r.fifoValue, 2)}</td>
+                    <td className="tnum text-left p-2 text-slate-800">{fmt(r.currentQty, 2)} {r.m.unit}</td>
+                    <td className="tnum text-left p-2 text-slate-500">{fmt(r.totalReceived, 2)}</td>
+                    <td className="tnum text-left p-2 text-indigo-700">{fmt(r.avgCost, 2)}</td>
+                    <td className="tnum text-left p-2 text-indigo-700">{fmt(r.avgValue, 2)}</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmt(r.fifoCost, 2)}</td>
+                    <td className="tnum text-left p-2 text-emerald-700">{fmt(r.fifoValue, 2)}</td>
                     <td className={`p-2 font-mono font-bold ${r.diff < -0.001 ? 'text-rose-600' : r.diff > 0.001 ? 'text-amber-600' : 'text-slate-400'}`}>{fmt(r.diff, 2)}</td>
                   </tr>
                 ))}
@@ -217,11 +217,11 @@ export const InventoryValuationView: React.FC = () => {
                 <tbody>
                   {layerDetail.all.map((l, i) => (
                     <tr key={i} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="p-2 font-mono text-slate-600">{l.date}</td>
+                      <td className="tnum text-left p-2 text-slate-600">{l.date}</td>
                       <td className="p-2 font-bold text-slate-700">{l.ref}</td>
-                      <td className="p-2 font-mono font-bold text-slate-800">{fmt(l.qty, 2)}</td>
-                      <td className="p-2 font-mono text-indigo-700">{fmt(l.price, 2)}</td>
-                      <td className="p-2 font-mono text-slate-700">{fmt(l.qty * l.price, 2)}</td>
+                      <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(l.qty, 2)}</td>
+                      <td className="tnum text-left p-2 text-indigo-700">{fmt(l.price, 2)}</td>
+                      <td className="tnum text-left p-2 text-slate-700">{fmt(l.qty * l.price, 2)}</td>
                     </tr>
                   ))}
                   {layerDetail.all.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-500 font-bold">لا توجد استلامات لهذا الصنف في النطاق المحدد</td></tr>}

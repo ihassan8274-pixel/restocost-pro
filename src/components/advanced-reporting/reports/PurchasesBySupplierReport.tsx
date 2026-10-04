@@ -227,12 +227,12 @@ export const PurchasesBySupplierReport: React.FC = () => {
               {rows.map((r, i) => (
                 <tr key={r.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.name}</td>
-                  <td className="p-2 text-center font-mono">{r.count}</td>
-                  <td className="p-2 text-center font-mono font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
-                  <td className="p-2 text-center font-mono text-slate-400">{fmtMoney(r.vat)}</td>
-                  <td className="p-2 text-center font-mono text-slate-600">{fmtMoney(r.net)}</td>
-                  <td className="p-2 text-center font-mono text-slate-500">{fmtMoney(r.avgPerNote)}</td>
-                  <td className="p-2 text-center font-mono">{r.uniqueMaterials}</td>
+                  <td className="tnum p-2 text-left">{r.count}</td>
+                  <td className="tnum p-2 text-left font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
+                  <td className="tnum p-2 text-left text-slate-400">{fmtMoney(r.vat)}</td>
+                  <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.net)}</td>
+                  <td className="tnum p-2 text-left text-slate-500">{fmtMoney(r.avgPerNote)}</td>
+                  <td className="tnum p-2 text-left">{r.uniqueMaterials}</td>
                   <td className="p-2 text-center">
                     <div className="flex items-center gap-1">
                       <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">

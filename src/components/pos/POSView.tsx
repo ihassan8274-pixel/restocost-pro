@@ -256,12 +256,12 @@ export const POSView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {recent.map((o) => (
                 <tr key={o.id} className="hover:bg-slate-50">
-                  <td className="p-2 font-mono font-bold text-indigo-700">{o.orderNumber}</td>
+                  <td className="tnum text-left p-2 font-bold text-indigo-700">{o.orderNumber}</td>
                   <td className="p-2 text-slate-600">{o.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(o.branchId)}</td>
                   <td className="p-2">{TYPE_LABEL[o.orderType]}</td>
-                  <td className="p-2 font-mono text-slate-500">{new Date(o.date).toLocaleString('ar-SA-u-nu-latn')}</td>
+                  <td className="tnum text-left p-2 text-slate-500">{new Date(o.date).toLocaleString('ar-SA-u-nu-latn')}</td>
                   <td className="p-2 font-bold">{o.items.reduce((s, i) => s + i.quantity, 0)}</td>
-                  <td className="p-2 font-mono font-extrabold">{fmtMoney(o.totalAmount)}</td>
+                  <td className="tnum text-left p-2 font-extrabold">{fmtMoney(o.totalAmount)}</td>
                   <td className="p-2">
                     <div className="flex gap-1">
                       <button onClick={() => printInvoice(o)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة الفاتورة"><Printer className="w-4 h-4" /></button>

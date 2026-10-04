@@ -166,7 +166,7 @@ export const CustomerOrderView: React.FC = () => {
               <h3 className="font-extrabold">فاتورة {placed.orderNumber} — {placed.branchName}</h3>
               <table className="w-full text-right text-xs">
                 <thead><tr className="bg-slate-100"><th className="p-2">الصنف</th><th className="p-2">كمية</th><th className="p-2">الإجمالي</th></tr></thead>
-                <tbody className="divide-y">{placed.items.map((i) => <tr key={i.recipeId}><td className="p-2 font-bold">{i.nameAr}</td><td className="p-2 font-mono">{i.quantity}</td><td className="p-2 font-mono">{fmt(i.lineTotal, 2)}</td></tr>)}</tbody>
+                <tbody className="divide-y">{placed.items.map((i) => <tr key={i.recipeId}><td className="p-2 font-bold">{i.nameAr}</td><td className="tnum text-left p-2">{i.quantity}</td><td className="tnum text-left p-2">{fmt(i.lineTotal, 2)}</td></tr>)}</tbody>
               </table>
               <div className="text-left font-bold text-sm space-y-0.5">
                 <div>الصافي: {fmtMoney(placed.netTotal)}</div>
@@ -228,12 +228,12 @@ export const BranchOrdersMonitorView: React.FC<{ onNavigate?: (t: string) => voi
           <tbody className="divide-y">
             {rows.map((o) => (
               <tr key={o.id} className={o.status === 'new' ? 'bg-amber-50/60' : ''}>
-                <td className="p-2.5 font-mono font-bold text-indigo-700">{o.orderNumber}</td>
-                <td className="p-2.5 font-mono">{o.createdAt.slice(11, 16)}</td>
+                <td className="tnum text-left p-2.5 font-bold text-indigo-700">{o.orderNumber}</td>
+                <td className="tnum text-left p-2.5">{o.createdAt.slice(11, 16)}</td>
                 <td className="p-2.5">{branches.find((b) => b.id === o.branchId)?.nameAr || o.branchName}</td>
                 <td className="p-2.5">{o.customerName || '-'}<br /><span className="font-mono text-[10px] text-slate-400">{o.customerPhone}</span></td>
                 <td className="p-2.5">{o.items.map((i) => `${i.nameAr} ×${i.quantity}`).join('، ')}</td>
-                <td className="p-2.5 font-mono font-bold">{fmtMoney(o.totalGross)}</td>
+                <td className="tnum text-left p-2.5 font-bold">{fmtMoney(o.totalGross)}</td>
                 <td className="p-2.5"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${o.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : o.status === 'new' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100'}`}>{o.status === 'paid' ? `مدفوع • ${o.paymentMethod}` : o.status === 'confirmed' ? 'مؤكد' : <span className="inline-flex items-center gap-1"><Bell className="w-3 h-3" /> جديد</span>}</span></td>
                 <td className="p-2.5"><div className="flex gap-1">
                   <button onClick={() => printCustomerOrder(o)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>

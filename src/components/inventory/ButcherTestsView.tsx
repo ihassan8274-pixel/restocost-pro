@@ -164,15 +164,15 @@ export const ButcherTestsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {butcherTests.map((t) => (
                 <tr key={t.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-mono text-slate-600">{t.date}</td>
+                  <td className="tnum text-left p-3 text-slate-600">{t.date}</td>
                   <td className="p-3 font-bold text-slate-900">{t.rawMaterialName}</td>
                   <td className="p-3 text-slate-600">{getBranchName(t.branchId)}</td>
-                  <td className="p-3 font-mono">{fmt(t.grossWeight, 2)}</td>
-                  <td className="p-3 font-mono text-emerald-700">{fmt(t.usableWeight, 2)}</td>
-                  <td className="p-3 font-mono text-rose-700">{fmt(t.wasteWeight, 2)}</td>
-                  <td className="p-3 font-mono font-bold text-amber-700">{fmt(t.yieldPercent, 2)}%</td>
-                  <td className="p-3 font-mono text-amber-600">{fmtMoney(t.pricePerKg)}</td>
-                  <td className="p-3 font-mono font-extrabold text-indigo-700">{fmtMoney(t.costPerUsableKg)}</td>
+                  <td className="tnum text-left p-3">{fmt(t.grossWeight, 2)}</td>
+                  <td className="tnum text-left p-3 text-emerald-700">{fmt(t.usableWeight, 2)}</td>
+                  <td className="tnum text-left p-3 text-rose-700">{fmt(t.wasteWeight, 2)}</td>
+                  <td className="tnum text-left p-3 font-bold text-amber-700">{fmt(t.yieldPercent, 2)}%</td>
+                  <td className="tnum text-left p-3 text-amber-600">{fmtMoney(t.pricePerKg)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-indigo-700">{fmtMoney(t.costPerUsableKg)}</td>
                   <td className="p-3">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.posted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                       {t.posted ? 'مرحّل' : 'مسودة'}

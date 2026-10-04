@@ -160,7 +160,7 @@ export const IntakeVerificationView: React.FC = () => {
                 const isRaised = e.status === 'raised';
                 return (
                   <tr key={e.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{e.id.replace('inb-', '')}</td>
+                    <td className="tnum text-left px-4 py-3 text-xs text-slate-500">{e.id.replace('inb-', '')}</td>
                     <td className="px-4 py-3">
                       <div className="text-xs text-slate-400">{e.senderName || '—'}</div>
                       <div className="text-[10px] text-slate-400">{e.receivedAt ? new Date(e.receivedAt).toLocaleString('ar', { dateStyle: 'short', timeStyle: 'short' }) : ''}</div>

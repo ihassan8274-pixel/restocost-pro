@@ -181,7 +181,7 @@ export const PotentialUsageView: React.FC = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
                 <tr>
                   <th className="p-3">#</th>
                   <th className="p-3">الصنف</th>
@@ -196,11 +196,11 @@ export const PotentialUsageView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {rows.map((r, idx) => (
                   <tr key={r.mat.id} className={`${r.variance > 0 ? 'bg-rose-50/30' : r.variance < 0 ? 'bg-emerald-50/30' : ''} hover:bg-slate-50`}>
-                    <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
+                    <td className="tnum text-left p-3 text-slate-500">{idx + 1}</td>
                     <td className="p-3 font-bold text-slate-800">{r.mat.nameAr}</td>
                     <td className="p-3 text-slate-600">{r.mat.unit}</td>
-                    <td className="p-3 font-mono">{fmt(r.pot)}</td>
-                    <td className="p-3 font-mono">{fmt(r.act)}</td>
+                    <td className="tnum text-left p-3">{fmt(r.pot)}</td>
+                    <td className="tnum text-left p-3">{fmt(r.act)}</td>
                     <td className={`p-3 font-mono font-bold ${r.variance > 0 ? 'text-rose-700' : r.variance < 0 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.variance)}</td>
                     <td className={`p-3 font-mono font-bold ${r.varianceValue > 0 ? 'text-rose-700' : r.varianceValue < 0 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmtMoney(r.varianceValue)}</td>
                     <td className={`p-3 font-mono font-bold ${r.variancePct > 5 ? 'text-rose-700' : r.variancePct < -5 ? 'text-emerald-700' : 'text-slate-500'}`}>{r.variancePct.toFixed(1)}%</td>
@@ -208,11 +208,11 @@ export const PotentialUsageView: React.FC = () => {
                 ))}
                 <tr className="bg-slate-900 text-white font-bold">
                   <td className="p-3" colSpan={3}>الإجمالي</td>
-                  <td className="p-3 font-mono">{fmt(totalPOT)}</td>
-                  <td className="p-3 font-mono">{fmt(totalACT)}</td>
-                  <td className="p-3 font-mono">{fmt(totalVariance)}</td>
-                  <td className="p-3 font-mono">{fmtMoney(totalVarianceValue)}</td>
-                  <td className="p-3 font-mono">{totalPOT > 0 ? ((totalVariance / totalPOT) * 100).toFixed(1) : '0.0'}%</td>
+                  <td className="tnum text-left p-3">{fmt(totalPOT)}</td>
+                  <td className="tnum text-left p-3">{fmt(totalACT)}</td>
+                  <td className="tnum text-left p-3">{fmt(totalVariance)}</td>
+                  <td className="tnum text-left p-3">{fmtMoney(totalVarianceValue)}</td>
+                  <td className="tnum text-left p-3">{totalPOT > 0 ? ((totalVariance / totalPOT) * 100).toFixed(1) : '0.0'}%</td>
                 </tr>
               </tbody>
             </table>

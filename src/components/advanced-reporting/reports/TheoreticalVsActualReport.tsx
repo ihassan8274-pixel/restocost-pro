@@ -383,11 +383,11 @@ export const TheoreticalVsActualReport: React.FC = () => {
                 <td className="p-2">الإجمالي</td>
                 <td className="p-2 text-center text-slate-400">-</td>
                 <td className="p-2 text-center text-slate-400">-</td>
-                <td className="p-2 text-center font-mono">{fmt(totals.theoreticalQty)}</td>
-                <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(totals.theoreticalValue)}</td>
-                <td className="p-2 text-center font-mono">{fmt(totals.actualQty)}</td>
-                <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(totals.actualValue)}</td>
-                <td className="p-2 text-center font-mono text-slate-400">-</td>
+                <td className="tnum p-2 text-left">{fmt(totals.theoreticalQty)}</td>
+                <td className="tnum p-2 text-left text-blue-700">{fmtMoney(totals.theoreticalValue)}</td>
+                <td className="tnum p-2 text-left">{fmt(totals.actualQty)}</td>
+                <td className="tnum p-2 text-left text-rose-700">{fmtMoney(totals.actualValue)}</td>
+                <td className="tnum p-2 text-left text-slate-400">-</td>
                 <td className={`p-2 text-center font-mono font-bold text-lg ${varianceColor(totals.varianceValue)}`}>
                   {totals.varianceValue > 0 ? '+' : ''}{fmtMoney(totals.varianceValue)}
                 </td>
@@ -398,10 +398,10 @@ export const TheoreticalVsActualReport: React.FC = () => {
                   <td className="p-2 font-bold text-slate-800">{r.nameAr} <span className="text-[10px] text-slate-400 font-mono">({r.code})</span></td>
                   <td className="p-2 text-center text-slate-600">{categories[r.category] || r.category}</td>
                   <td className="p-2 text-center text-slate-500">{r.unit}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmt(r.theoreticalQty)}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(r.theoreticalValue)}</td>
-                  <td className="p-2 text-center font-mono text-rose-700">{fmt(r.actualQty)}</td>
-                  <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(r.actualValue)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmt(r.theoreticalQty)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(r.theoreticalValue)}</td>
+                  <td className="tnum p-2 text-left text-rose-700">{fmt(r.actualQty)}</td>
+                  <td className="tnum p-2 text-left text-rose-700">{fmtMoney(r.actualValue)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${varianceColor(r.varianceQty)}`}>
                     {r.varianceQty > 0 ? <TrendingUp className="w-3 h-3 inline ml-1" /> : r.varianceQty < 0 ? <TrendingDown className="w-3 h-3 inline ml-1" /> : null}
                     {r.varianceQty > 0 ? '+' : ''}{fmt(r.varianceQty)}
@@ -434,8 +434,8 @@ export const TheoreticalVsActualReport: React.FC = () => {
               {catSummaries.map((c, i) => (
                 <tr key={c.category} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{c.category}</td>
-                  <td className="p-2 text-center font-mono text-blue-700">{fmtMoney(c.theoreticalValue)}</td>
-                  <td className="p-2 text-center font-mono text-rose-700">{fmtMoney(c.actualValue)}</td>
+                  <td className="tnum p-2 text-left text-blue-700">{fmtMoney(c.theoreticalValue)}</td>
+                  <td className="tnum p-2 text-left text-rose-700">{fmtMoney(c.actualValue)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${varianceColor(c.varianceValue)}`}>
                     {c.varianceValue > 0 ? '+' : ''}{fmtMoney(c.varianceValue)}
                   </td>
