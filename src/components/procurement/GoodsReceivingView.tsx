@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useRef } from 'react';
+﻿import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { PackageCheck, Plus, CheckCircle2, XCircle, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, Btn, Modal, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
@@ -88,6 +88,71 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
       return true;
     }).sort((a, b) => b.date.localeCompare(a.date));
   }, [grnNotes, filterBranch, filterStatus, dateFrom, dateTo, search]);
+
+  // ═══ عناصر التصميم المعتمد (docs/design/01) ═══
+  // عدّ الإشعارات لكل حالة — لم يكن المستخدم يعرف أن 12 منها ينتظر المراجعة
+  const statusCounts = useMemo(() => {
+    const c: Record<string, number> = { all: grnNotes.length, draft: 0, submitted: 0, approved: 0, rejected: 0 };
+    for (const g of grnNotes) c[g.status] = (c[g.status] || 0) + 1;
+    return c;
+  }, [grnNotes]);
+
+  const QUICK_FILTERS = [
+    { id: 'submitted', label: 'الحالة = مراجعة' },
+    { id: 'today', label: 'اليوم' },
+    { id: 'no_invoice', label: 'بلاء فاتورة' },
+    { id: 'top100', label: 'أعلى 100 بالقيمة' },
+  ];
+  const [quickFilter, setQuickFilter] = useState<string | null>(null);
+
+  const PAGE_SIZE = 25;
+  const [page, setPage] = useState(1);
+
+  const [hiddenCols, setHiddenCols] = useState<string[]>([]);
+  const [colsOpen, setColsOpen] = useState(false);
+  const toggleCol = useCallback((id: string) => setHiddenCols((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id])), []);
+
+  const COL_LABELS: [string, string][] = [
+    ['grnNumber', 'رقم GRN'],
+    ['supplier', 'المورد'],
+    ['branch', 'الفرع'],
+    ['date', 'تاريخ النظام'],
+    ['invoiceDate', 'تاريخ الفاتورة'],
+    ['invoiceNumber', 'الفاتورة'],
+    ['net', 'الصافي (ر.س)'],
+    ['vat', 'الضريبة (ر.س)'],
+    ['total', 'الإجمالي (ر.س)'],
+    ['currency', 'العملة'],
+    ['items', 'الأصناف'],
+    ['status', 'الحالة'],
+  ];
+
+  // نطبّق المرشّح السريع على نتيجة الاستعلام
+  const filteredQuick = useMemo(() => {
+    let list = filtered;
+    if (quickFilter === 'submitted') list = list.filter((g) => g.status === 'submitted');
+    else if (quickFilter === 'today') list = list.filter((g) => g.date === new Date().toISOString().slice(0, 10));
+    else if (quickFilter === 'no_invoice') list = list.filter((g) => !g.invoiceNumber);
+    else if (quickFilter === 'top100') list = [...list].sort((a, b) => (b.totalAmount || 0) - (a.totalAmount || 0)).slice(0, 100);
+    return list;
+  }, [filtered, quickFilter]);
+
+  // ترقيم الصفحات — القائمة فيها مئات الإشعارات
+  const pageCount = Math.max(1, Math.ceil(filteredQuick.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const paged = useMemo(
+    () => filteredQuick.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filteredQuick, safePage],
+  );
+
+  // أي تغيير في الاستعلام يعيد الصفحة للأولى، وإلا بقيت صفحة 3 بلا نتائج
+  useEffect(() => { setPage(1); }, [filterBranch, filterStatus, dateFrom, dateTo, search, quickFilter]);
+
+  // مجموع قيمة المحدَّد — يظهر في شريط التحديد
+  const selectedTotal = useMemo(
+    () => filtered.filter((g) => selectedIds.has(g.id)).reduce((s, g) => s + (g.totalAmount || 0), 0),
+    [filtered, selectedIds],
+  );
 
   const supplier = suppliers.find((s) => s.id === supplierId);
   const subtotal = items.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0);
@@ -546,6 +611,87 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               <RotateCcw className="w-3.5 h-3.5" /> إعادة تعيين
             </ErpButton>
           </ErpQueryBar>
+        {/* عدّادات الحالات — التصميم المعتمد:总数 404 · 12 · 356 · 36.
+              لم تكن الترويسة تعرض أي عدد، فلم يعرف المستخدم أن 12 إشعاراً
+              ينتظر المراجعة إلا بعد فتح القائمة والبحث برقمه. */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {([
+              { id: 'all', label: 'كل الإشعارات', n: statusCounts.all, tone: 'default' },
+              { id: 'submitted', label: 'قيد المراجعة', n: statusCounts.submitted, tone: 'amber' },
+              { id: 'approved', label: 'معتمد', n: statusCounts.approved, tone: 'emerald' },
+              { id: 'rejected', label: 'مرفوض', n: statusCounts.rejected, tone: 'rose' },
+            ] as const).map((s) => {
+              const on = s.id === 'all' ? filterStatus === 'all' : filterStatus === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setFilterStatus(on && s.id !== 'all' ? 'all' : (s.id === 'all' ? 'all' : s.id))}
+                  className={`text-right p-3 rounded-xl border transition-colors ${
+                    on ? 'border-primary-300 bg-primary-50/60' : 'border-line bg-surface hover:bg-slate-50'
+                  }`}
+                >
+                  <span className="text-[10px] font-bold text-slate-500 block">{s.label}</span>
+                  <span className={`tnum text-xl font-bold block mt-0.5 ${s.tone === 'amber' ? 'text-amber-600' : s.tone === 'emerald' ? 'text-emerald-600' : s.tone === 'rose' ? 'text-rose-600' : 'text-slate-900'}`}>
+                    {s.n}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5 mt-3">
+            <span className="text-[11px] font-bold text-slate-500">مرشّحات جاهزة:</span>
+            {QUICK_FILTERS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setQuickFilter(quickFilter === f.id ? null : f.id)}
+                className={`text-[10px] font-bold px-2.5 py-1 rounded-md border transition-colors ${
+                  quickFilter === f.id ? 'bg-primary-50 text-primary-700 border-primary-200' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* شريط المحدَّد — التصميم المعتمد: «محدَّد 2 إشعار · 17,130.50 ر.س» */}
+          {selectedIds.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-3 px-3.5 py-2.5 rounded-xl border border-primary-200 bg-primary-50/50">
+              <span className="text-[11px] font-bold text-primary-800 tnum">
+                محدَّد {selectedIds.size} إشعار
+                {selectedTotal > 0 && ` · ${fmtMoney(selectedTotal)}`}
+              </span>
+              <Btn tone="success" onClick={bulkApprove}><Shield className="w-4 h-4" /> اعتماد</Btn>
+              <Btn tone="ghost" onClick={bulkReturnSelectedToDraft}><RotateCw className="w-4 h-4" /> تحويل لمسودة</Btn>
+              <Btn tone="ghost" onClick={openBulkReopen}><Settings className="w-4 h-4" /> إرجاع متقدّم</Btn>
+              <Btn tone="ghost" onClick={() => printSelectedLabels}><Printer className="w-4 h-4" /> طباعة مختارة</Btn>
+            </div>
+          )}
+
+          {/* تخصيص الأعمدة — القائمة 14 عموداً والمعتمد يعرض 10 */}
+          <div className="relative mt-3 flex items-center justify-end">
+            <button
+              onClick={() => setColsOpen((v) => !v)}
+              className="text-[11px] font-bold text-slate-600 hover:text-primary-600 transition-colors"
+            >
+              {colsOpen ? 'إخفاء التخصيص' : 'تخصيص الأعمدة'}
+            </button>
+            {colsOpen && (
+              <div className="absolute top-7 left-0 z-20 w-64 max-h-72 overflow-y-auto bg-surface border border-line rounded-xl shadow-card p-3 grid grid-cols-1 gap-1">
+                {COL_LABELS.map(([id, label]) => (
+                  <label key={id} className="flex items-center gap-2 text-[11px] font-bold text-slate-700 cursor-pointer hover:bg-slate-50 rounded-lg px-2 py-1">
+                    <input
+                      type="checkbox"
+                      checked={!hiddenCols.includes(id)}
+                      onChange={() => toggleCol(id)}
+                      className="w-3.5 h-3.5 accent-primary-600"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </ErpPanel>
 
@@ -555,13 +701,13 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
           <table className="w-full text-right text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               <tr>
-                <th className="p-3 w-10"><input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(filtered.map((g) => g.id))); else setSelectedIds(new Set()); }} /></th>
+                <th className="p-3 w-10"><input type="checkbox" checked={selectedIds.size === paged.length && paged.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(paged.map((g) => g.id))); else setSelectedIds(new Set()); }} /></th>
                 <th className="p-3">رقم GRN</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">تاريخ النظام</th><th className="p-3">تاريخ الفاتورة</th><th className="p-3">الفاتورة</th>
                 <th className="p-3"><span className="tnum" dir="ltr">الصافي (ر.س)</span></th><th className="p-3"><span className="tnum" dir="ltr">الضريبة (ر.س)</span></th><th className="p-3"><span className="tnum" dir="ltr">الإجمالي (ر.س)</span></th><th className="p-3">العملة</th><th className="p-3">الأصناف</th><th className="p-3">الحالة</th><th className="p-3">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {filtered.map((g) => (
+              {paged.map((g) => (
                 <tr key={g.id} className="hover:bg-slate-50">
                   <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(g.id)} onChange={(e) => { const next = new Set(selectedIds); if (e.target.checked) next.add(g.id); else next.delete(g.id); setSelectedIds(next); }} /></td>
                   <td className="tnum text-left p-3 font-bold text-primary-700">{g.grnNumber}</td>
@@ -636,6 +782,44 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               </tfoot>
             )}
           </table>
+        </div>
+
+        {/* ترقيم الصفحات — التصميم المعتمد: «عرض 1–25 من 404» */}
+        <div className="px-4 py-3 bg-slate-50 border-t border-line flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-slate-500 tnum">
+            {filteredQuick.length === 0
+              ? 'لا توجد نتائج'
+              : `عرض ${(safePage - 1) * PAGE_SIZE + 1}–${Math.min(safePage * PAGE_SIZE, filteredQuick.length)} من ${filteredQuick.length} إشعار`}
+          </span>
+          {pageCount > 1 && (
+            <span className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(Math.max(1, safePage - 1))}
+                disabled={safePage <= 1}
+                className="text-[11px] font-bold px-2.5 py-1 rounded-md border border-line bg-surface text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                السابق
+              </button>
+              {Array.from({ length: Math.min(pageCount, 5) }, (_, i) => i + 1).map((pn) => (
+                <button
+                  key={pn}
+                  onClick={() => setPage(pn)}
+                  className={`tnum text-[11px] font-bold px-2.5 py-1 rounded-md border ${
+                    pn === safePage ? 'bg-primary-600 text-white border-primary-600' : 'border-line bg-surface text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {pn}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage(Math.min(pageCount, safePage + 1))}
+                disabled={safePage >= pageCount}
+                className="text-[11px] font-bold px-2.5 py-1 rounded-md border border-line bg-surface text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                التالي
+              </button>
+            </span>
+          )}
         </div>
       </Card>
 
