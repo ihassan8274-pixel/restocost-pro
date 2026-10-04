@@ -1,5 +1,5 @@
 ﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { PackageCheck, Plus, Printer, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
+import { PackageCheck, Plus, Printer, Save, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, Btn, Modal, CurrencySelect, DocumentFingerprint } from '../ui';
 import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi, erpInputCls } from '../ui/erp';
@@ -104,13 +104,6 @@ export const GoodsReceivingView: React.FC = () => {
   ];
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
 
-  // مسار الاعتماد — المعتمد في التصميم: مسودة ثم مراجعة ثم اعتماد ثم ترحيل
-  const APPROVAL_STEPS = [
-    { id: 'draft', label: 'مسودة' },
-    { id: 'submitted', label: 'مراجعة' },
-    { id: 'approved', label: 'اعتماد' },
-    { id: 'posted', label: 'ترحيل' },
-  ];
 
   // فلتر المورد — كان في شريط الاستعلام بالتصميم ولم يكن موجوداً
   const [filterSupplier, setFilterSupplier] = useState('all');
@@ -285,9 +278,16 @@ export const GoodsReceivingView: React.FC = () => {
   // `thenApprove` يضيف اعتماداً فورياً. كان الحفظ دائماً مسودة، فالاعتماد يحتاج
   // حفظاً ثم فتح الإشعار ثم «اعتماد» — ثلاث خطوات لإشعار واحد. والوسيط صنف
   // واحد في الإشعار، فثلاث خطوات قصيرة تُثقل كل استلام.
-  const submit = (e: React.FormEvent, thenApprove = false) => {
-    e.preventDefault();
-    if (!supplier || items.length === 0 || items.some((i) => !i.rawMaterialId || i.quantityReceived <= 0)) return;
+  // `thenApprove` يضيف اعتماداً فورياً. كان الحفظ دائماً مسودة، فالاعتماد يحتاج
+  // حفظاً ثم فتح الإشعار ثم «اعتماد» — ثلاث خطوات لإشعار واحد. والوسيط صنف
+  // واحد في الإشعار، فثلاث خطوات قصيرة تُثقل كل استلام.
+  //
+  // منفصل عن submit لأن شريط الأدوات في المعتمد أزراره خارج النموذج (بلا حدث).
+  const doSubmit = (thenApprove: boolean) => {
+    if (!supplier || items.length === 0 || items.some((it) => !it.rawMaterialId || it.quantityReceived <= 0)) {
+      showToast('أكمل المورد وصفاً واحداً على الأقل بكمية أكبر من صفر');
+      return;
+    }
     addGoodsReceiptNote({
       supplierId: supplier.id, supplierName: supplier.name, branchId, date: new Date().toISOString().split('T')[0],
       invoiceNumber, invoiceDate, totalAmount, vatRate, vatAmount, vatInclusive: vatIncl,
@@ -297,12 +297,17 @@ export const GoodsReceivingView: React.FC = () => {
       currencyCode: currencyCode !== 'SAR' ? currencyCode : undefined,
       exchangeRate: currencyCode !== 'SAR' ? exchangeRate : undefined,
     });
-    if (selectedPO) recordPurchaseReceipt(selectedPO.id, items.map((i) => ({ rawMaterialId: i.rawMaterialId, quantity: i.quantityReceived })));
+    if (selectedPO) recordPurchaseReceipt(selectedPO.id, items.map((it) => ({ rawMaterialId: it.rawMaterialId, quantity: it.quantityReceived })));
     addRecentDoc({ type: 'grn', title: `إشعار استلام — ${supplier.name}`, tab: 'goods_receiving' });
-    showToast(thenApprove && can('approve_grn')
-      ? `حُفظ الإشعار في «قيد المراجعة» — اعتمده من الإعدادات لترفع الكميات إلى ${getBranchDisplayName(branchId)}`
-      : `تم حفظ الإشعار كمسودة`);
+    showToast(thenApprove
+      ? `حُفظ في «قيد المراجعة» — اعتمده من الإعدادات لترفع الكميات إلى ${getBranchDisplayName(branchId)}`
+      : 'تم حفظ الإشعار كمسودة');
     setItems([]); setRowKeys([]); setShowModal(false); setInvoiceNumber(''); setInvoiceDate(new Date().toISOString().split('T')[0]); setReceivedBy(''); setNotes(''); setPurchaseOrderId(''); setCurrencyCode('SAR'); setExchangeRate(1); setCopySource('');
+  };
+
+  const submit = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    doSubmit(false);
   };
 
   const openEdit = (g: typeof grnNotes[number]) => {
@@ -493,6 +498,14 @@ export const GoodsReceivingView: React.FC = () => {
     setSelectedIds(new Set());
     showToast(`تم اعتماد ${toApprove.length} إشعار استلام`);
   };
+
+  // مسار الاعتماد — المعتمد: مسودة ثم مراجعة ثم اعتماد ثم ترحيل
+  const APPROVAL_STEPS = [
+    { id: 'draft', label: 'مسودة' },
+    { id: 'submitted', label: 'مراجعة' },
+    { id: 'approved', label: 'اعتماد' },
+    { id: 'posted', label: 'ترحيل' },
+  ];
 
   // Open bulk reopen modal (admin only)
   const openBulkReopen = () => {
@@ -838,36 +851,62 @@ export const GoodsReceivingView: React.FC = () => {
 {/* New GRN Modal - Professional Design */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="إشعار استلام جديد (GRN)" xl closeOnOverlayClick={false}>
         <form onSubmit={submit} className="space-y-0">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-surface border-b border-line px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
-                <PackageCheck className="w-5 h-5 text-indigo-600" />
+          {/* ═══ الترويسة + المسار + شريط الأدوات (التصميم المعتمد) ═══
+              كان العنوان الفرعي «سجل استلام المواد من المورد — مسودة ← مراجعة ← اعتماد»
+              وهو وصف للعملية لا تعليمات للمستخدم. ولا مسار اعتماد، ولا شريط أدوات
+              فوق الحقول. */}
+          <div className="border-b border-line bg-surface">
+            <div className="px-6 py-4 flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="w-11 h-11 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
+                  <PackageCheck className="w-6 h-6" />
+                </span>
+                <div>
+                  <h2 className="font-bold text-slate-900 text-lg">{copySource ? 'نسخة من إشعار' : 'إشعار استلام جديد (GRN)'}</h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">أدخل الأصناف المستلمة — الكمية بوحدة التخزين</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">{copySource ? 'نسخة قالب' : 'إشعار استلام جديد'}</h3>
-                <p className="text-[11px] text-slate-500">{copySource ? `قائم على: ${copySource} — عدل الكميات والأسعار ثم احفظ كمسودة` : 'سجل استلام المواد من المورد — مسودة → مراجعة → اعتماد'}</p>
+
+              {/* المسار: يوضّح أين وصل الإشعار وخطوةComing التالية */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[11px] font-bold text-slate-500">المسار:</span>
+                {APPROVAL_STEPS.map((st, i) => (
+                  <React.Fragment key={st.id}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      i === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : i === 1 ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-slate-50 text-slate-500 border-line'
+                    }`}>
+                      {i + 1} · {st.label}
+                    </span>
+                    {i < APPROVAL_STEPS.length - 1 && <span className="text-slate-300 text-[10px]">←</span>}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
-            {/* المجموع في الرأس اللاصق. كان في التذييل اللاصق داخل نافذة
-                تصفيح، فيختفي عند خمسة أصناف — تماماً حين يحتاجه المستخدم. */}
-            <div className="flex items-center gap-2.5">
-              {copySource && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-primary-50 text-primary-700 border-primary-200">نسخة</span>}
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-700 border-amber-200">مسودة</span>
-              {items.length > 0 && (
-                <span className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-line bg-slate-50">
-                  <span className="text-[10px] font-bold text-slate-500 tnum">{items.length} صنف</span>
-                  <span className="text-[10px] font-bold text-slate-500 tnum">
-                    {fmt(items.reduce((s, i) => s + (Number(i.quantityReceived) || 0), 0))}
-                  </span>
-                  <span className="text-[11px] font-extrabold text-primary-700 tnum">{fmtMoney(totalAmount)}</span>
-                </span>
+
+            {/* شريط الأدوات — كما في المعتمد: حفظ ثم أدوات إدخال ثم اعتماد */}
+            <div className="px-6 pb-3 flex flex-wrap items-center gap-2">
+              <ErpButton variant="primary" onClick={() => doSubmit(false)}>
+                <Save className="w-3.5 h-3.5" /> حفظ كمسودة
+              </ErpButton>
+              <ErpButton onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</ErpButton>
+              <ErpButton onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</ErpButton>
+              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> استيراد Excel</ErpButton>
+              <span className="flex-1" />
+              {can('approve_grn') ? (
+                <ErpButton variant="primary" onClick={() => doSubmit(true)}>
+                  <Shield className="w-3.5 h-3.5" /> اعتماد
+                </ErpButton>
+              ) : (
+                <span className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-line bg-slate-50 text-slate-300">✓ اعتماد</span>
               )}
+              <span className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-line bg-slate-50 text-slate-300">⇪ ترحيل للمخزون</span>
             </div>
           </div>
 
-          {/* Form Content */}
-          <div className="p-6 space-y-6">
+          {/* محتوى النموذج */}
+          <div className="space-y-5">
             {/* Section 1: Header Info */}
             <section className="bg-surface rounded-2xl p-5 border border-line">
               <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-primary-600" /> بيانات الإشعار</h4>
@@ -923,13 +962,18 @@ export const GoodsReceivingView: React.FC = () => {
 
             {/* Section 2: Items - Professional Table */}
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-bold text-slate-800 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة</h4>
-                <div className="flex gap-2">
-                  <Btn onClick={() => addItems(5)}><Plus className="w-3.5 h-3.5" /> 5 أصناف</Btn>
-                  <Btn onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</Btn>
-                  <Btn tone="ghost" onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</Btn>
-                  <Btn tone="ghost" onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> Excel</Btn>
+              <div className="flex items-center justify-between mb-3 gap-2">
+                {/* العنوان بعدّاد — المعتمد: «الأصناف المستلمة (4)» */}
+                <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                  <PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة
+                  <span className="tnum text-[11px] font-bold text-slate-500">({items.length})</span>
+                </h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">الكمية بوحدة التخزين</span>
+                  <button type="button" onClick={() => showToast('تحويل الوحدة يُطبَّق من جدول الأصناف أدناه')} className="text-[11px] font-bold text-primary-600 hover:underline">تحويل وحدة ▾</button>
+                  <ErpButton onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</ErpButton>
+                  <ErpButton onClick={() => addItems(5)}><Plus className="w-3.5 h-3.5" /> 5 أصناف</ErpButton>
+                  <ErpButton onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</ErpButton>
                 </div>
               </div>
               
@@ -1003,24 +1047,25 @@ export const GoodsReceivingView: React.FC = () => {
               </div>
 
               {/* Totals Summary */}
-              {/* الإجماليات — ErpKpi. كانت لوحة indigo-950 على bg-indigo-50،
-                  خارج نظام التصميم ورموزه. وهي أعلى أربع قيم في النافذة:
-                  إن بقيت غير مقروءة لم تُقرأ. الإجمالي وحده يميّز نفسه
-                  بـhighlight، والضريبة والمعادلة بلونيهما الدلاليين. */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <ErpKpi
-                  label={`الإجمالي قبل الضريبة${currencyCode !== 'SAR' ? ` (${currencyCode})` : ''}`}
-                  value={fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}
-                />
-                <ErpKpi
-                  label={`ضريبة القيمة المضافة ${vatRate}%${vatIncl ? ' (مشمولة)' : ''}`}
-                  value={fmtMoney(vatAmount)}
-                  subTone="down"
-                />
-                <ErpKpi label="إجمالي الفاتورة" value={fmtMoney(totalAmount)} highlight />
-                {currencyCode !== 'SAR' && (
-                  <ErpKpi label="المعادل بالريال" value={fmtMoney(totalAmount * exchangeRate)} subTone="up" />
-                )}
+              {/* سطر الملخّص — المعتمد سطر واحد مختصر لا ثلاث بطاقات.
+                  البطاقات كانت تشغل ثلاثة أسطر كاملة وتدفع الجدول خارج الشاشة،
+                  و«إجمالي الفاتورة» لا يظهر فيها إلا بعد حساب كل صنف. */}
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 py-3 border-t border-line text-[11px] font-bold">
+                <span className="text-slate-500">
+                  عدد الأصناف: <span className="tnum text-slate-800">{items.length}</span>
+                </span>
+                <span className="text-slate-500">
+                  إجمالي الكمية: <span className="tnum text-slate-800">{fmt(items.reduce((s, i) => s + (Number(i.quantityReceived) || 0), 0))}</span>
+                </span>
+                <span className="text-slate-500">
+                  الصافي: <span className="tnum text-slate-800">{fmtMoney(vatIncl ? subtotal - vatAmount : subtotal)}</span>
+                </span>
+                <span className="text-amber-600">
+                  ضريبة {vatRate}%: <span className="tnum">{fmtMoney(vatAmount)}</span>
+                </span>
+                <span className="text-primary-700">
+                  الإجمالي: <span className="tnum text-[12px] font-extrabold">{fmtMoney(totalAmount)} ر.س</span>
+                </span>
               </div>
               {/* أزرار الحفظ — التصميم المعتمد: «حفظ كمسودة» و«حفظ واعتماد» */}
               <div className="flex justify-end gap-2 pt-3 border-t border-line">
@@ -1040,7 +1085,7 @@ export const GoodsReceivingView: React.FC = () => {
                 {can('approve_grn') && (
                   <button
                     type="button"
-                    onClick={(ev) => submit(ev, true)}
+                    onClick={() => doSubmit(true)}
                     className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-card transition-all"
                   >
                     حفظ واعتماد
