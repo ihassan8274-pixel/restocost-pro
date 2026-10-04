@@ -185,8 +185,9 @@ export const GoodsReceivingView: React.FC = () => {
     if (po.currencyCode) { setCurrencyCode(po.currencyCode); setExchangeRate(po.exchangeRate || getCurrencyRate(po.currencyCode)); }
   };
 
-  // إضافة n أصناف دفعة واحدة. البيان��: الوسيط صنف واحد وp90 خمسة، فإضافة
-  // صف واحد في كل مرة تجعل إدخال خمسة أصناف خمس ضغطات زر زائدة بلا فائدة.
+  // إضافة n أصناف دفعة واحدة. البيان من قاعدة البيانات: الوسيط صنف واحد
+  // والتسعين المئوي خمسة — فإضافة صف واحد في كل مرة تجعل إدخال خمسة أصناف
+  // خمس ضغطات زر زائدة بلا فائدة.
   const addItems = (n: number) => {
     setItems((prev) => [...prev, ...Array.from({ length: n }, () => ({
       rawMaterialId: '', quantityReceived: 0, unitPrice: 0, batchNumber: '', expiryDate: '', qualityPassed: true,
@@ -561,7 +562,8 @@ export const GoodsReceivingView: React.FC = () => {
                   { name: 'الإشعارات', header: ['رقم GRN', 'المورد', 'الفرع', 'تاريخ النظام', 'تاريخ الفاتورة', 'الفاتورة', 'الصافي', 'الضريبة', 'الإجمالي', 'العملة', 'معادل الريال', 'الأصناف', 'الحالة', 'استلمها', 'ملاحظات'], rows: filtered.map((g) => [g.grnNumber, g.supplierName, g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchDisplayName(g.branchId), g.date, g.invoiceDate || '—', g.invoiceNumber, fmtMoney(g.totalAmount - (g.vatAmount || 0)), fmtMoney(g.vatAmount || 0), fmtMoney(g.totalAmount), g.currencyCode || 'SAR', fmtMoney(g.totalAmount * (g.exchangeRate || 0)), g.items.length, GRN_STATUS_LABELS[g.status], g.receivedBy, g.notes || '']) },
                 ]}
               />
-              <ErpButton onClick={printSelectedLabels}><Printer className="w-3.5 h-3.5" /> طباعة</ErpButton>`r`n              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> طباعة مخصصة</ErpButton>
+              <ErpButton onClick={printSelectedLabels}><Printer className="w-3.5 h-3.5" /> طباعة</ErpButton>
+              <ErpButton onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> طباعة مخصصة</ErpButton>
               <ErpButton variant="primary" onClick={() => { setCopySource(''); setShowModal(true); }}><Plus className="w-3.5 h-3.5" /> إشعار جديد</ErpButton>
             </>
           }

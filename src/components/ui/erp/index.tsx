@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 // ============ نظام ERP الموحّد ============
 // مبني على رموز التصميم القائمة (bg-surface / text-line / text-primary) لا على
@@ -152,7 +152,7 @@ export const ErpRowActions: React.FC<{
   onPrimary?: () => void;
   /** إجراءات أخرى كنصّ بارز (طباعة) */
   secondaryLabels?: { label: string; onClick: () => void }[];
-  /** أ��ونات — إجراءات ثانوية */
+  /** إجراءات أخرى كنصّ بارز (طباعة) */
   iconActions?: { icon: React.ReactNode; title: string; onClick: () => void }[];
 }> = ({ primaryLabel, onPrimary, secondaryLabels = [], iconActions = [] }) => (
   <span className="inline-flex items-center gap-2 justify-center">
