@@ -1,8 +1,8 @@
 ﻿import React, { useState, useMemo, useRef } from 'react';
 import { PackageCheck, Plus, CheckCircle2, XCircle, Printer, Pencil, Search, Send, Ban, Shield, RotateCw, RotateCcw, Settings, Copy, History, AlertTriangle, ScanLine } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Card, Btn, Modal, Field, inputCls, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
-import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi } from '../ui/erp';
+import { Card, Btn, Modal, CurrencySelect, DateText, DocumentFingerprint } from '../ui';
+import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi, erpInputCls } from '../ui/erp';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
 import { fmt, fmtMoney } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
@@ -553,7 +553,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-fin-bg text-fin-txt font-bold border-b border-line-strong">
+            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               <tr>
                 <th className="p-3 w-10"><input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(filtered.map((g) => g.id))); else setSelectedIds(new Set()); }} /></th>
                 <th className="p-3">رقم GRN</th><th className="p-3">المورد</th><th className="p-3">الفرع</th><th className="p-3">تاريخ النظام</th><th className="p-3">تاريخ الفاتورة</th><th className="p-3">الفاتورة</th>
@@ -591,14 +591,14 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                           {can('approve_grn') && <button onClick={() => updateGRNStatus(g.id, 'approved')} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg shrink-0" title="اعتماد نهائي (يرفع للمخزون والقيود - لا يمكن التعديل بعده)"><Shield className="w-4 h-4" /></button>}
                           <button onClick={() => openEdit(g)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg shrink-0" title="تعديل (قيد المراجعة)"><Pencil className="w-4 h-4" /></button>
                           <button onClick={() => updateGRNStatus(g.id, 'rejected')} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg shrink-0" title="رفض"><Ban className="w-4 h-4" /></button>
-                          <button onClick={() => printSingle(g)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg shrink-0" title="طباعة"><Printer className="w-4 h-4" /></button>
+                          <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline shrink-0">طباعة</button>
                         </div>
                       )}
                       {g.status === 'approved' && (
                         <div className="flex flex-wrap gap-1 items-center">
                           <span className="text-emerald-600 text-[10px] font-bold"><CheckCircle2 className="w-3.5 h-3.5 inline ml-0.5" /> معتمد</span>
                           <button onClick={() => { onNavigate?.('supplier_returns'); localStorage.setItem('preselectGrnId', g.id); }} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg shrink-0" title="إنشاء إرجاع لهذا الاستلام"><RotateCcw className="w-4 h-4" /></button>
-                          <button onClick={() => printSingle(g)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg shrink-0" title="طباعة"><Printer className="w-4 h-4" /></button>
+                          <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline shrink-0">طباعة</button>
                         </div>
                       )}
                       {g.status === 'rejected' && <span className="text-rose-600 text-[10px] font-bold"><XCircle className="w-3.5 h-3.5 inline ml-0.5" /> مرفوض</span>}
@@ -608,6 +608,33 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               ))}
               {filtered.length === 0 && <tr><td colSpan={14} className="p-8">{search || filterBranch !== 'all' || filterStatus !== 'all' || dateFrom || dateTo ? <p className="text-center text-slate-500 font-bold">لا توجد نتائج مطابقة للفلاتر الحالية</p> : <div className="flex flex-col items-center gap-2"><PackageCheck className="w-10 h-10 text-slate-300" /><p className="text-center text-slate-500 font-bold">لا توجد إشعارات استلام بعد — أنشئ أول إشعار من زر أعلاه</p></div>}</td></tr>}
             </tbody>
+            {filtered.length > 0 && (
+              <tfoot>
+                <tr className="bg-slate-50 border-t-2 border-line">
+                  <td className="px-3 py-2.5" />
+                  <td className="px-3 py-2.5 font-bold text-slate-700">
+                    الإجمالي <span className="tnum text-slate-500">({filtered.length})</span>
+                  </td>
+                  <td colSpan={4} className="px-3 py-2.5 text-[11px] font-bold text-slate-500">
+                  <td colSpan={4} className="px-3 py-2.5 text-[11px] font-bold text-slate-500">
+                    {'مسودة: ' + filtered.filter((g) => g.status === 'draft').length}
+                    {' · قيد المراجعة: ' + filtered.filter((g) => g.status === 'submitted').length}
+                    {' · معتمد: ' + filtered.filter((g) => g.status === 'approved').length}
+                  </td>
+                  </td>
+                  <td className="px-2 py-2.5 text-left tnum font-bold text-slate-800">
+                    {fmt(filtered.reduce((s, g) => s + (g.totalAmount - (g.vatAmount || 0)), 0))}
+                  </td>
+                  <td className="px-2 py-2.5 text-left tnum font-bold text-amber-700">
+                    {fmt(filtered.reduce((s, g) => s + (g.vatAmount || 0), 0))}
+                  </td>
+                  <td className="px-2 py-2.5 text-left tnum font-extrabold text-slate-900">
+                    {fmt(filtered.reduce((s, g) => s + (g.totalAmount || 0), 0))}
+                  </td>
+                  <td colSpan={4} className="px-3 py-2.5" />
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </Card>
@@ -616,9 +643,9 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
       <Modal open={showModal} onClose={() => setShowModal(false)} title="إشعار استلام جديد (GRN)" xl closeOnOverlayClick={false}>
         <form onSubmit={submit} className="space-y-0">
           {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+          <div className="sticky top-0 z-10 bg-surface border-b border-line px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
                 <PackageCheck className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
@@ -627,7 +654,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {copySource && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-indigo-50 text-indigo-700 border-indigo-200">نسخة</span>}
+              {copySource && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-primary-50 text-primary-700 border-primary-200">نسخة</span>}
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-700 border-amber-200">مسودة</span>
             </div>
           </div>
@@ -635,26 +662,26 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
           {/* Form Content */}
           <div className="p-6 space-y-6">
             {/* Section 1: Header Info */}
-            <section className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-              <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-indigo-600" /> بيانات الإشعار</h4>
+            <section className="bg-surface rounded-2xl p-5 border border-line">
+              <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-primary-600" /> بيانات الإشعار</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="lg:col-span-2">
-                  <Field label="المورد *" required>
+                  <ErpField label="المورد *" required>
                     <div className="flex gap-2">
-                      <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={inputCls + ' flex-1'}>
+                      <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={`${erpInputCls} flex-1`}>
                         {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                       </select>
                       <Btn type="button" tone="ghost" onClick={() => fillFromSupplierHistory(supplierId)} disabled={!supplierId} className="text-xs px-3 py-2 whitespace-nowrap shrink-0"><History className="w-3.5 h-3.5" /> تعبئة أصناف سابقة</Btn>
                     </div>
-                  </Field>
+                  </ErpField>
                 </div>
-                <Field label="الفرع *" required>
-                  <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={inputCls}>
+                <ErpField label="الفرع *" required>
+                  <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={erpInputCls}>
                     {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
                   </select>
-                </Field>
-                <Field label="أمر الشراء المرتبط">
-                  <select value={purchaseOrderId} onChange={(e) => applyPO(e.target.value)} className={inputCls}>
+                </ErpField>
+                <ErpField label="أمر الشراء المرتبط">
+                  <select value={purchaseOrderId} onChange={(e) => applyPO(e.target.value)} className={erpInputCls}>
                     <option value="">بدون أمر شراء</option>
                     {availablePOs.map((p) => {
                       const remCount = p.items.filter((i) => (i.receivedQty || 0) < (i.quantity || 0)).length;
@@ -662,19 +689,27 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                     })}
                     {availablePOs.length === 0 && <option value="" disabled>لا توجد أوامر شراء مفتوحة لهذا المورد</option>}
                   </select>
-                </Field>
-                <Field label="المستلم"><input value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} className={inputCls} placeholder="اسم الموظف" /></Field>
+                </ErpField>
+                <ErpField label="المستلم"><input value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} className={erpInputCls} placeholder="اسم الموظف" /></ErpField>
+                <ErpField label="ملاحظات" className="lg:col-span-4">
+                  <input
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className={erpInputCls}
+                    placeholder="مثال: وصل ناقص صنف واحد · تم agreed الكمية مع المندوب"
+                  />
+                </ErpField>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-                <Field label="رقم فاتورة المورد"><input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className={inputCls} placeholder="اختياري" /></Field>
-                <Field label="تاريخ الفاتورة"><input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className={inputCls} /></Field>
-                <Field label="عملة المستند">
+                <ErpField label="رقم فاتورة المورد"><input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className={erpInputCls} placeholder="اختياري" /></ErpField>
+                <ErpField label="تاريخ الفاتورة"><input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className={erpInputCls} /></ErpField>
+                <ErpField label="عملة المستند">
                   <CurrencySelect value={currencyCode} onChange={(code) => { setCurrencyCode(code); setExchangeRate(getCurrencyRate(code)); }} />
-                </Field>
+                </ErpField>
                 {currencyCode !== 'SAR' && (
-                  <Field label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
-                    <input type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} className={inputCls} required />
-                  </Field>
+                  <ErpField label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
+                    <input type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} className={erpInputCls} required />
+                  </ErpField>
                 )}
               </div>
             </section>
@@ -682,7 +717,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             {/* Section 2: Items - Professional Table */}
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-bold text-slate-800 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-indigo-600" /> الأصناف المستلمة</h4>
+                <h4 className="font-bold text-slate-800 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة</h4>
                 <div className="flex gap-2">
                   <Btn tone="ghost" onClick={() => setScannerOpen(true)} className="text-xs px-3 py-1.5"><ScanLine className="w-3.5 h-3.5" /> مسح سريع (كاميرا)</Btn>
                   <Btn onClick={addItem} className="text-xs px-3 py-1.5"><Plus className="w-3.5 h-3.5" /> إضافة صنف</Btn>
@@ -713,26 +748,26 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             </section>
 
             {/* Section 3: Totals & Actions - Sticky Footer */}
-            <div className="sticky bottom-0 z-10 bg-white border-t border-slate-200 py-4 px-6 space-y-4">
+            <div className="sticky bottom-0 z-10 bg-surface border-t border-line py-4 px-6 space-y-4">
               {/* VAT Settings */}
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Field label="الأسعار">
+                  <ErpField label="الأسعار">
                     <div className="flex items-center gap-3">
                       <button type="button" onClick={() => setVatIncl(true)} className={`px-4 py-2 rounded-lg text-xs font-extrabold border transition-colors ${vatIncl ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>شاملة الضريبة</button>
                       <button type="button" onClick={() => setVatIncl(false)} className={`px-4 py-2 rounded-lg text-xs font-extrabold border transition-colors ${!vatIncl ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>غير شاملة</button>
                     </div>
-                  </Field>
-                  <Field label="نسبة ضريبة القيمة المضافة %">
-                    <input type="number" min="0" max="100" value={vatRate || ''} onChange={(e) => setVatRate(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} className={inputCls} />
-                  </Field>
-                  <Field label="عملة المستند">
+                  </ErpField>
+                  <ErpField label="نسبة ضريبة القيمة المضافة %">
+                    <input type="number" min="0" max="100" value={vatRate || ''} onChange={(e) => setVatRate(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} className={erpInputCls} />
+                  </ErpField>
+                  <ErpField label="عملة المستند">
                     <CurrencySelect value={currencyCode} onChange={(code) => { setCurrencyCode(code); setExchangeRate(getCurrencyRate(code)); }} />
-                  </Field>
+                  </ErpField>
                   {currencyCode !== 'SAR' && (
-                    <Field label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
-                      <input type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} className={inputCls} required />
-                    </Field>
+                    <ErpField label={`سعر الصرف (1 ${currencyCode} = ر.س)`} required>
+                      <input type="number" min="0" step="0.0001" value={exchangeRate || ''} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)} className={erpInputCls} required />
+                    </ErpField>
                   )}
                 </div>
               </div>
@@ -743,7 +778,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
                   <div className="flex-1 min-w-[200px]">
                     <label className="text-[10px] font-bold text-amber-800 block mb-1">إجمالي الفاتورة من المورد (اختياري — للتوزيع التلقائي)</label>
                     <div className="flex gap-2">
-                      <input type="number" min="0" step="0.01" value={invoiceTotalInput} onChange={(e) => setInvoiceTotalInput(e.target.value)} className={inputCls + ' flex-1'} placeholder="أدخل إجمالي الفاتورة واضغط توزيع" />
+                      <input type="number" min="0" step="0.01" value={invoiceTotalInput} onChange={(e) => setInvoiceTotalInput(e.target.value)} className={`${erpInputCls} flex-1`} placeholder="أدخل إجمالي الفاتورة واضغط توزيع" />
                       <Btn tone="ghost" onClick={() => {
                         const targetTotal = parseFloat(invoiceTotalInput) || 0;
                         if (targetTotal <= 0) return;
@@ -792,7 +827,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
       <Modal open={editGrn !== null} onClose={() => setEditGrn(null)} title={`تعديل الإشعار ${editGrn?.grnNumber || ''} (${editGrn?.status === 'draft' ? 'مسودة' : 'قيد المراجعة'})`} xl closeOnOverlayClick={false}>
         <div className="space-y-0">
           {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+          <div className="sticky top-0 z-10 bg-surface border-b border-line px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                 <Pencil className="w-5 h-5 text-amber-600" />
@@ -824,29 +859,29 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
           <div className="px-6 pt-3"><DocumentFingerprint entityType="grn" entityId={editGrn?.id || ''} title={`بصمة الإشعار ${editGrn?.grnNumber || ''}`} /></div>
           <div className="p-6 space-y-6">
             {/* Section 1: Header Info */}
-            <section className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+            <section className="bg-surface rounded-2xl p-5 border border-line">
               <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Pencil className="w-4 h-4 text-amber-600" /> بيانات الإشعار</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="lg:col-span-2">
-                  <Field label="المورد *" required>
-                    <select value={editGrn?.supplierId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { supplierId: e.target.value, supplierName: suppliers.find((s) => s.id === e.target.value)?.name || '' })} disabled={editGrn?.status !== 'draft'} className={inputCls}>
+                  <ErpField label="المورد *" required>
+                    <select value={editGrn?.supplierId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { supplierId: e.target.value, supplierName: suppliers.find((s) => s.id === e.target.value)?.name || '' })} disabled={editGrn?.status !== 'draft'} className={erpInputCls}>
                       {suppliers.filter((s) => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
-                  </Field>
+                  </ErpField>
                 </div>
-                <Field label="الفرع *" required>
-                  <select value={editGrn?.branchId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { branchId: e.target.value })} disabled={editGrn?.status !== 'draft'} className={inputCls}>
+                <ErpField label="الفرع *" required>
+                  <select value={editGrn?.branchId || ''} onChange={(e) => updateGoodsReceiptNote(editGrn!.id, { branchId: e.target.value })} disabled={editGrn?.status !== 'draft'} className={erpInputCls}>
                     {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
                     <option value="b-ck">المطبخ المركزي</option>
                   </select>
-                </Field>
-                <Field label="تاريخ الفاتورة"><input type="date" value={editInvoiceDate} onChange={(e) => setEditInvoiceDate(e.target.value)} className={inputCls} /></Field>
-                <Field label="استلمها"><span className="text-xs font-bold text-slate-500 pt-2 block">{editGrn?.receivedBy || '—'}</span></Field>
+                </ErpField>
+                <ErpField label="تاريخ الفاتورة"><input type="date" value={editInvoiceDate} onChange={(e) => setEditInvoiceDate(e.target.value)} className={erpInputCls} /></ErpField>
+                <ErpField label="استلمها"><span className="text-xs font-bold text-slate-500 pt-2 block">{editGrn?.receivedBy || '—'}</span></ErpField>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-                <Field label="رقم فاتورة المورد"><input value={editInvoice} onChange={(e) => setEditInvoice(e.target.value)} className={inputCls} /></Field>
-                <Field label="تاريخ الفاتورة"><input type="date" value={editInvoiceDate} onChange={(e) => setEditInvoiceDate(e.target.value)} className={inputCls} /></Field>
-                <Field label="ملاحظات"><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} rows={2} className={inputCls} /></Field>
+                <ErpField label="رقم فاتورة المورد"><input value={editInvoice} onChange={(e) => setEditInvoice(e.target.value)} className={erpInputCls} /></ErpField>
+                <ErpField label="تاريخ الفاتورة"><input type="date" value={editInvoiceDate} onChange={(e) => setEditInvoiceDate(e.target.value)} className={erpInputCls} /></ErpField>
+                <ErpField label="ملاحظات"><textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} rows={2} className={erpInputCls} /></ErpField>
               </div>
             </section>
 
@@ -877,7 +912,7 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             </section>
 
             {/* Section 3: Totals & Actions - Sticky Footer */}
-            <div className="sticky bottom-0 z-10 bg-white border-t border-slate-200 py-4 px-6 space-y-4">
+            <div className="sticky bottom-0 z-10 bg-surface border-t border-line py-4 px-6 space-y-4">
               {/* Totals Summary */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <ErpKpi label="عدد الأصناف" value={String(editItems.length)} />
@@ -902,9 +937,9 @@ export const GoodsReceivingView: React.FC<GoodsReceivingViewProps> = ({ onNaviga
             <p className="font-bold text-rose-950 flex items-center gap-1"><AlertTriangle className="w-4 h-4" /> عملية حساسة — تتطلب صلاحية مسؤول النظام</p>
             <p className="text-rose-700 mt-1 text-[11px]">سيتم عكس حركات المخزون للأصناف المختارة فقط. الإشعارات ستعود لحالة "مسودة" ويمكن تعديلها.</p>
           </div>
-          <Field label="كلمة مرور مسؤول النظام" required>
-            <input type="password" value={bulkReopenPassword} onChange={(e) => setBulkReopenPassword(e.target.value)} className={inputCls} placeholder="أدخل كلمة المرور" autoComplete="current-password" />
-          </Field>
+          <ErpField label="كلمة مرور مسؤول النظام" required>
+            <input type="password" value={bulkReopenPassword} onChange={(e) => setBulkReopenPassword(e.target.value)} className={erpInputCls} placeholder="أدخل كلمة المرور" autoComplete="current-password" />
+          </ErpField>
           <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-2">
             <p className="font-bold text-slate-700 mb-2">اختر حركات المخزون لعكسها (كل سطر = صنف في إشعار):</p>
             {filtered.filter((g) => selectedIds.has(g.id) && g.status === 'approved').map((g) => (
