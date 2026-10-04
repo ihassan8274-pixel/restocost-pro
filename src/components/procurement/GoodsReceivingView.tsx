@@ -185,6 +185,15 @@ export const GoodsReceivingView: React.FC = () => {
     if (po.currencyCode) { setCurrencyCode(po.currencyCode); setExchangeRate(po.exchangeRate || getCurrencyRate(po.currencyCode)); }
   };
 
+  // إضافة n أصناف دفعة واحدة. البيان��: الوسيط صنف واحد وp90 خمسة، فإضافة
+  // صف واحد في كل مرة تجعل إدخال خمسة أصناف خمس ضغطات زر زائدة بلا فائدة.
+  const addItems = (n: number) => {
+    setItems((prev) => [...prev, ...Array.from({ length: n }, () => ({
+      rawMaterialId: '', quantityReceived: 0, unitPrice: 0, batchNumber: '', expiryDate: '', qualityPassed: true,
+    }))]);
+    setRowKeys((prev) => [...prev, ...Array.from({ length: n }, makeKey)]);
+  };
+
   const addItem = () => {
     setItems((prev) => [...prev, { rawMaterialId: '', quantityReceived: 0, unitPrice: 0, batchNumber: '', expiryDate: '', qualityPassed: true }]);
     setRowKeys((prev) => [...prev, makeKey()]);
@@ -269,18 +278,29 @@ export const GoodsReceivingView: React.FC = () => {
     return m && m.purchaseUnitConversion && m.purchaseUnitConversion > 1 ? { conv: m.purchaseUnitConversion, pu: m.purchaseUnit || m.unit } : null;
   };
 
-  const submit = (e: React.FormEvent) => {
+  // `thenApprove` يضيف اعتماداً فورياً. كان الحفظ دائماً مسودة، فالاعتماد يحتاج
+  // حفظاً ثم فتح الإشعار ثم «اعتماد» — ثلاث خطوات لإشعار واحد. والوسيط صنف
+  // واحد في الإشعار، فثلاث خطوات قصيرة تُثقل كل استلام.
+  // `thenApprove` يضيف اعتماداً فورياً. كان الحفظ دائماً مسودة، فالاعتماد يحتاج
+  // حفظاً ثم فتح الإشعار ثم «اعتماد» — ثلاث خطوات لإشعار واحد. والوسيط صنف
+  // واحد في الإشعار، فثلاث خطوات قصيرة تُثقل كل استلام.
+  const submit = (e: React.FormEvent, thenApprove = false) => {
     e.preventDefault();
     if (!supplier || items.length === 0 || items.some((i) => !i.rawMaterialId || i.quantityReceived <= 0)) return;
     addGoodsReceiptNote({
       supplierId: supplier.id, supplierName: supplier.name, branchId, date: new Date().toISOString().split('T')[0],
-      invoiceNumber, invoiceDate, totalAmount, vatRate, vatAmount, vatInclusive: vatIncl, status: 'draft', receivedBy, items, notes,
+      invoiceNumber, invoiceDate, totalAmount, vatRate, vatAmount, vatInclusive: vatIncl,
+      status: thenApprove ? 'submitted' : 'draft',
+      receivedBy, items, notes,
       purchaseOrderId: selectedPO?.id, poNumber: selectedPO?.poNumber,
       currencyCode: currencyCode !== 'SAR' ? currencyCode : undefined,
       exchangeRate: currencyCode !== 'SAR' ? exchangeRate : undefined,
     });
     if (selectedPO) recordPurchaseReceipt(selectedPO.id, items.map((i) => ({ rawMaterialId: i.rawMaterialId, quantity: i.quantityReceived })));
     addRecentDoc({ type: 'grn', title: `إشعار استلام — ${supplier.name}`, tab: 'goods_receiving' });
+    showToast(thenApprove && can('approve_grn')
+      ? `حُفظ الإشعار في «قيد المراجعة» — اعتمده من الإعدادات لترفع الكميات إلى ${getBranchDisplayName(branchId)}`
+      : `تم حفظ الإشعار كمسودة`);
     setItems([]); setRowKeys([]); setShowModal(false); setInvoiceNumber(''); setInvoiceDate(new Date().toISOString().split('T')[0]); setReceivedBy(''); setNotes(''); setPurchaseOrderId(''); setCurrencyCode('SAR'); setExchangeRate(1); setCopySource('');
   };
 
@@ -827,9 +847,20 @@ export const GoodsReceivingView: React.FC = () => {
                 <p className="text-[11px] text-slate-500">{copySource ? `قائم على: ${copySource} — عدل الكميات والأسعار ثم احفظ كمسودة` : 'سجل استلام المواد من المورد — مسودة → مراجعة → اعتماد'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            {/* المجموع في الرأس اللاصق. كان في التذييل اللاصق داخل نافذة
+                تصفيح، فيختفي عند خمسة أصناف — تماماً حين يحتاجه المستخدم. */}
+            <div className="flex items-center gap-2.5">
               {copySource && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-primary-50 text-primary-700 border-primary-200">نسخة</span>}
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-700 border-amber-200">مسودة</span>
+              {items.length > 0 && (
+                <span className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-line bg-slate-50">
+                  <span className="text-[10px] font-bold text-slate-500 tnum">{items.length} صنف</span>
+                  <span className="text-[10px] font-bold text-slate-500 tnum">
+                    {fmt(items.reduce((s, i) => s + (Number(i.quantityReceived) || 0), 0))}
+                  </span>
+                  <span className="text-[11px] font-extrabold text-primary-700 tnum">{fmtMoney(totalAmount)}</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -893,8 +924,10 @@ export const GoodsReceivingView: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-bold text-slate-800 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة</h4>
                 <div className="flex gap-2">
-                  <Btn tone="ghost" onClick={() => setScannerOpen(true)} className="text-xs px-3 py-1.5"><ScanLine className="w-3.5 h-3.5" /> مسح سريع (كاميرا)</Btn>
-                  <Btn onClick={addItem} className="text-xs px-3 py-1.5"><Plus className="w-3.5 h-3.5" /> إضافة صنف</Btn>
+                  <Btn onClick={() => addItems(5)}><Plus className="w-3.5 h-3.5" /> 5 أصناف</Btn>
+                  <Btn onClick={addItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</Btn>
+                  <Btn tone="ghost" onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</Btn>
+                  <Btn tone="ghost" onClick={openPrintModal}><Printer className="w-3.5 h-3.5" /> Excel</Btn>
                 </div>
               </div>
               
@@ -987,10 +1020,30 @@ export const GoodsReceivingView: React.FC = () => {
                   <ErpKpi label="المعادل بالريال" value={fmtMoney(totalAmount * exchangeRate)} subTone="up" />
                 )}
               </div>
-              {/* Submit Buttons */}
-              <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
-                <button type="button" onClick={() => setShowModal(false)} className="px-6 py-2.5 border border-slate-300 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors">إلغاء</button>
-                <button type="submit" className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all">حفظ كمسودة</button>
+              {/* أزرار الحفظ — التصميم المعتمد: «حفظ كمسودة» و«حفظ واعتماد» */}
+              <div className="flex justify-end gap-2 pt-3 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-6 py-2.5 border border-line rounded-xl text-slate-700 font-bold hover:bg-slate-50 transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-surface text-slate-700 border border-line rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                >
+                  حفظ كمسودة
+                </button>
+                {can('approve_grn') && (
+                  <button
+                    type="button"
+                    onClick={(ev) => submit(ev, true)}
+                    className="px-8 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold shadow-card transition-all"
+                  >
+                    حفظ واعتماد
+                  </button>
+                )}
               </div>
             </div>
           </div>
