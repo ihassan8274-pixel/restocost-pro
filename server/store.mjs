@@ -37,6 +37,71 @@ const loadDotEnv = () => {
 };
 loadDotEnv();
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  ⛔⛔⛔ حارس بيئة الاختبار — Added 2026-10-05
+//
+//  المشكلة: server/test/delta-bootstrap.test.mjs كان يستدعي ensureStore().
+//  لأن server/.env يحمّل DATABASE_URL تلقائياً عبر process.loadEnvFile أعلاه،
+//  فإن hasPg() ⇒ true ⇒ الاختبار كان يتصل بـ PostgreSQL الإنتاجي على :5433
+//  ويكتب 7 صفوف في change_log في كل تشغيل (تم رصد 35 تشغيلاً = 245 صفاً).
+//
+//  ⭐ الاختبارات لا تُمرّر أبداً على ensureStore / المسار الافتراضي.
+//     الاختبار يبني متجره الخاص: createSqliteStore(':memory:').
+//
+// ⭐ كيف يعمل الكشف:
+//   - node --test  ⇒ NODE_TEST_CONTEXT='child-v8'   (تم التحقق تجريبياً)
+//   - vitest       ⇒ VITEST='true'
+//   - plain node   ⇒ لا شيء ⇒ الحارس معطّل (وضع التشغيل الطبيعي)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const IN_TEST_PROCESS = Boolean(process.env.NODE_TEST_CONTEXT) || process.env.VITEST === 'true';
+
+export const __testGuard = { active: IN_TEST_PROCESS, why: process.env.NODE_TEST_CONTEXT || process.env.VITEST || null };
+
+// ⛔ بيانات الإنتاج — هذا الملف فيه كل الفواتير والأصناف والقيود. لا يُفتح من اختبار.
+const PROD_SQLITE_PATH = () => path.join(fileURLDir(import.meta.url), 'data', 'restocost.db');
+
+/**
+ * ⛔ يمنع أي عملية في بيئة اختبار من فتح قاعدة الإنتاج.
+ *    يُستدعى من createSqliteStore قبل فتح أي مسار.
+ * @param {string|undefined} dbPath - the path the caller wants to open
+ * @returns {void} throws if the caller tried to open production
+ */
+export function assertNotProduction(dbPath) {
+  if (!IN_TEST_PROCESS) return;                       // not a test process — fine
+  if (dbPath === ':memory:') return;                  // ⭐ الذاكرة دائماً مسموحة
+
+  const target = path.resolve(dbPath || PROD_SQLITE_PATH());
+  const prod = path.resolve(PROD_SQLITE_PATH());
+
+  // ⭐ المطابقة بالاسم الكامل لا تكفي: مسار نسبي من مجلد آخر
+  //   ('data/restocost.db') يشير لملف مختلف على القرص لكنه نفس ملف الإنتاج
+  //   من ناحية المخطّط. نقارن اللاحقة بعد التطبيع ⇒ يلتقط صيغ الكتابة كلها.
+  const norm = (p) => path.resolve(p).replace(/\\/g, '/').toLowerCase();
+  const prodNorm = norm(prod);
+  const targetNorm = norm(target);
+
+  const isProd =
+    targetNorm === prodNorm ||
+    targetNorm.endsWith('/data/restocost.db') ||
+    targetNorm.endsWith('/restocost.db');
+
+  if (isProd) {
+    throw Object.assign(
+      new Error(
+        '[store] TEST SAFETY: a test tried to open the PRODUCTION database.\n' +
+        `  path: ${target}\n` +
+        '  Tests must use an isolated store:\n' +
+        "      import { createSqliteStore } from '../store.mjs';\n" +
+        "      const store = createSqliteStore(':memory:');\n" +
+        '  Never call ensureStore() from a test — it resolves to whatever\n' +
+        '  DATABASE_URL points at, which in this repo is the live database.',
+      ),
+      { code: 'ERR_TEST_OPENED_PRODUCTION_DB' },
+    );
+  }
+}
+
 const num = (v, fallback) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : fallback; };
 
 export const SESSION_TTL_MS = num(process.env.SESSION_TTL_MS, 30 * 24 * 3600 * 1000); // sessions expire after 30 days of inactivity
@@ -357,8 +422,10 @@ const createPgStore = async (prisma) => {
 // Legacy SQLite-backed store (fallback)
 // ---------------------------------------------------------------------------
 const createSqliteStore = (dbPath) => {
+  // ⛔ بيئة الاختبار لا تفتح الإنتاج — يُفحص قبل أي mkdir أو فتح
+  assertNotProduction(dbPath);
   const dataDir = path.join(fileURLDir(import.meta.url), 'data');
-  fs.mkdirSync(dataDir, { recursive: true });
+  if (!dbPath || dbPath !== ':memory:') fs.mkdirSync(dataDir, { recursive: true });
   const db = new DatabaseSync(dbPath || path.join(dataDir, 'restocost.db'));
 
   db.exec(`
@@ -575,6 +642,21 @@ const freshFallback = () => (pending = createSqliteStore());
 
 export const ensureStore = async () => {
   if (backend) return backend;
+  // ⛔⛔ هذا ما سمح لـ delta-bootstrap.test.mjs بالكتابة في الإنتاج:
+  //    الاختبار استدعى ensureStore() ⇒ DATABASE_URL موجود ⇒ PostgreSQL حي.
+  //    الآن أي استدعاء من بيئة اختبار يفشل بصوت عالٍ بدل أن يمرّ صامتاً.
+  if (IN_TEST_PROCESS) {
+    throw Object.assign(
+      new Error(
+        '[store] TEST SAFETY: ensureStore() must not be called from a test.\n' +
+        '  It resolves to the live engine (DATABASE_URL ⇒ PostgreSQL production).\n' +
+        "  Use an isolated store instead:\n" +
+        "      import { createSqliteStore } from '../store.mjs';\n" +
+        "      const store = createSqliteStore(':memory:');",
+      ),
+      { code: 'ERR_TEST_ENSURE_STORE' },
+    );
+  }
   if (!hasPg()) { backend = createSqliteStore(); return backend; }
   try {
     const { prisma } = await import('./lib/prisma.ts');

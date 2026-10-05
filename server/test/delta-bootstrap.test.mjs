@@ -4,14 +4,25 @@
 // lastMod = 0 ⇒ `0 <= since` لكل since ≥ 0 ⇒ كل مفتاح يُتخطّى ⇒
 // data فارغة دوماً في وضع delta. النتيجة: المزامنة التلقائية بين الأجهزة
 // مكسورة بصمت — الجهاز يسأل "هل تغيّر شيء؟" فيستقبل فارغاً فيظنّ أنه لا جديد.
-import { test, before } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { store, ensureStore } from '../store.mjs';
+import { createSqliteStore } from '../store.mjs';
 
-// Facade resolves the engine on first use; without init a fresh SQLite store is
-// created per call, so kvSeq would be empty on every getKvMeta.
-before(async () => { await ensureStore(); });
+// ⛔⛔⛔ كان هنا `await ensureStore()` — وهذا كان يكتب في الإنتاج.
+//
+// ما كان يحدث: store.mjs يحمّل server/.env تلقائياً عبر process.loadEnvFile،
+// وفيه DATABASE_URL ⇒ hasPg() = true ⇒ الاختبار كان يتصل بـ PostgreSQL
+// الإنتاجي على 127.0.0.1:5433 (قاعدة restocost2) ويكتب في change_log.
+//
+// الأثر المقيس: 35 تشغيلاً للاختبار = 245 صفاً في change_log الإنتاجي
+// (cdcPush لكل setKV/deleteKV). الصفوف تُحذف من kv، لكن يبقى الأثر في
+// سجل المزامنة — وهو ما تستخدمه الأجهزة في /api/bootstrap?since=N.
+//
+// ⭐ الآن: متجر معزول في الذاكرة. صفر اتصال، صفر كتابة، صفر تسريب.
+const store = createSqliteStore(':memory:');
 
+// ⭐ لا يعتمد على rcerp_inventory الموجود في الإنتاج
+//    (kvSeq هي Map داخل المتجر المعزول — تبدأ فارغة)
 test('مفتاح لم يُكتب بعد ⇒ null (يُرسل كاملاً لا delta)', () => {
   assert.equal(store.getKvMeta('rcerp_key_never_written_zzz'), null);
 });
