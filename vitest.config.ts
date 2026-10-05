@@ -24,6 +24,7 @@ export default defineConfig({
       'src/**/*.test.{ts,tsx}',
       'server/test/repo/**/*.test.mjs',
       'control/src/**/*.test.ts',
+      'api/src/**/*.test.ts',
     ],
     // ⛔ كان 'server/**' — وده كان بيمسح test/repo مع بعض. استثنيناه صريح.
     exclude: ['node_modules/**', 'dist/**', 'server/data/**', 'server/tests/**'],
