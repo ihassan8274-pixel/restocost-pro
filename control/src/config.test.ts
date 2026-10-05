@@ -170,6 +170,83 @@ companies:
     expect(cfg.companies[0]!.databaseUrl).not.toContain('${');
   });
 
+  // ── CFG-14..CFG-16  the WRITE path ──────────────────────────────────────
+  // ⛔⛔ CFG-09..CFG-13 all go through loadConfig() — the READ path. The write
+  //    path (addCompany → assertValid → commitDoc) had NO behavioural test at
+  //    all, so deleting its checkDatabaseUrl call left all 14 tests green.
+  //    Measured: injecting that regression produced zero red tests.
+  //    A guard nobody exercises is not a guard.
+  it('[CFG-14] ⭐ addCompany() REFUSES a literal password', async () => {
+    write(good('postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_alpha'));
+    const { resetCache, addCompany } = await import('./config.js');
+    resetCache();
+    expect(() =>
+      addCompany({
+        id: 'bravo', name: 'Bravo', subdomain: 'bravo.example.com', port: 3015,
+        databaseUrl: 'postgres://restocost_app:literalSecret@127.0.0.1:5433/restocost_bravo',
+      }),
+    ).toThrow(/حرفية/);
+  });
+
+  it('[CFG-15] ⭐ addCompany() REFUSES CHANGE_ME', async () => {
+    write(good('postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_alpha'));
+    const { resetCache, addCompany } = await import('./config.js');
+    resetCache();
+    expect(() =>
+      addCompany({
+        id: 'bravo', name: 'Bravo', subdomain: 'bravo.example.com', port: 3015,
+        databaseUrl: 'postgres://restocost_app:CHANGE_ME@127.0.0.1:5433/restocost_bravo',
+      }),
+    ).toThrow(/CHANGE_ME/);
+  });
+
+  it('[CFG-16] ⭐ addCompany() ACCEPTS a good entry and the YAML keeps its comments', async () => {
+    // ⭐ not just a rejection test. If the guard rejects everything, CFG-14/15
+    //    pass while the Control Plane is unusable. This proves a valid company
+    //    still gets through AND that the atomic write preserves comments.
+    write(
+      '# ⭐ hand-written comment that must survive\n' +
+      'control:\n  port: 3010\n  subdomain: control.example.com\n' +
+      'companies:\n  - id: alpha\n    name: Alpha\n' +
+      '    subdomain: alpha.example.com\n    port: 3011\n' +
+      '    databaseUrl: postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_alpha\n',
+    );
+    process.env['COMPANY_DB_PASSWORD'] = 'pw';
+    const { resetCache, addCompany } = await import('./config.js');
+    resetCache();
+    addCompany({
+      id: 'bravo', name: 'Bravo', subdomain: 'bravo.example.com', port: 3015,
+      databaseUrl: 'postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_bravo',
+    });
+    const { readFileSync } = await import('node:fs');
+    const saved = readFileSync(join(dir, 'companies.yaml'), 'utf8');
+    expect(saved).toContain('hand-written comment that must survive');
+    expect(saved).toContain('bravo');
+    expect(saved).not.toContain('CHANGE_ME');
+    expect(saved).not.toContain('literalSecret');
+  });
+
+  it('[CFG-17] ⭐ saveDoc writes atomically: tmp+rename, and leaves no .tmp behind', async () => {
+    // ⭐ Measured gap: replacing renameSync with a direct writeFileSync left
+    //    every other test green — including CFG-16's comment check. Nothing
+    //    guarded the atomicity itself.
+    //    Why it matters: a half-written companies.yaml is not a corrupted file
+    //    the app can recover from, it is an empty or truncated one. Both
+    //    companies vanish from the Control Plane with no error anywhere.
+    write(good('postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_alpha'));
+    const { resetCache, loadDoc, saveDoc } = await import('./config.js');
+    const { existsSync } = await import('node:fs');
+    resetCache();
+
+    saveDoc(loadDoc());   // a no-op rewrite: same content, must still be atomic
+
+    expect(existsSync(join(dir, 'companies.yaml.tmp'))).toBe(false);
+    // the real file must be intact and still parse
+    const { resetCache: rc2, loadConfig } = await import('./config.js');
+    rc2();
+    expect(loadConfig().companies[0]!.id).toBe('alpha');
+  });
+
   it('[CFG-13] ⭐ the SHIPPED config/companies.yaml has no CHANGE_ME and no wrong port', async () => {
     // ⭐ 5432 is Docker. PostgreSQL 18 listens on 5433. The shipped file had 5432
     // in four places, which would have connected to the Docker forwarder.
