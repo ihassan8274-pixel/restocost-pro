@@ -39,10 +39,17 @@ export const usePeriodStore = create<PeriodState>()(
         set((state) => ({ closedDays: [...state.closedDays, d].sort() }));
       },
 
+      // ── إعادة فتح يوم: كتابة ذرّية ──
+      // كان set للـclosedDays ثم set للـeodClosures. انقطاع بينهما = اليوم
+      // ما زال في سجل الإغلاق المالي ولم يُحذف من قائمة الأيام المغلقة،
+      // فيقول النظام مفتوحاً ويحسب قيوده وقيد الإغلاق باقٍ — تناقض في يوم
+      // محاسبي.
       reopenDay: (date) => {
         const d = (date || '').slice(0, 10);
-        set((state) => ({ closedDays: state.closedDays.filter((x) => x !== d) }));
-        set((state) => ({ eodClosures: state.eodClosures.filter((c) => c.date !== d) }));
+        set((state) => ({
+          closedDays: state.closedDays.filter((x) => x !== d),
+          eodClosures: state.eodClosures.filter((c) => c.date !== d),
+        }));
       },
 
       startMonthlyInventory: (branchId, monthKey, items?: MonthlyInventoryItem[]) => {
@@ -96,12 +103,20 @@ closeMonthlyInventory: (id, settlement?: { appliedAt?: string; shortages?: numbe
         set((state) => ({ monthlyInventory: state.monthlyInventory.filter((x) => x.id !== id) }));
       },
 
+      // ── إعادة فتح جرد شهري: كتابة ذرّية ──
+      // كان set للمخزون الشهري ثم set لـclosedMonths. انقطاع بينهما =
+      // الشهر ما زال «مفتوحاً» في سجل الإغلاق وبانتظار عدّ في شاشة الجرد —
+      // فيُعدّ مرتين أو لا يُعدّ أصلاً. الآن set واحدة.
       reopenMonthlyInventory: (id) => {
         const p = get().monthlyInventory.find((x) => x.id === id);
         if (!p) return;
         if (p.status === 'counting') return;
-        set((state) => ({ monthlyInventory: state.monthlyInventory.map((x) => (x.id === id ? { ...x, status: 'counting' as const, closedAt: undefined } : x)) }));
-        set((state) => ({ closedMonths: state.closedMonths.filter((m) => m !== p.monthKey) }));
+        set((state) => ({
+          monthlyInventory: state.monthlyInventory.map((x) =>
+            x.id === id ? { ...x, status: 'counting' as const } : x,
+          ),
+          closedMonths: state.closedMonths.filter((m) => m !== p.monthKey),
+        }));
       },
     }),
     { name: 'rcerp_period' }

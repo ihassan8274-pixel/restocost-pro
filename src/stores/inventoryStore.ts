@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { planPosting, planUnposting, type PostLine } from '../business/grnPosting';
 import type { GoodsReceiptNote } from '../types';
 import { persist } from 'zustand/middleware';
@@ -298,11 +298,37 @@ export const useInventoryStore = create<InventoryState>()(
         set((state) => ({ branchStockLimits: state.branchStockLimits.filter((b) => !(b.branchId === branchId && b.rawMaterialId === rawMaterialId)) }));
       },
 
+      // ── الجرد الفعلي: كتابة ذرّية ──
+      // كان يحفظ الجرد في set، ثم يعدّل الرصيد في set لكل صنف داخل حلقة —
+      // N+1 تحديثاً. ١٥ صنفاً = ١٦ كتابة للتخزين، وأي انقطاع بينها يترك
+      // الجرد محفوظاً والرصيد نصفه. الآن set واحدة تبني الاثنين معاً.
       recordPhysicalCount: (data) => {
         const newCount: PhysicalStockCount = { ...data, id: nextId('psc'), date: today() };
-        set((state) => ({ physicalCounts: [newCount, ...state.physicalCounts] }));
-        newCount.items.forEach((item) => {
-          set((state) => ({ inventory: state.inventory.map((i) => i.branchId === newCount.branchId && i.rawMaterialId === item.rawMaterialId ? { ...i, quantity: item.actualQty, lastUpdated: today() } : i) }));
+        set((state) => {
+          // خريطة amounts مرة واحدة، بدل مسح المخزون كاملاً لكل صنف
+          const byMaterial = new Map(newCount.items.map((it) => [it.rawMaterialId, it.actualQty]));
+          const stamp = today();
+
+          const inventory = state.inventory.map((i) =>
+            (i.branchId === newCount.branchId && byMaterial.has(i.rawMaterialId))
+              ? { ...i, quantity: byMaterial.get(i.rawMaterialId) as number, lastUpdated: stamp }
+              : i,
+          );
+
+          // أصناف الجرد التي لا سجل لها في المخزون ⇒ تُنشأ (كانت تُتجاهل
+          // بصمت: الجرد يقول الكمية لكن الرصيد لا يُنشأ، فيبقى مفقوداً)
+          const seen = new Set(state.inventory
+            .filter((i) => i.branchId === newCount.branchId)
+          .map((i) => i.rawMaterialId));
+          const missing = newCount.items.filter((it) => it.rawMaterialId && !seen.has(it.rawMaterialId));
+          for (const it of missing) {
+            inventory.push({
+              id: nextId('inv'), branchId: newCount.branchId, rawMaterialId: it.rawMaterialId,
+              quantity: it.actualQty, lastUpdated: stamp,
+            } as InventoryRecord);
+          }
+
+          return { physicalCounts: [newCount, ...state.physicalCounts], inventory };
         });
       },
 
