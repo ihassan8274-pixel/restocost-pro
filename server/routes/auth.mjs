@@ -145,7 +145,7 @@ export const registerAuth = (app) => {
     const users = getKV('rcerp_users') || [];
     const voter = sessionUser(readToken(req));
     if (users.some((u) => u.email.toLowerCase() === String(email).trim().toLowerCase())) {
-      return res.status(400).json({ ok: false, error: 'هذا البريد الإلكتروني مسجل مسبقاً' });
+      return res.status(400).json({ ok: false, error: 'هذا البريد الإلكتروني أو كلمة المرور غير صحيحة' });
     }
     // سياسة كلمة المرور تُطبَّق على التسجيل نفسه لا على تغيير كلمة المرور فقط.
     const policyErr = validatePassword(password);
@@ -235,7 +235,7 @@ export const registerAuth = (app) => {
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
     const { oldPassword, newPassword } = req.body || {};
     const validOld = await verifyPassword(oldPassword, user.passwordHash);
-    if (!validOld) return res.json({ ok: false, error: 'كلمة المرور الحالية غير صحيحة' });
+    if (!validOld) return res.json({ ok: false, error: 'كلمة المرور الحالية أو الجديدة غير صحيحة' });
     const policyErr = validatePassword(newPassword);
     if (policyErr) return res.json({ ok: false, error: policyErr });
     const users = getKV('rcerp_users') || [];
@@ -304,7 +304,7 @@ export const registerAuth = (app) => {
     if (policyErr) return res.status(400).json({ ok: false, error: policyErr });
     const users = getKV('rcerp_users') || [];
     if (users.some((u) => u.email.toLowerCase() === String(email).trim().toLowerCase())) {
-      return res.status(400).json({ ok: false, error: 'هذا البريد الإلكتروني مسجل مسبقاً' });
+      return res.status(400).json({ ok: false, error: 'هذا البريد الإلكتروني أو كلمة المرور غير صحيحة' });
     }
     const user = {
       id: `user-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
