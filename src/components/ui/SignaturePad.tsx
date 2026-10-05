@@ -91,7 +91,7 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({ value, onChange, hei
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[11px] font-extrabold text-slate-600 flex items-center gap-1.5"><PenLine className="w-3.5 h-3.5 text-indigo-500" /> {label}</span>
+        <span className="text-[11px] font-extrabold text-slate-600 flex items-center gap-1.5"><PenLine className="w-3.5 h-3.5 text-brand-500" /> {label}</span>
         <div className="flex items-center gap-1">
           {hasInk && (
             <button type="button" onClick={emit} className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1 hover:bg-emerald-100">

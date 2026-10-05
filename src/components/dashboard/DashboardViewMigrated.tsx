@@ -64,7 +64,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
     if (currentUser && currentUser.branchId !== 'all') setBranchFilter(currentUser.branchId);
   }, [currentUser?.branchId]);
 
-  const selectCls = 'rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30';
+  const selectCls = 'rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/30';
 
   // ---- تصفية حسب الفرع والفترة ----
   const filteredPl = plSummaries.filter((p) =>
@@ -167,13 +167,13 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
         <Card className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center"><Rocket className="w-5 h-5" /></span>
+              <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-500 text-white flex items-center justify-center"><Rocket className="w-5 h-5" /></span>
               <div>
                 <p className="text-sm font-black text-slate-900">أكمل إعداد نظام التكلفة</p>
                 <p className="text-[11px] font-bold text-slate-500">{setupNeeded ? 'لم تتم إضافة مخازن ولا موردين بعد — معالج سريع في 4 خطوات.' : 'بعض الخطوات الأساسية لم تكتمل بعد (مخازن/موردون/أصناف/وصفات).'}</p>
               </div>
             </div>
-            <button onClick={() => setShowSetup(true)} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-sm">
+            <button onClick={() => setShowSetup(true)} className="flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-xs shadow-sm">
               <Rocket className="w-4 h-4" /> تشغيل الإعداد الأولي
             </button>
           </div>
@@ -186,7 +186,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
           <SectionHeader
             title="واصل من حيث توقفت"
             subtitle="آخر المستندات التي عملت عليها — اضغط للعودة فوراً إلى شاشتها"
-            icon={<History className="w-4 h-4 text-indigo-500" />}
+            icon={<History className="w-4 h-4 text-brand-500" />}
             extra={<Btn tone="ghost" onClick={clearRecentDocs} className="!px-2.5 !py-1 !text-[10px]">مسح السجل</Btn>}
           />
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -194,9 +194,9 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
               <button
                 key={`${d.type}-${d.id}`}
                 onClick={() => onNavigate(recentByTab(d))}
-                className="text-right rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-indigo-50 hover:border-indigo-200 hover:shadow-sm transition-all px-3 py-2.5"
+                className="text-right rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-brand-50 hover:border-brand-200 hover:shadow-sm transition-all px-3 py-2.5"
               >
-                <p className="text-[11px] font-black text-indigo-700">{RECENT_TYPE_LABELS[d.type] || d.type}</p>
+                <p className="text-[11px] font-black text-brand-700">{RECENT_TYPE_LABELS[d.type] || d.type}</p>
                 <p className="text-xs font-bold text-slate-800 truncate mt-0.5">{d.title}</p>
                 <p className="text-[9px] font-bold text-slate-400 mt-1">{relative(d.at)}</p>
               </button>
@@ -207,7 +207,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
       <PageHeader
         title="لوحة التحكم والتحليلات التنفيذية"
         subtitle="مؤشرات الأداء الرئيسية، التوجهات المالية، التنبؤ بالتشغيل، ومتابعة الانحرافات"
-        icon={<TrendingUp className="w-6 h-6 text-indigo-600" />}
+        icon={<TrendingUp className="w-6 h-6 text-brand-600" />}
         actions={
           <ViewToolbar
             filename="لوحة التحكم"
@@ -276,7 +276,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
           <SectionHeader
             title="توجه المبيعات والتنبؤ الشهري"
             subtitle="أداء المبيعات الشهرية مع تنبؤ بالانحدار الخطي للثلاثة أشهر القادمة"
-            icon={<TrendingUp className="w-5 h-5 text-indigo-600" />}
+            icon={<TrendingUp className="w-5 h-5 text-brand-600" />}
             extra={<span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg">نموذج تنبؤ مدمج</span>}
           />
           <div className="h-72 mt-4">
@@ -308,7 +308,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
         </Card>
 
         <Card className="p-5">
-          <SectionHeader title="توزيع المصاريف التشغيلية" icon={<Wallet className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="توزيع المصاريف التشغيلية" icon={<Wallet className="w-5 h-5 text-brand-600" />} />
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -326,7 +326,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
       {/* Branch performance + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2 p-5">
-          <SectionHeader title="أداء الفروع" subtitle="المبيعات مقابل صافي الربح لكل فرع" icon={<UsersIcon className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="أداء الفروع" subtitle="المبيعات مقابل صافي الربح لكل فرع" icon={<UsersIcon className="w-5 h-5 text-brand-600" />} />
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={branchPerformance}>
@@ -358,7 +358,7 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
               </div>
             ))}
             {unack.length === 0 && <p className="text-xs text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 rounded-xl p-3">✓ لا توجد انحرافات تكلفة نشطة — الأداء ضمن الحدود</p>}
-            <button onClick={() => onNavigate('cost_reports')} className="w-full text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 mt-1">
+            <button onClick={() => onNavigate('cost_reports')} className="w-full text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center justify-center gap-1 mt-1">
               عرض تقارير التكلفة <ArrowLeft className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -367,12 +367,12 @@ export const DashboardViewMigrated: React.FC<{ onNavigate: (tab: string) => void
 
       {/* Quick links */}
       {can('use_ai') && (
-        <button onClick={() => onNavigate('ai_advisor')} className="w-full bg-gradient-to-l from-indigo-600 to-violet-600 text-white rounded-2xl p-4 shadow-lg flex items-center justify-between hover:opacity-95 transition-opacity">
+        <button onClick={() => onNavigate('ai_advisor')} className="w-full bg-gradient-to-l from-brand-600 to-violet-600 text-white rounded-2xl p-4 shadow-lg flex items-center justify-between hover:opacity-95 transition-opacity">
           <div className="flex items-center gap-3">
             <Sparkles className="w-6 h-6" />
             <div className="text-right">
               <p className="font-extrabold text-sm">المستشار الذكي للتكاليف</p>
-              <p className="text-[11px] text-indigo-100">تحليل ذكي للانحرافات وتوصيات لخفض التكاليف ورفع الهامش</p>
+              <p className="text-[11px] text-brand-100">تحليل ذكي للانحرافات وتوصيات لخفض التكاليف ورفع الهامش</p>
             </div>
           </div>
           <TrendingDown className="w-5 h-5 opacity-80" />

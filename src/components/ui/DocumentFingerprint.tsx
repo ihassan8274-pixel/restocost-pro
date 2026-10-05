@@ -14,8 +14,8 @@ const ICONS: Record<string, React.ReactNode> = {
   'إنشاء': <FilePlus2 className="w-3.5 h-3.5 text-emerald-600" />,
   'إدخال': <FilePlus2 className="w-3.5 h-3.5 text-emerald-600" />,
   'تسجيل': <FilePlus2 className="w-3.5 h-3.5 text-emerald-600" />,
-  'اعتماد': <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />,
-  'تحديث حالة': <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />,
+  'اعتماد': <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />,
+  'تحديث حالة': <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />,
   'إرسال': <Send className="w-3.5 h-3.5 text-sky-600" />,
   'تعديل': <Pencil className="w-3.5 h-3.5 text-amber-600" />,
   'إرجاع': <RotateCcw className="w-3.5 h-3.5 text-orange-600" />,
@@ -49,7 +49,7 @@ export const DocumentFingerprint: React.FC<DocumentFingerprintProps> = ({ entity
       className={`w-full flex items-center justify-between gap-2 text-right ${collapsible ? 'cursor-pointer' : 'cursor-default'}`}
     >
       <span className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-700 dark:text-slate-200">
-        <Fingerprint className="w-3.5 h-3.5 text-indigo-500" />
+        <Fingerprint className="w-3.5 h-3.5 text-brand-500" />
         {title || 'بصمة المستند'}
         <span className="text-[10px] font-mono font-bold text-slate-400">{events.length} حدث</span>
       </span>
@@ -59,14 +59,14 @@ export const DocumentFingerprint: React.FC<DocumentFingerprintProps> = ({ entity
 
   if (!open) {
     return (
-      <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2 dark:border-indigo-900 dark:bg-indigo-950/30">
+      <div className="rounded-xl border border-brand-100 bg-brand-50/50 px-3 py-2 dark:border-brand-900 dark:bg-brand-950/30">
         {Header}
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2.5 dark:border-indigo-900 dark:bg-indigo-950/30">
+    <div className="rounded-xl border border-brand-100 bg-brand-50/50 px-3 py-2.5 dark:border-brand-900 dark:bg-brand-950/30">
       {Header}
       {events.length === 0 ? (
         <p className="mt-2 text-[11px] font-bold text-slate-400">لا يوجد سجل لهذه الوثيقة بعد</p>

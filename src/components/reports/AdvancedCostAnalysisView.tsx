@@ -247,7 +247,7 @@ export const AdvancedCostAnalysisView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تحليل التكلفة المتقدم" subtitle="انحراف التكلفة، سجل أسعار المواد، محاكاة التسعير، تكلفة الخدمة لكل عملية، ومحلل الهالك بالذكاء الاصطناعي" icon={<Activity className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="تحليل التكلفة المتقدم" subtitle="انحراف التكلفة، سجل أسعار المواد، محاكاة التسعير، تكلفة الخدمة لكل عملية، ومحلل الهالك بالذكاء الاصطناعي" icon={<Activity className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="تحليل_التكلفة_المتقدم" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -260,7 +260,7 @@ export const AdvancedCostAnalysisView: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الهالك</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{fmtMoney(wastageTotal)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الهالك من تكلفة الطعام</span><strong className="text-lg font-extrabold font-mono text-amber-600 block mt-1">{foodCostTotal ? ((wastageTotal / foodCostTotal) * 100).toFixed(2) : '0.0'}%</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مصروف مركزي موزع</span><strong className="text-lg font-extrabold font-mono text-violet-600 block mt-1">{fmtMoney(centralPaid)}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مواد بارتفاع سعر &gt; 15%</span><strong className="text-lg font-extrabold font-mono text-indigo-600 block mt-1">{priceRows.filter((p) => p.change > 15).length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مواد بارتفاع سعر &gt; 15%</span><strong className="text-lg font-extrabold font-mono text-brand-600 block mt-1">{priceRows.filter((p) => p.change > 15).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">وصفات متأثرة بالارتفاع</span><strong className="text-lg font-extrabold font-mono text-emerald-600 block mt-1">{affectedRecipes.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أعلى انحراف +</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{varianceRows.length ? fmt(varianceRows[0].variance, 0) : 0} ر.س</strong></div>
       </div>
@@ -365,7 +365,7 @@ export const AdvancedCostAnalysisView: React.FC = () => {
       {tab === 'simulation' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="p-4">
-            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Calculator className="w-4 h-4 text-indigo-600" /> محاكاة ماذا لو (What-if)</h3>
+            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Calculator className="w-4 h-4 text-brand-600" /> محاكاة ماذا لو (What-if)</h3>
             <div className="space-y-3">
               <div>
                 <span className="font-bold text-slate-700 block mb-1 text-xs">الصنف</span>
@@ -383,7 +383,7 @@ export const AdvancedCostAnalysisView: React.FC = () => {
                   <input type="number" min="0" max="90" step="0.01" value={simTargetMargin || ''} onChange={(e) => setSimTargetMargin(parseFloat(e.target.value) || 0)} className={inputCls} />
                 </div>
               </div>
-              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-[11px] font-bold text-slate-700 space-y-1">
+              <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 text-[11px] font-bold text-slate-700 space-y-1">
                 <p>تكلفة الطعام: <span className="font-mono">{fmtMoney(simCosts?.foodCost || 0)}</span> | الإجمالية: <span className="font-mono">{fmtMoney(simCosts?.totalCost || 0)}</span></p>
                 <p>السعر الحالي: <span className="font-mono">{fmtMoney(simCurrentPrice)}</span> | FC الحالية: <span className="font-mono">{simCurrentPrice ? ((simCosts?.foodCost || 0) / simCurrentPrice * 100).toFixed(2) : '0'}%</span></p>
                 <p>FC الجديدة (بعد المحاكاة): <span className={`font-mono ${simEffPrice ? (simCosts!.foodCost / simEffPrice * 100 > 35 ? 'text-rose-700' : 'text-emerald-700') : ''}`}>{simEffPrice ? ((simCosts?.foodCost || 0) / simEffPrice * 100).toFixed(2) : '0'}%</span></p>
@@ -488,7 +488,7 @@ export const AdvancedCostAnalysisView: React.FC = () => {
             </Card>
           </div>
           <Card className="p-4">
-            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-indigo-600" /> تحليل أسباب الهالك</h3>
+            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-brand-600" /> تحليل أسباب الهالك</h3>
             <p className="text-[11px] text-slate-500 font-bold leading-relaxed mb-3">اضغط "محلل الهالك AI" أعلاه لعرض الملاحظات الآلية الفورية وتوليد تحليل ذكي بأسباب الهالك وإجراءات مقترحة حسب الفئة والفرع والمادة.</p>
             <div className="space-y-2">
               {wastageInsights.map((i, idx) => (

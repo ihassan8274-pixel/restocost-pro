@@ -224,7 +224,7 @@ export const InventoryMovementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تقرير حركة المخزون" subtitle="الوارد والصادر لكل صنف من المشتريات والتحويلات والإنتاج والهالك وتسويات الجرد، مع دفتر حركة تفصيلي" icon={<Activity className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="تقرير حركة المخزون" subtitle="الوارد والصادر لكل صنف من المشتريات والتحويلات والإنتاج والهالك وتسويات الجرد، مع دفتر حركة تفصيلي" icon={<Activity className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="حركة المخزون" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printSummarySheet}><Printer className="w-4 h-4" /> طباعة الملخص</Btn>
@@ -278,7 +278,7 @@ export const InventoryMovementView: React.FC = () => {
                 {liveRows.slice(0, 300).map((m) => (
                   <tr key={m.id} className="hover:bg-slate-50">
                     <td className="tnum text-left p-2.5 text-slate-500">{m.date.replace('T', ' ').slice(0, 16)}</td>
-                    <td className="p-2.5"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.delta > 0 ? 'bg-emerald-100 text-emerald-700' : m.type === 'هدر' ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700'}`}>{m.type}</span></td>
+                    <td className="p-2.5"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.delta > 0 ? 'bg-emerald-100 text-emerald-700' : m.type === 'هدر' ? 'bg-rose-100 text-rose-700' : 'bg-brand-100 text-brand-700'}`}>{m.type}</span></td>
                     <td className="tnum text-left p-2.5 text-slate-500">{m.ref || '-'}</td>
                     <td className="p-2.5">{getBranchName(m.branchId)}</td>
                     <td className="p-2.5 font-bold">{m.itemName}</td>
@@ -298,7 +298,7 @@ export const InventoryMovementView: React.FC = () => {
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الأصناف المعروضة</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{summary.length}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المشتريات (كمية)</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(totalPurchases, 2)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الصادر (كمية)</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{fmt(totalOut, 2)}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المخزون الحالي</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalCurrentValue)}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المخزون الحالي</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalCurrentValue)}</strong></div>
           </div>
 
           <Card className="p-4">
@@ -326,7 +326,7 @@ export const InventoryMovementView: React.FC = () => {
                 <tbody>
                   {summary.map((r) => (
                     <tr key={r.m.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.m.code}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{r.m.code}</td>
                       <td className="p-2 font-bold text-slate-800">{r.m.nameAr}</td>
                       <td className="p-2 text-slate-500">{categoryLabel(r.m.category, materialCategories)}</td>
                       <td className="tnum text-left p-2 text-slate-600">{fmt(r.opening, 2)}</td>
@@ -337,7 +337,7 @@ export const InventoryMovementView: React.FC = () => {
                       <td className="tnum text-left p-2 text-rose-600">{fmt(r.wastage, 2)}</td>
                       <td className={`p-2 font-mono ${r.adjustment < 0 ? 'text-rose-600' : r.adjustment > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.adjustment, 2)}</td>
                       <td className="tnum text-left p-2 text-rose-600">{fmt(r.supplierReturnsQty, 2)}</td>
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(r.calculated, 2)}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(r.calculated, 2)}</td>
                       <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(r.current, 2)}</td>
                       <td className={`p-2 font-mono font-bold ${r.diff < -0.001 ? 'text-rose-600' : r.diff > 0.001 ? 'text-amber-600' : 'text-slate-400'}`}>{fmt(r.diff, 2)}</td>
                     </tr>
@@ -380,7 +380,7 @@ export const InventoryMovementView: React.FC = () => {
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الرصيد الافتتاحي</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmt(ledger.opening, 2)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الوارد</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(ledger.inTotal, 2)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الصادر</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{fmt(ledger.outTotal, 2)}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الرصيد النهائي المحسوب</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmt(ledger.final, 2)}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الرصيد النهائي المحسوب</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmt(ledger.final, 2)}</strong></div>
           </div>
 
           <Card className="p-4">
@@ -401,7 +401,7 @@ export const InventoryMovementView: React.FC = () => {
                 </thead>
                 <tbody>
                   {ledger.rows.map((r, i) => (
-                    <tr key={i} className={`border-b border-slate-50 ${r.type === 'رصيد افتتاحي' ? 'bg-indigo-50/60' : 'hover:bg-slate-50'}`}>
+                    <tr key={i} className={`border-b border-slate-50 ${r.type === 'رصيد افتتاحي' ? 'bg-brand-50/60' : 'hover:bg-slate-50'}`}>
                       <td className="tnum text-left p-2 text-slate-600">{r.date}</td>
                       <td className="p-2 font-bold text-slate-800">{r.type}</td>
                       <td className="p-2 text-slate-500">{r.reference}</td>
@@ -409,7 +409,7 @@ export const InventoryMovementView: React.FC = () => {
                       <td className={`p-2 font-mono font-bold ${r.qty > 0.001 ? 'text-emerald-700' : r.qty < -0.001 ? 'text-rose-600' : 'text-slate-400'}`}>{r.qty > 0.001 ? '+' : ''}{fmt(r.qty, 2)}</td>
                       <td className="tnum text-left p-2 text-slate-500">{fmt(r.cost, 2)}</td>
                       <td className={`p-2 font-mono ${r.value < -0.001 ? 'text-rose-600' : r.value > 0.001 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.value, 2)}</td>
-                      <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmt(r.running, 2)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-brand-700">{fmt(r.running, 2)}</td>
                     </tr>
                   ))}
                   {ledger.rows.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-slate-500 font-bold">لا توجد حركة لهذا الصنف في الفترة المحددة</td></tr>}

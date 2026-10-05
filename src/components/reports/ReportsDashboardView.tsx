@@ -21,7 +21,7 @@ interface ReportDef {
 const CATEGORY_TONES: Record<Category, string> = {
   'الكل': 'bg-slate-900 text-white',
   'الربحية': 'bg-emerald-600 text-white',
-  'المبيعات': 'bg-indigo-600 text-white',
+  'المبيعات': 'bg-brand-600 text-white',
   'التكاليف': 'bg-rose-600 text-white',
   'المخزون': 'bg-amber-600 text-white',
   'المشتريات': 'bg-sky-600 text-white',
@@ -83,7 +83,7 @@ export const ReportsDashboardView: React.FC<ReportsDashboardViewProps> = ({ onNa
       {/* رأس الصفحة */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
             <LayoutGrid className="w-5 h-5" />
           </div>
           <div>
@@ -97,7 +97,7 @@ export const ReportsDashboardView: React.FC<ReportsDashboardViewProps> = ({ onNa
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="ابحث عن تقرير..."
-            className="w-64 bg-white border border-slate-200 rounded-xl pl-3 pr-9 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 transition-all"
+            className="w-64 bg-white border border-slate-200 rounded-xl pl-3 pr-9 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-400 transition-all"
           />
         </div>
       </div>
@@ -111,7 +111,7 @@ export const ReportsDashboardView: React.FC<ReportsDashboardViewProps> = ({ onNa
             className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
               cat === c
                 ? `${CATEGORY_TONES[c]} border-transparent shadow-sm`
-                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700'
             }`}
           >
             {c}
@@ -130,11 +130,11 @@ export const ReportsDashboardView: React.FC<ReportsDashboardViewProps> = ({ onNa
             <button
               key={r.id}
               onClick={() => openReport(r.tab)}
-              className="group bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-right transition-all hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5"
+              className="group bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-right transition-all hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 group-hover:bg-brand-600 group-hover:text-white transition-colors">
                     {r.icon}
                   </div>
                   <div className="min-w-0">
@@ -145,7 +145,7 @@ export const ReportsDashboardView: React.FC<ReportsDashboardViewProps> = ({ onNa
               </div>
               <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
                 <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full ${CATEGORY_TONES[r.category]}`}>{r.category}</span>
-                <span className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 group-hover:gap-2 transition-all">
+                <span className="flex items-center gap-1 text-[11px] font-bold text-brand-600 group-hover:gap-2 transition-all">
                   فتح التقرير <ArrowLeft className="w-3.5 h-3.5" />
                 </span>
               </div>

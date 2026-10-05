@@ -203,7 +203,7 @@ export const ERPInventoryReportsView: React.FC = () => {
 
   const exhibits: Exhibit[] = [
     {
-      id: 'wac', icon: <Scale className="w-5 h-5 text-indigo-500" />,
+      id: 'wac', icon: <Scale className="w-5 h-5 text-brand-500" />,
       title: 'التكلفة المرجحة (WAC) لكل فرع', subtitle: 'متوسط تكلفة الوحدة الحالية لكل مادة في كل فرع مع القيمة الإجمالية',
       columns: [
         { key: 'branch', label: 'الفرع' }, { key: 'code', label: 'الرمز' }, { key: 'name', label: 'الصنف' }, { key: 'cat', label: 'المجموعة' },
@@ -304,11 +304,11 @@ export const ERPInventoryReportsView: React.FC = () => {
       <PageHeader
         title="تقارير المخزون والمواد (بمعايير Oracle Material Control)"
         subtitle="التكلفة المرجحة (WAC)، انحراف الاستهلاك (Theoretical vs Actual)، تعديلات الجرد، تغطية المخزون (أيام)، وتحويلات الفروع — مع تصدير PDF احترافي و CSV"
-        icon={<Boxes className="w-6 h-6 text-indigo-600" />}
+        icon={<Boxes className="w-6 h-6 text-brand-600" />}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-slate-300">الفرع:</span>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="border border-slate-700 rounded-lg p-2 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-800 !w-56">
+            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="border border-slate-700 rounded-lg p-2 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-brand-500 bg-slate-800 !w-56">
               <option value="all">كل الفروع</option>
               {branches.map((b) => <option key={b.id} value={b.id}>{getBranchName(b.id)}</option>)}
             </select>

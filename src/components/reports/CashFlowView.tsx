@@ -137,7 +137,7 @@ export const CashFlowView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المقبوضات</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(scope.totalInflow, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المدفوعات</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{fmt(scope.totalOutflow, 0)}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي التدفق التشغيلي</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmt(scope.operatingNet, 0)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي التدفق التشغيلي</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmt(scope.operatingNet, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي التغير النقدي</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmt(scope.netCash, 0)}</strong></div>
       </div>
 
@@ -159,7 +159,7 @@ export const CashFlowView: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div key={idx} className={`flex items-center justify-between rounded-xl px-3 py-2 ${r.isBold ? 'font-extrabold text-slate-900' : 'text-slate-600 font-bold'} ${r.highlight ? 'bg-indigo-50 border border-indigo-100' : 'bg-slate-50 border border-slate-100'} text-xs`}>
+                <div key={idx} className={`flex items-center justify-between rounded-xl px-3 py-2 ${r.isBold ? 'font-extrabold text-slate-900' : 'text-slate-600 font-bold'} ${r.highlight ? 'bg-brand-50 border border-brand-100' : 'bg-slate-50 border border-slate-100'} text-xs`}>
                   <span>{r.label}</span>
                   <span className={`font-mono ${r.value < 0 ? 'text-rose-600' : 'text-slate-900'}`}>{fmt(r.value, 0)}</span>
                 </div>
@@ -207,7 +207,7 @@ export const CashFlowView: React.FC = () => {
                   <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(m.inflows)}</td>
                   <td className="tnum text-left p-2 font-bold text-rose-600">{fmt(m.outflows)}</td>
                   <td className="tnum text-left p-2 font-bold text-amber-700">{fmt(m.investing)}</td>
-                  <td className={`p-2 font-mono font-bold ${m.net < 0 ? 'text-rose-600' : 'text-indigo-700'}`}>{fmt(m.net)}</td>
+                  <td className={`p-2 font-mono font-bold ${m.net < 0 ? 'text-rose-600' : 'text-brand-700'}`}>{fmt(m.net)}</td>
                 </tr>
               ))}
               {monthly.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-slate-500 font-bold">لا توجد بيانات للفترة المحددة</td></tr>}

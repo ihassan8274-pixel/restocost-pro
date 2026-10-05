@@ -39,7 +39,7 @@ export const StockTransferCostsView: React.FC = () => {
   return (
     <div className="space-y-4">
       <PageHeader
-        icon={<GitCompare className="w-5 h-5 text-indigo-600" />}
+        icon={<GitCompare className="w-5 h-5 text-brand-600" />}
         title="مقارنة تكاليف التحويل/النقل"
         subtitle="تتبع تكلفة النقل لكل تحويل بين الفروع + ملاحظة الناقل والموافقات — لتكتشف أين تتسرب تكاليف النقل"
         actions={<StatusPill status="approved" map={{ approved: `إجمالي تكلفة النقل: ${fmtMoney(totals.transport)}` }} />}
@@ -50,7 +50,7 @@ export const StockTransferCostsView: React.FC = () => {
           <Field label="من تاريخ"><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={inputCls} /></Field>
           <Field label="إلى تاريخ"><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputCls} /></Field>
           <label className="flex items-center gap-2 pb-2.5">
-            <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} className="accent-indigo-600" />
+            <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} className="accent-brand-600" />
             <span className="text-xs font-bold text-slate-600">كذلك المسودات والمرفوضة</span>
           </label>
         </div>
@@ -72,7 +72,7 @@ export const StockTransferCostsView: React.FC = () => {
                   <div className="font-black text-slate-800 text-xs">{getBranchName(b)}</div>
                   <div className="text-[9px] text-slate-400 font-bold">{v.count} تحويل</div>
                 </div>
-                <div className="font-mono font-black text-indigo-700">{fmtMoney(v.cost)}</div>
+                <div className="font-mono font-black text-brand-700">{fmtMoney(v.cost)}</div>
               </div>
             ))}
           </div>
@@ -101,7 +101,7 @@ export const StockTransferCostsView: React.FC = () => {
                   <td className="p-2 font-bold"><ArrowRightLeft className="w-3.5 h-3.5 inline text-slate-400" /> {getBranchName(t.fromBranchId)} ← {getBranchName(t.toBranchId)}</td>
                   <td className="p-2"><StatusPill status={t.status} map={{ draft: 'مسودة', submitted: 'مقدمة', approved: 'معتمدة', rejected: 'مرفوضة' }} /></td>
                   <td className="tnum text-left p-2">{t.items?.reduce((s, i) => s + i.quantity, 0) || 0}</td>
-                  <td className={`p-2 font-mono font-black ${Number(t.transportCost) > 0 ? 'text-indigo-700' : 'text-slate-400'}`}>{t.transportCost ? fmtMoney(Number(t.transportCost)) : '—'}</td>
+                  <td className={`p-2 font-mono font-black ${Number(t.transportCost) > 0 ? 'text-brand-700' : 'text-slate-400'}`}>{t.transportCost ? fmtMoney(Number(t.transportCost)) : '—'}</td>
                   <td className="p-2 text-slate-500 font-bold">{t.transportNote || '—'}</td>
                   <td className="p-2 text-slate-500 font-bold">{t.approvedBy || '—'}</td>
                 </tr>

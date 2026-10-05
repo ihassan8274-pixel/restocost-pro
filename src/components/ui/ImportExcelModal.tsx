@@ -156,12 +156,12 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
         {!sheets.length ? (
           <div className="space-y-4">
             <label
-              className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-2xl p-8 cursor-pointer transition-colors text-center ${dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/40'}`}
+              className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-2xl p-8 cursor-pointer transition-colors text-center ${dragOver ? 'border-brand-500 bg-brand-50' : 'border-slate-300 hover:border-brand-400 hover:bg-brand-50/40'}`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}
             >
-              <Upload className={`w-8 h-8 ${dragOver ? 'text-indigo-600' : 'text-indigo-500'}`} />
+              <Upload className={`w-8 h-8 ${dragOver ? 'text-brand-600' : 'text-brand-500'}`} />
               <div>
                 <p className="font-extrabold text-slate-800">{dragOver ? 'أفلت الملف هنا' : 'اسحب الملف هنا أو اضغط للاختيار'}</p>
                 <p className="text-slate-500 mt-1">ملف Excel (.xlsx) أو CSV — العمود الأول ترويسة (أسماء الأعمدة)</p>
@@ -170,7 +170,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
             </label>
             {templateName && (
               <div className="flex justify-center">
-                <button onClick={() => downloadTemplate(templateName, columns.map((c) => c.label), [columns.map((c) => c.sample || '')])} className="flex items-center gap-1.5 text-indigo-600 font-bold hover:text-indigo-800">
+                <button onClick={() => downloadTemplate(templateName, columns.map((c) => c.label), [columns.map((c) => c.sample || '')])} className="flex items-center gap-1.5 text-brand-600 font-bold hover:text-brand-800">
                   <Download className="w-4 h-4" /> تنزيل قالب استيراد جاهز
                 </button>
               </div>
@@ -198,7 +198,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
                 <p className="font-extrabold text-slate-800 mb-2">ربط الأعمدة</p>
                 {columns.map((col) => (
                   <div key={col.key} className="flex items-center gap-2">
-                    <span className={`w-36 shrink-0 truncate font-bold ${col.required ? 'text-indigo-700' : 'text-slate-600'}`}>
+                    <span className={`w-36 shrink-0 truncate font-bold ${col.required ? 'text-brand-700' : 'text-slate-600'}`}>
                       {col.label}{col.required && <span className="text-rose-500"> *</span>}
                     </span>
                     <select
@@ -234,7 +234,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
                 <p className="text-slate-500 font-bold">سجلات جديدة</p>
-                <p className="font-mono font-extrabold text-indigo-700 text-base">{newCount}</p>
+                <p className="font-mono font-extrabold text-brand-700 text-base">{newCount}</p>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5">
                 <p className="text-amber-800 font-bold">سيتم تحديثها</p>

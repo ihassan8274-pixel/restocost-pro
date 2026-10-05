@@ -249,7 +249,7 @@ export const COGSCategoryReport: React.FC = () => {
       <PageHeader
         title="تكلفة الأصناف حسب التصنيف (COGS by Category)"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
+        icon={<BarChart3 className="w-6 h-6 text-brand-600" />}
         actions={
           <>
             <TabBar

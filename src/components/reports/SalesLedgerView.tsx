@@ -329,7 +329,7 @@ export const SalesLedgerView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الإيراد</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">طلبات نقاط البيع</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{totalOrders}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تكلفة الغذاء</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalCost)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تكلفة الغذاء</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalCost)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الربح</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${totalProfit < 0 ? 'text-rose-600' : 'text-slate-900'}`}>{fmtMoney(totalProfit)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">هامش الربح</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmt(margin, 1)}%</strong></div>
       </div>
@@ -360,7 +360,7 @@ export const SalesLedgerView: React.FC = () => {
                     <td className="p-2 text-slate-500">{catLabel(r.category)}</td>
                     <td className="tnum text-left p-2 text-slate-700">{fmt(r.qty, 2)}</td>
                     <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(r.revenue, 2)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(r.cost, 2)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(r.cost, 2)}</td>
                     <td className={`p-2 font-mono font-bold ${r.profit < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{fmt(r.profit, 2)}</td>
                     <td className={`p-2 font-mono font-bold ${r.margin < r.target - 0.001 ? 'text-rose-600' : r.margin < r.target + 0.001 ? 'text-amber-600' : 'text-emerald-700'}`}>{fmt(r.margin, 1)}%</td>
                     <td className="tnum text-left p-2 text-slate-500">{r.target}%</td>
@@ -394,7 +394,7 @@ export const SalesLedgerView: React.FC = () => {
                     <td className="p-2 font-bold text-slate-800">{r.name}</td>
                     <td className="tnum text-left p-2 text-slate-700">{fmt(r.qty, 2)}</td>
                     <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(r.revenue, 2)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(r.cost, 2)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(r.cost, 2)}</td>
                     <td className={`p-2 font-mono font-bold ${r.profit < 0 ? 'text-rose-600' : 'text-slate-800'}`}>{fmt(r.profit, 2)}</td>
                     <td className="tnum text-left p-2 font-bold text-amber-700">{fmt(r.margin, 1)}%</td>
                   </tr>
@@ -442,7 +442,7 @@ export const SalesLedgerView: React.FC = () => {
                       <td className="p-2 font-bold text-slate-800">{r.day}</td>
                       <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(r.revenue)}</td>
                       <td className="tnum text-left p-2 text-rose-600">{fmt(r.cost)}</td>
-                      <td className={`p-2 font-mono font-bold ${r.profit < 0 ? 'text-rose-600' : 'text-indigo-700'}`}>{fmt(r.profit)}</td>
+                      <td className={`p-2 font-mono font-bold ${r.profit < 0 ? 'text-rose-600' : 'text-brand-700'}`}>{fmt(r.profit)}</td>
                     </tr>
                   ))}
                   {dailyRows.length === 0 && <tr><td colSpan={4} className="p-8 text-center text-slate-500 font-bold">لا توجد مبيعات في النطاق المحدد</td></tr>}
@@ -503,7 +503,7 @@ export const SalesLedgerView: React.FC = () => {
                       <td className="p-2 font-bold text-slate-800">{r.name}</td>
                       <td className="p-2 text-slate-500">{r.category}</td>
                       <td className="tnum text-left p-2 font-extrabold text-rose-700">{r.consumedUnits} {r.purchaseUnit}</td>
-                      <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(r.unitCost)}</td>
+                      <td className="tnum text-left p-2 text-brand-700">{fmtMoney(r.unitCost)}</td>
                       <td className="tnum text-left p-2 font-bold text-emerald-700">{fmtMoney(r.value)}</td>
                     </tr>
                   ))}

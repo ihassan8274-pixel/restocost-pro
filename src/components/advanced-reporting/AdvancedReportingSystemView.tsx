@@ -450,18 +450,18 @@ export const AdvancedReportingSystemView: React.FC = () => {
       <PageHeader
         title="منظومة التقارير المتطورة المتكاملة"
         subtitle={`${COMPANY} — منظومة موحدة للتقارير الاحترافية: تكلفة، مخزون، مشتريات، مالية — كل تقرير شاشة مستقلة، طباعة منفردة، تصدير متعدد`}
-        icon={<FileChartColumn className="w-6 h-6 text-indigo-600" />}
+        icon={<FileChartColumn className="w-6 h-6 text-brand-600" />}
         actions={
           <>
           </>
         }
       />
 
-      <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 rounded-2xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-r from-brand-600 via-brand-700 to-violet-700 rounded-2xl p-6 text-white shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h3 className="text-lg font-bold">منظومة جديدة — مبنية من الصفر</h3>
-            <p className="text-indigo-100 text-sm mt-1">
+            <p className="text-brand-100 text-sm mt-1">
               لا تبويبات داخل تقرير — كل تقرير شاشة مستقلة — زرار طباعة/تصدير منفردة — رسوم احترافية — مطابق لنموذج P&L
             </p>
           </div>
@@ -478,9 +478,9 @@ export const AdvancedReportingSystemView: React.FC = () => {
           <Card className="p-4 h-full">
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                <LayoutGrid className="w-5 h-5 text-indigo-600" /> مجموعات التقارير
+                <LayoutGrid className="w-5 h-5 text-brand-600" /> مجموعات التقارير
               </h4>
-<span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-indigo-100 text-indigo-700">
+<span className="px-2.5 py-1 rounded-full text-[11px] font-bold border bg-brand-100 text-brand-700">
                 {REPORT_CARDS.length} تقارير
               </span>
             </div>
@@ -575,7 +575,7 @@ export const AdvancedReportingSystemView: React.FC = () => {
 
       <Card className="p-6 bg-slate-50 border-slate-200">
         <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <Settings className="w-5 h-5 text-indigo-600" /> إعدادات المنظومة العالمية
+          <Settings className="w-5 h-5 text-brand-600" /> إعدادات المنظومة العالمية
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Field label="الشركة">

@@ -114,7 +114,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({ open, 
         )}
 
         <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-2">
-          <p className="flex items-center gap-1.5 font-black text-slate-700"><Keyboard className="w-3.5 h-3.5 text-indigo-500" /> إدخال يدوي (بديل)</p>
+          <p className="flex items-center gap-1.5 font-black text-slate-700"><Keyboard className="w-3.5 h-3.5 text-brand-500" /> إدخال يدوي (بديل)</p>
           <div className="flex gap-2">
             <input className={inputCls} dir="ltr" placeholder="مثال: 6291041500213" value={manual} onChange={(e) => setManual(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') submitManual(); }} />
             <Btn onClick={submitManual} disabled={!manual.trim()}>قراءة الكود</Btn>

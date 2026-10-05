@@ -74,7 +74,7 @@ export const AdminDeleteModal: React.FC<{
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg p-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              className="w-full border border-slate-300 rounded-lg p-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-brand-500 bg-white"
               autoComplete="current-password"
               autoFocus
               placeholder="أدخل كلمة المرور"

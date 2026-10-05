@@ -168,7 +168,7 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={isEditing ? 'تعديل سجل المبيعات' : 'إدخال مبيعات اليوم'} subtitle="صفحة كاملة ثابتة — اكتب وانتقل بين الحقول بحرية دون أي اختفاء" icon={<ArrowLeft className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title={isEditing ? 'تعديل سجل المبيعات' : 'إدخال مبيعات اليوم'} subtitle="صفحة كاملة ثابتة — اكتب وانتقل بين الحقول بحرية دون أي اختفاء" icon={<ArrowLeft className="w-6 h-6 text-brand-600" />}
         actions={<>
           <Btn onClick={onDone} tone="ghost"><ArrowLeft className="w-4 h-4" /> رجوع للقائمة</Btn>
           <Btn onClick={printCurrent} tone="dark"><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -206,7 +206,7 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
                     const idx = entries.findIndex((en) => en.recipeId === r.id);
                     const en = idx >= 0 ? entries[idx] : { quantitySold: 0, unitPrice: r.actualMenuPrice || 0, lineTotal: 0 };
                     return (
-                      <tr key={r.id} className={en.quantitySold > 0 ? 'bg-indigo-50/40' : ''}>
+                      <tr key={r.id} className={en.quantitySold > 0 ? 'bg-brand-50/40' : ''}>
                         <td className="p-2">
                           <div className="font-bold text-slate-900">{r.nameAr}</div>
                           <div className="text-[10px] text-slate-400 font-mono">{r.code}</div>
@@ -218,7 +218,7 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
                           <input type="number" min="0" step="0.01" data-nav value={en.unitPrice || ''} onChange={(e) => idx >= 0 && onPrice(idx, parseFloat(e.target.value) || 0)} onKeyDown={navOnEnter} className={inputCls} placeholder="0" />
                         </td>
                         <td className="p-2">
-                          <input type="number" min="0" step="0.01" data-nav value={en.lineTotal || ''} onChange={(e) => idx >= 0 && onTotal(idx, parseFloat(e.target.value) || 0)} onKeyDown={navOnEnter} className={inputCls + ' !bg-indigo-50 !border-indigo-200'} placeholder="0" />
+                          <input type="number" min="0" step="0.01" data-nav value={en.lineTotal || ''} onChange={(e) => idx >= 0 && onTotal(idx, parseFloat(e.target.value) || 0)} onKeyDown={navOnEnter} className={inputCls + ' !bg-brand-50 !border-brand-200'} placeholder="0" />
                         </td>
                       </tr>
                     );
@@ -241,7 +241,7 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200"><span className="text-emerald-700 text-[10px] block font-bold">الإجمالي (شامل الضريبة)</span><strong className="text-emerald-900 font-mono block mt-0.5 text-sm">{fmtMoney(entryTotal)}</strong></div>
             <div className="p-3 bg-amber-50 rounded-xl border border-amber-200"><span className="text-amber-700 text-[10px] block font-bold">ضريبة القيمة المضافة ({vatRate * 100}%)</span><strong className="text-amber-900 font-mono block mt-0.5 text-sm">{fmtMoney(entryVat)}</strong></div>
-            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200"><span className="text-indigo-700 text-[10px] block font-bold">الصافي</span><strong className="text-indigo-900 font-mono block mt-0.5 text-sm">{fmtMoney(entryNet)}</strong></div>
+            <div className="p-3 bg-brand-50 rounded-xl border border-brand-200"><span className="text-brand-700 text-[10px] block font-bold">الصافي</span><strong className="text-brand-900 font-mono block mt-0.5 text-sm">{fmtMoney(entryNet)}</strong></div>
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200"><span className="text-slate-500 text-[10px] block font-bold">تكلفة الطعام</span><strong className="text-slate-900 font-mono block mt-0.5 text-sm">{fmtMoney(entryFoodCost)}</strong></div>
             <div className="p-3 bg-rose-50 rounded-xl border border-rose-200"><span className="text-rose-700 text-[10px] block font-bold">Food Cost % (على الصافي)</span><strong className="text-rose-900 font-mono block mt-0.5 text-sm">{entryFcNet.toFixed(2)}%</strong></div>
           </div>

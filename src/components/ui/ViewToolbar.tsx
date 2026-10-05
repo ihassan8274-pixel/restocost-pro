@@ -64,7 +64,7 @@ export const ViewToolbar: React.FC<ViewToolbarProps> = ({ sheets, styled, filena
     {onImport && (
       <button
         onClick={onImport}
-        className={`${btnCls} bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-700`}
+        className={`${btnCls} bg-brand-600 hover:bg-brand-700 text-white border-brand-700`}
         title={importLabel || 'استيراد بيانات من Excel'}
       >
         <Upload className="w-4 h-4" /> {importLabel || 'استيراد Excel'}

@@ -18,16 +18,16 @@ interface ReportFiltersProps {
 }
 
 const inputCls =
-  'rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100';
+  'rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100';
 
 /** شريط فلاتر تقارير موحّد — فترة + فروع + حالات */
 export const ReportFilters: React.FC<ReportFiltersProps> = ({ value, onChange, branches, showStatus, statusOptions = [], children }) => {
   const active = !!(value.from || value.to || value.branchIds.length || value.statuses.length);
 
   return (
-    <div className={`rounded-xl border px-3 py-2 flex items-end gap-2 flex-wrap print:hidden ${active ? 'border-indigo-300 bg-indigo-50/60 dark:border-indigo-700 dark:bg-indigo-950/40' : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900'}`}>
+    <div className={`rounded-xl border px-3 py-2 flex items-end gap-2 flex-wrap print:hidden ${active ? 'border-brand-300 bg-brand-50/60 dark:border-brand-700 dark:bg-brand-950/40' : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900'}`}>
       <span className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-600 dark:text-slate-300 pb-1.5">
-        <CalendarRange className="w-4 h-4 text-indigo-500" />
+        <CalendarRange className="w-4 h-4 text-brand-500" />
         فلترة التقرير
       </span>
       <label className="text-[10px] font-bold text-slate-500 flex flex-col gap-0.5">

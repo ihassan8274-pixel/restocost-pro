@@ -309,7 +309,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الأرصدة الافتتاحية للفروع" subtitle="إدخال أرصدة بداية الفترة لكل صنف وفرع (الكميات الافتتاحية للمخزون) — تُحفظ كرصيد أساس للمخزون" icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الأرصدة الافتتاحية للفروع" subtitle="إدخال أرصدة بداية الفترة لكل صنف وفرع (الكميات الافتتاحية للمخزون) — تُحفظ كرصيد أساس للمخزون" icon={<ClipboardList className="w-6 h-6 text-brand-600" />}
         actions={<>
           <Btn onClick={printAllBranches} tone="dark"><Printer className="w-4 h-4" /> طباعة أرصدة الفروع</Btn>
           <Btn onClick={printConsolidated} tone="primary"><Printer className="w-4 h-4" /> تقرير مجمع</Btn>
@@ -325,7 +325,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
         </>} />
 
       <Card className="p-5">
-        <SectionHeader title="إدخال أرصدة افتتاحية" subtitle="حدد الفرع والتاريخ ثم أدخل الكمية الافتتاحية وسعر الوحدة لكل صنف. القيم الافتراضية تُقرأ من آخر سجل افتتاحي محفوظ للفرع — كميات مثبتة لا تتأثر بخصومات المبيعات أو الإنتاج." icon={<ClipboardList className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="إدخال أرصدة افتتاحية" subtitle="حدد الفرع والتاريخ ثم أدخل الكمية الافتتاحية وسعر الوحدة لكل صنف. القيم الافتراضية تُقرأ من آخر سجل افتتاحي محفوظ للفرع — كميات مثبتة لا تتأثر بخصومات المبيعات أو الإنتاج." icon={<ClipboardList className="w-5 h-5 text-brand-500" />} />
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
           <Field label="الفرع">
@@ -343,9 +343,9 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
         </div>
 
         {editing && (
-          <div className="mt-4 rounded-xl p-3 border bg-indigo-50/70 border-indigo-200 text-xs font-bold text-indigo-800 flex items-center justify-between gap-2">
+          <div className="mt-4 rounded-xl p-3 border bg-brand-50/70 border-brand-200 text-xs font-bold text-brand-800 flex items-center justify-between gap-2">
             <span><Pencil className="w-4 h-4 inline ml-1" /> جارٍ تعديل الرصيد الافتتاحي لفرع {getBranchName(branch)} بتاريخ {balanceDate} — الحفظ سيُحدّث نفس السجل مباشرة.</span>
-            <button onClick={() => { setEditId(null); setBalanceDate(() => new Date().toISOString().slice(0, 10)); setSavedMsg(''); }} className="px-3 py-1 rounded-lg bg-white border border-indigo-300 hover:bg-indigo-100">إلغاء التعديل</button>
+            <button onClick={() => { setEditId(null); setBalanceDate(() => new Date().toISOString().slice(0, 10)); setSavedMsg(''); }} className="px-3 py-1 rounded-lg bg-white border border-brand-300 hover:bg-brand-100">إلغاء التعديل</button>
           </div>
         )}
 
@@ -365,13 +365,13 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                 const isCollapsed = collapsed[cat];
                 return (
                   <React.Fragment key={cat}>
-                    <tr className="bg-indigo-50/80 border-y-2 border-indigo-200 cursor-pointer" onClick={() => setCollapsed({ ...collapsed, [cat]: !isCollapsed })}>
-                      <td className={`${td} font-extrabold text-indigo-800`} colSpan={7}>
+                    <tr className="bg-brand-50/80 border-y-2 border-brand-200 cursor-pointer" onClick={() => setCollapsed({ ...collapsed, [cat]: !isCollapsed })}>
+                      <td className={`${td} font-extrabold text-brand-800`} colSpan={7}>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="flex items-center gap-2"><Boxes className="w-4 h-4" /> {categoryLabel(cat, materialCategories)} <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">{items.length} صنف</span></span>
+                          <span className="flex items-center gap-2"><Boxes className="w-4 h-4" /> {categoryLabel(cat, materialCategories)} <span className="text-[10px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">{items.length} صنف</span></span>
                           <span className="flex items-center gap-3 text-[11px]">
-                            <span className="font-bold text-indigo-900">كمية: {fmt(catTotal(cat, 'qty'))}</span>
-                            <span className="font-bold text-indigo-900">قيمة: {fmtMoney(catTotal(cat, 'val'))}</span>
+                            <span className="font-bold text-brand-900">كمية: {fmt(catTotal(cat, 'qty'))}</span>
+                            <span className="font-bold text-brand-900">قيمة: {fmtMoney(catTotal(cat, 'val'))}</span>
                             {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                           </span>
                         </div>
@@ -386,7 +386,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                       const isPriceChanged = !Number.isNaN(toNum(price[m.id])) && toNum(price[m.id]) > 0 && toNum(price[m.id]) !== getAverageUnitCost(m.id);
                       return (
                         <tr key={m.id} className={`hover:bg-slate-50 ${isChanged || isPriceChanged ? 'bg-amber-50/40' : ''}`}>
-                          <td className={`${td} font-mono font-bold text-indigo-700`}>{m.code}</td>
+                          <td className={`${td} font-mono font-bold text-brand-700`}>{m.code}</td>
                           <td className={`${td} font-bold text-slate-900`}>{m.nameAr}</td>
                           <td className={td}>{m.unit}</td>
                           <td className={`${td} font-mono`}>{fmt(cur)}</td>
@@ -402,7 +402,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                               onKeyDown={navOnEnter}
                               className={inputCls + ' !p-1.5 w-24'} />
                           </td>
-                          <td className={`${td} font-mono font-bold text-indigo-700`}>{fmtMoney(val)}</td>
+                          <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(val)}</td>
                         </tr>
                       );
                     })}
@@ -411,11 +411,11 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-indigo-50 font-extrabold">
+              <tr className="bg-brand-50 font-extrabold">
                 <td className={td} colSpan={4}>الإجمالي الكلي</td>
                 <td className={`${td} font-mono`}>{fmt(totalQty)}</td>
                 <td className={td}>—</td>
-                <td className={`${td} font-mono text-indigo-800`}>{fmtMoney(totalVal)}</td>
+                <td className={`${td} font-mono text-brand-800`}>{fmtMoney(totalVal)}</td>
               </tr>
             </tfoot>
           </table>
@@ -432,7 +432,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
 
       <Card className="p-5">
         <div className="flex items-center justify-between">
-          <SectionHeader title="سجل الأرصدة الافتتاحية" subtitle={`سجلات محفوظة لفرع ${getBranchName(branch)} — اختر سجلاً للرجوع إليه وتعديله مباشرة`} icon={<History className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="سجل الأرصدة الافتتاحية" subtitle={`سجلات محفوظة لفرع ${getBranchName(branch)} — اختر سجلاً للرجوع إليه وتعديله مباشرة`} icon={<History className="w-5 h-5 text-brand-500" />} />
           <Btn tone="ghost" onClick={() => setHistoryTab(!historyTab)}>{historyTab ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />} {historyTab ? 'إخفاء' : `عرض (${branchHistory.length})`}</Btn>
         </div>
         {historyTab && (
@@ -451,15 +451,15 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                     const q = r.items.reduce((s, i) => s + i.quantity, 0);
                     const v = r.items.reduce((s, i) => s + i.quantity * i.unitCost, 0);
                     return (
-                      <tr key={r.id} className={`hover:bg-slate-50 ${editId === r.id ? 'bg-indigo-50/70' : ''}`}>
+                      <tr key={r.id} className={`hover:bg-slate-50 ${editId === r.id ? 'bg-brand-50/70' : ''}`}>
                         <td className={`${td} font-mono font-bold text-slate-800`}>{r.date}</td>
                         <td className={`${td}`}>{r.items.length} صنف</td>
                         <td className={`${td} font-mono`}>{fmt(q)}</td>
-                        <td className={`${td} font-mono font-bold text-indigo-700`}>{fmtMoney(v)}</td>
+                        <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(v)}</td>
                         <td className={td}>
                           <div className="flex items-center gap-1">
-                            <button onClick={() => printRecord(r)} className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="طباعة هذا السجل"><Printer className="w-4 h-4" /></button>
-                            <button onClick={() => loadRecord(r)} className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="الرجوع للسجل وتعديله"><Pencil className="w-4 h-4" /></button>
+                            <button onClick={() => printRecord(r)} className="p-1.5 rounded-lg text-brand-600 hover:bg-brand-50" title="طباعة هذا السجل"><Printer className="w-4 h-4" /></button>
+                            <button onClick={() => loadRecord(r)} className="p-1.5 rounded-lg text-brand-600 hover:bg-brand-50" title="الرجوع للسجل وتعديله"><Pencil className="w-4 h-4" /></button>
                             <button onClick={() => { if (confirm(`حذف الرصيد الافتتاحي بتاريخ ${r.date}؟`)) { deleteOpeningBalance(r.id); if (editId === r.id) setEditId(null); } }} className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="حذف السجل"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
@@ -475,7 +475,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
 
       <Card className="p-5">
         <div className="flex items-center justify-between">
-          <SectionHeader title="مقارنة أرصدة الفروع" subtitle="مقارنة سجلات الأرصدة الافتتاحية مع رصيد المخزون الحالي لكل فرع — الفروع التي لا يوجد لها سجل افتتاحي تُظهر صفراً" icon={<FileSpreadsheet className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="مقارنة أرصدة الفروع" subtitle="مقارنة سجلات الأرصدة الافتتاحية مع رصيد المخزون الحالي لكل فرع — الفروع التي لا يوجد لها سجل افتتاحي تُظهر صفراً" icon={<FileSpreadsheet className="w-5 h-5 text-brand-500" />} />
           <div className="flex items-center gap-2">
             <Btn onClick={printBranchComparison} tone="primary"><Printer className="w-4 h-4" /> طباعة المقارنة</Btn>
             <Btn tone="ghost" onClick={() => setCompareTab(!compareTab)}>{compareTab ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />} {compareTab ? 'إخفاء' : `عرض (${branchCompare.length} فرع)`}</Btn>
@@ -505,7 +505,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                     <td className={`${td} font-mono text-slate-600`}>{c.date}</td>
                     <td className={`${td} font-mono`}>{c.count}</td>
                     <td className={`${td} font-mono font-bold`}>{fmt(c.openQty)}</td>
-                    <td className={`${td} font-mono font-bold text-indigo-700`}>{fmtMoney(c.openVal)}</td>
+                    <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(c.openVal)}</td>
                     <td className={`${td} font-mono`}>{fmt(c.curQty)}</td>
                     <td className={`${td} font-mono`}>{fmtMoney(c.curVal)}</td>
                     <td className={`${td} font-mono font-extrabold ${c.curQty - c.openQty === 0 ? 'text-slate-400' : 'text-rose-700'}`}>{fmt(c.curQty - c.openQty)}</td>
@@ -521,7 +521,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
 
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} title="تأكيد حفظ الأرصدة الافتتاحية" wide>
         <div className="space-y-3 text-xs">
-          <p className="font-bold text-slate-700">سيتم تحديث رصيد المخزون لفرع <span className="text-indigo-700">{getBranchName(branch)}</span> بالكميات الافتتاحية التالية ({changedCount} صنف):</p>
+          <p className="font-bold text-slate-700">سيتم تحديث رصيد المخزون لفرع <span className="text-brand-700">{getBranchName(branch)}</span> بالكميات الافتتاحية التالية ({changedCount} صنف):</p>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-[11px] border-collapse">
               <thead><tr><th className={th}>الكود</th><th className={th}>الصنف</th><th className={th}>الرصيد الحالي</th><th className={th}>الافتتاحي الجديد</th><th className={th}>سعر الوحدة</th><th className={th}>القيمة</th></tr></thead>
@@ -530,12 +530,12 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                   const v = toNum(qty[m.id]); const p = toNum(price[m.id]) > 0 ? toNum(price[m.id]) : getAverageUnitCost(m.id);
                   return (
                   <tr key={m.id} className="hover:bg-slate-50">
-                    <td className={`${td} font-mono font-bold text-indigo-700`}>{m.code}</td>
+                    <td className={`${td} font-mono font-bold text-brand-700`}>{m.code}</td>
                     <td className={`${td} font-bold`}>{m.nameAr}</td>
                     <td className={`${td} font-mono`}>{fmt(currentOf(m.id))}</td>
                     <td className={`${td} font-mono font-extrabold text-emerald-700`}>{fmt(v)}</td>
                     <td className={`${td} font-mono`}>{fmt(p, 2)}</td>
-                    <td className={`${td} font-mono font-bold text-indigo-700`}>{fmtMoney(v * p)}</td>
+                    <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(v * p)}</td>
                   </tr>
                   );
                 })}

@@ -34,7 +34,7 @@ const APPROVAL_STEPS = [
   { id: 'posted', label: 'ترحيل', tone: 'bg-slate-50 text-slate-500 border-line' },
 ];
 
-const fieldCls = 'w-full border border-line rounded-lg px-3 py-2 text-xs bg-surface outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50 disabled:text-slate-500';
+const fieldCls = 'w-full border border-line rounded-lg px-3 py-2 text-xs bg-surface outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 disabled:text-slate-500';
 
 export interface GrnEntryModalProps {
   open: boolean;
@@ -123,7 +123,7 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
         {/* ═══ ① الترويسة + مسار الاعتماد ═══ */}
         <div className="px-6 py-4 border-b border-line flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+            <span className="w-11 h-11 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center shrink-0">
               <PackageCheck className="w-6 h-6" />
             </span>
             <div>
@@ -159,7 +159,7 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
           <button
             type="button"
             onClick={() => setShowDistribute((v) => !v)}
-            className="text-[11px] font-bold text-indigo-600 hover:underline"
+            className="text-[11px] font-bold text-brand-600 hover:underline"
           >
             توزيع إجمالي الفاتورة
           </button>
@@ -259,11 +259,11 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
               <div className="flex gap-1.5">
                 <button
                   type="button" onClick={() => p.onVatIncl(true)}
-                  className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${p.vatIncl ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}
+                  className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${p.vatIncl ? 'bg-brand-600 text-white border-brand-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}
                 >شاملة</button>
                 <button
                   type="button" onClick={() => p.onVatIncl(false)}
-                  className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${!p.vatIncl ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}
+                  className={`flex-1 px-3 py-2 rounded-lg text-[11px] font-bold border transition-colors ${!p.vatIncl ? 'bg-brand-600 text-white border-brand-600' : 'bg-surface text-slate-600 border-line hover:bg-slate-50'}`}
                 >غير شاملة</button>
               </div>
             </div>
@@ -312,14 +312,14 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between gap-2 mb-3">
             <h4 className="font-bold text-slate-800 flex items-center gap-2">
-              <PackageCheck className="w-4 h-4 text-indigo-600" />
+              <PackageCheck className="w-4 h-4 text-brand-600" />
               الأصناف المستلمة
               <span className="tnum text-[11px] font-bold text-slate-500">({p.items.length})</span>
             </h4>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold text-slate-500">الكمية بوحدة التخزين</span>
-              <button type="button" className="text-[11px] font-bold text-indigo-600 hover:underline">تحويل وحدة ▾</button>
-              <button type="button" onClick={p.onScan} className="text-[11px] font-bold text-indigo-600 hover:underline">مسح باركود</button>
+              <button type="button" className="text-[11px] font-bold text-brand-600 hover:underline">تحويل وحدة ▾</button>
+              <button type="button" onClick={p.onScan} className="text-[11px] font-bold text-brand-600 hover:underline">مسح باركود</button>
             </div>
           </div>
 
@@ -330,7 +330,7 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
               <div className="flex items-center justify-center gap-2">
                 <button
                   type="button" onClick={p.onAddFive}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700"
+                  className="px-3 py-1.5 rounded-lg bg-brand-600 text-white text-[11px] font-bold hover:bg-brand-700"
                 >
                   <Plus className="w-3.5 h-3.5 inline" /> 5 أصناف
                 </button>
@@ -371,7 +371,7 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
           <span className="text-slate-500">إجمالي الكمية: <span className="tnum text-slate-800">{fmt(qtyTotal)}</span></span>
           <span className="text-slate-500">الصافي: <span className="tnum text-slate-800">{fmtMoney(net)}</span></span>
           <span className="text-amber-600">ضريبة {p.vatRate}%: <span className="tnum">{fmtMoney(p.vatAmount)}</span></span>
-          <span className="text-indigo-700">الإجمالي: <span className="tnum text-[12px] font-extrabold">{fmtMoney(p.totalAmount)} ر.س</span></span>
+          <span className="text-brand-700">الإجمالي: <span className="tnum text-[12px] font-extrabold">{fmtMoney(p.totalAmount)} ر.س</span></span>
         </div>
 
         {/* ═══ ⑦ أزرار الحفظ ═══ */}
@@ -385,7 +385,7 @@ export const GrnEntryModal: React.FC<GrnEntryModalProps> = (p) => {
           </button>
           <button
             type="button" onClick={p.onSaveDraft}
-            className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-sm"
+            className="px-6 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 shadow-sm"
           >
             <Save className="w-3.5 h-3.5 inline" /> حفظ كمسودة
           </button>

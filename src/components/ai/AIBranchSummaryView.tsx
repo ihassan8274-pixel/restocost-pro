@@ -187,12 +187,12 @@ export const AIBranchSummaryView: React.FC = () => {
   };
 
   if (!can('use_ai')) {
-    return <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="تحليل موحد لكل الفروع مع توصيات ذكية" icon={<Network className="w-6 h-6 text-indigo-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح بالوصول — تواصل مع مدير النظام.</Card>} />;
+    return <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="تحليل موحد لكل الفروع مع توصيات ذكية" icon={<Network className="w-6 h-6 text-brand-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح بالوصول — تواصل مع مدير النظام.</Card>} />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="دمج مؤشرات كل الفروع (إيراد، تكلفة طعام، عمالة، تشغيلية، هالك، ربح) مع تحليل ذكي وتوصيات" icon={<Network className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الشاشة المجمعة للفروع بالذكاء الاصطناعي" subtitle="دمج مؤشرات كل الفروع (إيراد، تكلفة طعام، عمالة، تشغيلية، هالك، ربح) مع تحليل ذكي وتوصيات" icon={<Network className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="الشاشة_المجمعة_للفروع" sheets={[
             {
@@ -210,7 +210,7 @@ export const AIBranchSummaryView: React.FC = () => {
         </>} />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الإيراد</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الإيراد</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الربح</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${totalProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(totalProfit)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الهامش الإجمالي</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${overallMargin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{overallMargin.toFixed(2)}%</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أفضل فرع</span><strong className="text-sm font-extrabold text-slate-900 block mt-1">{best ? best.name : '—'}</strong></div>
@@ -261,7 +261,7 @@ export const AIBranchSummaryView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="p-4">
-          <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-indigo-600" /> التحليل الآلي الفوري</h3>
+          <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-brand-600" /> التحليل الآلي الفوري</h3>
           <div className="space-y-2">
             {autoInsights.map((i, idx) => (
               <div key={idx} className={`flex items-start gap-2 rounded-xl p-3 border text-[11px] leading-relaxed ${i.tone === 'good' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
@@ -281,7 +281,7 @@ export const AIBranchSummaryView: React.FC = () => {
           ) : (
             <div className="text-slate-500 text-[11px] leading-relaxed">
               <p>اضغط "توليد تحليل ذكي" للحصول على تقرير تنفيذي بالعربية يعتمد على أرقام الفروع الفعلية. يعمل حالياً بالتحليل المحلي (قواعد مبنية على مؤشراتك).</p>
-              {!aiConfigured && <p className="mt-2 text-indigo-700 font-bold">فعّل مزوّد الذكاء الاصطناعي (Gemini أو Groq مجانيان، أو OpenAI/OpenRouter) في "إعدادات النظام" للتحليل المتقدم (اختياري).</p>}
+              {!aiConfigured && <p className="mt-2 text-brand-700 font-bold">فعّل مزوّد الذكاء الاصطناعي (Gemini أو Groq مجانيان، أو OpenAI/OpenRouter) في "إعدادات النظام" للتحليل المتقدم (اختياري).</p>}
             </div>
           )}
           {aiNote && <p className="mt-2 text-[10px] text-slate-500 font-bold">{aiNote}</p>}
@@ -334,7 +334,7 @@ export const AIBranchSummaryView: React.FC = () => {
                 ) : null}
                 <div className="flex gap-2 justify-end pt-2">
                   <button onClick={() => setShowKey(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-                  <button onClick={saveKey} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">حفظ</button>
+                  <button onClick={saveKey} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">حفظ</button>
                 </div>
               </div>
             </div>

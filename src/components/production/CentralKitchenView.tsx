@@ -27,7 +27,7 @@ export const CentralKitchenView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المطبخ المركزي والتصنيع" subtitle="أوامر تصنيع التحضيرات المركزية وتوزيعها على الفروع مع خصم المواد الخام" icon={<Factory className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="المطبخ المركزي والتصنيع" subtitle="أوامر تصنيع التحضيرات المركزية وتوزيعها على الفروع مع خصم المواد الخام" icon={<Factory className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="أوامر_التصنيع"
@@ -39,7 +39,7 @@ export const CentralKitchenView: React.FC = () => {
         </>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أوامر نشطة</span><strong className="text-lg font-extrabold text-indigo-700 block mt-1">{active.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أوامر نشطة</span><strong className="text-lg font-extrabold text-brand-700 block mt-1">{active.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تحضيرات مركزية</span><strong className="text-lg font-extrabold text-slate-900 block mt-1">{prepRecipes.length}</strong></div>
       </div>
 
@@ -52,7 +52,7 @@ export const CentralKitchenView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((w) => (
                 <tr key={w.id} className="hover:bg-slate-50">
-                  <td className="tnum text-left p-3 font-bold text-indigo-700">{w.orderNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-brand-700">{w.orderNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{w.recipeName}</td>
                   <td className="p-3 text-slate-600">{getBranchName(w.targetBranchId)}</td>
                   <td className="tnum text-left p-3">{w.targetQuantity}</td>
@@ -93,7 +93,7 @@ export const CentralKitchenView: React.FC = () => {
           <Field label="ملاحظات"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} /></Field>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">إنشاء الأمر</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">إنشاء الأمر</button>
           </div>
         </form>
       </Modal>

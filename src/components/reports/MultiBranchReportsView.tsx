@@ -80,7 +80,7 @@ export const MultiBranchReportsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الرؤية المتعددة الفروع (تقارير موحّدة)" subtitle={`مقارنة موحّدة لكل الفروع في شاشة واحدة — إيرادات، تكاليف، مخزون، هالك`} icon={<Building2 className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الرؤية المتعددة الفروع (تقارير موحّدة)" subtitle={`مقارنة موحّدة لكل الفروع في شاشة واحدة — إيرادات، تكاليف، مخزون، هالك`} icon={<Building2 className="w-6 h-6 text-brand-600" />}
         actions={
           <>
             <ViewToolbar filename={`رؤية_فروع_${month}`} sheets={[{
@@ -98,7 +98,7 @@ export const MultiBranchReportsView: React.FC = () => {
 
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
-          <Calculator className="w-4 h-4 text-indigo-500" /> الشهر:
+          <Calculator className="w-4 h-4 text-brand-500" /> الشهر:
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputCls + ' w-44'} />
         </label>
       </div>
@@ -107,7 +107,7 @@ export const MultiBranchReportsView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><TrendingUp className="w-3.5 h-3.5" /> الإيراد الموحد</span><strong className="text-lg font-extrabold text-emerald-700 block mt-1">{fmtMoney(totals.revenue)}</strong><span className="text-[10px] text-slate-400">{totals.orderCount} طلب {visibleBranches.length} فرع</span></Card>
         <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><ReceiptText className="w-3.5 h-3.5" /> تكلفة المبيعات</span><strong className="text-lg font-extrabold text-rose-700 block mt-1">{fmtMoney(totals.costOfSales)}</strong><span className="text-[10px] text-slate-400">جرد أول + مشتريات − جرد آخر</span></Card>
-        <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> صافي الربح</span><strong className={`text-lg font-extrabold block mt-1 ${totals.grossProfit >= 0 ? 'text-indigo-700' : 'text-rose-700'}`}>{fmtMoney(totals.grossProfit)}</strong><span className="text-[10px] text-slate-400">الهامش {totals.grossMargin.toFixed(1)}%</span></Card>
+        <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> صافي الربح</span><strong className={`text-lg font-extrabold block mt-1 ${totals.grossProfit >= 0 ? 'text-brand-700' : 'text-rose-700'}`}>{fmtMoney(totals.grossProfit)}</strong><span className="text-[10px] text-slate-400">الهامش {totals.grossMargin.toFixed(1)}%</span></Card>
         <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><ShoppingCart className="w-3.5 h-3.5" /> المشتريات</span><strong className="text-lg font-extrabold text-sky-700 block mt-1">{fmtMoney(totals.purchases)}</strong></Card>
         <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><Leaf className="w-3.5 h-3.5" /> الهالك المعتمد</span><strong className="text-lg font-extrabold text-amber-700 block mt-1">{fmtMoney(totals.wastage)}</strong><span className="text-[10px] text-slate-400">{totals.wastageCount} قيد</span></Card>
         <Card className="p-4"><span className="text-slate-500 text-[11px] block flex items-center gap-1"><Boxes className="w-3.5 h-3.5" /> قيمة المخزون الحالية</span><strong className="text-lg font-extrabold text-violet-700 block mt-1">{fmtMoney(totals.inventoryValue)}</strong></Card>
@@ -116,7 +116,7 @@ export const MultiBranchReportsView: React.FC = () => {
       {/* جدول المقارنة الموحد */}
       <Card className="overflow-hidden">
         <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-          <p className="font-bold text-slate-800 text-sm flex items-center gap-2"><Layers className="w-4 h-4 text-indigo-400" /> موازنة الفروع — كل مؤشّر لكل فرع</p>
+          <p className="font-bold text-slate-800 text-sm flex items-center gap-2"><Layers className="w-4 h-4 text-brand-400" /> موازنة الفروع — كل مؤشّر لكل فرع</p>
           <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${visibleBranches.length ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'}`}>{visibleBranches.length} فرع يُقارن</span>
         </div>
         <div className="overflow-x-auto">
@@ -145,7 +145,7 @@ export const MultiBranchReportsView: React.FC = () => {
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 rounded-full bg-slate-100 overflow-hidden">
-                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(r.revenue / maxRevenue) * 100}%` }} />
+                        <div className="h-full bg-brand-500 rounded-full" style={{ width: `${(r.revenue / maxRevenue) * 100}%` }} />
                       </div>
                       <span className="text-[10px] font-mono text-slate-400">{maxRevenue > 0 ? ((r.revenue / maxRevenue) * 100).toFixed(0) : 0}%</span>
                     </div>
@@ -172,7 +172,7 @@ export const MultiBranchReportsView: React.FC = () => {
                 <td className="tnum text-left p-3 text-slate-500">{fmtMoney(totals.closingValue)}</td>
                 <td className="tnum text-left p-3 text-rose-700">{fmtMoney(totals.costOfSales)}</td>
                 <td className={`p-3 font-mono ${totals.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(totals.grossProfit)}</td>
-                <td className="p-3"><span className="font-extrabold text-indigo-700">{totals.grossMargin.toFixed(1)}%</span></td>
+                <td className="p-3"><span className="font-extrabold text-brand-700">{totals.grossMargin.toFixed(1)}%</span></td>
                 <td className="tnum text-left p-3 text-amber-700">{fmtMoney(totals.wastage)}</td>
                 <td className="tnum text-left p-3 text-violet-700">{fmtMoney(totals.inventoryValue)}</td>
                 <td className="tnum text-left p-3">{totals.orderCount}</td>

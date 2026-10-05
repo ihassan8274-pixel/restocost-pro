@@ -225,7 +225,7 @@ export const PurchaseOrdersView: React.FC = () => {
                         <>
                           {can('approve_purchase_orders') && (
                             <>
-                              <button onClick={() => { setSignPo(p); setSignature(null); }} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="اعتماد"><BadgeCheck className="w-4 h-4" /></button>
+                              <button onClick={() => { setSignPo(p); setSignature(null); }} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="اعتماد"><BadgeCheck className="w-4 h-4" /></button>
                               <button onClick={() => updatePurchaseOrder(p.id, { status: 'rejected', approvedBy: currentUser?.name || 'المدير' })} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="رفض"><Ban className="w-4 h-4" /></button>
                             </>
                           )}
@@ -385,22 +385,22 @@ export const PurchaseOrdersView: React.FC = () => {
 
           <Field label="ملاحظات"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} /></Field>
 
-          <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200 space-y-1.5">
+          <div className="p-3 bg-brand-50 rounded-xl border border-brand-200 space-y-1.5">
             <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-indigo-950">صافي قيمة الأصناف</span>
-              <span className="tnum font-extrabold text-indigo-800">{fmtMoney(vatInclusive ? total - vatAmount : total)}{currencyCode !== 'SAR' && <span className="text-[10px] text-indigo-500 mr-1">({currencyCode})</span>}</span>
+              <span className="font-bold text-brand-950">صافي قيمة الأصناف</span>
+              <span className="tnum font-extrabold text-brand-800">{fmtMoney(vatInclusive ? total - vatAmount : total)}{currencyCode !== 'SAR' && <span className="text-[10px] text-brand-500 mr-1">({currencyCode})</span>}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({vatPercent}%) {vatInclusive ? '(مشمولة)' : ''}</span>
+              <span className="font-bold text-brand-950">ضريبة القيمة المضافة ({vatPercent}%) {vatInclusive ? '(مشمولة)' : ''}</span>
               <span className="tnum font-extrabold text-amber-700">{fmtMoney(vatAmount)}{currencyCode !== 'SAR' && <span className="text-[10px] text-amber-500 mr-1">({currencyCode})</span>}</span>
             </div>
-            <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-1.5">
-              <span className="font-black text-indigo-950">إجمالي الأمر:</span>
-              <span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(total)}</span>
+            <div className="flex justify-between items-center text-sm border-t border-brand-200 pt-1.5">
+              <span className="font-black text-brand-950">إجمالي الأمر:</span>
+              <span className="text-lg font-black text-brand-800 tnum">{fmtMoney(total)}</span>
             </div>
             {currencyCode !== 'SAR' && (
               <div className="flex justify-between items-center text-xs bg-white/60 rounded-lg px-2 py-1">
-                <span className="font-bold text-indigo-950">المعادل بالريال (ر.س) — للقيد المحاسبي</span>
+                <span className="font-bold text-brand-950">المعادل بالريال (ر.س) — للقيد المحاسبي</span>
                 <span className="tnum font-extrabold text-emerald-700">{fmtMoney(total * exchangeRate)}</span>
               </div>
             )}
@@ -408,7 +408,7 @@ export const PurchaseOrdersView: React.FC = () => {
 
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">تقديم أمر الشراء</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">تقديم أمر الشراء</button>
           </div>
         </form>
       </Modal>
@@ -458,12 +458,12 @@ export const PurchaseOrdersView: React.FC = () => {
       {signPo && (
         <Modal open onClose={() => setSignPo(null)} title={`الاعتماد الإلكتروني — ${signPo.poNumber}`}>
           <div className="space-y-4 text-xs">
-            <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex justify-between items-center">
+            <div className="p-3 bg-brand-50 rounded-xl border border-brand-100 flex justify-between items-center">
               <div>
-                <p className="font-extrabold text-indigo-950">{signPo.supplierName}</p>
-                <p className="text-[11px] text-indigo-600 font-bold">المسؤول: {currentUser?.name || 'مستخدم النظام'}</p>
+                <p className="font-extrabold text-brand-950">{signPo.supplierName}</p>
+                <p className="text-[11px] text-brand-600 font-bold">المسؤول: {currentUser?.name || 'مستخدم النظام'}</p>
               </div>
-              <span className="tnum font-black text-indigo-800 text-sm">{fmtMoney(signPo.totalAmount)}</span>
+              <span className="tnum font-black text-brand-800 text-sm">{fmtMoney(signPo.totalAmount)}</span>
             </div>
             <SignaturePad value={signature} onChange={setSignature} label="ارسم توقيعك هنا (باللمس أو الفأرة)" />
             <p className="text-[10px] text-slate-400 font-bold">بالمصادقة بالرسم هنا، تُقرّ بصحة أمر الشراء {signPo.poNumber} وموافقتك عليه بالكامل.</p>

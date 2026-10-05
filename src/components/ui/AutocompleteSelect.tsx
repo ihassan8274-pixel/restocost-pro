@@ -178,7 +178,7 @@ export const AutocompleteSelect: React.FC<AutocompleteSelectProps> = ({
   return (
     <div className={`relative ${className}`}>
       <div
-        className={`flex items-center border rounded-xl bg-white ${disabled ? 'bg-slate-50 cursor-not-allowed' : 'border-slate-300 hover:border-indigo-400 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500'} transition-all`}
+        className={`flex items-center border rounded-xl bg-white ${disabled ? 'bg-slate-50 cursor-not-allowed' : 'border-slate-300 hover:border-brand-400 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500'} transition-all`}
         onClick={(e) => { if (!disabled && (e.target as HTMLElement).closest('svg')) { if (isOpen) closeAll(); else openList(); } }}
       >
         <input
@@ -216,7 +216,7 @@ export const AutocompleteSelect: React.FC<AutocompleteSelectProps> = ({
                 key={opt.value}
                 type="button"
                 onClick={() => handleOptionClick(opt)}
-                className={`w-full px-3 py-2 text-right text-sm ${idx === highlightedIndex ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50 text-slate-700'} flex items-center gap-2`}
+                className={`w-full px-3 py-2 text-right text-sm ${idx === highlightedIndex ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 text-slate-700'} flex items-center gap-2`}
               >
                 <span className="font-medium">{getOptionLabel(opt)}</span>
                 {opt.code && <span className="text-[10px] text-slate-400 font-mono">{opt.code}</span>}

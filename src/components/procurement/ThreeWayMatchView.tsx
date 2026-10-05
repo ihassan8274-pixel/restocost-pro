@@ -209,7 +209,7 @@ export const ThreeWayMatchView: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">اختلافات كميات</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{stats.qty}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">اختلافات أسعار/قيم</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{stats.price}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">بلا مستندات / ثنائية</span><strong className="text-lg font-extrabold font-mono text-slate-700 block mt-1">{stats.noDocs + stats.twoWay}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">فواتير بانتظار التأكيد</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{stats.confirmable}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">فواتير بانتظار التأكيد</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{stats.confirmable}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مستحقات الموردين (غير مدفوعة)</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(stats.unpaidTotal)}</strong></div>
       </div>
 
@@ -251,7 +251,7 @@ export const ThreeWayMatchView: React.FC = () => {
                       return (
                         <tr key={r.inv.id} className={`hover:bg-slate-50 ${r.status === 'qty_mismatch' || r.status === 'price_mismatch' ? 'bg-rose-50/30' : r.status === 'matched' ? 'bg-emerald-50/30' : ''}`}>
                           <td className="p-3">
-                            <div className="font-mono font-bold text-indigo-700">{r.inv.invoiceNumber}</div>
+                            <div className="font-mono font-bold text-brand-700">{r.inv.invoiceNumber}</div>
                             <div className="text-[10px] text-slate-400">{r.inv.date}{confirmed && <span className="text-emerald-600 font-bold mr-1">· مؤكدة</span>}</div>
                           </td>
                           <td className="p-3 font-bold text-slate-800">{r.inv.partyName}</td>
@@ -267,7 +267,7 @@ export const ThreeWayMatchView: React.FC = () => {
                           </td>
                           <td className="p-3">
                             <div className="flex gap-1.5">
-                              <button onClick={() => openLink(r)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="ربط/تأكيد المطابقة"><Link2 className="w-4 h-4" /></button>
+                              <button onClick={() => openLink(r)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="ربط/تأكيد المطابقة"><Link2 className="w-4 h-4" /></button>
                               {(r.grn || r.po) && <button onClick={() => unlink(r.inv)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg" title="فك الربط"><Unlink className="w-4 h-4" /></button>}
                             </div>
                           </td>

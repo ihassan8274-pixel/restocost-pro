@@ -101,7 +101,7 @@ const UnifiedFilters: React.FC<{
               const period = resolvePeriod(preset);
               onChange({ period });
             }}
-            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
           >
             <option value="today">اليوم</option>
             <option value="yesterday">أمس</option>
@@ -125,7 +125,7 @@ const UnifiedFilters: React.FC<{
                 type="date"
                 value={filters.period.from}
                 onChange={(e) => onChange({ period: { ...filters.period, from: e.target.value } })}
-                className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+                className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
               />
             </div>
             <div>
@@ -134,7 +134,7 @@ const UnifiedFilters: React.FC<{
                 type="date"
                 value={filters.period.to}
                 onChange={(e) => onChange({ period: { ...filters.period, to: e.target.value } })}
-                className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+                className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
               />
             </div>
           </>
@@ -146,7 +146,7 @@ const UnifiedFilters: React.FC<{
             <select
               value={filters.branchIds?.[0] || ''}
               onChange={(e) => onChange({ branchIds: e.target.value ? [e.target.value] : [] })}
-              className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
             >
               <option value="">كل الفروع</option>
               {availableBranches.map(b => (
@@ -195,7 +195,7 @@ const SchedulePanel: React.FC<{ definition: ReportDefinition }> = ({ definition 
               </div>
             </div>
           </div>
-          <button className="px-3 py-1.5 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600">
+          <button className="px-3 py-1.5 bg-brand-500 text-white text-xs font-bold rounded-lg hover:bg-brand-600">
             تفعيل الجدولة
           </button>
         </div>
@@ -294,7 +294,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
                 <button
                   key={r.id}
                   onClick={() => handleReportSelect(r.id)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:border-indigo-300 transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:border-brand-300 transition-colors"
                 >
                   {r.nameAr}
                 </button>
@@ -320,7 +320,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
             {onBack && (
               <button
                 onClick={onBack}
-                className="flex items-center gap-1.5 text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                className="flex items-center gap-1.5 text-sm font-bold text-brand-600 hover:text-brand-800 transition-colors"
               >
                 <ArrowRight className="w-4 h-4" />
                 العودة
@@ -337,7 +337,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {loading && <RefreshCw className="w-4 h-4 text-indigo-500 animate-spin" />}
+            {loading && <RefreshCw className="w-4 h-4 text-brand-500 animate-spin" />}
             <button
               onClick={refresh}
               disabled={loading}
@@ -360,8 +360,8 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
                     onClick={() => handleReportSelect(r.id)}
                     className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${
                       selectedReportId === r.id
-                        ? 'border-indigo-500 bg-indigo-500 text-white'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300'
+                        ? 'border-brand-500 bg-brand-500 text-white'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300'
                     }`}
                   >
                     {r.nameAr}
@@ -406,7 +406,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
             <button
               onClick={() => setViewMode('table')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ${
-                viewMode === 'table' ? 'bg-indigo-500 text-white' : 'bg-white text-slate-600 border border-slate-200'
+                viewMode === 'table' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
               <Table className="w-3 h-3" /> جدول
@@ -414,7 +414,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
             <button
               onClick={() => setViewMode('chart')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ${
-                viewMode === 'chart' ? 'bg-indigo-500 text-white' : 'bg-white text-slate-600 border border-slate-200'
+                viewMode === 'chart' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
               <BarChart3 className="w-3 h-3" /> رسم بياني
@@ -422,7 +422,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
             <button
               onClick={() => setViewMode('both')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ${
-                viewMode === 'both' ? 'bg-indigo-500 text-white' : 'bg-white text-slate-600 border border-slate-200'
+                viewMode === 'both' ? 'bg-brand-500 text-white' : 'bg-white text-slate-600 border border-slate-200'
               }`}
             >
               <Grid3X3 className="w-3 h-3" /> كليهما
@@ -508,7 +508,7 @@ export const UnifiedReportScreen: React.FC<UnifiedReportScreenProps> = ({
       {/* حالة التحميل */}
       {loading && (
         <div className="flex items-center justify-center py-12 bg-white rounded-xl border border-slate-200">
-          <RefreshCw className="w-6 h-6 text-indigo-500 animate-spin" />
+          <RefreshCw className="w-6 h-6 text-brand-500 animate-spin" />
           <span className="mr-3 text-sm font-bold text-slate-600">جاري تحميل التقرير...</span>
         </div>
       )}

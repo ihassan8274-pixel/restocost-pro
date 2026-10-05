@@ -440,7 +440,7 @@ export const CostReportsView: React.FC = () => {
                 { label: 'إجمالي الإيراد', value: monthlyRevenue, icon: <TrendingUp className="w-4 h-4 text-emerald-500" /> },
                 { label: 'تكلفة الطعام', value: monthlyFoodCost, icon: <TrendingDown className="w-4 h-4 text-rose-500" /> },
                 { label: 'تكلفة العمالة', value: monthlyLabor, icon: <BarIcon className="w-4 h-4 text-violet-500" /> },
-                { label: 'التشغيلية المدفوعة', value: monthlyExpenses, icon: <BarIcon className="w-4 h-4 text-indigo-500" /> },
+                { label: 'التشغيلية المدفوعة', value: monthlyExpenses, icon: <BarIcon className="w-4 h-4 text-brand-500" /> },
                 { label: 'الهوالك', value: monthlyWastage, icon: <TrendingDown className="w-4 h-4 text-amber-500" /> },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3">
@@ -513,14 +513,14 @@ export const CostReportsView: React.FC = () => {
             <div>
               <span className="font-bold text-slate-700 text-xs block mb-1">أسعار الموردين</span>
               <div className="flex gap-2">
-                <button onClick={() => setVatInclusive(true)} className={`px-3 py-2 rounded-lg text-xs font-extrabold border ${vatInclusive ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>شاملة الضريبة</button>
-                <button onClick={() => setVatInclusive(false)} className={`px-3 py-2 rounded-lg text-xs font-extrabold border ${!vatInclusive ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>غير شاملة</button>
+                <button onClick={() => setVatInclusive(true)} className={`px-3 py-2 rounded-lg text-xs font-extrabold border ${vatInclusive ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>شاملة الضريبة</button>
+                <button onClick={() => setVatInclusive(false)} className={`px-3 py-2 rounded-lg text-xs font-extrabold border ${!vatInclusive ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>غير شاملة</button>
               </div>
             </div>
             <p className="text-[10px] text-slate-500 leading-relaxed basis-full">تُطبَّق هذه القيمة كافتراضي عند إدخال إشعارات استلام جديدة، ويمكن تغييرها لكل إشعار. تُسجَّل الضريبة في القيد المحاسبي (مدين ضريبة / صافي المخزون / دائن المورد).</p>
           </Card>
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي المشتريات</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(vatSummary.net)}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي المشتريات</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(vatSummary.net)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">ضريبة المشتريات</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(vatSummary.vat)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المشتريات</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmtMoney(vatSummary.gross)}</strong></div>
           </div>
@@ -537,7 +537,7 @@ export const CostReportsView: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {vatRows.map((r) => (
                     <tr key={r.g.id} className="hover:bg-slate-50">
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.g.grnNumber}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{r.g.grnNumber}</td>
                       <td className="p-2 font-bold">{r.g.supplierName}</td>
                       <td className="p-2 text-slate-600">{r.g.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.g.branchId)}</td>
                       <td className="tnum text-left p-2">{r.g.date}</td>
@@ -609,7 +609,7 @@ export const CostReportsView: React.FC = () => {
               {Object.entries(expenseByCategory).map(([cat, total]) => (
                 <div key={cat} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3">
                   <span className="font-bold text-slate-700 text-xs">{EXPENSE_CATEGORY_LABELS[cat as keyof typeof EXPENSE_CATEGORY_LABELS] || cat}</span>
-                  <span className="font-mono font-extrabold text-indigo-700">{fmt(total, 0)} ر.س</span>
+                  <span className="font-mono font-extrabold text-brand-700">{fmt(total, 0)} ر.س</span>
                 </div>
               ))}
               {Object.keys(expenseByCategory).length === 0 && <p className="text-center text-slate-400 text-xs py-8">لا توجد مصاريف مدفوعة</p>}

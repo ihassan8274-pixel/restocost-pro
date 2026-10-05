@@ -134,7 +134,7 @@ export const EndOfDayWizardView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="معالج إغلاق اليوم (نهاية الدوام)" subtitle="خطوات موجهة لإقفال اليوم التشغيلي، مراجعة الحصيلة، وإصدار التقرير النهائي" icon={<Moon className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="معالج إغلاق اليوم (نهاية الدوام)" subtitle="خطوات موجهة لإقفال اليوم التشغيلي، مراجعة الحصيلة، وإصدار التقرير النهائي" icon={<Moon className="w-6 h-6 text-brand-600" />}
         actions={
           <>
             <Btn tone="ghost" onClick={() => setStep('select')}>بدء جديد</Btn>
@@ -147,9 +147,9 @@ export const EndOfDayWizardView: React.FC = () => {
             <React.Fragment key={s}>
               <div className="flex items-center">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border-2 ${
-                  stepOrder.indexOf(step) >= i ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-400'
+                  stepOrder.indexOf(step) >= i ? 'bg-brand-600 border-brand-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-400'
                 }`}>{i + 1}</div>
-                {i < stepOrder.length - 1 && <div className={`w-12 md:w-16 h-1 mx-2 ${stepOrder.indexOf(step) > i ? 'bg-indigo-600' : 'bg-slate-200'}`} />}
+                {i < stepOrder.length - 1 && <div className={`w-12 md:w-16 h-1 mx-2 ${stepOrder.indexOf(step) > i ? 'bg-brand-600' : 'bg-slate-200'}`} />}
               </div>
             </React.Fragment>
           ))}
@@ -161,7 +161,7 @@ export const EndOfDayWizardView: React.FC = () => {
 
       {step === 'select' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 1: اختيار اليوم والفروع" icon={<Moon className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 1: اختيار اليوم والفروع" icon={<Moon className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="التاريخ (YYYY-MM-DD)">
               <input type="date" value={day} onChange={(e) => setDay(e.target.value)} className={inputCls} max={new Date().toISOString().slice(0, 10)} />
@@ -171,7 +171,7 @@ export const EndOfDayWizardView: React.FC = () => {
               <div className="max-h-60 overflow-auto space-y-1">
                 {visibleBranches.map((b) => (
                   <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg border hover:bg-slate-50 cursor-pointer">
-                    <input type="checkbox" checked={selectedBranches.includes(b.id)} onChange={(e) => setSelectedBranches(e.target.checked ? [...selectedBranches, b.id] : selectedBranches.filter((id) => id !== b.id))} className="w-4 h-4 accent-indigo-600" />
+                    <input type="checkbox" checked={selectedBranches.includes(b.id)} onChange={(e) => setSelectedBranches(e.target.checked ? [...selectedBranches, b.id] : selectedBranches.filter((id) => id !== b.id))} className="w-4 h-4 accent-brand-600" />
                     <span>{b.nameAr}</span>
                   </label>
                 ))}
@@ -193,10 +193,10 @@ export const EndOfDayWizardView: React.FC = () => {
 
       {step === 'review' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 2: مراجعة حصيلة اليوم" subtitle={`اليوم: ${dayLabel()}`} icon={<FileText className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 2: مراجعة حصيلة اليوم" subtitle={`اليوم: ${dayLabel()}`} icon={<FileText className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
             <div className="bg-white p-4 rounded-xl border border-slate-200"><span className="text-slate-500 text-[11px] block">إجمالي المبيعات</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmtMoney(grossSales)}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200"><span className="text-slate-500 text-[11px] block">Food Cost</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{grossSales > 0 ? fmt((foodCost / grossSales) * 100, 1) : 0}%</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200"><span className="text-slate-500 text-[11px] block">Food Cost</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{grossSales > 0 ? fmt((foodCost / grossSales) * 100, 1) : 0}%</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200"><span className="text-slate-500 text-[11px] block">الهالك</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{fmtMoney(totals.wastage)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200"><span className="text-slate-500 text-[11px] block">رواتب اليوم</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(totals.laborCost)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200"><span className="text-slate-500 text-[11px] block">الربح التقديري</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmtMoney(profit)}</strong></div>
@@ -238,7 +238,7 @@ export const EndOfDayWizardView: React.FC = () => {
 
       {step === 'closing' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 3: تنفيذ إغلاق اليوم" icon={<Lock className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 3: تنفيذ إغلاق اليوم" icon={<Lock className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 space-y-4">
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
               <p className="font-bold text-amber-800 flex items-center gap-2"><AlertCircle className="w-5 h-5" /> سيتم إقفال يوم {dayLabel()} لـ {selectedBranches.length} فرع.</p>
@@ -246,7 +246,7 @@ export const EndOfDayWizardView: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-slate-50 p-3 rounded-xl"><span className="text-[11px] text-slate-500 block">إجمالي المبيعات</span><strong className="font-mono text-emerald-700 block">{fmtMoney(grossSales)}</strong></div>
-              <div className="bg-slate-50 p-3 rounded-xl"><span className="text-[11px] text-slate-500 block">تكلفة الطعام</span><strong className="font-mono text-indigo-700 block">{fmtMoney(foodCost)}</strong></div>
+              <div className="bg-slate-50 p-3 rounded-xl"><span className="text-[11px] text-slate-500 block">تكلفة الطعام</span><strong className="font-mono text-brand-700 block">{fmtMoney(foodCost)}</strong></div>
               <div className="bg-slate-50 p-3 rounded-xl"><span className="text-[11px] text-slate-500 block">الهالك</span><strong className="font-mono text-rose-700 block">{fmtMoney(totals.wastage)}</strong></div>
               <div className="bg-slate-50 p-3 rounded-xl"><span className="text-[11px] text-slate-500 block">الربح التقديري</span><strong className="font-mono text-slate-900 block">{fmtMoney(profit)}</strong></div>
             </div>
@@ -262,7 +262,7 @@ export const EndOfDayWizardView: React.FC = () => {
 
       {step === 'report' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 4: تقرير الإغلاق اليومي" icon={<FileText className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 4: تقرير الإغلاق اليومي" icon={<FileText className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 space-y-3 text-center">
             <div className="flex items-center justify-center gap-2 text-emerald-600 font-bold"><CheckCircle2 className="w-5 h-5" /> تم إقفال اليوم بنجاح</div>
             <p className="text-xs text-slate-500">أصدر التقرير النهائي (PDF) لتوثيق الحصيلة قبل اعتماد الإغلاق نهائياً.</p>
@@ -283,7 +283,7 @@ export const EndOfDayWizardView: React.FC = () => {
             <CheckCircle2 className="w-10 h-10 text-emerald-600" />
           </div>
           <h3 className="text-xl font-extrabold text-emerald-800 mb-2">تم إغلاق الليلة بنجاح</h3>
-          <p className="text-slate-600 mb-2">اليوم: <span className="font-bold text-indigo-700">{dayLabel()}</span> — الفروع: <span className="font-bold">{selectedBranches.length}</span></p>
+          <p className="text-slate-600 mb-2">اليوم: <span className="font-bold text-brand-700">{dayLabel()}</span> — الفروع: <span className="font-bold">{selectedBranches.length}</span></p>
           <p className="text-[11px] font-bold text-slate-500 mb-4">الربح التقديري لليوم: {fmtMoney(profit)} — Food Cost: {grossSales > 0 ? fmt((foodCost / grossSales) * 100, 1) : 0}%</p>
           <div className="flex justify-center gap-2">
             <Btn onClick={() => { setStep('select'); setSelectedBranches([]); setClosed(false); }} tone="ghost">إغلاق يوم آخر</Btn>

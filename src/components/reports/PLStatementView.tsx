@@ -84,7 +84,7 @@ export const PLStatementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="قائمة الدخل (P&L)" subtitle="تقرير الإيرادات والتكاليف وصافي الربح حسب الفرع والفترة" icon={<PieIcon className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="قائمة الدخل (P&L)" subtitle="تقرير الإيرادات والتكاليف وصافي الربح حسب الفرع والفترة" icon={<PieIcon className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="قائمة الدخل" sheets={[
             { name: 'قائمة الدخل', header: ['البند', 'القيمة'], rows: rows.map((r) => [r.label, r.value]) },
@@ -125,7 +125,7 @@ export const PLStatementView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الإيراد</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(effRevenue, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">Food Cost</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{fcPct.toFixed(2)}%</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الربح</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmt(netProfit, 0)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الربح</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmt(netProfit, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الهامش</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{netMargin.toFixed(2)}%</strong></div>
       </div>
 
@@ -134,7 +134,7 @@ export const PLStatementView: React.FC = () => {
           <h3 className="font-bold text-slate-800 text-xs mb-3">القائمة التدريجية</h3>
           <div className="space-y-1">
             {rows.map((r) => (
-              <div key={r.label} className={`flex items-center justify-between rounded-xl px-3 py-2 ${r.isBold ? 'font-extrabold text-slate-900' : 'text-slate-600 font-bold'} ${r.highlight ? 'bg-indigo-50 border border-indigo-100' : 'bg-slate-50 border border-slate-100'} text-xs`}>
+              <div key={r.label} className={`flex items-center justify-between rounded-xl px-3 py-2 ${r.isBold ? 'font-extrabold text-slate-900' : 'text-slate-600 font-bold'} ${r.highlight ? 'bg-brand-50 border border-brand-100' : 'bg-slate-50 border border-slate-100'} text-xs`}>
                 <span>{r.label}</span>
                 <span className={`font-mono ${r.value < 0 ? 'text-rose-600' : 'text-slate-900'}`}>{r.value < 0 ? `(${fmt(-r.value, 0)})` : fmt(r.value, 0)}</span>
               </div>
@@ -177,7 +177,7 @@ export const PLStatementView: React.FC = () => {
                 <tr key={b.branchId} className={`border-b border-slate-50 hover:bg-slate-50 ${i === 0 ? 'bg-amber-50/60' : ''}`}>
                   <td className="p-2"><span className={`w-6 h-6 inline-flex items-center justify-center rounded-lg font-extrabold ${i === 0 ? 'bg-amber-400 text-white' : 'bg-slate-100 text-slate-600'}`}>{i + 1}</span></td>
                   <td className="p-2 font-bold text-slate-800">{b.branchName}</td>
-                  <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(b.totalSales)}</td>
+                  <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(b.totalSales)}</td>
                   <td className="tnum text-left p-2 font-bold text-rose-600">{b.foodCostPercent.toFixed(2)}%</td>
                   <td className="tnum text-left p-2 font-bold text-amber-700">{b.laborCostPercent.toFixed(2)}%</td>
                   <td className="tnum text-left p-2 font-bold text-slate-600">{fmt(b.operatingExpenses)}</td>

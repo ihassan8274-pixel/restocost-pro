@@ -42,7 +42,7 @@ export const SuppliersView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة الموردين" subtitle="سجل الموردين، تقييم الجودة، شروط الدفع، وتصنيفات التوريد" icon={<Truck className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="إدارة الموردين" subtitle="سجل الموردين، تقييم الجودة، شروط الدفع، وتصنيفات التوريد" icon={<Truck className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="الموردون"
@@ -68,7 +68,7 @@ export const SuppliersView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="font-mono font-extrabold text-amber-600 text-sm flex items-center gap-0.5"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />{s.rating}</span>
-                  <button onClick={() => openEdit(s)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(s)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
 <button onClick={() => {
                       requestDelete(() => {
                         deleteSupplier(s.id);
@@ -82,10 +82,10 @@ export const SuppliersView: React.FC = () => {
                 {s.email && <p className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-400" /> {s.email}</p>}
               </div>
               <div className="flex flex-wrap gap-1">
-                {s.categories.map((c) => <span key={c} className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-100">{categoryLabel(c, materialCategories)}</span>)}
+                {s.categories.map((c) => <span key={c} className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-100">{categoryLabel(c, materialCategories)}</span>)}
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
-                <span className="font-bold text-indigo-700">شروط السداد: {s.paymentTermsDays} يوم</span>
+                <span className="font-bold text-brand-700">شروط السداد: {s.paymentTermsDays} يوم</span>
                 <span className="text-slate-500 font-bold">{grnCount} فواتير استلام</span>
               </div>
             </Card>
@@ -109,14 +109,14 @@ export const SuppliersView: React.FC = () => {
           <Field label="تصنيفات التوريد">
             <div className="flex flex-wrap gap-1.5">
               {Object.keys(allCategoryLabels(materialCategories)).map((c) => (
-                <button type="button" key={c} onClick={() => toggleCat(c)} className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-colors ${form.categories.includes(c) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{categoryLabel(c, materialCategories)}</button>
+                <button type="button" key={c} onClick={() => toggleCat(c)} className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-colors ${form.categories.includes(c) ? 'bg-brand-600 text-white border-brand-600' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{categoryLabel(c, materialCategories)}</button>
               ))}
             </div>
           </Field>
           <Field label="ملاحظات"><textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={inputCls} /></Field>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editingId ? 'حفظ' : 'إضافة'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editingId ? 'حفظ' : 'إضافة'}</button>
           </div>
         </form>
       </Modal>

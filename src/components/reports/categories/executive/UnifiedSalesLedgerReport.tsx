@@ -235,7 +235,7 @@ export const UnifiedSalesLedgerReport: React.FC = () => {
       <>
         <label className="text-[10px] font-bold text-slate-500 flex flex-col gap-0.5">
           التصنيف
-          <select className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+          <select className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}>
             <option value="all">كل التصنيفات</option>
@@ -244,7 +244,7 @@ export const UnifiedSalesLedgerReport: React.FC = () => {
         </label>
         <label className="text-[10px] font-bold text-slate-500 flex flex-col gap-0.5">
           بحث
-          <input type="text" className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+          <input type="text" className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
             value={search} onChange={(e) => setSearch(e.target.value)} placeholder="اسم الصنف" />
         </label>
       </>

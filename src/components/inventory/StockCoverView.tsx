@@ -111,7 +111,7 @@ export const StockCoverView: React.FC = () => {
     { label: 'أصناف حرجة (< 3 أيام)', value: critical, tone: 'text-rose-600', bg: 'bg-rose-50 border-rose-200' },
     { label: 'تحذير (3-5 أيام)', value: warning, tone: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
     { label: 'مستقرة', value: healthy, tone: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
-    { label: 'زيادة (> 30 يوم)', value: overstock, tone: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-200' },
+    { label: 'زيادة (> 30 يوم)', value: overstock, tone: 'text-brand-600', bg: 'bg-brand-50 border-brand-200' },
   ];
 
   const STATUS_LABEL: Record<CoverRow['status'], string> = { critical: 'حرج', warning: 'تحذير', healthy: 'مستقر', overstock: 'زيادة' };
@@ -119,7 +119,7 @@ export const StockCoverView: React.FC = () => {
     critical: 'bg-rose-100 text-rose-700',
     warning: 'bg-amber-100 text-amber-700',
     healthy: 'bg-emerald-100 text-emerald-700',
-    overstock: 'bg-indigo-100 text-indigo-700',
+    overstock: 'bg-brand-100 text-brand-700',
   };
 
   const exportSheets = [{
@@ -223,11 +223,11 @@ export const StockCoverView: React.FC = () => {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="tnum text-left p-2 font-bold text-indigo-700">{r.code}</td>
+                    <td className="tnum text-left p-2 font-bold text-brand-700">{r.code}</td>
                     <td className="p-2 font-bold text-slate-800">{r.nameAr}</td>
                     <td className="tnum text-left p-2 text-slate-800">{fmt(r.stock, 2)} {r.unit}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(r.avgDaily, 2)}</td>
-                    <td className={`p-2 font-mono font-extrabold ${r.status === 'critical' ? 'text-rose-600' : r.status === 'warning' ? 'text-amber-600' : r.status === 'overstock' ? 'text-indigo-600' : 'text-emerald-700'}`}>{Number.isFinite(r.days) ? r.days.toFixed(1) : '∞'}</td>
+                    <td className={`p-2 font-mono font-extrabold ${r.status === 'critical' ? 'text-rose-600' : r.status === 'warning' ? 'text-amber-600' : r.status === 'overstock' ? 'text-brand-600' : 'text-emerald-700'}`}>{Number.isFinite(r.days) ? r.days.toFixed(1) : '∞'}</td>
                     <td className="tnum text-left p-2 text-slate-600">{fmtMoney(r.stockValue)}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(r.minLevel, 2)}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(r.maxLevel, 2)}</td>
@@ -257,9 +257,9 @@ export const StockCoverView: React.FC = () => {
               <Gauge className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div><strong className="text-emerald-700 block mb-1">مستقر (5 إلى 30 يوم)</strong><span className="text-slate-600">التغطية كافية ضمن النطاق الطبيعي. لا يلزم إجراء.</span></div>
             </div>
-            <div className="flex items-start gap-3 bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-              <ShieldAlert className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
-              <div><strong className="text-indigo-700 block mb-1">زيادة (أكثر من 30 يوم)</strong><span className="text-slate-600">مخزون يزيد عن تغطية شهر. راجع دورة الشراء وأجل الكميات الزائدة (تقليل تجميد رأس المال).</span></div>
+            <div className="flex items-start gap-3 bg-brand-50 border border-brand-200 rounded-xl p-4">
+              <ShieldAlert className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
+              <div><strong className="text-brand-700 block mb-1">زيادة (أكثر من 30 يوم)</strong><span className="text-slate-600">مخزون يزيد عن تغطية شهر. راجع دورة الشراء وأجل الكميات الزائدة (تقليل تجميد رأس المال).</span></div>
             </div>
           </div>
         </Card>

@@ -153,10 +153,10 @@ export const WhatIfSimulationView: React.FC = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4">
-              <p className="text-[11px] font-bold text-indigo-700">عدد الوصفات المتأثرة</p>
-              <p className="mt-1 text-2xl font-black text-indigo-900">{impactOnly.length}</p>
-              <p className="text-[10px] font-bold text-indigo-500">من أصل {recipes.length} وصفة مقيّدة</p>
+            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-brand-50 to-violet-50 p-4">
+              <p className="text-[11px] font-bold text-brand-700">عدد الوصفات المتأثرة</p>
+              <p className="mt-1 text-2xl font-black text-brand-900">{impactOnly.length}</p>
+              <p className="text-[10px] font-bold text-brand-500">من أصل {recipes.length} وصفة مقيّدة</p>
             </div>
             <div className={`rounded-2xl border p-4 ${totalDailyDelta >= 0 ? 'border-rose-200 bg-rose-50/70' : 'border-emerald-200 bg-emerald-50/70'}`}>
               <p className="text-[11px] font-bold text-slate-600">إجمالي الأثر على التكلفة</p>

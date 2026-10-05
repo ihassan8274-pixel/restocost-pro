@@ -181,10 +181,10 @@ export const DistributionsReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-emerald-800 font-mono block">{fmt(totalQty)}</strong>
           <span className="text-[10px] text-emerald-500 block">بوحدة المخزون</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">المطابقة التلقائية</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{autoCoverage.toFixed(1)}%</strong>
-          <span className="text-[10px] text-indigo-500 block">تلقائي {exactSum + aliasSum} · تقريبي {fuzzySum} · لا شيء {noneSum}</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">المطابقة التلقائية</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{autoCoverage.toFixed(1)}%</strong>
+          <span className="text-[10px] text-brand-500 block">تلقائي {exactSum + aliasSum} · تقريبي {fuzzySum} · لا شيء {noneSum}</span>
         </div>
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
           <span className="text-[10px] text-rose-600 font-bold block">لم تُحَل (مجهولة/معلقة)</span>

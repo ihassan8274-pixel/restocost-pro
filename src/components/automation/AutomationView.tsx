@@ -87,7 +87,7 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
       {msg && <div className="rounded-xl p-3 font-bold text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2"><Zap className="w-4 h-4" /> {msg}</div>}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قواعد أتمتة مفعّلة</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{automationRules.filter((r) => r.enabled).length} / {automationRules.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قواعد أتمتة مفعّلة</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{automationRules.filter((r) => r.enabled).length} / {automationRules.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تقارير مجدولة نشطة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{scheduledReports.filter((r) => r.enabled).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">تقارير مستحقة الآن</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1 flex items-center gap-1"><CalendarClock className="w-4 h-4" />{dueReports.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">توقيت آخر تنفيذ</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{new Date().toLocaleTimeString('ar-SA-u-nu-latn')}</strong></div>
@@ -109,7 +109,7 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
                   <p className="text-[10px] text-slate-500 mt-0.5">{r.description}</p>
                 </div>
               </div>
-              <button onClick={() => setAutomationRule(r.id, !r.enabled)} className={`shrink-0 flex items-center gap-1.5 text-[10px] font-extrabold px-3 py-1.5 rounded-xl border transition-colors ${r.enabled ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-300'}`}>
+              <button onClick={() => setAutomationRule(r.id, !r.enabled)} className={`shrink-0 flex items-center gap-1.5 text-[10px] font-extrabold px-3 py-1.5 rounded-xl border transition-colors ${r.enabled ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-500 border-slate-300'}`}>
                 {r.enabled ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                 {r.enabled ? 'مفعّلة' : 'موقوفة'}
               </button>
@@ -121,7 +121,7 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
       {/* Scheduled reports */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-          <SectionHeader title="التقارير المجدولة" subtitle="جدولة تقارير دورية — عند الاستحقاق يظهر تنبيه في مركز التنبيهات ويُفتح التقرير بالزر أدناه" icon={<CalendarClock className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="التقارير المجدولة" subtitle="جدولة تقارير دورية — عند الاستحقاق يظهر تنبيه في مركز التنبيهات ويُفتح التقرير بالزر أدناه" icon={<CalendarClock className="w-5 h-5 text-brand-600" />} />
           <Btn onClick={openAdd}><Plus className="w-4 h-4" /> إضافة تقرير مجدول</Btn>
         </div>
         <div className="overflow-x-auto">
@@ -147,7 +147,7 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
                     <td className="p-3">
                       <div className="flex gap-1">
                         <button onClick={() => runNow(r.id)} disabled={!r.enabled} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-30" title="تشغيل الآن"><Play className="w-4 h-4" /></button>
-                        <button onClick={() => openEdit(r)} className="p-1.5 text-slate-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg" title="تعديل"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => openEdit(r)} className="p-1.5 text-slate-500 hover:text-brand-700 hover:bg-brand-50 rounded-lg" title="تعديل"><Pencil className="w-4 h-4" /></button>
                       </div>
                     </td>
                   </tr>
@@ -159,12 +159,12 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </Card>
 
-      <Card className="p-5 bg-gradient-to-br from-indigo-50 to-white border-indigo-100">
+      <Card className="p-5 bg-gradient-to-br from-brand-50 to-white border-brand-100">
         <div className="flex items-start gap-3">
-          <BellRing className="w-6 h-6 text-indigo-600 shrink-0 mt-0.5" />
+          <BellRing className="w-6 h-6 text-brand-600 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-extrabold text-indigo-950">كيف تعمل الأتمتة؟</p>
-            <p className="text-xs text-indigo-800/80 mt-1 leading-relaxed">
+            <p className="text-sm font-extrabold text-brand-950">كيف تعمل الأتمتة؟</p>
+            <p className="text-xs text-brand-800/80 mt-1 leading-relaxed">
               عند الضغط على "تنفيذ الأتمتة الآن": تُنشأ أوامر شراء تلقائياً من الأصناف التي انخفضت عن الحد الأدنى (حسب المورد)، وتُنشأ أوامر تصنيع للأصناف المصنّعة الناقصة بالمطبخ المركزي.
               التقارير المجدولة تتحقق من دورتها عند كل زيارة — وعند الاستحقاق يظهر تنبيه في جرس التنبيهات بالأعلى، و"تشغيل الآن" يفتح التقرير مباشرة ويحدّث آخر تشغيل.
             </p>
@@ -195,7 +195,7 @@ export const AutomationView: React.FC<Props> = ({ onNavigate }) => {
           </div>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium flex items-center gap-1.5"><FileBarChart className="w-4 h-4" /> حفظ</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium flex items-center gap-1.5"><FileBarChart className="w-4 h-4" /> حفظ</button>
           </div>
         </form>
       </Modal>

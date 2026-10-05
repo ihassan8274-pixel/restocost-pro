@@ -43,11 +43,11 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
   const stages = [
     { id: 1, icon: <ClipboardCheck className="w-5 h-5" />, label: 'التكوين', sub: `${rawMaterials.length} مادة · ${recipes.length} وصفة · ${suppliers.length} مورد`, badge: `${supplierQuotes.length} عرض سعر`, nav: 'inventory', color: 'from-slate-500 to-slate-600' },
     { id: 2, icon: <ShoppingBag className="w-5 h-5" />, label: 'الاقتراحات', sub: `${lowStockMats.length} مادة تحت الحد الأدنى`, badge: fmtMoney(lowStockValue), nav: 'true_cost', color: 'from-amber-500 to-orange-600' },
-    { id: 3, icon: <PackageSearch className="w-5 h-5" />, label: 'أوامر الشراء', sub: `${openPOs.length} مفتوحة · ${pendingPO} بانتظار الاعتماد`, badge: fmtMoney(openPOValue), nav: 'purchase_orders', color: 'from-indigo-500 to-violet-600' },
+    { id: 3, icon: <PackageSearch className="w-5 h-5" />, label: 'أوامر الشراء', sub: `${openPOs.length} مفتوحة · ${pendingPO} بانتظار الاعتماد`, badge: fmtMoney(openPOValue), nav: 'purchase_orders', color: 'from-brand-500 to-violet-600' },
     { id: 4, icon: <PackageCheck className="w-5 h-5" />, label: 'الاستلام (GRN)', sub: `${approvedGRNs.length} إشعار معتمد`, badge: fmtMoney(grnValue), nav: 'goods_receiving', color: 'from-emerald-500 to-teal-600' },
     { id: 5, icon: <Factory className="w-5 h-5" />, label: 'التحويل والإنتاج', sub: `${openTransfers} تحويل مفتوح · ${openWorkOrders} أمر عمل`, badge: 'حركة بينية', nav: 'stock_transfers', color: 'from-cyan-500 to-sky-600' },
     { id: 6, icon: <Truck className="w-5 h-5" />, label: 'الصرف والإرجاع', sub: `${wastageLogs.length} هالك · ${returnPending.length} إرجاع قيد الاعتماد`, badge: fmtMoney(wastageValue + returnValue), nav: 'wastage', color: 'from-rose-500 to-pink-600' },
-    { id: 7, icon: <Scale className="w-5 h-5" />, label: 'الجرد والمراجعة', sub: `${physicalCounts.length} جولة جرد`, badge: `${fmtMoney(varianceCost)} فرق`, nav: 'inventory', color: 'from-blue-500 to-indigo-600' },
+    { id: 7, icon: <Scale className="w-5 h-5" />, label: 'الجرد والمراجعة', sub: `${physicalCounts.length} جولة جرد`, badge: `${fmtMoney(varianceCost)} فرق`, nav: 'inventory', color: 'from-blue-500 to-brand-600' },
     { id: 8, icon: <Landmark className="w-5 h-5" />, label: 'التقييم والقيود', sub: `${autoEntries} قيد تلقائي للمستندات`, badge: fmtMoney(stockValue), nav: 'inventory_valuation', color: 'from-slate-700 to-slate-900' },
   ];
 
@@ -182,7 +182,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="دورة المواد (Material Control)" subtitle="دورة كاملة تحاكي Oracle Hospitality Material Control: تكوين ← اقتراح ← شراء ← استلام ← تحويل/إنتاج ← صرف/إرجاع ← جرد ← تقييم وقيود" icon={<RotateCcw className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="دورة المواد (Material Control)" subtitle="دورة كاملة تحاكي Oracle Hospitality Material Control: تكوين ← اقتراح ← شراء ← استلام ← تحويل/إنتاج ← صرف/إرجاع ← جرد ← تقييم وقيود" icon={<RotateCcw className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="دورة_المواد" sheets={exportSheets} />
           <Btn tone="ghost" onClick={() => downloadCSV('دورة_المواد.csv', ['المرحلة', 'التفاصيل', 'القيمة'], stages.map((s) => [s.label, s.sub, s.badge]))}><FileDown className="w-4 h-4" /> تصدير الدورة</Btn>
@@ -291,7 +291,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                     <tr key={r.q.id} className="hover:bg-slate-50">
                       <td className="p-2 font-bold text-slate-800">{r.supName}</td>
                       <td className="p-2 font-bold">{r.matName}</td>
-                      <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmt(r.q.price)} <span className="text-[9px] text-slate-400">{r.q.currencyCode || 'ر.س'}</span></td>
+                      <td className="tnum text-left p-2 font-extrabold text-brand-700">{fmt(r.q.price)} <span className="text-[9px] text-slate-400">{r.q.currencyCode || 'ر.س'}</span></td>
                       <td className="tnum text-left p-2 text-amber-700">{r.q.currencyCode || 'SAR'}</td>
                       <td className="tnum text-left p-2 text-slate-600">{fmtMoney(r.base)}</td>
                       <td className="p-2 text-slate-500">{r.q.validFrom}{r.q.validTo ? ` → ${r.q.validTo}` : ' (مفتوح)'}{r.q.updatedAt ? <span className="block text-[9px] text-slate-400">آخر تحديث: {new Date(r.q.updatedAt).toLocaleString()}</span> : null}</td>
@@ -302,7 +302,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                           {Array.isArray(r.q.history) && r.q.history.length > 0 && (
                             <button onClick={() => setHistTarget(r.q)} className="p-1.5 text-slate-500 hover:bg-amber-50 rounded-lg" title="سجل تغييرات السعر"><History className="w-4 h-4" /></button>
                           )}
-                          <button onClick={() => editQuote(r.q)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="تعديل"><RefreshCcw className="w-4 h-4" /></button>
+                          <button onClick={() => editQuote(r.q)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="تعديل"><RefreshCcw className="w-4 h-4" /></button>
                           <button onClick={() => deleteSupplierQuote(r.q.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="حذف"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
@@ -325,7 +325,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                 const mat = rawMaterials.find((m) => m.id === histTarget.rawMaterialId);
                 return `${sup?.name || histTarget.supplierId} — ${mat?.nameAr || histTarget.rawMaterialId}`;
               })()}
-              {' '}· سعر حالي: <span className="font-mono font-extrabold text-indigo-700">{fmt(histTarget.price)} {histTarget.currencyCode || 'ر.س'}</span>
+              {' '}· سعر حالي: <span className="font-mono font-extrabold text-brand-700">{fmt(histTarget.price)} {histTarget.currencyCode || 'ر.س'}</span>
             </p>
             {(histTarget.history || []).slice().reverse().map((v, i) => (
               <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start justify-between gap-2">
@@ -367,7 +367,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                 <tbody className="divide-y divide-slate-100">
                   {recRows.map((r, idx) => (
                     <tr key={idx} className={r.over ? 'bg-amber-50/50' : r.short ? 'bg-rose-50/40' : ''}>
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.grn.grnNumber}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{r.grn.grnNumber}</td>
                       <td className="tnum text-left p-2">{r.po?.poNumber || '—'}</td>
                       <td className="p-2 font-bold">{rawMaterials.find((m) => m.id === r.mat.rawMaterialId)?.nameAr || r.mat.rawMaterialId}</td>
                       <td className="tnum text-left p-2">{r.poQty ?? '—'}</td>
@@ -401,7 +401,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                 <tbody className="divide-y divide-slate-100">
                   {supplierReturns.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{r.returnNumber}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{r.returnNumber}</td>
                       <td className="p-2 font-bold">{r.supplierName}</td>
                       <td className="p-2 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
                       <td className="tnum text-left p-2 text-slate-600">{r.date}</td>
@@ -420,7 +420,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
                             </>
                           )}
                           {r.status === 'approved' && <span className="text-emerald-600 self-center"><CheckCircle2 className="w-4 h-4 inline" /> خُصم من المخزون</span>}
-                          <button onClick={() => printReturn(r)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
+                          <button onClick={() => printReturn(r)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -498,7 +498,7 @@ export const MaterialControlView: React.FC<{ onNavigate: (tab: string) => void }
               </div>
               <div className="pt-2 flex justify-end gap-2">
                 <button type="button" onClick={() => setRetOpen(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-                <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">حفظ كمسودة</button>
+                <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">حفظ كمسودة</button>
               </div>
             </form>
           </Modal>

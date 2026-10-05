@@ -57,8 +57,8 @@ export const UnifiedReportsIndex: React.FC = () => {
               onClick={() => setActive(r.id)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1.5 ${
                 active === r.id
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+                  ? 'bg-brand-600 text-white border-brand-600'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700'
               }`}
             >
               {r.icon}
@@ -70,7 +70,7 @@ export const UnifiedReportsIndex: React.FC = () => {
 
       <div className="space-y-5">
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-extrabold text-indigo-700">{current.icon} {current.label}</span>
+          <span className="font-extrabold text-brand-700">{current.icon} {current.label}</span>
           <span className="text-slate-400">— {current.description}</span>
         </div>
         {current.render}

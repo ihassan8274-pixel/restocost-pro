@@ -32,7 +32,7 @@ export const ApprovalPathBar: React.FC<ApprovalPathBarProps> = ({ steps, current
 
   return (
     <div className={`bg-white border border-slate-200 rounded-2xl ${compact ? 'px-4 py-2.5' : 'p-4'} w-full`}>
-      {caption && <p className="text-[10px] font-bold text-slate-400 mb-2 flex items-center gap-1"><span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-400" /> {caption}</p>}
+      {caption && <p className="text-[10px] font-bold text-slate-400 mb-2 flex items-center gap-1"><span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-400" /> {caption}</p>}
       <div className="flex items-center">
         {steps.map((s, i) => {
           const done = !termOn && i < idx;
@@ -41,10 +41,10 @@ export const ApprovalPathBar: React.FC<ApprovalPathBarProps> = ({ steps, current
             <React.Fragment key={s.id}>
               {i > 0 && <div className={`flex-1 h-0.5 mx-1 rounded-full min-w-2 ${done ? 'bg-emerald-300' : 'bg-slate-200'}`} />}
               <div className="flex flex-col items-center gap-1 shrink-0">
-                <div className={`flex items-center justify-center rounded-full border-2 w-8 h-8 ${done ? 'bg-emerald-500 border-emerald-500 text-white' : active ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white border-slate-200 ' + (termOn ? 'text-slate-300' : 'text-slate-300')}`}>
+                <div className={`flex items-center justify-center rounded-full border-2 w-8 h-8 ${done ? 'bg-emerald-500 border-emerald-500 text-white' : active ? 'bg-brand-600 border-brand-600 text-white shadow-lg shadow-brand-600/30' : 'bg-white border-slate-200 ' + (termOn ? 'text-slate-300' : 'text-slate-300')}`}>
                   {stepContent(done, active)}
                 </div>
-                <span className={`text-[10px] font-bold whitespace-nowrap ${active ? 'text-indigo-700' : done ? 'text-emerald-700' : 'text-slate-400'}`}>{s.label}</span>
+                <span className={`text-[10px] font-bold whitespace-nowrap ${active ? 'text-brand-700' : done ? 'text-emerald-700' : 'text-slate-400'}`}>{s.label}</span>
               </div>
             </React.Fragment>
           );
@@ -63,7 +63,7 @@ export const ApprovalPathBar: React.FC<ApprovalPathBarProps> = ({ steps, current
         {actions && <div className="mr-auto flex items-center gap-2 pr-3">{actions}</div>}
       </div>
       {statusLabel && (
-        <div className={`mt-2 text-center text-[11px] font-bold rounded-lg py-1 ${termOn ? 'bg-rose-50 text-rose-700' : idx < 0 ? 'bg-slate-100 text-slate-500' : 'bg-indigo-50 text-indigo-700'}`}>
+        <div className={`mt-2 text-center text-[11px] font-bold rounded-lg py-1 ${termOn ? 'bg-rose-50 text-rose-700' : idx < 0 ? 'bg-slate-100 text-slate-500' : 'bg-brand-50 text-brand-700'}`}>
           الحالة الحالية: {statusLabel}
         </div>
       )}

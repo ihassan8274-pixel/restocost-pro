@@ -172,14 +172,14 @@ export const ButcherTestsView: React.FC = () => {
                   <td className="tnum text-left p-3 text-rose-700">{fmt(t.wasteWeight, 2)}</td>
                   <td className="tnum text-left p-3 font-bold text-amber-700">{fmt(t.yieldPercent, 2)}%</td>
                   <td className="tnum text-left p-3 text-amber-600">{fmtMoney(t.pricePerKg)}</td>
-                  <td className="tnum text-left p-3 font-extrabold text-indigo-700">{fmtMoney(t.costPerUsableKg)}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-brand-700">{fmtMoney(t.costPerUsableKg)}</td>
                   <td className="p-3">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.posted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                       {t.posted ? 'مرحّل' : 'مسودة'}
                     </span>
                   </td>
                   <td className="p-3">
-                    <button onClick={() => printTest(t)} className="mr-1 p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg align-middle" title="طباعة"><Printer className="w-4 h-4" /></button>
+                    <button onClick={() => printTest(t)} className="mr-1 p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg align-middle" title="طباعة"><Printer className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(t)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg align-middle" title="تعديل"><Pencil className="w-4 h-4" /></button>
                     {!t.posted && <button onClick={() => handlePost(t.id)} disabled={postBusy === t.id} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg align-middle" title="ترحيل وتحديث السعر"><CheckCircle2 className="w-4 h-4" />{postBusy === t.id && <Loader2 className="w-4 h-4 animate-spin" />}</button>}
                     <button onClick={() => { if (!window.confirm('حذف هذا الاختبار؟')) return; deleteButcherTest(t.id); }} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg align-middle" title="حذف"><Trash2 className="w-4 h-4" /></button>
@@ -225,7 +225,7 @@ export const ButcherTestsView: React.FC = () => {
           </div>
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] font-bold flex items-center justify-between">
             <span>تكلفة الكجم الصالح (مقترح)</span>
-            <span className="font-mono text-indigo-700">{fmtMoney(costPerUsableKg)}</span>
+            <span className="font-mono text-brand-700">{fmtMoney(costPerUsableKg)}</span>
           </div>
           <Field label="ملاحظات"><textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className={inputCls} /></Field>
           <div className="pt-2 flex justify-end gap-2">

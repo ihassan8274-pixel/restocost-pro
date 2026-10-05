@@ -108,9 +108,9 @@ export const CustomerOrderView: React.FC = () => {
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button onClick={() => setCatFilter('all')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${catFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>الكل</button>
+              <button onClick={() => setCatFilter('all')} className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${catFilter === 'all' ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600'}`}>الكل</button>
               {categories.map((c) => (
-                <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${catFilter === c ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{c}</button>
+                <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${catFilter === c ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600'}`}>{c}</button>
               ))}
               <div className="relative mr-auto">
                 <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-slate-400" />
@@ -216,7 +216,7 @@ export const BranchOrdersMonitorView: React.FC<{ onNavigate?: (t: string) => voi
 
   return (
     <div className="space-y-5">
-      <PageHeader title="مراقب طلبات الفروع" subtitle="ضع هذه الشاشة على جهاز كل فرع — تُطبع الطلبات الجديدة تلقائياً عند وصولها" icon={<MonitorSpeaker className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="مراقب طلبات الفروع" subtitle="ضع هذه الشاشة على جهاز كل فرع — تُطبع الطلبات الجديدة تلقائياً عند وصولها" icon={<MonitorSpeaker className="w-6 h-6 text-brand-600" />}
         actions={
           <Btn tone={autoPrint ? 'primary' : 'ghost'} onClick={() => setAutoPrint(!autoPrint)}>
             {autoPrint ? <><Printer className="w-4 h-4" /> الطباعة التلقائية مفعّلة</> : 'تشغيل الطباعة التلقائية'}
@@ -228,7 +228,7 @@ export const BranchOrdersMonitorView: React.FC<{ onNavigate?: (t: string) => voi
           <tbody className="divide-y">
             {rows.map((o) => (
               <tr key={o.id} className={o.status === 'new' ? 'bg-amber-50/60' : ''}>
-                <td className="tnum text-left p-2.5 font-bold text-indigo-700">{o.orderNumber}</td>
+                <td className="tnum text-left p-2.5 font-bold text-brand-700">{o.orderNumber}</td>
                 <td className="tnum text-left p-2.5">{o.createdAt.slice(11, 16)}</td>
                 <td className="p-2.5">{branches.find((b) => b.id === o.branchId)?.nameAr || o.branchName}</td>
                 <td className="p-2.5">{o.customerName || '-'}<br /><span className="font-mono text-[10px] text-slate-400">{o.customerPhone}</span></td>
@@ -236,7 +236,7 @@ export const BranchOrdersMonitorView: React.FC<{ onNavigate?: (t: string) => voi
                 <td className="tnum text-left p-2.5 font-bold">{fmtMoney(o.totalGross)}</td>
                 <td className="p-2.5"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${o.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : o.status === 'new' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100'}`}>{o.status === 'paid' ? `مدفوع • ${o.paymentMethod}` : o.status === 'confirmed' ? 'مؤكد' : <span className="inline-flex items-center gap-1"><Bell className="w-3 h-3" /> جديد</span>}</span></td>
                 <td className="p-2.5"><div className="flex gap-1">
-                  <button onClick={() => printCustomerOrder(o)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
+                  <button onClick={() => printCustomerOrder(o)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
                   {o.status === 'new' && <button onClick={() => updateCustomerOrderStatus(o.id, 'confirmed')} className="px-2 text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200">تأكيد</button>}
                   {o.status !== 'cancelled' && o.status !== 'paid' && <button onClick={() => updateCustomerOrderStatus(o.id, 'cancelled')} className="px-2 text-[10px] font-bold bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100">إلغاء</button>}
                 </div></td>

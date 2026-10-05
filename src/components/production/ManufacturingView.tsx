@@ -63,7 +63,7 @@ export const ManufacturingView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="شاشة التصنيع" subtitle="تصنيع الأصناف الأساسية (تحضيرات مسبقة / مطبخ مركزي) وتحويلها إلى مخزون قابل للتحويل بين الفروع" icon={<Factory className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="شاشة التصنيع" subtitle="تصنيع الأصناف الأساسية (تحضيرات مسبقة / مطبخ مركزي) وتحويلها إلى مخزون قابل للتحويل بين الفروع" icon={<Factory className="w-6 h-6 text-brand-600" />}
         actions={
           <ViewToolbar
             filename="سجل_التصنيع"
@@ -74,7 +74,7 @@ export const ManufacturingView: React.FC = () => {
         } />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">عمليات تصنيع</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{productionRuns.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">عمليات تصنيع</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{productionRuns.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف أساسية قابلة للتصنيع</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{baseRecipes.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المواد المستهلكة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(productionRuns.reduce((s, r) => s + r.totalCost, 0))}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الوحدات المنتجة</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{productionRuns.reduce((s, r) => s + r.producedQty, 0)}</strong></div>
@@ -84,7 +84,7 @@ export const ManufacturingView: React.FC = () => {
 
       {tab === 'produce' && (
         <Card className="p-5">
-          <SectionHeader title="تصنيع صنف أساسي" subtitle="اختر الفرع والصنف وعدد الوحدات — تُخصم المواد الخام من مخزون الفرع وتُضاف الكمية المنتجة إلى رصيد الصنف القابل للتحويل" icon={<Hammer className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="تصنيع صنف أساسي" subtitle="اختر الفرع والصنف وعدد الوحدات — تُخصم المواد الخام من مخزون الفرع وتُضاف الكمية المنتجة إلى رصيد الصنف القابل للتحويل" icon={<Hammer className="w-5 h-5 text-brand-600" />} />
           <form onSubmit={submit} className="mt-4 space-y-3 text-xs">
             {msg && <div className={`rounded-xl p-3 font-bold border ${msg.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>{msg.text}</div>}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -109,7 +109,7 @@ export const ManufacturingView: React.FC = () => {
               <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <div className="bg-slate-50 px-3 py-2 text-[10px] font-bold text-slate-500 flex items-center justify-between">
                   <span>متطلبات المواد الخام (لكل {selectedRecipe.portionSize || 'وحدة'})</span>
-                  <span className="text-indigo-700 font-mono">الكمية المطلوبة: {fmt(batch)} × الوصفة</span>
+                  <span className="text-brand-700 font-mono">الكمية المطلوبة: {fmt(batch)} × الوصفة</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-[11px]">
@@ -122,7 +122,7 @@ export const ManufacturingView: React.FC = () => {
                         return (
                           <tr key={r.rawMaterialId} className="hover:bg-slate-50">
                             <td className="p-2.5 font-bold text-slate-800">{r.materialName}</td>
-                            <td className="tnum text-left p-2.5 font-extrabold text-indigo-700">{fmt(r.requiredQty)} {r.unit}</td>
+                            <td className="tnum text-left p-2.5 font-extrabold text-brand-700">{fmt(r.requiredQty)} {r.unit}</td>
                             <td className="tnum text-left p-2.5 text-slate-700">{fmt(r.availableQty)} {r.unit}</td>
                             <td className="tnum text-left p-2.5">{fmt(r.unitCost)}</td>
                             <td className="tnum text-left p-2.5 font-bold">{fmtMoney(r.requiredQty * r.unitCost)}</td>
@@ -134,9 +134,9 @@ export const ManufacturingView: React.FC = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="bg-indigo-50 px-3 py-2 flex items-center justify-between text-[11px] font-extrabold">
+                <div className="bg-brand-50 px-3 py-2 flex items-center justify-between text-[11px] font-extrabold">
                   <span>القيمة الإجمالية للمواد المطلوبة:</span>
-                  <span className="font-mono text-indigo-800">{fmtMoney(totalCost)} ر.س</span>
+                  <span className="font-mono text-brand-800">{fmtMoney(totalCost)} ر.س</span>
                 </div>
               </div>
             )}
@@ -145,7 +145,7 @@ export const ManufacturingView: React.FC = () => {
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <div className="text-xs font-bold text-slate-600">سيُضاف للمخزون القابل للتحويل: <span className="font-mono font-extrabold text-amber-700">{fmt(batch)} {selectedRecipe?.portionSize || 'وحدة'}</span></div>
-              <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs"><Hammer className="w-4 h-4" /> تنفيذ التصنيع</button>
+              <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs"><Hammer className="w-4 h-4" /> تنفيذ التصنيع</button>
             </div>
           </form>
         </Card>
@@ -154,7 +154,7 @@ export const ManufacturingView: React.FC = () => {
       {tab === 'history' && (
         <Card className="overflow-hidden">
           <div className="p-4 border-b border-slate-100">
-            <SectionHeader title="سجل عمليات التصنيع" subtitle="كل عمليات تصنيع الأصناف الأساسية مع خصم المواد الخام وإضافة المخزون المصنّع" icon={<Package className="w-5 h-5 text-indigo-600" />} />
+            <SectionHeader title="سجل عمليات التصنيع" subtitle="كل عمليات تصنيع الأصناف الأساسية مع خصم المواد الخام وإضافة المخزون المصنّع" icon={<Package className="w-5 h-5 text-brand-600" />} />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
@@ -164,7 +164,7 @@ export const ManufacturingView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {productionRuns.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="tnum text-left p-3 font-bold text-indigo-700">{r.recipeCode}</td>
+                    <td className="tnum text-left p-3 font-bold text-brand-700">{r.recipeCode}</td>
                     <td className="p-3 font-bold text-slate-900">{r.recipeName}</td>
                     <td className="p-3 text-slate-600">{getBranchName(r.branchId)}</td>
                     <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
@@ -174,7 +174,7 @@ export const ManufacturingView: React.FC = () => {
                     <td className="p-3"><StatusPill status={r.status} map={{ completed: 'مكتمل', cancelled: 'ملغي' }} /></td>
                     <td className="p-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setViewRun(r)} className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="عرض التفاصيل"><Eye className="w-4 h-4" /></button>
+                        <button onClick={() => setViewRun(r)} className="p-1.5 rounded-lg text-brand-600 hover:bg-brand-50" title="عرض التفاصيل"><Eye className="w-4 h-4" /></button>
                         <button onClick={() => deleteProductionRun(r.id)} className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="حذف"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -200,7 +200,7 @@ export const ManufacturingView: React.FC = () => {
                 <span>التاريخ: {viewRun.date}</span>
                 <span>الكمية: {fmt(viewRun.producedQty)} {viewRun.unit}</span>
                 <span>بواسطة: {viewRun.producedBy}</span>
-                <span>قيمة المواد: <span className="font-mono text-indigo-700">{fmtMoney(viewRun.totalCost)}</span></span>
+                <span>قيمة المواد: <span className="font-mono text-brand-700">{fmtMoney(viewRun.totalCost)}</span></span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-[11px] border-collapse">
@@ -209,7 +209,7 @@ export const ManufacturingView: React.FC = () => {
                     {viewRun.items.map((it) => (
                       <tr key={it.rawMaterialId}>
                         <td className="p-2 font-bold text-slate-800">{it.materialName}</td>
-                        <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmt(it.requiredQty)} {it.unit}</td>
+                        <td className="tnum text-left p-2 font-extrabold text-brand-700">{fmt(it.requiredQty)} {it.unit}</td>
                         <td className="tnum text-left p-2">{fmt(it.availableQty)} {it.unit}</td>
                         <td className="tnum text-left p-2">{fmt(it.unitCost)}</td>
                         <td className="tnum text-left p-2 font-bold">{fmtMoney(it.requiredQty * it.unitCost)}</td>

@@ -1026,7 +1026,7 @@ export const GoodsReceivingView: React.FC = () => {
             <p className="font-bold text-slate-700 mb-2">اختر حركات المخزون لعكسها (كل سطر = صنف في إشعار):</p>
             {filtered.filter((g) => selectedIds.has(g.id) && g.status === 'approved').map((g) => (
               <div key={g.id} className="mb-2 p-2 bg-slate-50 rounded-lg">
-                <div className="font-bold text-indigo-700">{g.grnNumber} — {g.supplierName} ({getBranchDisplayName(g.branchId)})</div>
+                <div className="font-bold text-brand-700">{g.grnNumber} — {g.supplierName} ({getBranchDisplayName(g.branchId)})</div>
                 {g.items.map((item, idx) => {
                   const moveKey = `${g.id}|${item.rawMaterialId}`;
                   const mat = rawMaterials.find((m) => m.id === item.rawMaterialId);
@@ -1055,8 +1055,8 @@ export const GoodsReceivingView: React.FC = () => {
       {/* Print Options Modal */}
       <Modal open={showPrintModal} onClose={() => setShowPrintModal(false)} title="خيارات طباعة إشعارات الاستلام" wide>
         <div className="space-y-4 text-xs">
-          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-            <p className="font-bold text-indigo-950">اختر نوع الطباعة:</p>
+          <div className="bg-brand-50 border border-brand-200 rounded-xl p-3">
+            <p className="font-bold text-brand-950">اختر نوع الطباعة:</p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-slate-700">
               <li><b>طباعة ملخص:</b> قائمة بالإشعارات فقط (بدون تفاصيل الأصناف) — مثالية للأرشفة والمراجعة السريعة</li>
               <li><b>طباعة تفصيلية:</b> إشعار واحد مع كامل تفاصيل الأصناف ووحدات الشراء/التخزين</li>

@@ -409,7 +409,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
         <SectionHeader
           title="التصدير عبر الإنترنت (الخادم المحلي)"
           subtitle="بياناتك تبقى محفوظة 100% على هذا الجهاز — الخادم هنا، والمتصفحات الخارجية تعمل كعملاء متصلين به"
-          icon={<Globe className="w-4 h-4 text-indigo-500" />}
+          icon={<Globe className="w-4 h-4 text-brand-500" />}
           extra={<Btn onClick={loadNetwork} tone="ghost"><RefreshCw className="w-4 h-4" /> تحديث</Btn>}
         />
 
@@ -450,8 +450,8 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
             {netMsg && <p className="text-xs font-bold text-emerald-600">{netMsg}</p>}
             {netError && <p className="text-xs font-bold text-rose-600">{netError}</p>}
 
-            <div className="flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-3">
-              <Info className="w-4 h-4 shrink-0 mt-0.5 text-indigo-500" />
+            <div className="flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-xl p-3">
+              <Info className="w-4 h-4 shrink-0 mt-0.5 text-brand-500" />
               <span>
                 للوصول من الإنترنت بأمان (مع بقاء البيانات على هذا الجهاز): فعّل الوصول الخارجي، أعد تشغيل الخادم،
                 ثم شغّل <b dir="ltr">cloudflared tunnel</b> لربط النظام برابط HTTPS عام بدون فتح أي منفذ على الراوتر.
@@ -459,7 +459,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
             </div>
           </div>
         ) : (
-          <p className="mt-4 text-xs font-bold text-indigo-600 flex items-center gap-2">
+          <p className="mt-4 text-xs font-bold text-brand-600 flex items-center gap-2">
             {netError ? <AlertTriangle className="w-4 h-4 text-rose-500" /> : <Loader2 className="w-4 h-4 animate-spin" />}
             {netError || 'جارٍ قراءة حالة الشبكة...'}
           </p>
@@ -509,7 +509,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
                   {!isActive && (
                     <button onClick={() => { setActiveAIModel(m.id); setAiMsg('تم تعيين النموذج الافتراضي'); }} className="p-2 rounded-lg text-slate-400 hover:text-violet-700 hover:bg-violet-100 transition-colors" title="تعيين كنموذج افتراضي"><Star className="w-4 h-4" /></button>
                   )}
-                  <button onClick={() => openEditModel(m)} className="p-2 rounded-lg text-slate-400 hover:text-indigo-700 hover:bg-indigo-100 transition-colors" title="تعديل النموذج"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEditModel(m)} className="p-2 rounded-lg text-slate-400 hover:text-brand-700 hover:bg-brand-100 transition-colors" title="تعديل النموذج"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => removeAIModelNow(m)} className="p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-100 transition-colors" title="حذف النموذج"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
@@ -586,7 +586,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
             <p className="mt-1 text-[11px] font-bold text-slate-500">يُحفظ على الخادم فقط ولا يُعرض لأي جهاز آخر.</p>
           </Field>
           <label className="flex items-center gap-2.5 cursor-pointer select-none bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-            <input type="checkbox" checked={aiForm.enabled} onChange={(e) => setAiF({ enabled: e.target.checked })} className="w-4 h-4 accent-indigo-600" />
+            <input type="checkbox" checked={aiForm.enabled} onChange={(e) => setAiF({ enabled: e.target.checked })} className="w-4 h-4 accent-brand-600" />
             <div>
               <span className="text-xs font-extrabold text-slate-900 block">تفعيل هذا النموذج</span>
               <span className="text-[11px] font-bold text-slate-500">عند التعطيل تتحول الشاشات التي تستخدمه إلى التحليل الآلي المحلي</span>
@@ -604,7 +604,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
       </Modal>
 
       <Card className="p-4">
-        <SectionHeader title="إعداد نسبة ضريبة القيمة المضافة (VAT)" subtitle="تعيين نسبة الضريبة المطبقة على المبيعات والفواتير في النظام" icon={<Globe className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="إعداد نسبة ضريبة القيمة المضافة (VAT)" subtitle="تعيين نسبة الضريبة المطبقة على المبيعات والفواتير في النظام" icon={<Globe className="w-5 h-5 text-brand-500" />} />
         {vatMsg && <div className="mt-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl p-3">{vatMsg}</div>}
         <div className="mt-4 flex items-center gap-3">
           <div className="w-48">
@@ -626,17 +626,17 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
       </Card>
 
       <Card className="p-4">
-        <SectionHeader title="خصم المبيعات من المخزون" subtitle="عند التفعيل: كل عملية بيع (نقطة بيع + بيع مجمعة) تُخصم المواد الخام من المخزون تلقائياً. عند التعطيل: المبيعات لا تؤثر على المخزون وتكلفة المبيعات تُحسب بالجرد (الجرد أول + المشتريات - الجرد آخر)" icon={<Hash className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="خصم المبيعات من المخزون" subtitle="عند التفعيل: كل عملية بيع (نقطة بيع + بيع مجمعة) تُخصم المواد الخام من المخزون تلقائياً. عند التعطيل: المبيعات لا تؤثر على المخزون وتكلفة المبيعات تُحسب بالجرد (الجرد أول + المشتريات - الجرد آخر)" icon={<Hash className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 grid sm:grid-cols-2 gap-3">
           {([
             { key: true as const, label: 'مفعّل', hint: 'المبيعات تُخصم من المخزون تلقائياً (يتطلب التنشيط اليدوي)' },
             { key: false as const, label: 'معطّل', hint: 'المبيعات لا تؤثر على المخزون — تكلفة المبيعات بالجرد (الوضع الافتراضي)' },
           ]).map((opt) => (
             <button key={String(opt.key)} onClick={() => setDeductSalesFromInventory(opt.key)}
-              className={`text-right rounded-xl border px-4 py-3 transition-colors ${deductSalesFromInventory === opt.key ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-indigo-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+              className={`text-right rounded-xl border px-4 py-3 transition-colors ${deductSalesFromInventory === opt.key ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/30 ring-1 ring-brand-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
               <span className="flex items-center justify-between gap-2">
-                <span className={`text-xs font-extrabold ${deductSalesFromInventory === opt.key ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-900 dark:text-slate-100'}`}>{opt.label}</span>
-                {deductSalesFromInventory === opt.key && <CheckCircle2 className="w-4 h-4 text-indigo-600" />}
+                <span className={`text-xs font-extrabold ${deductSalesFromInventory === opt.key ? 'text-brand-700 dark:text-brand-300' : 'text-slate-900 dark:text-slate-100'}`}>{opt.label}</span>
+                {deductSalesFromInventory === opt.key && <CheckCircle2 className="w-4 h-4 text-brand-600" />}
               </span>
               <span className="block mt-1.5 text-[11px] font-bold text-slate-500">{opt.hint}</span>
             </button>
@@ -645,17 +645,17 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
       </Card>
 
       <Card className="p-4">
-        <SectionHeader title="تنسيق الأرقام المعروضة" subtitle="اختر شكل الأرقام في كامل الشاشات والتقارير المطبوعة (المبالغ، الكميات، النسب)" icon={<Hash className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="تنسيق الأرقام المعروضة" subtitle="اختر شكل الأرقام في كامل الشاشات والتقارير المطبوعة (المبالغ، الكميات، النسب)" icon={<Hash className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 grid sm:grid-cols-2 gap-3">
           {([
             { key: 'en' as const, label: 'أرقام إنجليزية', sample: '12,500.00 ر.س', hint: '1234567890 — الموصى به للتقارير وExcel' },
             { key: 'ar' as const, label: 'أرقام عربية', sample: '١٢٬٥٠٠٫٠٠ ر.س', hint: '٠١٢٣٤٥٦٧٨٩ — التنسيق العربي التقليدي' },
           ]).map((opt) => (
             <button key={opt.key} onClick={() => setNumerals(opt.key)}
-              className={`text-right rounded-xl border px-4 py-3 transition-colors ${numerals === opt.key ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-indigo-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+              className={`text-right rounded-xl border px-4 py-3 transition-colors ${numerals === opt.key ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/30 ring-1 ring-brand-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
               <span className="flex items-center justify-between gap-2">
-                <span className={`text-xs font-extrabold ${numerals === opt.key ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-900 dark:text-slate-100'}`}>{opt.label}</span>
-                {numerals === opt.key && <CheckCircle2 className="w-4 h-4 text-indigo-600" />}
+                <span className={`text-xs font-extrabold ${numerals === opt.key ? 'text-brand-700 dark:text-brand-300' : 'text-slate-900 dark:text-slate-100'}`}>{opt.label}</span>
+                {numerals === opt.key && <CheckCircle2 className="w-4 h-4 text-brand-600" />}
               </span>
               <span dir={opt.key === 'en' ? 'ltr' : 'rtl'} className="block mt-1.5 font-mono text-lg font-extrabold text-slate-800 dark:text-slate-200">{opt.sample}</span>
               <span className="block mt-1 text-[11px] font-bold text-slate-500">{opt.hint}</span>
@@ -665,17 +665,17 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
       </Card>
 
       <Card className="p-4">
-        <SectionHeader title="وضع الكثافة" subtitle="تحكم في كثافة المساحات والجداول — مريح للشاشات الكبيرة ومضغوط للمراقبة اليومية" icon={<Wrench className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="وضع الكثافة" subtitle="تحكم في كثافة المساحات والجداول — مريح للشاشات الكبيرة ومضغوط للمراقبة اليومية" icon={<Wrench className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 grid sm:grid-cols-2 gap-3">
           {([
             { key: 'comfortable' as const, label: 'مريح', sample: 'مساحات واسعة', hint: 'أفضل للشاشات الكبيرة وعرض التقارير' },
             { key: 'compact' as const, label: 'مضغوط', sample: 'كثافة أعلى', hint: 'يعرض صفوفاً أكثر في الجداول — للمراقبة اليومية' },
           ]).map((opt) => (
             <button key={opt.key} onClick={() => setDensity(opt.key)}
-              className={`text-right rounded-xl border px-4 py-3 transition-colors ${density === opt.key ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-indigo-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+              className={`text-right rounded-xl border px-4 py-3 transition-colors ${density === opt.key ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/30 ring-1 ring-brand-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
               <span className="flex items-center justify-between gap-2">
-                <span className={`text-xs font-extrabold ${density === opt.key ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-900 dark:text-slate-100'}`}>{opt.label}</span>
-                {density === opt.key && <CheckCircle2 className="w-4 h-4 text-indigo-600" />}
+                <span className={`text-xs font-extrabold ${density === opt.key ? 'text-brand-700 dark:text-brand-300' : 'text-slate-900 dark:text-slate-100'}`}>{opt.label}</span>
+                {density === opt.key && <CheckCircle2 className="w-4 h-4 text-brand-600" />}
               </span>
               <span className="block mt-1.5 text-[11px] font-bold text-slate-500">{opt.sample}</span>
               <span className="block mt-1 text-[11px] font-bold text-slate-500">{opt.hint}</span>
@@ -777,11 +777,11 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
           {tgErr && <p className="text-xs font-bold text-rose-600 flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> {tgErr}</p>}
 
           {tgDiscovered.length > 0 && (
-            <div className="bg-indigo-50/60 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-3">
-              <p className="text-[11px] font-extrabold text-indigo-700 dark:text-indigo-300 mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> الأجهزة المتاحة:</p>
+            <div className="bg-brand-50/60 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-xl p-3">
+              <p className="text-[11px] font-extrabold text-brand-700 dark:text-brand-300 mb-2 flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> الأجهزة المتاحة:</p>
               <div className="flex flex-wrap gap-1.5">
                 {tgDiscovered.map((d) => (
-                  <span key={d.id} className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700 rounded-full px-2.5 py-1 flex items-center gap-1.5">
+                  <span key={d.id} className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-brand-200 dark:border-brand-700 rounded-full px-2.5 py-1 flex items-center gap-1.5">
                     {d.title}
                     {tgChatIds.includes(d.id) ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <XCircle className="w-3 h-3 text-rose-400" />}
                   </span>
@@ -883,17 +883,17 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
       </Card>
 
       <Card className="p-4">
-        <SectionHeader title="العلامات العشرية المعروضة" subtitle="عدد الخانات العشرية في جميع المبالغ والكميات والنسب في النظام (0 = بدون كسور، 4 = أقصى دقة)" icon={<Hash className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="العلامات العشرية المعروضة" subtitle="عدد الخانات العشرية في جميع المبالغ والكميات والنسب في النظام (0 = بدون كسور، 4 = أقصى دقة)" icon={<Hash className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 grid grid-cols-5 gap-3">
           {[0,1,2,3,4].map((d) => {
             const sample = 12345.6789;
             const shown = sample.toLocaleString(numerals === 'ar' ? 'ar-SA' : 'en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
             return (
               <button key={d} onClick={() => setDecimals(d)}
-                className={`text-center rounded-xl border px-3 py-3 transition-colors ${decimals === d ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-indigo-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+                className={`text-center rounded-xl border px-3 py-3 transition-colors ${decimals === d ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/30 ring-1 ring-brand-300' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
                 <span className="flex items-center justify-center gap-1">
-                  <span className={`text-xl font-extrabold font-mono ${decimals === d ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-900 dark:text-slate-100'}`}>{d}</span>
-                  {decimals === d && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />}
+                  <span className={`text-xl font-extrabold font-mono ${decimals === d ? 'text-brand-700 dark:text-brand-300' : 'text-slate-900 dark:text-slate-100'}`}>{d}</span>
+                  {decimals === d && <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />}
                 </span>
                 <span dir={numerals === 'ar' ? 'rtl' : 'ltr'} className="block mt-1.5 text-[10px] font-mono font-bold text-slate-600 dark:text-slate-300 truncate">{shown}</span>
                 <span className="block text-[9px] font-bold text-slate-500">{d === 0 ? ' بدون كسور' : d + ' خانات'}</span>
@@ -951,7 +951,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
             {savedMsg && <p className="text-xs font-bold text-emerald-600">{savedMsg}</p>}
 
             <div className="flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
-              <Info className="w-4 h-4 shrink-0 mt-0.5 text-indigo-500" />
+              <Info className="w-4 h-4 shrink-0 mt-0.5 text-brand-500" />
               <span>
                 نصائح: يُفضّل صورة بخلفية شفافة (PNG) وبأبعاد مربعة. الحد الأقصى 2 ميجابايت.
                 الشعار محفوظ على الخادم فيتشارك مع كل الأجهزة المتصلة بالنظام.
@@ -966,7 +966,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
         <SectionHeader
           title="فحص تكامل النماذج والترابط"
           subtitle="محرك تشخيصي يتحقق من الترابط بين كل النماذج (الوصفات ← الخامات، المخزون، الفواتير، القيود المحاسبية) وصحة الاحتسابات"
-          icon={<Activity className="w-4 h-4 text-indigo-500" />}
+          icon={<Activity className="w-4 h-4 text-brand-500" />}
           extra={
             <Btn onClick={runCheck} disabled={checking} tone="dark">
               {checking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}
@@ -1001,7 +1001,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
             </div>
           </div>
         )}
-        {checking && <p className="mt-4 text-xs font-bold text-indigo-600 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> فحص الترابط بين النماذج ومدخلات النظام...</p>}
+        {checking && <p className="mt-4 text-xs font-bold text-brand-600 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> فحص الترابط بين النماذج ومدخلات النظام...</p>}
       </Card>
 
       <Card>
@@ -1054,7 +1054,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
         />
         <div className="mt-4">
           {backupState.loading ? (
-            <p className="text-xs font-bold text-indigo-600 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> جارٍ قراءة حالة النسخ الاحتياطي...</p>
+            <p className="text-xs font-bold text-brand-600 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> جارٍ قراءة حالة النسخ الاحتياطي...</p>
           ) : backupState.error ? (
             <div className="flex items-center gap-2 text-xs font-bold text-rose-600"><XCircle className="w-4 h-4" /> {backupState.error}</div>
           ) : (
@@ -1095,7 +1095,7 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
         <SectionHeader
           title="لوحة حالة الخوادم"
           subtitle="فحص مباشر للخادم وقاعدة البيانات والمزامنة وأجهزة نقاط البيع المتصلة"
-          icon={<Activity className="w-4 h-4 text-indigo-500" />}
+          icon={<Activity className="w-4 h-4 text-brand-500" />}
           extra={<Btn onClick={checkServer} disabled={serverState.loading} tone="ghost">{serverState.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} تحديث</Btn>}
         />
         <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -1180,11 +1180,11 @@ export const SystemSettingsView: React.FC<{ onNavigate?: (tab: string) => void }
               </div>
             )}
             <div>
-              <p className="text-xs font-extrabold text-indigo-700 mb-1.5">إعادة الاحتساب والتحقق ({rebuildResult.recalcs.length})</p>
+              <p className="text-xs font-extrabold text-brand-700 mb-1.5">إعادة الاحتساب والتحقق ({rebuildResult.recalcs.length})</p>
               <ul className="space-y-1">
                 {rebuildResult.recalcs.map((r, i) => (
-                  <li key={i} className="text-xs font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 flex items-start gap-2">
-                    <Activity className="w-3.5 h-3.5 shrink-0 mt-0.5 text-indigo-600" /> {r}
+                  <li key={i} className="text-xs font-bold text-brand-800 bg-brand-50 border border-brand-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                    <Activity className="w-3.5 h-3.5 shrink-0 mt-0.5 text-brand-600" /> {r}
                   </li>
                 ))}
               </ul>

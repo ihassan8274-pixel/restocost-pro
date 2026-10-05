@@ -183,7 +183,7 @@ export const PurchaseSuggestionsView: React.FC = () => {
         } />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف تحتاج شراء</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{rows.filter((r) => r.suggested > 0).length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف تحتاج شراء</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{rows.filter((r) => r.suggested > 0).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الكمية المقترحة (وحدة تخزين)</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmt(totalSuggestedQty)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">التكلفة المقدرة</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{fmt(totalSuggestedCost)}</strong></div>
         <div className={`p-4 rounded-xl border shadow-xs ${criticalCount > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
@@ -228,14 +228,14 @@ export const PurchaseSuggestionsView: React.FC = () => {
           <table className="w-full text-right text-xs">
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
               <tr>
-                <th className="p-3 w-10"><input type="checkbox" checked={allSelected} onChange={toggleAll} className="w-4 h-4 accent-indigo-600" /></th>
+                <th className="p-3 w-10"><input type="checkbox" checked={allSelected} onChange={toggleAll} className="w-4 h-4 accent-brand-600" /></th>
                 <th className="p-3">الصنف</th><th className="p-3">استهلاك 30 يوم</th><th className="p-3">المخزون</th><th className="p-3">أوامر مفتوحة</th><th className="p-3">حد أدنى</th><th className="p-3">حد أقصى</th><th className="p-3">كمية بوحدة الشراء</th><th className="p-3">المعادل بوحدة التخزين</th><th className="p-3">التكلفة</th><th className="p-3">الحالة</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (
                 <tr key={r.material.id} className={`hover:bg-slate-50 ${r.critical ? 'bg-rose-50/40' : ''}`}>
-                  <td className="p-3"><input type="checkbox" checked={!!selected[r.material.id]} onChange={() => setSelected((s) => ({ ...s, [r.material.id]: !s[r.material.id] }))} className="w-4 h-4 accent-indigo-600" /></td>
+                  <td className="p-3"><input type="checkbox" checked={!!selected[r.material.id]} onChange={() => setSelected((s) => ({ ...s, [r.material.id]: !s[r.material.id] }))} className="w-4 h-4 accent-brand-600" /></td>
                   <td className="p-3">
                     <div className="font-bold text-slate-800">{r.material.nameAr}</div>
                     <div className="text-[10px] text-slate-400 font-mono">{r.material.code} · {suppliers.find((s) => s.id === r.supplierId)?.name || ''}</div>

@@ -66,7 +66,7 @@ export const OwnerLiveView: React.FC<{ onNavigate: (tab: string) => void }> = ({
               <div className="text-[9px] text-slate-400 font-bold mt-1">POS: {fmtMoney(payload.posOrdersToday)} + إجمالي: {fmtMoney(payload.batchNetRevenue)}</div>
             </Card>
             <Card className="p-4">
-              <div className="flex items-center gap-2 text-indigo-700"><Activity className="w-4 h-4" /><span className="text-[10px] font-black">طلبات اليوم</span></div>
+              <div className="flex items-center gap-2 text-brand-700"><Activity className="w-4 h-4" /><span className="text-[10px] font-black">طلبات اليوم</span></div>
               <div className="mt-2 text-xl font-black text-slate-900">{payload.ordersToday}</div>
             </Card>
             <Card className="p-4">

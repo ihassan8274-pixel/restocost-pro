@@ -134,7 +134,7 @@ export const WastageView: React.FC = () => {
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الأثر المالي</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{fmtMoney(totalImpact)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الوقائع</span><strong className="text-lg font-extrabold text-slate-900 block mt-1">{filtered.length}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">من تكلفة الطعام</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmt(analytics.wastagePctOfFood, 1)}%</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">من إجمالي المبيعات</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmt(analytics.wastagePctOfSales, 1)}%</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">من إجمالي المبيعات</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmt(analytics.wastagePctOfSales, 1)}%</strong></div>
           </div>
 
           <Card className="p-4 flex items-center gap-3 text-xs">
@@ -182,7 +182,7 @@ export const WastageView: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard label="إجمالي الهالك" value={fmtMoney(analytics.totalWastage)} tone="rose" icon={<Trash2 className="w-4 h-4 text-rose-400" />} sub="جميع الفروع" />
             <StatCard label="نسبة الهالك من تكلفة الطعام" value={`${fmt(analytics.wastagePctOfFood, 1)}%`} tone="amber" icon={<TrendingDown className="w-4 h-4 text-amber-400" />} sub="الهالك ÷ تكلفة الطعام" />
-            <StatCard label="نسبة الهالك من المبيعات" value={`${fmt(analytics.wastagePctOfSales, 1)}%`} tone="indigo" icon={<BarChart3 className="w-4 h-4 text-indigo-400" />} sub="الهالك ÷ المبيعات" />
+            <StatCard label="نسبة الهالك من المبيعات" value={`${fmt(analytics.wastagePctOfSales, 1)}%`} tone="indigo" icon={<BarChart3 className="w-4 h-4 text-brand-400" />} sub="الهالك ÷ المبيعات" />
             <StatCard label="تكلفة الطعام الفعلية" value={fmtMoney(analytics.foodCost + analytics.totalWastage)} tone="emerald" icon={<ChefHat className="w-4 h-4 text-emerald-400" />} sub={`بما فيها الهالك (${fmt(analytics.foodCost)})`} />
           </div>
 

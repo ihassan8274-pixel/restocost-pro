@@ -190,7 +190,7 @@ export const SeasonalForecastView: React.FC = () => {
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">مواد تحتاج شراء</span>
-          <strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{totalSuggested}</strong>
+          <strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{totalSuggested}</strong>
           <span className="text-[10px] text-slate-400 font-bold">أصناف {totalQty > 0 && `(${fmt(totalQty, 0)} وحدة)`}</span>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
@@ -251,7 +251,7 @@ export const SeasonalForecastView: React.FC = () => {
         </Card>
 
         <Card className="p-4">
-          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5 mb-3"><Sparkles className="w-4 h-4 text-indigo-500" /> مصادر الطلب الأعلى</h3>
+          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5 mb-3"><Sparkles className="w-4 h-4 text-brand-500" /> مصادر الطلب الأعلى</h3>
           <div className="space-y-2">
             {insightRecipes.slice(0, 6).map((s) => {
               const f = forecast[s.recipeId] || 0;

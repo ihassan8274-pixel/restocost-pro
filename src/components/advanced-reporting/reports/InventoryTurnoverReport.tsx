@@ -201,10 +201,10 @@ export const InventoryTurnoverReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-emerald-800 font-mono block">{fmt(totalOutQty)}</strong>
           <span className="text-[10px] text-emerald-500 block">بقيمة {fmtMoney(totalValueOut)}</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">الرصيد الختامي</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{fmt(totalEndQty)}</strong>
-          <span className="text-[10px] text-indigo-500 block">بقيمة {fmtMoney(totalValueEnd)}</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">الرصيد الختامي</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{fmt(totalEndQty)}</strong>
+          <span className="text-[10px] text-brand-500 block">بقيمة {fmtMoney(totalValueEnd)}</span>
         </div>
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
           <span className="text-[10px] text-rose-600 font-bold block">مواد بطيئة (أكبر من 60 يوم)</span>
@@ -263,7 +263,7 @@ export const InventoryTurnoverReport: React.FC = () => {
                   <td className="p-2 text-center text-slate-500">{r.category}</td>
                   <td className="tnum p-2 text-left">{fmt(r.outQty)} {r.unit}</td>
                   <td className="tnum p-2 text-left">{fmt(r.ending)} {r.unit}</td>
-                  <td className="tnum p-2 text-left text-indigo-700">{r.turnover != null ? r.turnover.toFixed(2) : '—'}</td>
+                  <td className="tnum p-2 text-left text-brand-700">{r.turnover != null ? r.turnover.toFixed(2) : '—'}</td>
                   <td className={`p-2 text-center font-mono font-bold ${r.daysCover >= 999 ? 'text-rose-600' : r.daysCover > 60 ? 'text-rose-600' : r.daysCover > 30 ? 'text-amber-600' : 'text-emerald-600'}`}>{r.daysCover >= 999 ? '∞' : `${r.daysCover.toFixed(0)}`}</td>
                   <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.valueOut)}</td>
                   <td className="tnum p-2 text-left text-blue-700">{fmtMoney(r.valueEnd)}</td>

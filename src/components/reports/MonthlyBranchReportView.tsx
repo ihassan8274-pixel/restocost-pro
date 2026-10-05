@@ -75,7 +75,7 @@ export const MonthlyBranchReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تقرير الإيرادات وتكلفة المبيعات الشهري" subtitle={`إيرادات كل فرع وتكلفة المبيعات = الجرد أول + المشتريات - الجرد آخر`} icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="تقرير الإيرادات وتكلفة المبيعات الشهري" subtitle={`إيرادات كل فرع وتكلفة المبيعات = الجرد أول + المشتريات - الجرد آخر`} icon={<BarChart3 className="w-6 h-6 text-brand-600" />}
         actions={<ViewToolbar filename={`تقرير_إيرادات_${month}`} sheets={[{
           name: 'إيرادات وتكلفة',
           header: ['الفرع', 'إيراد المبيعات', 'إيراد التوصيل', 'إيراد POS', 'الإجمالي', 'الجرد أول', 'المشتريات', 'الجرد آخر', 'تكلفة المبيعات', 'صافي الربح', 'الهامش %'],
@@ -84,7 +84,7 @@ export const MonthlyBranchReportView: React.FC = () => {
 
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
-          <Calculator className="w-4 h-4 text-indigo-500" /> الشهر:
+          <Calculator className="w-4 h-4 text-brand-500" /> الشهر:
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputCls + ' w-44'} />
         </label>
       </div>

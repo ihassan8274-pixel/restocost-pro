@@ -8,7 +8,7 @@ interface ReportToolbarProps {
   filename?: string;
 }
 
-const btnCls = 'flex items-center gap-1.5 font-bold px-3 py-2 rounded-xl text-xs shadow-xs border transition-colors bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:text-indigo-700';
+const btnCls = 'flex items-center gap-1.5 font-bold px-3 py-2 rounded-xl text-xs shadow-xs border transition-colors bg-white text-slate-700 border-slate-200 hover:border-brand-300 hover:text-brand-700';
 
 /** شريط تصدير/طباعة موحّد — يعمل على نتيجة ReportResult مباشرة */
 export const ReportToolbar: React.FC<ReportToolbarProps> = ({ report, filename }) => {

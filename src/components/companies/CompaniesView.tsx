@@ -102,7 +102,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الشركات والمجموعة" subtitle="إدارة شركات المجموعة (فروع ← شركة) + التقرير الموحد + فتح النسخ المستقلة لكل شركة" icon={<Building2 className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الشركات والمجموعة" subtitle="إدارة شركات المجموعة (فروع ← شركة) + التقرير الموحد + فتح النسخ المستقلة لكل شركة" icon={<Building2 className="w-6 h-6 text-brand-600" />}
         actions={tab === 'instances' ? <Btn onClick={load}><RefreshCw className="w-4 h-4" /> تحديث</Btn> : <Btn onClick={openCreate}><Plus className="w-4 h-4" /> شركة جديدة</Btn>} />
 
       <TabBar tabs={[
@@ -114,7 +114,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الشركات</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{companies.length}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs"><span className="text-indigo-600 text-[11px] block">الفروع المرتبطة</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{branches.filter((b) => b.companyId).length}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs"><span className="text-brand-600 text-[11px] block">الفروع المرتبطة</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{branches.filter((b) => b.companyId).length}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">فروع غير مرتبطة</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{branches.filter((b) => !b.companyId).length}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs"><span className="text-emerald-600 text-[11px] block">شركات نشطة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{companies.filter((c) => c.isActive).length}</strong></div>
           </div>
@@ -124,7 +124,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
           <div className="flex flex-wrap gap-2">
             <Btn onClick={() => onNavigate?.('detailed_reports')}><Landmark className="w-4 h-4" /> فتح التقرير الموحد (الدمج المالي)</Btn>
-            <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5"><Network className="w-4 h-4 text-indigo-400" /> اربط كل فرع بشركته من شاشة "إدارة الفروع" ثم شاهد الدمج الموحد في "التقارير التفصيلية".</span>
+            <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5"><Network className="w-4 h-4 text-brand-400" /> اربط كل فرع بشركته من شاشة "إدارة الفروع" ثم شاهد الدمج الموحد في "التقارير التفصيلية".</span>
           </div>
 
           <Card className="overflow-hidden">
@@ -138,18 +138,18 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     const linked = branches.filter((b) => b.companyId === c.id);
                     return (
                       <tr key={c.id} className="hover:bg-slate-50">
-                        <td className="tnum text-left p-3 font-extrabold text-indigo-700">{c.code}</td>
+                        <td className="tnum text-left p-3 font-extrabold text-brand-700">{c.code}</td>
                         <td className="p-3 font-bold text-slate-900">{c.nameAr}</td>
                         <td className="p-3 text-slate-500">{c.nameEn || '—'}</td>
                         <td className="p-3 text-slate-500">{c.address || '—'}</td>
                         <td className="tnum text-left p-3">{c.vatNumber || '—'}</td>
                         <td className="p-3">
-                          {linked.length ? <span className="font-bold text-indigo-700">{linked.map((b) => b.nameAr).join('، ')}</span> : <span className="text-slate-400">لا يوجد</span>}
+                          {linked.length ? <span className="font-bold text-brand-700">{linked.map((b) => b.nameAr).join('، ')}</span> : <span className="text-slate-400">لا يوجد</span>}
                         </td>
                         <td className="p-3">{c.isActive ? <span className="text-emerald-600 font-bold">نشطة</span> : <span className="text-slate-400 font-bold">موقوفة</span>}</td>
                         <td className="p-3">
                           <div className="flex gap-1">
-                            <button onClick={() => openEdit(c)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="تعديل"><Pencil className="w-4 h-4" /></button>
+                            <button onClick={() => openEdit(c)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="تعديل"><Pencil className="w-4 h-4" /></button>
                             <button onClick={() => deleteCompany(c.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title={linked.length ? 'لا يمكن حذف شركة مرتبطة بفروع' : 'حذف'}><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
@@ -176,7 +176,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {instances.map((c) => (
-              <Card key={c.dir} className={`p-5 border-2 ${c.isCurrent ? 'border-indigo-300' : 'border-slate-200'}`}>
+              <Card key={c.dir} className={`p-5 border-2 ${c.isCurrent ? 'border-brand-300' : 'border-slate-200'}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.running ? 'bg-emerald-100' : 'bg-slate-100'}`}>
@@ -187,7 +187,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                       <p className="text-[10px] font-mono text-slate-500">{c.dir}</p>
                     </div>
                   </div>
-                  {c.isCurrent && <span className="text-[9px] font-extrabold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">هذه النسخة الحالية</span>}
+                  {c.isCurrent && <span className="text-[9px] font-extrabold bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full">هذه النسخة الحالية</span>}
                 </div>
                 <div className="mt-3 flex items-center gap-2 text-[11px] font-bold">
                   {c.running ? (
@@ -247,7 +247,7 @@ export const CompaniesView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           </label>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editingId ? 'حفظ التعديلات' : 'إضافة الشركة'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editingId ? 'حفظ التعديلات' : 'إضافة الشركة'}</button>
           </div>
         </form>
       </Modal>

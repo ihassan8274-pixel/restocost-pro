@@ -173,7 +173,7 @@ export const ProductionPlanningView: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف مقترحة</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{forecasts.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف مقترحة</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{forecasts.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المقترح (حصة)</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(totalSuggested, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">المحدد لأوامر الإنتاج</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{selectedCount}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة عجز الخام المحدد</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{fmtMoney(materialShortfallValue)}</strong></div>
@@ -208,14 +208,14 @@ export const ProductionPlanningView: React.FC = () => {
                 {forecasts.map((r) => (
                   <tr key={r.recipeId} className="border-b border-slate-50 hover:bg-slate-50">
                     <td className="p-2"><input type="checkbox" checked={r.selected} onChange={() => toggleRow(r.recipeId)} /></td>
-                    <td className="tnum text-left p-2 font-bold text-indigo-700">{r.code}</td>
+                    <td className="tnum text-left p-2 font-bold text-brand-700">{r.code}</td>
                     <td className="p-2 font-bold text-slate-800">{r.nameAr}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(r.historyQty, 0)}</td>
                     <td className="tnum text-left p-2 text-slate-600">{nf(r.dailyAvg)}</td>
                     <td className="tnum text-left p-2 font-bold text-emerald-700">{nf(r.forecast)}</td>
                     <td className="tnum text-left p-2 text-slate-700">{fmt(r.stock, 1)}</td>
                     <td className="tnum text-left p-2 text-amber-700">{fmt(r.openWO, 0)}</td>
-                    <td className="tnum text-left p-2 font-bold text-indigo-700">{nf(r.netNeed)}</td>
+                    <td className="tnum text-left p-2 font-bold text-brand-700">{nf(r.netNeed)}</td>
                     <td className="tnum text-left p-2 font-extrabold text-slate-900">{fmt(r.suggested, 0)}</td>
                     <td className="p-2"><Btn tone="ghost" className="!p-1.5" onClick={() => manufactureNow(r)}><PackageCheck className="w-3.5 h-3.5" /></Btn></td>
                   </tr>
@@ -226,7 +226,7 @@ export const ProductionPlanningView: React.FC = () => {
           </div>
           <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500 font-bold">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" /> التوقعات مبنية على متوسط الطلب الفعلي (مبيعات POS والمجمعة وأوامر الإنتاج المنجزة)
-            <Factory className="w-3.5 h-3.5 text-indigo-500 mr-2" /> زر الإنتاج الفوري تحتاج له مواد خام متوفرة
+            <Factory className="w-3.5 h-3.5 text-brand-500 mr-2" /> زر الإنتاج الفوري تحتاج له مواد خام متوفرة
           </div>
         </Card>
       )}
@@ -258,7 +258,7 @@ export const ProductionPlanningView: React.FC = () => {
                       <tr key={r.m.id} className="border-b border-slate-50 hover:bg-slate-50">
                         <td className="p-2 font-bold text-slate-800">{r.m.nameAr}</td>
                         <td className="tnum text-left p-2 text-slate-500">{r.m.unit}</td>
-                        <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(r.need, 2)}</td>
+                        <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(r.need, 2)}</td>
                         <td className="tnum text-left p-2 text-slate-600">{fmt(r.onHand, 2)}</td>
                         <td className={`p-2 font-mono font-extrabold ${r.shortfall > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{fmt(r.shortfall, 2)}</td>
                         <td className="tnum text-left p-2 text-slate-700">{fmtMoney(r.value)}</td>

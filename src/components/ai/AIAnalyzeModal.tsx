@@ -84,7 +84,7 @@ export const AIAnalyzeModal: React.FC<Props> = ({ open, onClose, title, insights
       <Card className="p-5 w-full max-w-2xl max-h-[90vh] overflow-y-auto" >
         <div onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="flex items-center gap-2 font-extrabold text-slate-900 text-sm"><Sparkles className="w-4 h-4 text-indigo-600" /> {title}</h3>
+            <h3 className="flex items-center gap-2 font-extrabold text-slate-900 text-sm"><Sparkles className="w-4 h-4 text-brand-600" /> {title}</h3>
             <div className="flex items-center gap-1">
               <AIModelPicker value={modelPick} onChange={setModelPick} />
               <button onClick={() => setShowSettings(!showSettings)} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg" title="إعدادات النموذج المحدد"><KeyRound className="w-4 h-4" /></button>
@@ -129,7 +129,7 @@ export const AIAnalyzeModal: React.FC<Props> = ({ open, onClose, title, insights
               ) : null}
               <div className="flex justify-end gap-2">
                 <button onClick={() => setShowSettings(false)} className="px-3 py-1.5 border border-slate-300 rounded-lg font-bold text-slate-600">إغلاق</button>
-                <button onClick={saveSettings} className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg font-bold">حفظ</button>
+                <button onClick={saveSettings} className="px-4 py-1.5 bg-brand-600 text-white rounded-lg font-bold">حفظ</button>
               </div>
             </div>
           )}
@@ -153,7 +153,7 @@ export const AIAnalyzeModal: React.FC<Props> = ({ open, onClose, title, insights
           {aiNote && <p className="text-[10px] text-slate-500 font-bold mb-3">{aiNote}</p>}
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-            <p className="text-[10px] font-extrabold text-indigo-700 mb-2 flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> التحليل الآلي الفوري</p>
+            <p className="text-[10px] font-extrabold text-brand-700 mb-2 flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> التحليل الآلي الفوري</p>
             <div className="space-y-1.5">
               {insights.map((i, idx) => (
                 <p key={idx} className="text-[11px] text-slate-700 font-bold leading-relaxed">• {i}</p>

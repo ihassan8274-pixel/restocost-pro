@@ -208,10 +208,10 @@ export const PriceHistoryReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-blue-800 font-mono block">{fmtMoney(avgPrice)}</strong>
           <span className="text-[10px] text-blue-500 block">لكل {unit || 'وحدة'}</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">آخر سعر شراء</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{last ? fmtMoney(last.unitPrice) : '—'}</strong>
-          <span className="text-[10px] text-indigo-500 block">{last ? `${last.date} — ${last.grnNumber}` : ''}</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">آخر سعر شراء</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{last ? fmtMoney(last.unitPrice) : '—'}</strong>
+          <span className="text-[10px] text-brand-500 block">{last ? `${last.date} — ${last.grnNumber}` : ''}</span>
         </div>
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
           <span className="text-[10px] text-emerald-600 font-bold block">أفضل (أدنى) سعر</span>

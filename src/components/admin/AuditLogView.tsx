@@ -14,7 +14,7 @@ export const AuditLogView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="سجل التدقيق (Audit Trail)" subtitle="تتبع كامل الإجراءات الحساسة: التعديلات، الموافقات، والحذف" icon={<ScrollText className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="سجل التدقيق (Audit Trail)" subtitle="تتبع كامل الإجراءات الحساسة: التعديلات، الموافقات، والحذف" icon={<ScrollText className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="سجل التدقيق" sheets={[
             {
@@ -52,7 +52,7 @@ export const AuditLogView: React.FC = () => {
                   <td className="tnum text-left p-3 text-slate-500 whitespace-nowrap">{l.timestamp}</td>
                   <td className="p-3 font-bold text-slate-900">{l.userName}</td>
                   <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{l.action}</span></td>
-                  <td className="p-3 text-indigo-700 font-bold">{l.module}</td>
+                  <td className="p-3 text-brand-700 font-bold">{l.module}</td>
                   <td className="p-3 text-slate-600">{l.details || '-'}</td>
                 </tr>
               ))}

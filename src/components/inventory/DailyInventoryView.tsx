@@ -127,7 +127,7 @@ export const DailyInventoryView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الجرد اليومي للفروع" subtitle="إدراج الجرد اليومي واحتساب الكمية المستهلكة وقيمتها وفقاً للجرد السابق ومشتريات اليوم، مع عرض الأرصدة لكل الأصناف والفروع" icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الجرد اليومي للفروع" subtitle="إدراج الجرد اليومي واحتساب الكمية المستهلكة وقيمتها وفقاً للجرد السابق ومشتريات اليوم، مع عرض الأرصدة لكل الأصناف والفروع" icon={<ClipboardList className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="الجرد_اليومي"
@@ -143,7 +143,7 @@ export const DailyInventoryView: React.FC = () => {
 
       {tab === 'entry' && (
         <Card className="p-5">
-          <SectionHeader title="إدراج جرد يومي" subtitle="الكمية المستهلكة = رصيد الجرد السابق + مشتريات اليوم − الجرد الفعلي المرصود" icon={<ClipboardList className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="إدراج جرد يومي" subtitle="الكمية المستهلكة = رصيد الجرد السابق + مشتريات اليوم − الجرد الفعلي المرصود" icon={<ClipboardList className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
             <Field label="الفرع">
               <select value={branch} onChange={(e) => setBranch(e.target.value)} className={inputCls}>
@@ -172,7 +172,7 @@ export const DailyInventoryView: React.FC = () => {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.rawMaterialId} className="hover:bg-slate-50">
-                    <td className={`${td} font-mono font-bold text-indigo-700`}>{rawMaterials.find((m) => m.id === r.rawMaterialId)?.code || '—'}</td>
+                    <td className={`${td} font-mono font-bold text-brand-700`}>{rawMaterials.find((m) => m.id === r.rawMaterialId)?.code || '—'}</td>
                     <td className={`${td} font-bold text-slate-900`}>{r.itemName}</td>
                     <td className={td}>{r.unit}</td>
                     <td className={`${td} font-mono`}>{fmt(r.openingQty)}</td>
@@ -184,14 +184,14 @@ export const DailyInventoryView: React.FC = () => {
                         onKeyDown={navOnEnter}
                         className={inputCls + ' !p-1.5 w-28'} />
                     </td>
-                    <td className={`${td} font-mono font-extrabold ${r.consumedQty > 0 ? 'text-indigo-700' : 'text-slate-400'}`}>{fmt(r.consumedQty)}</td>
+                    <td className={`${td} font-mono font-extrabold ${r.consumedQty > 0 ? 'text-brand-700' : 'text-slate-400'}`}>{fmt(r.consumedQty)}</td>
                     <td className={`${td} font-mono`}>{fmt(r.unitCost, 2)}</td>
-                    <td className={`${td} font-mono font-bold text-indigo-700`}>{fmtMoney(r.consumedValue)}</td>
+                    <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(r.consumedValue)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-indigo-50 font-extrabold">
+                <tr className="bg-brand-50 font-extrabold">
                   <td className={td} colSpan={7}>الإجمالي</td>
                   <td className={td}>{fmt(totalConsumedQty)}</td>
                   <td className={td}>—</td>
@@ -209,7 +209,7 @@ export const DailyInventoryView: React.FC = () => {
       {tab === 'balances' && (
         <Card className="p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <SectionHeader title="الأرصدة في جميع الفروع" subtitle="الكميات والقيم لكل الأصناف والفروع حتى التاريخ المحدد (آخر جرد يومي أو الرصيد الحالي)" icon={<Eye className="w-5 h-5 text-indigo-500" />} />
+            <SectionHeader title="الأرصدة في جميع الفروع" subtitle="الكميات والقيم لكل الأصناف والفروع حتى التاريخ المحدد (آخر جرد يومي أو الرصيد الحالي)" icon={<Eye className="w-5 h-5 text-brand-500" />} />
             <div className="flex items-center gap-2">
               <label className="text-[11px] font-bold text-slate-600">عرض حتى تاريخ:</label>
               <input type="date" value={balanceDate} onChange={(e) => setBalanceDate(e.target.value)} className={inputCls + ' !w-auto !p-1.5'} />
@@ -232,24 +232,24 @@ export const DailyInventoryView: React.FC = () => {
                   const totalVal = visibleBranches.reduce((s, b) => s + balanceOf(b.id, r.rawMaterialId) * getAverageUnitCost(r.rawMaterialId), 0);
                   return (
                     <tr key={r.rawMaterialId} className="hover:bg-slate-50">
-                      <td className={`${td} font-mono font-bold text-indigo-700`}>{rawMaterials.find((m) => m.id === r.rawMaterialId)?.code || '—'}</td>
+                      <td className={`${td} font-mono font-bold text-brand-700`}>{rawMaterials.find((m) => m.id === r.rawMaterialId)?.code || '—'}</td>
                       <td className={`${td} font-bold text-slate-900`}>{r.itemName} <span className="text-slate-400 text-[10px]">({r.unit})</span></td>
                       {visibleBranches.map((b) => {
                         const qty = balanceOf(b.id, r.rawMaterialId);
                         return <td key={b.id} className={`${td} font-mono ${qty > 0 ? 'text-slate-800' : 'text-slate-300'}`}>{fmt(qty)}</td>;
                       })}
                       <td className={`${td} font-mono font-extrabold text-slate-900`}>{fmt(totalQty)}</td>
-                      <td className={`${td} font-mono font-bold text-indigo-700`}>{fmtMoney(totalVal)}</td>
+                      <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(totalVal)}</td>
                     </tr>
                   );
                 })}
               </tbody>
               <tfoot>
-                <tr className="bg-indigo-50 font-extrabold">
+                <tr className="bg-brand-50 font-extrabold">
                   <td className={td} colSpan={2}>الإجمالي الكلي</td>
                   {summaryByBranch.map((s) => <td key={s.branch.id} className={`${td} font-mono`}>{fmt(s.qty)} <span className="text-[9px] block text-slate-500">{fmtMoney(s.val)}</span></td>)}
                   <td className={`${td} font-mono`}>{fmt(summaryByBranch.reduce((s, x) => s + x.qty, 0))}</td>
-                  <td className={`${td} font-mono text-indigo-800`}>{(() => { const t = summaryByBranch.reduce((s, x) => s + x.val, 0); return t === 0 ? '—' : fmt(t); })()}</td>
+                  <td className={`${td} font-mono text-brand-800`}>{(() => { const t = summaryByBranch.reduce((s, x) => s + x.val, 0); return t === 0 ? '—' : fmt(t); })()}</td>
                 </tr>
               </tfoot>
             </table>
@@ -273,12 +273,12 @@ export const DailyInventoryView: React.FC = () => {
                     <td className="tnum text-left p-3 text-slate-600">{c.date}</td>
                     <td className="p-3 font-bold text-slate-900">{getBranchName(c.branchId)}</td>
                     <td className="p-3">{c.countedBy}</td>
-                    <td className="tnum text-left p-3 font-extrabold text-indigo-700">{fmt(c.totalConsumedQty)}</td>
-                    <td className="tnum text-left p-3 font-bold text-indigo-700">{fmtMoney(c.totalConsumedValue)}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-brand-700">{fmt(c.totalConsumedQty)}</td>
+                    <td className="tnum text-left p-3 font-bold text-brand-700">{fmtMoney(c.totalConsumedValue)}</td>
                     <td className="p-3">{c.items.length} صنف</td>
                     <td className="p-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setViewCount(c)} className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="عرض التفاصيل"><Eye className="w-4 h-4" /></button>
+                        <button onClick={() => setViewCount(c)} className="p-1.5 rounded-lg text-brand-600 hover:bg-brand-50" title="عرض التفاصيل"><Eye className="w-4 h-4" /></button>
                         <button onClick={() => deleteDailyCount(c.id)} className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="حذف"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -296,8 +296,8 @@ export const DailyInventoryView: React.FC = () => {
           <div className="space-y-3 text-xs">
             <div className="flex flex-wrap gap-4 bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold">
               <span>المُدرج من: {viewCount.countedBy}</span>
-              <span>المستهلك الكلي: <span className="font-mono text-indigo-700">{fmt(viewCount.totalConsumedQty)}</span></span>
-              <span>القيمة: <span className="font-mono text-indigo-700">{fmtMoney(viewCount.totalConsumedValue)}</span></span>
+              <span>المستهلك الكلي: <span className="font-mono text-brand-700">{fmt(viewCount.totalConsumedQty)}</span></span>
+              <span>القيمة: <span className="font-mono text-brand-700">{fmtMoney(viewCount.totalConsumedValue)}</span></span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-[11px] border-collapse">
@@ -310,7 +310,7 @@ export const DailyInventoryView: React.FC = () => {
                       <td className={`${td} font-mono text-emerald-700`}>{it.purchasedQty || '—'}</td>
                       <td className={`${td} font-mono`}>{fmt(it.theoreticalQty)}</td>
                       <td className={`${td} font-mono`}>{fmt(it.countedQty)}</td>
-                      <td className={`${td} font-mono font-extrabold text-indigo-700`}>{fmt(it.consumedQty)}</td>
+                      <td className={`${td} font-mono font-extrabold text-brand-700`}>{fmt(it.consumedQty)}</td>
                       <td className={`${td} font-mono font-bold`}>{fmtMoney(it.consumedValue)}</td>
                     </tr>
                   ))}

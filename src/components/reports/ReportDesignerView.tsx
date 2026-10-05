@@ -462,7 +462,7 @@ export const ReportDesignerView: React.FC = () => {
 
       {mode === 'catalog' && (
         <Card className="p-4">
-          <SectionHeader title={`كتالوج التقارير المحفوظة (${customReports.length})`} icon={<Table2 className="w-5 h-5 text-indigo-600" />}
+          <SectionHeader title={`كتالوج التقارير المحفوظة (${customReports.length})`} icon={<Table2 className="w-5 h-5 text-brand-600" />}
             extra={<span className="text-[10px] text-slate-400">تُزامَن عبر cloud</span>} />
           {customReports.length === 0 ? (
             <EmptyState title="لا توجد تقارير مخصصة بعد" subtitle="اضغط «تقرير جديد» لبناء أول تقرير من مصادر النظام العشرة" icon={<LayoutTemplate className="w-5 h-5" />} />
@@ -508,7 +508,7 @@ export const ReportDesignerView: React.FC = () => {
         <div className="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-4 items-start">
           <div className="space-y-3">
             <Card className="p-4 space-y-3">
-              <SectionHeader title="1. المصدر والاسم" icon={<Database className="w-4 h-4 text-indigo-600" />} />
+              <SectionHeader title="1. المصدر والاسم" icon={<Database className="w-4 h-4 text-brand-600" />} />
               <div>
                 <label className="block font-bold text-slate-600 text-[10px] mb-1">اسم التقرير</label>
                 <input value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder="مثال: مصاريف الفروع — يوليو" className={inputCls} />
@@ -523,7 +523,7 @@ export const ReportDesignerView: React.FC = () => {
             </Card>
 
             <Card className="p-4 space-y-2">
-              <SectionHeader title="2. الأعمدة" icon={<Columns3 className="w-4 h-4 text-indigo-600" />} />
+              <SectionHeader title="2. الأعمدة" icon={<Columns3 className="w-4 h-4 text-brand-600" />} />
               <div className="grid grid-cols-2 gap-1">
                 {ds.columns.map((c) => (
                   <label key={c.key} className="flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
@@ -535,7 +535,7 @@ export const ReportDesignerView: React.FC = () => {
             </Card>
 
             <Card className="p-4 space-y-3">
-              <SectionHeader title="3. التجميع والفلاتر" icon={<SlidersHorizontal className="w-4 h-4 text-indigo-600" />} />
+              <SectionHeader title="3. التجميع والفلاتر" icon={<SlidersHorizontal className="w-4 h-4 text-brand-600" />} />
               <div>
                 <label className="block font-bold text-slate-600 text-[10px] mb-1">التجميع حسب</label>
                 <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className={inputCls + ' !py-1.5 text-xs'}>
@@ -565,7 +565,7 @@ export const ReportDesignerView: React.FC = () => {
           </div>
 
           <Card className="p-4 space-y-3">
-            <SectionHeader title="المعاينة والتشغيل" icon={<Table2 className="w-5 h-5 text-indigo-600" />}
+            <SectionHeader title="المعاينة والتشغيل" icon={<Table2 className="w-5 h-5 text-brand-600" />}
               extra={
                 <div className="flex flex-wrap items-center gap-2 print:hidden">
                   <ViewToolbar
@@ -584,7 +584,7 @@ export const ReportDesignerView: React.FC = () => {
               } />
 
             <div className="flex items-center gap-2 text-[11px] text-slate-500">
-              <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-bold">المعاينة الداخلية (تصدير Excel/طباعة)</span>
+              <span className="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 font-bold">المعاينة الداخلية (تصدير Excel/طباعة)</span>
               <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white font-bold">محرك jsreport — قوالب متقدمة RTL</span>
             </div>
 
@@ -600,7 +600,7 @@ export const ReportDesignerView: React.FC = () => {
                     {table.rows.map((row, ri) => {
                       const isTotal = table.hasTotals && ri === table.rows.length - 1;
                       return (
-                        <tr key={ri} className={`border-b border-slate-100 ${isTotal ? 'bg-indigo-50/70 font-extrabold text-indigo-800' : 'hover:bg-slate-50/60'}`}>
+                        <tr key={ri} className={`border-b border-slate-100 ${isTotal ? 'bg-brand-50/70 font-extrabold text-brand-800' : 'hover:bg-slate-50/60'}`}>
                           {row.map((v, ci) => (
                             <td key={ci} className={`p-2 whitespace-nowrap ${isTotal && ci === 0 ? 'font-bold' : ''}`}>
                               {cellText(v, kindOf(table.keys[ci]))}

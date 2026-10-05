@@ -39,7 +39,7 @@ export const EodBoardView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4"><div className="text-[10px] text-slate-500 font-black flex items-center gap-1"><Lock className="w-3.5 h-3.5" /> سجلات الفترة</div><div className="mt-1 text-2xl font-black text-slate-900">{stats.count}</div></Card>
         <Card className="p-4"><div className="text-[10px] text-slate-500 font-black flex items-center gap-1"><TrendingUp className="w-3.5 h-3.5" /> إيرادات الفترة</div><div className="mt-1 text-2xl font-black text-emerald-700">{fmtMoney(stats.revenue)}</div></Card>
-        <Card className="p-4"><div className="text-[10px] text-slate-500 font-black flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> صافي الربح</div><div className="mt-1 text-2xl font-black text-indigo-700">{fmtMoney(stats.profit)}</div></Card>
+        <Card className="p-4"><div className="text-[10px] text-slate-500 font-black flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> صافي الربح</div><div className="mt-1 text-2xl font-black text-brand-700">{fmtMoney(stats.profit)}</div></Card>
         <Card className="p-4"><div className="text-[10px] text-slate-500 font-black flex items-center gap-1"><Percent className="w-3.5 h-3.5" /> هامش الربح</div><div className="mt-1 text-2xl font-black text-amber-600">{stats.margin.toFixed(1)}%</div></Card>
       </div>
 
@@ -84,7 +84,7 @@ export const EodBoardView: React.FC = () => {
                     <td className="tnum text-left p-2">{fmtMoney(c.laborCost ?? 0)}</td>
                     <td className="tnum text-left p-2">{fmtMoney(c.operatingCost ?? 0)}</td>
                     <td className="tnum text-left p-2 text-rose-600">{fmtMoney(c.wastageCost ?? 0)}</td>
-                    <td className={`p-2 font-mono font-black ${(c.profit ?? 0) >= 0 ? 'text-indigo-700' : 'text-rose-700'}`}>{fmtMoney(c.profit ?? 0)}</td>
+                    <td className={`p-2 font-mono font-black ${(c.profit ?? 0) >= 0 ? 'text-brand-700' : 'text-rose-700'}`}>{fmtMoney(c.profit ?? 0)}</td>
                     <td className={`p-2 font-mono font-bold ${(c.marginPct ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{c.marginPct ?? 0}%</td>
                     <td className="p-2 text-slate-500 font-bold">{c.closedBy}<span className="block text-[9px] text-slate-400">{new Date(c.closedAt).toLocaleString()}</span></td>
                     <td className="p-2">

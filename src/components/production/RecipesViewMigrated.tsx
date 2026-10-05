@@ -37,7 +37,7 @@ export const RecipesViewMigrated: React.FC = () => {
   
   return (
     <div className="space-y-6">
-      <PageHeader title="الوصفات المعيارية" subtitle="إدارة وصفات الطعام، حساب التكاليف، وتحليل الهامش" icon={<ChefHat className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الوصفات المعيارية" subtitle="إدارة وصفات الطعام، حساب التكاليف، وتحليل الهامش" icon={<ChefHat className="w-6 h-6 text-brand-600" />}
         actions={<>
           <Btn onClick={() => {}}><Plus className="w-4 h-4" /> وصفة جديدة</Btn>
         </>} />

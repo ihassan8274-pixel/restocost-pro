@@ -138,8 +138,8 @@ export const ReportsCenterView: React.FC = () => {
             onClick={() => setTab(t.id)}
             className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 border ${
               tab === t.id
-                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+                ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300 hover:text-brand-700'
             }`}
           >
             {t.icon}
@@ -153,7 +153,7 @@ export const ReportsCenterView: React.FC = () => {
           {active.icon}
           <span className="text-slate-400">مركز التقارير الشامل</span>
           <span className="text-slate-300">/</span>
-          <span className="text-indigo-700">{active.label}</span>
+          <span className="text-brand-700">{active.label}</span>
         </div>
         <p className="text-[11px] text-slate-400 font-bold mt-0.5">{active.description}</p>
       </Card>

@@ -57,7 +57,7 @@ export const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
       ) : (
         <div className="space-y-3">
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
-            <Lock className="w-4 h-4 text-indigo-500 shrink-0" />
+            <Lock className="w-4 h-4 text-brand-500 shrink-0" />
             <div className="text-[11px] text-slate-600 font-bold leading-snug">
               حساب: <span className="text-slate-900">{currentUser?.name}</span> ({currentUser?.email})
             </div>

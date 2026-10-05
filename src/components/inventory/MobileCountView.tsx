@@ -352,7 +352,7 @@ const MobileCountView: React.FC = () => {
                 <input type="date" value={logDateFrom} onChange={(e) => setLogDateFrom(e.target.value)} className={inputCls} />
                 <input type="date" value={logDateTo} onChange={(e) => setLogDateTo(e.target.value)} className={inputCls} />
               </div>
-              <button onClick={resetFilters} className="text-xs text-indigo-600 font-bold underline">مسح كل الفلاتر</button>
+              <button onClick={resetFilters} className="text-xs text-brand-600 font-bold underline">مسح كل الفلاتر</button>
             </div>
           )}
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -382,7 +382,7 @@ const MobileCountView: React.FC = () => {
         {viewingRecord ? (
           <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2 border-b border-slate-100 pb-3">
-              <button onClick={() => setViewId(null)} className="text-sm font-bold text-indigo-600 flex items-center gap-1">← العودة للسجل</button>
+              <button onClick={() => setViewId(null)} className="text-sm font-bold text-brand-600 flex items-center gap-1">← العودة للسجل</button>
               <span className="text-xs font-bold text-slate-500">{fmtDateLong(viewingRecord.date)}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-center">
@@ -434,16 +434,16 @@ const MobileCountView: React.FC = () => {
               </div>
             )}
             {branchLogs.map((rec) => (
-              <div key={rec.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md hover:border-indigo-200 transition-all">
+              <div key={rec.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs hover:shadow-md hover:border-brand-200 transition-all">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
                     <Store className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <p className="font-extrabold text-slate-800 text-sm">{getBranchName(rec.branchId)}</p>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${rec.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${rec.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-brand-50 text-brand-700 border border-brand-200'}`}>
                           {rec.status === 'approved' ? 'معتمد' : 'محفوظ'}
                         </span>
                       </div>
@@ -458,7 +458,7 @@ const MobileCountView: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1.5 shrink-0">
-                    <button onClick={() => setViewId(rec.id)} className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100" title="عرض التفاصيل">
+                    <button onClick={() => setViewId(rec.id)} className="p-2 rounded-xl bg-brand-50 text-brand-600 hover:bg-brand-100" title="عرض التفاصيل">
                       <Eye className="w-4 h-4" />
                     </button>
                     <button onClick={() => printRecord(rec)} className="p-2 rounded-xl bg-sky-50 text-sky-600 hover:bg-sky-100" title="طباعة الجرد">
@@ -554,7 +554,7 @@ const MobileCountView: React.FC = () => {
           <ClipboardCheck className="w-4 h-4 text-slate-400 shrink-0" />
           <div className="flex-1">
             <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`} style={{ width: `${progress}%` }} />
+              <div className={`h-full rounded-full transition-all duration-300 ${progress === 100 ? 'bg-emerald-500' : 'bg-brand-500'}`} style={{ width: `${progress}%` }} />
             </div>
           </div>
           <span className="text-[11px] font-extrabold text-slate-600 shrink-0">{countedCount} / {mats.length}</span>
@@ -587,7 +587,7 @@ const MobileCountView: React.FC = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className={`font-bold text-slate-800 truncate ${tablet ? 'text-2xl' : 'text-sm'}`}>{m.nameAr}</p>
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold whitespace-nowrap ${tablet ? 'text-sm px-3 py-1' : 'text-[10px]'}`}>{pUnit}</span>
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 font-bold whitespace-nowrap ${tablet ? 'text-sm px-3 py-1' : 'text-[10px]'}`}>{pUnit}</span>
                     {twoCols && factor > 1 && (
                       <span className={`shrink-0 px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-bold whitespace-nowrap ${tablet ? 'text-sm px-3 py-1' : 'text-[10px]'}`}>1 {pUnit} = {factor} {unit}</span>
                     )}
@@ -601,7 +601,7 @@ const MobileCountView: React.FC = () => {
                       onChange={(e) => setCountField(m.id, 'p', e.target.value)}
                       inputMode="decimal"
                       placeholder="0"
-                      className={`text-center font-extrabold font-mono rounded-xl border-2 outline-none ${done ? 'border-emerald-400 text-emerald-700' : 'border-slate-200 focus:border-indigo-400'} ${tablet ? 'w-36 h-16 text-3xl rounded-2xl' : 'w-20 h-11 text-lg'}`}
+                      className={`text-center font-extrabold font-mono rounded-xl border-2 outline-none ${done ? 'border-emerald-400 text-emerald-700' : 'border-slate-200 focus:border-brand-400'} ${tablet ? 'w-36 h-16 text-3xl rounded-2xl' : 'w-20 h-11 text-lg'}`}
                     />
                     <button onClick={() => bumpCount(m.id, 'p', 1)} className={`rounded-xl bg-slate-100 active:bg-slate-200 flex items-center justify-center font-bold text-slate-600 ${tablet ? 'w-16 h-16 text-3xl rounded-2xl' : 'w-9 h-11 text-lg'}`}><Plus className={tablet ? 'w-7 h-7' : 'w-4 h-4'} /></button>
                   </div>
@@ -620,11 +620,11 @@ const MobileCountView: React.FC = () => {
                         onChange={(e) => setCountField(m.id, 'p', e.target.value)}
                         inputMode="decimal"
                         placeholder="0"
-                        className={`text-center font-extrabold font-mono rounded-xl border-2 outline-none ${done ? 'border-emerald-400 text-emerald-700' : 'border-slate-200 focus:border-indigo-400'} ${tablet ? 'w-full h-14 text-2xl' : 'w-full h-10 text-base'}`}
+                        className={`text-center font-extrabold font-mono rounded-xl border-2 outline-none ${done ? 'border-emerald-400 text-emerald-700' : 'border-slate-200 focus:border-brand-400'} ${tablet ? 'w-full h-14 text-2xl' : 'w-full h-10 text-base'}`}
                       />
                       <button type="button" onClick={() => bumpCount(m.id, 'p', 1)} className={`rounded-xl bg-slate-100 active:bg-slate-200 flex items-center justify-center font-bold text-slate-600 ${tablet ? 'w-14 h-14 text-2xl' : 'w-8 h-10 text-base'}`}><Plus className={tablet ? 'w-6 h-6' : 'w-3.5 h-3.5'} /></button>
                     </div>
-                    <p className={`text-[10px] text-slate-400 mt-1 ${tablet ? 'text-sm mt-1.5' : ''}`}>= <strong className="font-mono text-indigo-600">{(pQty * factor).toFixed(2)}</strong> {unit}</p>
+                    <p className={`text-[10px] text-slate-400 mt-1 ${tablet ? 'text-sm mt-1.5' : ''}`}>= <strong className="font-mono text-brand-600">{(pQty * factor).toFixed(2)}</strong> {unit}</p>
                   </div>
                   <div>
                     <p className={`text-[10px] font-extrabold text-slate-400 mb-1 ${tablet ? 'text-sm mb-1.5' : ''}`}>وحدة المخزون ({unit})</p>
@@ -635,7 +635,7 @@ const MobileCountView: React.FC = () => {
                         onChange={(e) => setCountField(m.id, 's', e.target.value)}
                         inputMode="decimal"
                         placeholder="0"
-                        className={`text-center font-extrabold font-mono rounded-xl border-2 outline-none ${done ? 'border-emerald-400 text-emerald-700' : 'border-slate-200 focus:border-indigo-400'} ${tablet ? 'w-full h-14 text-2xl' : 'w-full h-10 text-base'}`}
+                        className={`text-center font-extrabold font-mono rounded-xl border-2 outline-none ${done ? 'border-emerald-400 text-emerald-700' : 'border-slate-200 focus:border-brand-400'} ${tablet ? 'w-full h-14 text-2xl' : 'w-full h-10 text-base'}`}
                       />
                       <button type="button" onClick={() => bumpCount(m.id, 's', 1)} className={`rounded-xl bg-slate-100 active:bg-slate-200 flex items-center justify-center font-bold text-slate-600 ${tablet ? 'w-14 h-14 text-2xl' : 'w-8 h-10 text-base'}`}><Plus className={tablet ? 'w-6 h-6' : 'w-3.5 h-3.5'} /></button>
                     </div>
@@ -661,13 +661,13 @@ const MobileCountView: React.FC = () => {
         <div className={`mx-auto flex items-center gap-3 ${tablet ? 'max-w-5xl p-4' : 'max-w-3xl p-3'}`}>
           <div className={`flex-1 font-bold text-slate-500 ${tablet ? 'text-base' : 'text-xs'}`}>
             {countedCount > 0 ? (
-              <>جاهز {editingId ? 'لتحديث' : 'لحفظ'} <strong className="text-slate-800">{countedCount}</strong> صنفاً لفرع <strong className="text-indigo-600">{getBranchName(branchId)}</strong> — {fmtDateLong(countDate)}</>
+              <>جاهز {editingId ? 'لتحديث' : 'لحفظ'} <strong className="text-slate-800">{countedCount}</strong> صنفاً لفرع <strong className="text-brand-600">{getBranchName(branchId)}</strong> — {fmtDateLong(countDate)}</>
             ) : 'عدّ الأصناف ثم اضغط حفظ'}
           </div>
           <button
             onClick={saveCount}
             disabled={!countedCount}
-            className={`flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold text-sm shadow-lg shadow-indigo-600/25 transition-all active:scale-95 ${tablet ? 'px-10 py-5 text-xl rounded-3xl' : 'px-6 py-3.5'}`}
+            className={`flex items-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold text-sm shadow-lg shadow-brand-600/25 transition-all active:scale-95 ${tablet ? 'px-10 py-5 text-xl rounded-3xl' : 'px-6 py-3.5'}`}
           >
             {countedCount > 0 ? <CheckCircle2 className={tablet ? 'w-7 h-7' : 'w-5 h-5'} /> : <Save className={tablet ? 'w-7 h-7' : 'w-5 h-5'} />}
             {editingId ? 'حفظ التعديل' : 'حفظ الجرد'}

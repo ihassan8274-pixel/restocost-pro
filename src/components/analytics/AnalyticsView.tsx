@@ -108,7 +108,7 @@ export const AnalyticsView: React.FC = () => {
         } />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="إجمالي مبيعات الفروع" value={fmt(totalRevenue)} tone="indigo" icon={<TrendingUp className="w-4 h-4 text-indigo-400" />} sub={`${branchData.length} فروع`} />
+        <StatCard label="إجمالي مبيعات الفروع" value={fmt(totalRevenue)} tone="indigo" icon={<TrendingUp className="w-4 h-4 text-brand-400" />} sub={`${branchData.length} فروع`} />
         <StatCard label="صافي الربح الكلي" value={fmt(totalProfit)} tone="emerald" icon={<Wallet className="w-4 h-4 text-emerald-400" />} sub={`هامش ${plSummaries.length ? Math.round(totalProfit / totalRevenue * 100) : 0}%`} />
         <StatCard label="متوسط تكلفة الطعام" value={`${fmt(avgFoodCost, 1)}%`} tone="amber" icon={<BarChart3 className="w-4 h-4 text-amber-400" />} sub="المستهدف ≤ 33%" />
         <StatCard label="إيراد عمليات النقاط" value={fmt(liveRevenue)} tone="rose" icon={<Trophy className="w-4 h-4 text-rose-400" />} sub="POS + مبيعات مجمعة" />
@@ -116,7 +116,7 @@ export const AnalyticsView: React.FC = () => {
 
       {/* Monthly trend */}
       <Card className="p-5">
-        <SectionHeader title="الاتجاه الشهري" subtitle="الإيراد مقابل تكلفة الطعام والمصروفات والربح حسب الشهر" icon={<TrendingUp className="w-5 h-5 text-indigo-600" />} />
+        <SectionHeader title="الاتجاه الشهري" subtitle="الإيراد مقابل تكلفة الطعام والمصروفات والربح حسب الشهر" icon={<TrendingUp className="w-5 h-5 text-brand-600" />} />
         <div dir="ltr" className="mt-4 h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={monthly} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
@@ -200,7 +200,7 @@ export const AnalyticsView: React.FC = () => {
 
         {/* Expense breakdown */}
         <Card className="p-5">
-          <SectionHeader title="توزيع المصروفات التشغيلية" subtitle="حسب التصنيف — من شاشة المصاريف" icon={<Wallet className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="توزيع المصروفات التشغيلية" subtitle="حسب التصنيف — من شاشة المصاريف" icon={<Wallet className="w-5 h-5 text-brand-600" />} />
           <div dir="ltr" className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

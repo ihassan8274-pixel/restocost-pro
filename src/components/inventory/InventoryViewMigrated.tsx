@@ -35,7 +35,7 @@ export const InventoryViewMigrated: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المخزون والتحويلات والجرد" subtitle="مراقبة الأرصدة، تنبيهات الحد الأدنى، التحويلات بين الفروع، والجرد الدوري" icon={<Warehouse className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="المخزون والتحويلات والجرد" subtitle="مراقبة الأرصدة، تنبيهات الحد الأدنى، التحويلات بين الفروع، والجرد الدوري" icon={<Warehouse className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="المخزون"
@@ -83,9 +83,9 @@ export const InventoryViewMigrated: React.FC = () => {
                       <td className="p-3 text-slate-600">{i.branchId === 'b-ck' ? 'المطبخ المركزي' : i.branchId}</td>
                       <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
                       <td className="p-3 text-slate-500">-</td>
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
                       <td className="tnum text-left p-3 text-slate-500">-</td>
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
                       <td className="p-3">{isLow ? <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">منخفض</span> : <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>}</td>
                     </tr>
                   );
@@ -100,7 +100,7 @@ export const InventoryViewMigrated: React.FC = () => {
       {tab === 'items' && (
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between p-3 border-b border-slate-100">
-            <p className="text-xs font-extrabold text-slate-700 flex items-center gap-2"><Package className="w-4 h-4 text-indigo-500" /> الأصناف المسجلة (0)</p>
+            <p className="text-xs font-extrabold text-slate-700 flex items-center gap-2"><Package className="w-4 h-4 text-brand-500" /> الأصناف المسجلة (0)</p>
             <div className="flex gap-2">
               <Btn onClick={() => {}}><Scan className="w-4 h-4" /> مسح QR</Btn>
               <Btn onClick={() => {}}><Plus className="w-4 h-4" /> إضافة صنف</Btn>

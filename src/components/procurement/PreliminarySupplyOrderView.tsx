@@ -149,7 +149,7 @@ export const PreliminarySupplyOrderView: React.FC = () => {
         </div>
         <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">القيمة التقديرية</span>
-          <strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalValue)}</strong>
+          <strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalValue)}</strong>
         </div>
         <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-xs">
           <span className="text-slate-500 text-[11px] block">تم استلامه بالكامل</span>
@@ -175,7 +175,7 @@ export const PreliminarySupplyOrderView: React.FC = () => {
                 <div className="flex-1 min-w-[220px]">
                   <p className="font-extrabold text-slate-900 flex items-center gap-2">
                     <PackageSearch className="w-4 h-4 text-emerald-600" />
-                    <span className="font-mono text-indigo-700">{po.poNumber}</span>
+                    <span className="font-mono text-brand-700">{po.poNumber}</span>
                     <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">مبدئي</span>
                     {noSupplier && (
                       <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">بلا مورد — يتطلب التسجيل</span>
@@ -262,7 +262,7 @@ export const PreliminarySupplyOrderView: React.FC = () => {
                       return (
                         <tr key={i.rawMaterialId + i.materialName}>
                           <td className="p-2 font-bold text-slate-900">{i.materialName}</td>
-                          <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(i.purchaseQty ?? i.quantity / conv)} {i.purchaseUnit || i.unit}</td>
+                          <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(i.purchaseQty ?? i.quantity / conv)} {i.purchaseUnit || i.unit}</td>
                           <td className="tnum text-left p-2 text-slate-700">{fmtMoney(puPrice)}</td>
                           <td className="tnum text-left p-2 text-slate-700">{fmtMoney(i.lineTotal)}</td>
                           <td className="tnum text-left p-2 text-emerald-700 font-bold">{recv > 0 ? fmt(recv) : '—'}</td>

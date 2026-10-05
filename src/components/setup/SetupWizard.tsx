@@ -77,11 +77,11 @@ export const SetupWizard: React.FC<{ open: boolean; onClose: () => void }> = ({ 
               const Icon = s.icon;
               return (
                 <div key={s.id} className="flex-1">
-                  <div className={`flex items-center gap-1.5 rounded-xl px-2.5 py-2 border ${i <= step ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'} ${i < step ? 'cursor-pointer' : ''}`} onClick={() => i < step && setStep(i)}>
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center ${i <= step ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  <div className={`flex items-center gap-1.5 rounded-xl px-2.5 py-2 border ${i <= step ? 'bg-brand-50 border-brand-200' : 'bg-slate-50 border-slate-200'} ${i < step ? 'cursor-pointer' : ''}`} onClick={() => i < step && setStep(i)}>
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center ${i <= step ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
                       {i < step ? <Check className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
                     </span>
-                    <span className={`font-bold text-[11px] ${i <= step ? 'text-indigo-900' : 'text-slate-400'}`}>{s.label}</span>
+                    <span className={`font-bold text-[11px] ${i <= step ? 'text-brand-900' : 'text-slate-400'}`}>{s.label}</span>
                   </div>
                 </div>
               );
@@ -153,7 +153,7 @@ export const SetupWizard: React.FC<{ open: boolean; onClose: () => void }> = ({ 
               <p className="text-slate-500 font-bold">الخطوة الأخيرة. الإعداد الأساسي اكتمل — اختر ما تفعله الآن:</p>
               <div className="space-y-2">
                 <button onClick={() => { onClose(); setDone(false); setStep(0); setBran([{ name: '', city: '' }]); setSup([{ name: '', phone: '' }]); setMat([{ name: '', unit: '', category: '' }]); }} className="w-full text-right flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 hover:bg-slate-100 transition-colors">
-                  <span className="mt-0.5 text-indigo-600"><ChefHat className="w-5 h-5" /></span>
+                  <span className="mt-0.5 text-brand-600"><ChefHat className="w-5 h-5" /></span>
                   <span>
                     <span className="block font-black text-slate-800 text-xs">فتح شاشة الوصفات وبناء قائمتك</span>
                     <span className="block text-slate-500 text-[11px] mt-0.5">أنشئ الوصفات خطوة بخطوة مع حساب التكلفة التلقائي، أو استورد من Excel.</span>

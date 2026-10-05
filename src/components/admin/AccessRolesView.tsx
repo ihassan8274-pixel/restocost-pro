@@ -84,16 +84,16 @@ export const AccessRolesView: React.FC = () => {
       <PageHeader
         title="نموذج صلاحيات الشاشات (متقدم)"
         subtitle="حدد لكل دور الشاشات المسموحة ومستوى الوصول عليها: عرض / إضافة / تعديل / حذف — ثم أسند الدور للمستخدمين"
-        icon={<ShieldCheck className="w-6 h-6 text-indigo-600" />}
+        icon={<ShieldCheck className="w-6 h-6 text-brand-600" />}
         actions={<Btn tone="primary" onClick={startNew}><Plus className="w-4 h-4" /> دور جديد</Btn>}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="p-4 space-y-2 lg:col-span-1">
-          <h3 className="font-extrabold text-slate-700 text-sm flex items-center gap-2"><KeyRound className="w-4 h-4 text-indigo-500" /> الأدوار المخصصة</h3>
+          <h3 className="font-extrabold text-slate-700 text-sm flex items-center gap-2"><KeyRound className="w-4 h-4 text-brand-500" /> الأدوار المخصصة</h3>
           {!accessRoles.length && !draft && <p className="text-xs text-slate-400 py-4 text-center">لا توجد أدوار مخصصة بعد — أنشئ دوراً وحدد صلاحياته</p>}
           {accessRoles.map((r) => (
-            <div key={r.id} className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border ${selectedId === r.id ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'} hover:border-indigo-200 transition-colors`}>
+            <div key={r.id} className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border ${selectedId === r.id ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-white'} hover:border-brand-200 transition-colors`}>
               <button className="text-right grow" onClick={() => startEdit(r)}>
                 <span className="block font-extrabold text-slate-800 text-xs">{r.nameAr}</span>
                 <span className="block text-[10px] text-slate-500">أساس: {ROLE_LABELS[r.baseRole]}{r.inheritBase ? ' · وراثة المشاهدة' : ''} · {assignedUsers(r.id).length} مستخدم</span>
@@ -111,7 +111,7 @@ export const AccessRolesView: React.FC = () => {
           {role && (
             <>
               <Card className="p-4 space-y-3">
-                <h3 className="font-extrabold text-slate-700 text-sm flex items-center gap-2"><Users className="w-4 h-4 text-indigo-500" /> إعدادات الدور</h3>
+                <h3 className="font-extrabold text-slate-700 text-sm flex items-center gap-2"><Users className="w-4 h-4 text-brand-500" /> إعدادات الدور</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <Field label="اسم الدور" required>
                     <input value={role.nameAr} onChange={(e) => setDraft({ ...role, nameAr: e.target.value })} className={inputCls} placeholder="مثال: كاشير فرع النخيل" />
@@ -123,7 +123,7 @@ export const AccessRolesView: React.FC = () => {
                   </Field>
                   <Field label="خيارات">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer select-none mt-1">
-                      <input type="checkbox" checked={role.inheritBase} onChange={(e) => setDraft({ ...role, inheritBase: e.target.checked })} className="w-4 h-4 accent-indigo-600" />
+                      <input type="checkbox" checked={role.inheritBase} onChange={(e) => setDraft({ ...role, inheritBase: e.target.checked })} className="w-4 h-4 accent-brand-600" />
                       وراثة مشاهدة شاشات الدور الأساسي
                     </label>
                   </Field>
@@ -154,7 +154,7 @@ export const AccessRolesView: React.FC = () => {
                               <td className="p-2.5 font-bold text-slate-700">{s.label}</td>
                               {ACTIONS.map((a) => (
                                 <td key={a.key} className="p-2.5 text-center">
-                                  <input type="checkbox" checked={!!p[a.key]} onChange={() => toggle(s.id, a.key)} className="w-4 h-4 accent-indigo-600 cursor-pointer" />
+                                  <input type="checkbox" checked={!!p[a.key]} onChange={() => toggle(s.id, a.key)} className="w-4 h-4 accent-brand-600 cursor-pointer" />
                                 </td>
                               ))}
                               <td className="p-2.5 text-center">

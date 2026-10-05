@@ -261,10 +261,10 @@ export const FoodCostTrendReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-blue-800 font-mono">{fmtMoney(totals.revenue)}</strong>
           <span className="text-[10px] text-blue-500 block">{monthPoints.length} شهر</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">إجمالي تكلفة الطعام</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono">{fmtMoney(totals.foodCost)}</strong>
-          <span className="text-[10px] text-indigo-500 block">={(totals.foodCost / (totals.revenue || 1)) * 100 === totals.avgPct ? `${totals.avgPct.toFixed(1)}% من الإيراد` : `${totals.avgPct.toFixed(1)}% من الإيراد`}</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">إجمالي تكلفة الطعام</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono">{fmtMoney(totals.foodCost)}</strong>
+          <span className="text-[10px] text-brand-500 block">={(totals.foodCost / (totals.revenue || 1)) * 100 === totals.avgPct ? `${totals.avgPct.toFixed(1)}% من الإيراد` : `${totals.avgPct.toFixed(1)}% من الإيراد`}</span>
         </div>
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
           <span className="text-[10px] text-emerald-600 font-bold block">متوسط نسبة الطعام (تجميعي)</span>

@@ -105,7 +105,7 @@ export const CostCenterComparisonView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مقارنة مراكز التكلفة" subtitle="مصفوفة جنباً إلى جنب لأداء الفروع: الإيراد، التكاليف، الهامش وكفاءة التشغيل" icon={<GitCompare className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="مقارنة مراكز التكلفة" subtitle="مصفوفة جنباً إلى جنب لأداء الفروع: الإيراد، التكاليف، الهامش وكفاءة التشغيل" icon={<GitCompare className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="مقارنة مراكز التكلفة" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -120,7 +120,7 @@ export const CostCenterComparisonView: React.FC = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الإيراد</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الربح</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${totalProfit >= 0 ? 'text-indigo-700' : 'text-rose-600'}`}>{fmtMoney(totalProfit)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الربح</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${totalProfit >= 0 ? 'text-brand-700' : 'text-rose-600'}`}>{fmtMoney(totalProfit)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">متوسط الهامش</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${avgMargin >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{avgMargin.toFixed(2)}%</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مراكز مربحة</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{profitable} من {centers.length}</strong></div>
       </div>
@@ -173,7 +173,7 @@ export const CostCenterComparisonView: React.FC = () => {
                   <td className="tnum text-left p-2 font-extrabold text-slate-800">{fmtMoney(c.totalCost)}</td>
                   <td className={`p-2 font-mono font-extrabold ${c.profit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{fmtMoney(c.profit)}</td>
                   <td className={`p-2 font-mono font-extrabold ${c.margin >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{c.margin.toFixed(2)}%</td>
-                  <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(c.avgTicket)}</td>
+                  <td className="tnum text-left p-2 text-brand-700">{fmtMoney(c.avgTicket)}</td>
                 </tr>
               ))}
               {centers.length === 0 && <tr><td colSpan={cols.length + 1} className="p-8 text-center text-slate-500 font-bold">لا توجد بيانات مراكز في النطاق المحدد</td></tr>}
@@ -181,7 +181,7 @@ export const CostCenterComparisonView: React.FC = () => {
           </table>
         </div>
         <div className="mt-3 text-[10px] text-slate-500 font-bold flex items-center gap-2">
-          <GitCompare className="w-3.5 h-3.5 text-indigo-500" /> يُرتّب الجدول تنازلياً حسب الهامش — الصف الأول هو المرجع الأفضل للتحسين
+          <GitCompare className="w-3.5 h-3.5 text-brand-500" /> يُرتّب الجدول تنازلياً حسب الهامش — الصف الأول هو المرجع الأفضل للتحسين
         </div>
       </Card>
     </div>

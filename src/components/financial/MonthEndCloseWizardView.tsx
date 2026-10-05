@@ -138,7 +138,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="معالج إقفال نهاية الشهر" subtitle="خطوات موجهة لإقفال الجرد الشهري، بناء قائمة الدخل، وقفل الفترة" icon={<Lock className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="معالج إقفال نهاية الشهر" subtitle="خطوات موجهة لإقفال الجرد الشهري، بناء قائمة الدخل، وقفل الفترة" icon={<Lock className="w-6 h-6 text-brand-600" />}
         actions={
           <>
             <Btn tone="ghost" onClick={printSummary} disabled={step !== 'done'}><FileText className="w-4 h-4" /> طباعة الملخص</Btn>
@@ -154,14 +154,14 @@ export const MonthEndCloseWizardView: React.FC = () => {
               <div className="flex items-center">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border-2 ${
                   (['select', 'review', 'closing', 'pl', 'lock', 'done'].indexOf(step) >= i)
-                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                    ? 'bg-brand-600 border-brand-600 text-white'
                     : 'bg-slate-100 border-slate-300 text-slate-400'
                 }`}>
                   {i + 1}
                 </div>
                 {i < 5 && <div className={`w-16 h-1 mx-2 ${
                   (['select', 'review', 'closing', 'pl', 'lock', 'done'].indexOf(step) > i)
-                    ? 'bg-indigo-600' : 'bg-slate-200'
+                    ? 'bg-brand-600' : 'bg-slate-200'
                 }`} />}
               </div>
             </React.Fragment>
@@ -177,7 +177,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
       {/* Step 1: Select Month & Branches */}
       {step === 'select' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 1: اختيار الشهر والفروع" icon={<Calculator className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 1: اختيار الشهر والفروع" icon={<Calculator className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="الشهر (YYYY-MM)">
               <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputCls} max={new Date().toISOString().slice(0, 7)} />
@@ -187,7 +187,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
               <div className="max-h-60 overflow-auto space-y-1">
                 {visibleBranches.map((b) => (
                   <label key={b.id} className="flex items-center gap-2 p-2 rounded-lg border hover:bg-slate-50 cursor-pointer">
-                    <input type="checkbox" checked={selectedBranches.includes(b.id)} onChange={(e) => setSelectedBranches(e.target.checked ? [...selectedBranches, b.id] : selectedBranches.filter((id) => id !== b.id))} className="w-4 h-4 accent-indigo-600" />
+                    <input type="checkbox" checked={selectedBranches.includes(b.id)} onChange={(e) => setSelectedBranches(e.target.checked ? [...selectedBranches, b.id] : selectedBranches.filter((id) => id !== b.id))} className="w-4 h-4 accent-brand-600" />
                     <span>{b.nameAr}</span>
                   </label>
                 ))}
@@ -205,7 +205,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
       {/* Step 2: Review */}
       {step === 'review' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 2: مراجعة حالة الجرد" subtitle={`الشهر: ${monthLabel(month)}`} icon={<FileText className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 2: مراجعة حالة الجرد" subtitle={`الشهر: ${monthLabel(month)}`} icon={<FileText className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-right text-xs border-collapse">
               <thead>
@@ -252,10 +252,10 @@ export const MonthEndCloseWizardView: React.FC = () => {
       {/* Step 3: Closing */}
       {step === 'closing' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 3: إقفال الجرد وإنشاء القيود" icon={<Lock className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 3: إقفال الجرد وإنشاء القيود" icon={<Lock className="w-5 h-5 text-brand-500" />} />
           {closing ? (
             <div className="mt-4 space-y-4 text-center">
-              <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mx-auto" />
+              <Loader2 className="w-10 h-10 text-brand-600 animate-spin mx-auto" />
               <p className="font-bold text-slate-700">جاري إقفال الجرد...</p>
               <p className="text-slate-500">الفرع الحالي: {closingBranch}</p>
             </div>
@@ -294,7 +294,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
       {/* Step 4: P&L */}
       {step === 'pl' && (
         <Card className="p-5">
-          <SectionHeader title="الخطوة 4: إعادة بناء قائمة الدخل الموحدة (P&L)" icon={<Calculator className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="الخطوة 4: إعادة بناء قائمة الدخل الموحدة (P&L)" icon={<Calculator className="w-5 h-5 text-brand-500" />} />
           <div className="mt-4 space-y-3 text-center">
             <p className="text-slate-600">هذا سيجمع المبيعات، المشتريات، الرواتب، الهالك، والمصروفات لكل فرع ويبني قائمة دخل موحدة.</p>
             <div className="flex justify-center gap-2">
@@ -343,7 +343,7 @@ export const MonthEndCloseWizardView: React.FC = () => {
             <CheckCircle2 className="w-10 h-10 text-emerald-600" />
           </div>
           <h3 className="text-xl font-extrabold text-emerald-800 mb-2">تم إقفال الشهر بنجاح</h3>
-          <p className="text-slate-600 mb-4">الشهر: <span className="font-bold text-indigo-700">{monthLabel(month)}</span> — الفروع: <span className="font-bold">{selectedBranches.length}</span></p>
+          <p className="text-slate-600 mb-4">الشهر: <span className="font-bold text-brand-700">{monthLabel(month)}</span> — الفروع: <span className="font-bold">{selectedBranches.length}</span></p>
           <div className="flex justify-center gap-2">
             <Btn onClick={printSummary} tone="primary"><FileText className="w-4 h-4" /> طباعة الملخص</Btn>
             <Btn onClick={() => { setStep('select'); setSelectedBranches([]); setClosingResults({}); setPlBuilt(false); setLocked(false); }} tone="ghost">إقفال شهر آخر</Btn>

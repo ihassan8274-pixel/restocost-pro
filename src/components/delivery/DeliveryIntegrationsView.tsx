@@ -466,7 +466,7 @@ const DeliveryIntegrationsView: React.FC = () => {
 
   const kpis = [
     { label: 'المبيعات شامل الضريبة', value: fmtMoney(tGross), cls: 'text-slate-900' },
-    { label: 'الصافي قبل العمولة', value: fmtMoney(tNet), cls: 'text-indigo-700' },
+    { label: 'الصافي قبل العمولة', value: fmtMoney(tNet), cls: 'text-brand-700' },
     { label: `عمولات المنصات (${pctFmt(avgCommPct)})`, value: fmtMoney(tComm), cls: 'text-rose-600' },
     { label: 'الصافي المستلم', value: fmtMoney(tPayout), cls: 'text-emerald-700' },
     { label: 'عدد الطلبات', value: fmtNum(tOrders, 0), cls: 'text-slate-900' },
@@ -548,7 +548,7 @@ const DeliveryIntegrationsView: React.FC = () => {
                     <td className="tnum text-left p-2">{fmtNum(g.orders, 0)}</td>
                     <td className="tnum text-left p-2">{fmt(g.gross)}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(g.vat)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(g.net)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(g.net)}</td>
                     <td className="tnum text-left p-2 text-rose-600">{g.net ? pctFmt((g.comm / g.net) * 100) : '—'}</td>
                     <td className="tnum text-left p-2 text-rose-600">{fmt(g.comm)}</td>
                     <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(g.payout)}</td>
@@ -561,7 +561,7 @@ const DeliveryIntegrationsView: React.FC = () => {
                     <td className="tnum text-left p-2">{fmtNum(tOrders, 0)}</td>
                     <td className="tnum text-left p-2">{fmt(tGross)}</td>
                     <td className="tnum text-left p-2">{fmt(tGross - tNet)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(tNet)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(tNet)}</td>
                     <td className="tnum text-left p-2 text-rose-600">{pctFmt(avgCommPct)}</td>
                     <td className="tnum text-left p-2 text-rose-600">{fmt(tComm)}</td>
                     <td className="tnum text-left p-2 text-emerald-700">{fmt(tPayout)}</td>
@@ -589,7 +589,7 @@ const DeliveryIntegrationsView: React.FC = () => {
                         <td className="tnum text-left p-2">{fmtNum(v.orders, 0)}</td>
                         <td className="tnum text-left p-2">{fmt(v.gross)}</td>
                         <td className="tnum text-left p-2 text-slate-500">{fmt(v.vat)}</td>
-                        <td className="tnum text-left p-2 text-indigo-700">{fmt(v.net)}</td>
+                        <td className="tnum text-left p-2 text-brand-700">{fmt(v.net)}</td>
                         <td className="tnum text-left p-2 text-rose-600">{fmt(v.comm)}</td>
                         <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(v.payout)}</td>
                       </tr>
@@ -599,7 +599,7 @@ const DeliveryIntegrationsView: React.FC = () => {
                       <td className="tnum text-left p-2">{fmtNum(tot.orders, 0)}</td>
                       <td className="tnum text-left p-2">{fmt(tot.gross)}</td>
                       <td className="tnum text-left p-2">{fmt(tot.vat)}</td>
-                      <td className="tnum text-left p-2 text-indigo-700">{fmt(tot.net)}</td>
+                      <td className="tnum text-left p-2 text-brand-700">{fmt(tot.net)}</td>
                       <td className="tnum text-left p-2 text-rose-600">{fmt(tot.comm)}</td>
                       <td className="tnum text-left p-2 text-emerald-700">{fmt(tot.payout)}</td>
                     </tr>
@@ -814,7 +814,7 @@ const DeliveryIntegrationsView: React.FC = () => {
         <>
           <Card className="p-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-indigo-600" />
+              <ClipboardList className="w-5 h-5 text-brand-600" />
               <h3 className="font-extrabold text-slate-800 text-sm">سجل المبيعات المستوردة ({filteredRecords.length})</h3>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -854,7 +854,7 @@ const DeliveryIntegrationsView: React.FC = () => {
                     <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(s.payoutAmount)}</td>
                     <td className="p-2">
                       <div className="flex gap-1">
-                        <button onClick={() => printSaleRecord(s)} className="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600" title="طباعة السجل"><Printer className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => printSaleRecord(s)} className="p-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600" title="طباعة السجل"><Printer className="w-3.5 h-3.5" /></button>
                         <button onClick={() => editRecord(s.id)} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600" title="تعديل"><Pencil className="w-3.5 h-3.5" /></button>
                         <button onClick={() => deleteRecord(s.id)} className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600" title="حذف"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
@@ -996,7 +996,7 @@ const DeliveryIntegrationsView: React.FC = () => {
             </div>
           </Card>
 
-          <Card className="p-4 bg-indigo-50/60 border-indigo-200 text-xs text-indigo-800 leading-relaxed">
+          <Card className="p-4 bg-brand-50/60 border-brand-200 text-xs text-brand-800 leading-relaxed">
             <strong>طريقة الاحتساب:</strong> أسعار قوائم التطبيقات شاملة الضريبة ← يُستخرج الصافي قبل الضريبة ← تُحسب عمولة المنصة على الصافي ← والباقي هو المستلم فعلياً في حسابك. تكلفة كل طبق تُسحب تلقائياً من الوصفات لاحتساب الهامش الحقيقي بعد العمولة، مع مقارنة سعر المنصة بسعر الصالة.
           </Card>
         </>

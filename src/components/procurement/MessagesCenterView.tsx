@@ -30,7 +30,7 @@ const ActionButtons: React.FC<{ row: MsgRow; copiedId: string | null; onCopy: (i
     )}
     {row.email ? (
       <a href={mailLink(row.email, row.subject, row.message)} target="_blank" rel="noreferrer"
-        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-extrabold bg-brand-600 hover:bg-brand-700 text-white transition-colors">
         <Mail className="w-3 h-3" /> بريد
       </a>
     ) : (
@@ -136,7 +136,7 @@ export const MessagesCenterView: React.FC = () => {
       <PageHeader title="مركز الرسائل التلقائية" subtitle="رسائل جاهزة للموردين والعملاء تُرسل عبر واتساب أو البريد أو النسخ — تعمل على الهاتف مباشرة" icon={<MessageSquare className="w-5 h-5" />} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="رسائل جاهزة" value={`${totalCount}`} sub="إجمالي الرسائل المجهزة" tone="indigo" icon={<Send className="w-4 h-4 text-indigo-500" />} />
+        <StatCard label="رسائل جاهزة" value={`${totalCount}`} sub="إجمالي الرسائل المجهزة" tone="indigo" icon={<Send className="w-4 h-4 text-brand-500" />} />
         <StatCard label="للموردين" value={`${rows.po.length + rows.lowstock.length}`} sub="أوامر شراء + تجديد مخزون" tone="emerald" icon={<ShoppingCart className="w-4 h-4 text-emerald-500" />} />
         <StatCard label="للعملاء" value={`${rows.overdue.length + rows.reservations.length}`} sub="متأخرات + حجوزات" tone="amber" icon={<FileText className="w-4 h-4 text-amber-500" />} />
         <StatCard label="بدون وسيلة تواصل" value={`${activeRows.filter((r) => !r.phone && !r.email).length}`} sub="في العرض الحالي" tone="rose" icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />

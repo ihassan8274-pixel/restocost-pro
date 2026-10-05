@@ -2,6 +2,25 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ToastEntry } from '../useToasts';
 
+/**
+ * Applies the theme to <html> so the `.dark` rules in index.css actually take
+ * effect.
+ *
+ * The store already held `theme` and the header already toggled it, but
+ * nothing ever touched the DOM, so the .dark block in index.css was dead CSS -
+ * the button changed the sun/moon icon and nothing else happened. Applying it
+ * here also keeps the change in one place instead of duplicating the effect in
+ * every component that reads the theme.
+ */
+export function applyTheme(theme: 'light' | 'dark') {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.classList.toggle('dark', theme === 'dark');
+  // Lets the browser theme the scrollbars and form controls to match.
+  root.style.colorScheme = theme;
+  root.style.backgroundColor = theme === 'dark' ? '#1c1917' : '#fafaf9';
+}
+
 interface UIState {
   theme: 'light' | 'dark';
   toast: ToastEntry | null;
@@ -43,8 +62,16 @@ export const useUIStore = create<UIState>()(
       activeModal: null,
       errorBoundaryResetKey: 0,
       
-      toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
-      setTheme: (theme) => set({ theme }),
+      toggleTheme: () =>
+        set((state) => {
+          const theme = state.theme === 'light' ? 'dark' : 'light';
+          applyTheme(theme);
+          return { theme };
+        }),
+      setTheme: (theme) => {
+        applyTheme(theme);
+        set({ theme });
+      },
       
       showToast: (message, opts) => set({ toast: { message, ...opts } as ToastEntry }),
       clearToast: () => set({ toast: null }),
@@ -70,6 +97,11 @@ export const useUIStore = create<UIState>()(
         theme: state.theme,
         sidebarOpen: state.sidebarOpen,
       }),
+      // Re-apply on boot: the persisted theme is otherwise only read back into
+      // state, so a user who chose dark mode would land on a light UI.
+      onRehydrateStorage: () => (state) => {
+        if (state?.theme) applyTheme(state.theme);
+      },
     }
   )
 );

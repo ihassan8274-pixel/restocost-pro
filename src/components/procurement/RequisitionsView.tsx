@@ -61,7 +61,7 @@ export const RequisitionsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="أذون الصرف الداخلي (Requisition)" subtitle="طلبات صرف مواد من المخزون للأقسام بموافقة إدارية — يُصرف المخزون ويُقيد على التكلفة تلقائياً" icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="أذون الصرف الداخلي (Requisition)" subtitle="طلبات صرف مواد من المخزون للأقسام بموافقة إدارية — يُصرف المخزون ويُقيد على التكلفة تلقائياً" icon={<ClipboardList className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="أذون_الصرف"
@@ -81,7 +81,7 @@ export const RequisitionsView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الأذون</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{requisitions.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">بانتظار الاعتماد</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{pendingCount}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs"><span className="text-indigo-600 text-[11px] block">أذون معتمدة</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{requisitions.filter((r) => r.status === 'approved').length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs"><span className="text-brand-600 text-[11px] block">أذون معتمدة</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{requisitions.filter((r) => r.status === 'approved').length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs"><span className="text-emerald-600 text-[11px] block">قيمة الصرف المعتمد</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmtMoney(totalValue)}</strong></div>
       </div>
 
@@ -94,7 +94,7 @@ export const RequisitionsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="tnum text-left p-3 font-bold text-indigo-700">{r.reqNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-brand-700">{r.reqNumber}</td>
                   <td className="p-3 font-bold text-slate-900">{r.department}</td>
                   <td className="p-3 text-slate-600">{r.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchName(r.branchId)}</td>
                   <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
@@ -120,7 +120,7 @@ export const RequisitionsView: React.FC = () => {
                       )}
                       {r.status === 'approved' && <span className="text-emerald-600 text-[10px] font-bold">صُرف{r.approvedAt ? ` ${new Date(r.approvedAt).toLocaleDateString('ar-SA-u-nu-latn')}` : ''}</span>}
                       {r.status === 'rejected' && r.rejectReason && <span className="text-rose-500 text-[10px] font-bold max-w-28 truncate" title={r.rejectReason}>{r.rejectReason}</span>}
-                      <button onClick={() => printReq(r)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
+                      <button onClick={() => printReq(r)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="طباعة"><Printer className="w-4 h-4" /></button>
                     </div>
                   </td>
                 </tr>
@@ -181,7 +181,7 @@ export const RequisitionsView: React.FC = () => {
 
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">حفظ كمسودة</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">حفظ كمسودة</button>
           </div>
         </form>
       </Modal>

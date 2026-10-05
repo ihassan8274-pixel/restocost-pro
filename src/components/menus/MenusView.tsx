@@ -43,7 +43,7 @@ export const MenusView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="قوائم الطعام" subtitle="إدارة القوائم حسب الوجبة والفروع والصنوف المتاحة" icon={<UtensilsCrossed className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="قوائم الطعام" subtitle="إدارة القوائم حسب الوجبة والفروع والصنوف المتاحة" icon={<UtensilsCrossed className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="قوائم_الطعام"
@@ -65,7 +65,7 @@ export const MenusView: React.FC = () => {
                 <p className="text-[10px] text-slate-500 font-mono">{m.code} • {m.mealType === 'all_day' ? 'طوال اليوم' : m.mealType === 'breakfast' ? 'إفطار' : m.mealType === 'lunch' ? 'غداء' : m.mealType === 'dinner' ? 'عشاء' : 'مناسبة خاصة'}</p>
               </div>
               <div className="flex gap-1">
-                <button onClick={() => openEdit(m)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => openEdit(m)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
                 {can('delete_data') && <button onClick={() => deleteFoodMenu(m.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>}
               </div>
             </div>
@@ -78,7 +78,7 @@ export const MenusView: React.FC = () => {
                 {m.items.map((it) => (
                   <div key={it.id} className="flex items-center justify-between text-[11px]">
                     <span className="font-bold text-slate-700">{it.recipeNameAr}</span>
-                    <span className="font-mono text-indigo-700 font-bold">{fmt(it.menuPrice, 2)}</span>
+                    <span className="font-mono text-brand-700 font-bold">{fmt(it.menuPrice, 2)}</span>
                   </div>
                 ))}
               </div>
@@ -101,7 +101,7 @@ export const MenusView: React.FC = () => {
           <Field label="الفروع">
             <div className="flex flex-wrap gap-1.5">
               {branches.filter((b) => visibleBranchIds.includes(b.id)).map((b) => (
-                <button type="button" key={b.id} onClick={() => toggleBranch(b.id)} className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${form.branchIds.includes(b.id) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{b.nameAr}</button>
+                <button type="button" key={b.id} onClick={() => toggleBranch(b.id)} className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${form.branchIds.includes(b.id) ? 'bg-brand-600 text-white border-brand-600' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>{b.nameAr}</button>
               ))}
             </div>
           </Field>
@@ -115,7 +115,7 @@ export const MenusView: React.FC = () => {
           <label className="flex items-center gap-2 font-bold text-slate-700"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} /> قائمة نشطة</label>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editingId ? 'حفظ' : 'إنشاء'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editingId ? 'حفظ' : 'إنشاء'}</button>
           </div>
         </form>
       </Modal>

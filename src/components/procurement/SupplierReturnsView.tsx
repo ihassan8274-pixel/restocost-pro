@@ -444,8 +444,8 @@ export const SupplierReturnsView: React.FC = () => {
           <div className="grid grid-cols-3 gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
             <Field label="الأسعار شاملة الضريبة">
               <div className="flex items-center gap-3 pt-2">
-                <button type="button" onClick={() => setRetVatIncl(true)} className={`px-4 py-1.5 rounded-lg text-xs font-extrabold border transition-colors ${retVatIncl ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>شاملة</button>
-                <button type="button" onClick={() => setRetVatIncl(false)} className={`px-4 py-1.5 rounded-lg text-xs font-extrabold border transition-colors ${!retVatIncl ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>غير شاملة</button>
+                <button type="button" onClick={() => setRetVatIncl(true)} className={`px-4 py-1.5 rounded-lg text-xs font-extrabold border transition-colors ${retVatIncl ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>شاملة</button>
+                <button type="button" onClick={() => setRetVatIncl(false)} className={`px-4 py-1.5 rounded-lg text-xs font-extrabold border transition-colors ${!retVatIncl ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>غير شاملة</button>
               </div>
             </Field>
             <Field label="نسبة ضريبة القيمة المضافة %">
@@ -527,15 +527,15 @@ export const SupplierReturnsView: React.FC = () => {
             {editItems.length === 0 && <p className="text-center text-slate-400 text-xs py-3">أضف أصنافاً للإرجاع</p>}
           </div>
 
-          <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200 space-y-1.5">
-            <div className="flex justify-between items-center text-xs"><span className="font-bold text-indigo-950">الإجمالي قبل الضريبة</span><span className="tnum font-extrabold text-indigo-800">{fmtMoney(calcTotalsWithVat(editItems)._subtotal)}</span></div>
-            <div className="flex justify-between items-center text-xs"><span className="font-bold text-indigo-950">ضريبة القيمة المضافة ({retVatRate}%) {retVatIncl ? '(مشمولة)' : ''}</span><span className="tnum font-extrabold text-amber-700">{fmtMoney(calcTotalsWithVat(editItems).vatAmt)}</span></div>
-            <div className="flex justify-between items-center text-sm border-t border-indigo-200 pt-1.5"><span className="font-black text-indigo-950">إجمالي الإرجاع</span><span className="text-lg font-black text-indigo-800 tnum">{fmtMoney(calcTotalsWithVat(editItems).total)}</span></div>
+          <div className="p-3 bg-brand-50 rounded-xl border border-brand-200 space-y-1.5">
+            <div className="flex justify-between items-center text-xs"><span className="font-bold text-brand-950">الإجمالي قبل الضريبة</span><span className="tnum font-extrabold text-brand-800">{fmtMoney(calcTotalsWithVat(editItems)._subtotal)}</span></div>
+            <div className="flex justify-between items-center text-xs"><span className="font-bold text-brand-950">ضريبة القيمة المضافة ({retVatRate}%) {retVatIncl ? '(مشمولة)' : ''}</span><span className="tnum font-extrabold text-amber-700">{fmtMoney(calcTotalsWithVat(editItems).vatAmt)}</span></div>
+            <div className="flex justify-between items-center text-sm border-t border-brand-200 pt-1.5"><span className="font-black text-brand-950">إجمالي الإرجاع</span><span className="text-lg font-black text-brand-800 tnum">{fmtMoney(calcTotalsWithVat(editItems).total)}</span></div>
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => { setShowModal(false); setEditReturn(null); setEditItems([]); setEditReason(''); }} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editReturn ? 'حفظ التعديل' : 'حفظ كمسودة'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editReturn ? 'حفظ التعديل' : 'حفظ كمسودة'}</button>
           </div>
         </form>
       </Modal>

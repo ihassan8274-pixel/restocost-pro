@@ -238,7 +238,7 @@ export const SystemCenterView: React.FC = () => {
       ],
     },
     {
-      group: 'المشتريات والمخزون', icon: <Boxes className="w-4 h-4 text-indigo-600" />,
+      group: 'المشتريات والمخزون', icon: <Boxes className="w-4 h-4 text-brand-600" />,
       options: [
         { key: 'rcerp_branches', label: 'الفروع', count: branches.length, danger: true },
         { key: 'rcerp_raw_materials', label: 'المواد الخام', count: rawMaterials.length, danger: true },
@@ -395,12 +395,12 @@ export const SystemCenterView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مركز النظام: التصدير والطباعة وإدارة البيانات" subtitle="تصدير جميع التقارير، طباعة تقرير شامل، وتفريغ بيانات النظام" icon={<Settings2 className="w-6 h-6 text-indigo-600" />} />
+      <PageHeader title="مركز النظام: التصدير والطباعة وإدارة البيانات" subtitle="تصدير جميع التقارير، طباعة تقرير شامل، وتفريغ بيانات النظام" icon={<Settings2 className="w-6 h-6 text-brand-600" />} />
 
       {exportMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl p-3">{exportMsg}</div>}
 
       <Card className="p-4">
-        <SectionHeader title="تصدير وطباعة التقارير" subtitle="تصدير كل تقرير CSV أو PDF أو طباعة التقرير الشامل" icon={<FileSpreadsheet className="w-5 h-5 text-indigo-500" />} extra={
+        <SectionHeader title="تصدير وطباعة التقارير" subtitle="تصدير كل تقرير CSV أو PDF أو طباعة التقرير الشامل" icon={<FileSpreadsheet className="w-5 h-5 text-brand-500" />} extra={
           <div className="flex gap-2">
             <Btn tone="dark" onClick={exportAll}><FileSpreadsheet className="w-4 h-4" /> تصدير الكل CSV</Btn>
             <Btn tone="success" onClick={exportPdfAll} disabled={pdfBusy}>{pdfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />} تصدير PDF شامل</Btn>
@@ -409,9 +409,9 @@ export const SystemCenterView: React.FC = () => {
         } />
         <div className="mt-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
           {exportables.map((x) => (
-            <div key={x.name} className="flex items-center justify-between bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-xl pl-2.5 pr-3 py-2 text-xs font-bold text-slate-700 transition-colors">
+            <div key={x.name} className="flex items-center justify-between bg-slate-50 hover:bg-brand-50 border border-slate-200 hover:border-brand-300 rounded-xl pl-2.5 pr-3 py-2 text-xs font-bold text-slate-700 transition-colors">
               <span className="truncate flex-1">{x.name}</span>
-              <button onClick={() => exportSingle(x)} title="تصدير CSV" className="p-1.5 text-indigo-500 hover:text-indigo-700 shrink-0"><FileSpreadsheet className="w-4 h-4" /></button>
+              <button onClick={() => exportSingle(x)} title="تصدير CSV" className="p-1.5 text-brand-500 hover:text-brand-700 shrink-0"><FileSpreadsheet className="w-4 h-4" /></button>
               <button onClick={() => exportPdfSingle(x)} title="تصدير PDF" disabled={pdfBusy} className="p-1.5 text-rose-500 hover:text-rose-700 shrink-0 disabled:opacity-40"><FileDown className="w-4 h-4" /></button>
             </div>
           ))}
@@ -434,8 +434,8 @@ export const SystemCenterView: React.FC = () => {
             <p className="font-extrabold text-emerald-800 text-xs flex items-center gap-1.5"><HardDriveDownload className="w-4 h-4" /> النسخة الاحتياطية</p>
             <p className="text-[11px] text-slate-600 mt-1 leading-5">تنزيل ملف JSON واحد يحتوي جميع وحدات البيانات (المخزون، المبيعات، المصاريف، الفواتير، الحسابات، المستخدمون...) لحفظه على جهازك أو سحابة.</p>
           </div>
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
-            <p className="font-extrabold text-indigo-800 text-xs flex items-center gap-1.5"><ArchiveRestore className="w-4 h-4" /> الاستعادة</p>
+          <div className="rounded-xl border border-brand-200 bg-brand-50/50 p-3">
+            <p className="font-extrabold text-brand-800 text-xs flex items-center gap-1.5"><ArchiveRestore className="w-4 h-4" /> الاستعادة</p>
             <p className="text-[11px] text-slate-600 mt-1 leading-5">اختر ملف نسخة احتياطية سابقة لعرض محتواها، ثم أكّد كتابة «تأكيد» لاستبدال بيانات النظام الحالية بها. تعرض جميع الجلسات وتسجيل دخول مطلوب.</p>
           </div>
           <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
@@ -446,7 +446,7 @@ export const SystemCenterView: React.FC = () => {
       </Card>
 
       <Card className="p-4">
-        <SectionHeader title="المصادقة الثنائية (2FA)" subtitle={isAdmin ? 'حماية إضافية لحساب مدير النظام عبر تطبيق مصادقة (TOTP)' : 'متاحة لحساب مدير النظام فقط'} icon={<KeyRound className="w-5 h-5 text-indigo-500" />} extra={
+        <SectionHeader title="المصادقة الثنائية (2FA)" subtitle={isAdmin ? 'حماية إضافية لحساب مدير النظام عبر تطبيق مصادقة (TOTP)' : 'متاحة لحساب مدير النظام فقط'} icon={<KeyRound className="w-5 h-5 text-brand-500" />} extra={
           isAdmin && <Btn tone={totpEnabled ? 'danger' : 'success'} onClick={openTotpSetup} disabled={totpBusy}>{totpBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : totpEnabled ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}{totpEnabled ? 'إيقاف المصادقة الثنائية' : 'تفعيل المصادقة الثنائية'}</Btn>
         } />
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -454,8 +454,8 @@ export const SystemCenterView: React.FC = () => {
             <p className="font-extrabold text-xs flex items-center gap-1.5 ${totpEnabled ? 'text-emerald-800' : 'text-slate-600'}"><ShieldCheck className="w-4 h-4" /> الحالة</p>
             <p className="text-[11px] text-slate-600 mt-1 leading-5">{totpEnabled ? 'المصادقة الثنائية مفعّلة — يُطلب رمز TOTP عند تسجيل الدخول.' : 'غير مفعّلة بعد.'}</p>
           </div>
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
-            <p className="font-extrabold text-indigo-800 text-xs flex items-center gap-1.5"><KeyRound className="w-4 h-4" /> كيف تَعمل؟</p>
+          <div className="rounded-xl border border-brand-200 bg-brand-50/50 p-3">
+            <p className="font-extrabold text-brand-800 text-xs flex items-center gap-1.5"><KeyRound className="w-4 h-4" /> كيف تَعمل؟</p>
             <p className="text-[11px] text-slate-600 mt-1 leading-5">تسجيل الدخول يتطلب كلمة المرور + رمزاً سداسياً متغيراً من تطبيق مصادقة على هاتفك.</p>
           </div>
           <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3">
@@ -525,9 +525,9 @@ export const SystemCenterView: React.FC = () => {
             </div>
             <Btn tone="danger" onClick={() => setConfirmAction('clear')}>تفريغ</Btn>
           </button>
-          <button onClick={() => canReset && setConfirmAction('reset')} disabled={!canReset} className={`flex items-center justify-between rounded-xl border p-4 text-right transition-colors ${canReset ? 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100 cursor-pointer' : 'bg-slate-50 border-slate-200 cursor-not-allowed opacity-60'}`}>
+          <button onClick={() => canReset && setConfirmAction('reset')} disabled={!canReset} className={`flex items-center justify-between rounded-xl border p-4 text-right transition-colors ${canReset ? 'bg-brand-50 border-brand-200 hover:bg-brand-100 cursor-pointer' : 'bg-slate-50 border-slate-200 cursor-not-allowed opacity-60'}`}>
             <div>
-              <p className="font-extrabold text-indigo-800 text-xs flex items-center gap-1.5"><RotateCcw className="w-4 h-4" /> إعادة تعيين البيانات التجريبية</p>
+              <p className="font-extrabold text-brand-800 text-xs flex items-center gap-1.5"><RotateCcw className="w-4 h-4" /> إعادة تعيين البيانات التجريبية</p>
               <p className="text-[11px] text-slate-600 mt-1">استعادة البيانات التجريبية الأولية للعرض والتجربة.</p>
             </div>
             <Btn tone="dark" onClick={() => setConfirmAction('reset')}>إعادة تعيين</Btn>
@@ -588,14 +588,14 @@ export const SystemCenterView: React.FC = () => {
       <Modal open={totpOpen} onClose={() => setTotpOpen(false)} title={totpEnabled ? 'إيقاف المصادقة الثنائية' : 'تفعيل المصادقة الثنائية'}>
         <div className="space-y-3 text-xs">
           {!totpEnabled && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-2">
-              <p className="font-extrabold text-indigo-800">أضف المفتاح إلى تطبيق المصادقة:</p>
+            <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 space-y-2">
+              <p className="font-extrabold text-brand-800">أضف المفتاح إلى تطبيق المصادقة:</p>
               <p className="text-slate-600 leading-5">افتح تطبيق Google Authenticator أو Microsoft Authenticator، ثم أضف حساباً جديداً. يمكنك إدخال الرمز يدوياً من الأسفل:</p>
-              <div className="bg-white border border-indigo-200 rounded-xl p-3">
+              <div className="bg-white border border-brand-200 rounded-xl p-3">
                 <p className="text-[10px] font-bold text-slate-500 mb-1">المفتاح السري (بدون الرمز المالي):</p>
                 <p dir="ltr" className="font-mono text-[13px] text-slate-900 select-all break-all">{totpSecret}</p>
               </div>
-              <div className="bg-white border border-indigo-200 rounded-xl p-3">
+              <div className="bg-white border border-brand-200 rounded-xl p-3">
                 <p className="text-[10px] font-bold text-slate-500 mb-1">رابط otpauth (للماسح الضوئي):</p>
                 <p dir="ltr" className="font-mono text-[10px] text-slate-700 select-all break-all">{totpUrlText}</p>
               </div>
@@ -603,11 +603,11 @@ export const SystemCenterView: React.FC = () => {
           )}
           <p className="font-bold text-slate-700">{totpEnabled ? 'أدخل رمز التحقق الحالي لتأكيد الإيقاف:' : 'بعد الإضافة، أدخل الرمز الحالي (6 أرقام) للتأكيد:'}</p>
           <input inputMode="numeric" value={totpCode} onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="123456"
-            dir="ltr" className="w-full border border-slate-300 rounded-xl p-2.5 text-center tracking-[0.4em] font-mono text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+            dir="ltr" className="w-full border border-slate-300 rounded-xl p-2.5 text-center tracking-[0.4em] font-mono text-sm text-slate-800 outline-none focus:ring-2 focus:ring-brand-500" />
           {totpMsg && <p className={`text-xs font-bold rounded-lg p-2 ${String(totpMsg).startsWith('تم') ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-rose-50 border border-rose-200 text-rose-700'}`}>{totpMsg}</p>}
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => setTotpOpen(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="button" onClick={submitTotp} disabled={totpBusy || totpCode.length !== 6} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium disabled:opacity-40 flex items-center gap-1.5">
+            <button type="button" onClick={submitTotp} disabled={totpBusy || totpCode.length !== 6} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium disabled:opacity-40 flex items-center gap-1.5">
               {totpBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {totpEnabled ? 'إيقاف' : 'تفعيل'}
             </button>
           </div>

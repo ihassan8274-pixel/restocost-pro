@@ -118,7 +118,7 @@ export const ManagementRatiosView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المؤشرات الإدارية (KPI)" subtitle="نسب الربحية، كفاءة العمالة، دوران المخزون، ومؤشرات أداء رئيسية محسوبة من البيانات الفعلية" icon={<Activity className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="المؤشرات الإدارية (KPI)" subtitle="نسب الربحية، كفاءة العمالة، دوران المخزون، ومؤشرات أداء رئيسية محسوبة من البيانات الفعلية" icon={<Activity className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="المؤشرات الإدارية" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -145,7 +145,7 @@ export const ManagementRatiosView: React.FC = () => {
               {r.key === 'fc' || r.key === 'prime' || r.key === 'labor' ? <Receipt className="w-3.5 h-3.5" /> : r.key === 'turnover' || r.key === 'dioh' ? <Boxes className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
               {r.label}
             </div>
-            <strong className={`text-lg font-extrabold font-mono block ${r.tone === 'emerald' ? 'text-emerald-700' : r.tone === 'rose' ? 'text-rose-600' : r.tone === 'amber' ? 'text-amber-600' : r.tone === 'indigo' ? 'text-indigo-700' : 'text-slate-900'}`}>{r.value}</strong>
+            <strong className={`text-lg font-extrabold font-mono block ${r.tone === 'emerald' ? 'text-emerald-700' : r.tone === 'rose' ? 'text-rose-600' : r.tone === 'amber' ? 'text-amber-600' : r.tone === 'indigo' ? 'text-brand-700' : 'text-slate-900'}`}>{r.value}</strong>
             {r.note && <span className="text-[10px] text-slate-400 font-bold block mt-1">{r.note}</span>}
           </div>
         ))}
@@ -167,7 +167,7 @@ export const ManagementRatiosView: React.FC = () => {
             <div><strong className="text-slate-800 block mb-1">نقطة التعادل</strong><span className="text-slate-600">تحتاج إيراد {fmtMoney(metrics.breakEvenRevenue)} لتغطية التكاليف الثابتة والمتغيرة. الإيراد الحالي {metrics.breakEvenRevenue > 0 && metrics.revenue > 0 ? `${((metrics.revenue / metrics.breakEvenRevenue) * 100).toFixed(0)}%` : '—'} من نقطة التعادل.</span></div>
           </div>
           <div className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <DollarSign className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+            <DollarSign className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
             <div><strong className="text-slate-800 block mb-1">متوسط الفاتورة</strong><span className="text-slate-600">متوسط قيمة الفاتورة {fmtMoney(metrics.avgTicket)} ومتوسط الوحدة/الضيف {fmtMoney(metrics.revPerCover)}. تُستخدم لمتابعة استراتيجية الأسعار والترويج.</span></div>
           </div>
         </div>

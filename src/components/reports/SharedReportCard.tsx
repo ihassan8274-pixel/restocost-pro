@@ -116,8 +116,8 @@ export const SharedReportCard: React.FC<{
             <tbody className="divide-y divide-slate-50">
               {ex.rows.map((r, ri) => (
                 r._group ? (
-                  <tr key={ri} className="bg-indigo-50/40">
-                    <td colSpan={ex.columns.length + 1} className="p-2 font-extrabold text-indigo-700 text-xs border-r-3 border-indigo-300">{String(r.name)}</td>
+                  <tr key={ri} className="bg-brand-50/40">
+                    <td colSpan={ex.columns.length + 1} className="p-2 font-extrabold text-brand-700 text-xs border-r-3 border-brand-300">{String(r.name)}</td>
                   </tr>
                 ) : (
                   <tr key={ri} className={`hover:bg-blue-50/30 transition-colors ${ri % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>

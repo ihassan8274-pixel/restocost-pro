@@ -230,7 +230,7 @@ export const FoodCostDailyReport: React.FC = () => {
                   <td className="tnum p-2 text-left text-slate-600">{fmtMoney(d.food)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${d.pct <= target ? 'text-emerald-600' : d.pct <= target * 1.1 ? 'text-amber-600' : 'text-rose-600'}`}>{d.pct.toFixed(1)}%</td>
                   <td className={`p-2 text-center font-mono ${posNeg(-d.deltaPct)}`}>{d.deltaPct > 0 ? '+' : ''}{d.deltaPct.toFixed(1)}</td>
-                  <td className="tnum p-2 text-left text-indigo-700">{d.cumPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left text-brand-700">{d.cumPct.toFixed(1)}%</td>
                 </tr>
               ))}
               {!days.length && (

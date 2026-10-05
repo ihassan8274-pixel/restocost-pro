@@ -166,7 +166,7 @@ const closeWithSettlement = (id: string) => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الجرد الشهري والإقفال" subtitle="كما في Oracle Material Control — جرد نظري/فعلي، قياس انحراف، وإقفال الشهر (يمنع أي حركة على الشهر المقفَل ويحوّل الفرق للمخزون وقيد محاسبي)" icon={<ClipboardCheck className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الجرد الشهري والإقفال" subtitle="كما في Oracle Material Control — جرد نظري/فعلي، قياس انحراف، وإقفال الشهر (يمنع أي حركة على الشهر المقفَل ويحوّل الفرق للمخزون وقيد محاسبي)" icon={<ClipboardCheck className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename={`الجرد_الشهري_${month}`}
@@ -179,7 +179,7 @@ const closeWithSettlement = (id: string) => {
         </>} />
 
       <Card className="p-5">
-        <SectionHeader title="بدء جرد جديد" subtitle="اختر الفرع والشهر ثم ابدأ الجرد — يُحتسب الرصيد النظري تلقائياً من (الافتتاحي + مشتريات + تحويلات واردة − تحويلات صادرة − الاستخدام النظري)" icon={<Play className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="بدء جرد جديد" subtitle="اختر الفرع والشهر ثم ابدأ الجرد — يُحتسب الرصيد النظري تلقائياً من (الافتتاحي + مشتريات + تحويلات واردة − تحويلات صادرة − الاستخدام النظري)" icon={<Play className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
           <Field label="الفرع">
             <select value={branch} onChange={(e) => setBranch(e.target.value)} className={inputCls}>
@@ -207,7 +207,7 @@ const closeWithSettlement = (id: string) => {
         <div className="p-4 flex items-center justify-between">
           <h3 className="font-bold text-slate-800 text-xs">جرد الشهور — فرع {getBranchName(branch)}</h3>
           <div className="flex gap-2 text-[11px] font-bold">
-            <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">{monthlyInventory.length} دورة جرد</span>
+            <span className="px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">{monthlyInventory.length} دورة جرد</span>
             <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">{closedMonths.length} شهر مقفل</span>
           </div>
         </div>
@@ -246,7 +246,7 @@ const closeWithSettlement = (id: string) => {
 
       <Modal open={active !== null} onClose={() => setActive(null)} title={`إدخال أعداد الجرد — ${active ? monthLabelFor(active.monthKey) : ''}`} wide>
         <div className="space-y-3 text-xs">
-          <div className="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2 text-[11px] font-bold text-indigo-800">
+          <div className="flex items-center gap-3 bg-brand-50 border border-brand-200 rounded-xl px-3 py-2 text-[11px] font-bold text-brand-800">
             عدّل الكمية المعدودة لكل صنف — الفرق بين المعدود والنظري يظهر فوراً كفرق انحراف. عند الإقفال يُحوَّل الفرق إلى المخزون مع قيد محاسبي.
           </div>
           <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
@@ -281,7 +281,7 @@ const closeWithSettlement = (id: string) => {
           </div>
           <div className="pt-2 flex justify-end gap-2">
             <button onClick={() => setActive(null)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button onClick={saveCounts} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium"><Save className="w-4 h-4 inline ml-1" /> حفظ الأعداد</button>
+            <button onClick={saveCounts} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium"><Save className="w-4 h-4 inline ml-1" /> حفظ الأعداد</button>
           </div>
         </div>
       </Modal>

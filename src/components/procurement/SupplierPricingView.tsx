@@ -124,7 +124,7 @@ export const SupplierPricingView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">أصناف بأسعار متاحة</span>
-          <strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{rows.length}</strong>
+          <strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{rows.length}</strong>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">بأكثر من مورد (مقارنة)</span>
@@ -199,7 +199,7 @@ export const SupplierPricingView: React.FC = () => {
                     return (
                       <td key={s.id} className={`p-3 font-mono font-bold ${isMin ? 'text-emerald-700' : isMax ? 'text-rose-600' : 'text-slate-700'}`}>
                         {fmt(e.e.price, 2)}
-                        <span className={`block text-[9px] font-bold ${e.e.source === 'quote' ? 'text-indigo-400' : 'text-slate-400'}`}>
+                        <span className={`block text-[9px] font-bold ${e.e.source === 'quote' ? 'text-brand-400' : 'text-slate-400'}`}>
                           {e.e.source === 'quote' ? 'تسعيرة' : 'استلام'} · {e.e.date.slice(0, 10)}
                         </span>
                         {isMin && <span className="inline-block text-[9px] font-extrabold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full mt-0.5">أرخص</span>}
@@ -224,7 +224,7 @@ export const SupplierPricingView: React.FC = () => {
                     </div>
                   </td>
                   <td className="p-3">
-                    <button onClick={() => { setShowQuote({ matId: r.material.id, matName: r.material.nameAr }); setQuoteForm({ supplierId: '', price: '' }); }} className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                    <button onClick={() => { setShowQuote({ matId: r.material.id, matName: r.material.nameAr }); setQuoteForm({ supplierId: '', price: '' }); }} className="text-[10px] font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1">
                       <CircleDollarSign className="w-3.5 h-3.5" /> تسعيرة
                     </button>
                   </td>

@@ -65,7 +65,7 @@ export const TasksView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المهام والتكليفات" subtitle="تعيين مهام (اعتماد، جرد، تدقيق) مع إشعارات للمكلفين ولوحة متابعة الحالة" icon={<ListChecks className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="المهام والتكليفات" subtitle="تعيين مهام (اعتماد، جرد، تدقيق) مع إشعارات للمكلفين ولوحة متابعة الحالة" icon={<ListChecks className="w-6 h-6 text-brand-600" />}
         actions={
           <Btn onClick={() => setShowModal(true)}><Plus className="w-4 h-4" /> مهمة جديدة</Btn>
         } />
@@ -73,7 +73,7 @@ export const TasksView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مهماتي المفتوحة</span><strong className="text-lg font-extrabold text-slate-900 block mt-1">{openCount}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">متأخرة</span><strong className="text-lg font-extrabold text-rose-600 block mt-1">{overdueCount}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المهام</span><strong className="text-lg font-extrabold text-indigo-700 block mt-1">{tasks.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي المهام</span><strong className="text-lg font-extrabold text-brand-700 block mt-1">{tasks.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مُنجزة</span><strong className="text-lg font-extrabold text-emerald-600 block mt-1">{tasks.filter((t) => t.status === 'done').length}</strong></div>
       </div>
 
@@ -81,7 +81,7 @@ export const TasksView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-xl bg-slate-100 p-1">
             {([['mine', 'مهامي'], ['all', 'كل المهام']] as const).map(([k, label]) => (
-              <button key={k} onClick={() => setView(k)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${view === k ? 'bg-white shadow-sm text-indigo-700' : 'text-slate-500'}`}>{label}</button>
+              <button key={k} onClick={() => setView(k)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${view === k ? 'bg-white shadow-sm text-brand-700' : 'text-slate-500'}`}>{label}</button>
             ))}
           </div>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'all')} className={inputCls + ' !w-36'}>
@@ -111,13 +111,13 @@ export const TasksView: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                     <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${PRIORITY_META[t.priority].cls}`}>{PRIORITY_META[t.priority].label}</span>
-                    <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{TYPE_LABELS[t.type]}</span>
+                    <span className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{TYPE_LABELS[t.type]}</span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.status === 'done' ? 'bg-emerald-100 text-emerald-700' : t.status === 'cancelled' ? 'bg-slate-200 text-slate-500' : 'bg-amber-100 text-amber-700'}`}>{STATUS_LABELS[t.status]}</span>
                   </div>
                   <p className={`font-bold text-xs ${t.status === 'done' ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{t.title}</p>
                   {t.description && <p className="text-[11px] text-slate-500 mt-1 leading-snug">{t.description}</p>}
                   <div className="flex flex-wrap gap-3 mt-2 text-[10px] font-bold text-slate-500">
-                    <span className="flex items-center gap-1"><User className="w-3 h-3 text-indigo-500" /> {t.assigneeIds.map(userName).join('، ') || 'غير محدد'}</span>
+                    <span className="flex items-center gap-1"><User className="w-3 h-3 text-brand-500" /> {t.assigneeIds.map(userName).join('، ') || 'غير محدد'}</span>
                     <span className="flex items-center gap-1"><Layers className="w-3 h-3 text-slate-400" /> {branchName(t.branchId)}</span>
                     {t.dueDate && <span className={`flex items-center gap-1 ${t.status === 'open' && t.dueDate < new Date().toISOString().slice(0, 10) ? 'text-rose-600' : ''}`}><CalendarClock className="w-3 h-3" /> {t.dueDate}</span>}
                   </div>
@@ -125,7 +125,7 @@ export const TasksView: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-1.5 shrink-0">
                   {t.status === 'open' && <button onClick={() => completeTask(t.id)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="إنجاز"><CheckCircle2 className="w-4 h-4" /></button>}
-                  {t.status === 'done' && <button onClick={() => reopenTask(t.id)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="إعادة فتح"><Undo2 className="w-4 h-4" /></button>}
+                  {t.status === 'done' && <button onClick={() => reopenTask(t.id)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="إعادة فتح"><Undo2 className="w-4 h-4" /></button>}
                   {t.status === 'open' && <button onClick={() => cancelTask(t.id)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="إلغاء"><XCircle className="w-4 h-4" /></button>}
                   <button onClick={() => deleteTask(t.id)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="حذف"><Trash2 className="w-4 h-4" /></button>
                 </div>
@@ -172,7 +172,7 @@ export const TasksView: React.FC = () => {
                   <input type="checkbox" checked={form.assigneeIds.includes(u.id)} onChange={(e) => {
                     const ids = e.target.checked ? [...form.assigneeIds, u.id] : form.assigneeIds.filter((id) => id !== u.id);
                     setForm({ ...form, assigneeIds: ids });
-                  }} className="w-4 h-4 accent-indigo-600" />
+                  }} className="w-4 h-4 accent-brand-600" />
                   <span>{u.name}</span>
                   <span className="text-[10px] text-slate-400 font-bold mr-auto">{u.role}</span>
                 </label>
@@ -181,7 +181,7 @@ export const TasksView: React.FC = () => {
           </Field>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" disabled={form.assigneeIds.length === 0} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium disabled:opacity-40">أسند المهمة</button>
+            <button type="submit" disabled={form.assigneeIds.length === 0} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium disabled:opacity-40">أسند المهمة</button>
           </div>
         </form>
       </Modal>

@@ -210,10 +210,10 @@ export const InventoryValuationReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-blue-800 font-mono block">{activeItems}</strong>
           <span className="text-[10px] text-blue-500 block">من {rows.length} صف مخزون</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">فروع مخزّنة</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{stockBranches}</strong>
-          <span className="text-[10px] text-indigo-500 block">{zeroQty} صنف بصفر رصيد</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">فروع مخزّنة</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{stockBranches}</strong>
+          <span className="text-[10px] text-brand-500 block">{zeroQty} صنف بصفر رصيد</span>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <span className="text-[10px] text-amber-600 font-bold block">أعلى تصنيف قيمة</span>

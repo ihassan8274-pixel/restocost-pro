@@ -116,7 +116,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 key={col.key}
                 onClick={() => onSort?.(col.key)}
                 className={`px-3 py-2 text-right font-bold text-slate-700 cursor-pointer hover:bg-slate-100 select-none whitespace-nowrap ${
-                  sortConfig?.column === col.key ? 'text-indigo-600 border-b-2 border-indigo-500' : ''
+                  sortConfig?.column === col.key ? 'text-brand-600 border-b-2 border-brand-500' : ''
                 }`}
               >
                 <div className="flex items-center gap-1 justify-end">
@@ -135,10 +135,10 @@ export const DataTable: React.FC<DataTableProps> = ({
             Array.from(groupedData.groups.entries()).map(([groupKey, groupRows]) => (
               <React.Fragment key={groupKey}>
                 <tr
-                  className="bg-indigo-50 cursor-pointer hover:bg-indigo-100"
+                  className="bg-brand-50 cursor-pointer hover:bg-brand-100"
                   onClick={() => handleToggleExpand(groupKey)}
                 >
-                  <td colSpan={columns.length + 1} className="px-3 py-2 font-bold text-indigo-700">
+                  <td colSpan={columns.length + 1} className="px-3 py-2 font-bold text-brand-700">
                     {groupKey === 'غير محدد' ? '—' : groupKey} ({groupRows.length} سجل)
                     {expandedRows.has(groupKey) ? ' ▼' : ' ▶'}
                   </td>

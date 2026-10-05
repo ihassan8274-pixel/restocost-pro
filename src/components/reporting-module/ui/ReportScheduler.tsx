@@ -50,7 +50,7 @@ export const ReportScheduler: React.FC<ReportSchedulerProps> = ({
     <div className="border border-slate-200 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 bg-indigo-50 hover:bg-indigo-100 flex items-center justify-between text-sm font-bold text-indigo-800"
+        className="w-full px-4 py-3 bg-brand-50 hover:bg-brand-100 flex items-center justify-between text-sm font-bold text-brand-800"
       >
         <span className="flex items-center gap-2">
           <Clock className="w-4 h-4" />
@@ -68,7 +68,7 @@ export const ReportScheduler: React.FC<ReportSchedulerProps> = ({
                 key={config.id}
                 className={`border rounded-lg p-3 cursor-pointer transition-colors ${
                   selectedConfig === config.id
-                    ? 'border-indigo-500 bg-indigo-50'
+                    ? 'border-brand-500 bg-brand-50'
                     : 'border-slate-200 hover:border-slate-300'
                 }`}
                 onClick={() => setSelectedConfig(config.id === selectedConfig ? null : config.id)}
@@ -136,7 +136,7 @@ export const ReportScheduler: React.FC<ReportSchedulerProps> = ({
                 recipients: [{ type: 'telegram', target: '', format: 'pdf' }],
                 status: 'pending',
               })}
-              className="w-full py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 flex items-center justify-center gap-2"
+              className="w-full py-2 bg-brand-500 text-white text-xs font-bold rounded-lg hover:bg-brand-600 flex items-center justify-center gap-2"
             >
               <Plus className="w-3 h-3" />
               إنشاء جدولة جديدة

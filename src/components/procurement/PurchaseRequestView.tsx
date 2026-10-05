@@ -127,7 +127,7 @@ export const PurchaseRequestView: React.FC = () => {
       <PageHeader
         title="طلبات الشراء"
         subtitle="يُحسب الطلب تلقائياً بعد الجرد من الجوال: عند بلوغ الصنف الحد الأدنى أو أقل يُطلب الفرق حتى الحد الأقصى، بالأقل رقمياً لوحدة الشراء — آخر سعر توريد = أقل سعر استلام خلال 30 يوماً، والمورد = آخر مورد تم الشراء منه فعلياً"
-        icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
+        icon={<ClipboardList className="w-6 h-6 text-brand-600" />}
         actions={
           <Btn tone="primary" onClick={saveRequest}><Save className="w-4 h-4" /> حفظ الطلب ({selectedRows.length})</Btn>
         }
@@ -154,7 +154,7 @@ export const PurchaseRequestView: React.FC = () => {
           <SectionHeader
             title={`بنود الطلب — ${getBranchName(branchId)}`}
             subtitle="قيم محسوبة تلقائياً من آخر جرد وحدود الفرع وأقرب استلامات. عدّل كمية بوحدة الشراء مباشرة."
-            icon={<ShoppingCart className="w-5 h-5 text-indigo-500" />} />
+            icon={<ShoppingCart className="w-5 h-5 text-brand-500" />} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs min-w-[1100px]">
@@ -163,7 +163,7 @@ export const PurchaseRequestView: React.FC = () => {
                 <th className="p-3">✓</th>
                 <th className="p-3">الصنف</th>
                 <th className="p-3">الوحدة</th>
-                <th className="p-3 bg-indigo-50">الكـمية بوحدة الشراء</th>
+                <th className="p-3 bg-brand-50">الكـمية بوحدة الشراء</th>
                 <th className="p-3 bg-amber-50">آخر سعر توريد (30 يوم)</th>
                 <th className="p-3">آخر مورد</th>
                 <th className="p-3 bg-rose-50">الحد الأدنى</th>
@@ -179,17 +179,17 @@ export const PurchaseRequestView: React.FC = () => {
                   <tr key={r.rawMaterialId} className={`hover:bg-slate-50 ${checked ? '' : 'opacity-50'}`}>
                     <td className="p-3">
                       <button onClick={() => setSelected((p) => ({ ...p, [r.rawMaterialId]: !p[r.rawMaterialId] }))}
-                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${checked ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 text-transparent hover:border-indigo-400'}`}>
+                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${checked ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 text-transparent hover:border-brand-400'}`}>
                         <CheckCircle2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
                     <td className="p-3 font-bold text-slate-900">
-                      <span className="font-mono text-indigo-700 ml-1 text-[10px]">{r.code}</span>
+                      <span className="font-mono text-brand-700 ml-1 text-[10px]">{r.code}</span>
                       <span>{r.materialName}</span>
                       {r.alwaysOrderFullMax && <span className="mr-1 text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">طلب كامل</span>}
                     </td>
                     <td className="p-3 text-slate-500">{r.purchaseUnit} ({r.unit})</td>
-                    <td className="p-3 bg-indigo-50/30">
+                    <td className="p-3 bg-brand-50/30">
                       <input type="number" min="0" step="any" value={qty || ''}
                         onChange={(e) => setQtyOverride((p) => ({ ...p, [r.rawMaterialId]: parseFloat(e.target.value) || 0 }))}
                         className={inputCls + ' !w-24 !h-8'} />
@@ -217,16 +217,16 @@ export const PurchaseRequestView: React.FC = () => {
 
       {/* قائمة الطلبات المحفوظة */}
       <Card className="p-4">
-        <SectionHeader title={`الطلبات المحفوظة (${purchaseRequests.length})`} subtitle="حالة الطلب، تحويله إلى أمر توريد مبدئي بأقل سعر 30 يوماً وآخر مورد فعلي، وإعادة إرساله للبوت" icon={<ClipboardList className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title={`الطلبات المحفوظة (${purchaseRequests.length})`} subtitle="حالة الطلب، تحويله إلى أمر توريد مبدئي بأقل سعر 30 يوماً وآخر مورد فعلي، وإعادة إرساله للبوت" icon={<ClipboardList className="w-5 h-5 text-brand-500" />} />
         <div className="mt-3 space-y-2">
           {purchaseRequests.map((r) => (
             <div key={r.id} className={`flex flex-wrap items-center gap-3 border rounded-xl px-4 py-3 text-xs ${r.status === 'converted' ? 'bg-emerald-50/50 border-emerald-200' : 'bg-white border-slate-200'}`}>
               <div className="flex-1 min-w-[220px]">
                 <p className="font-extrabold text-slate-900 flex items-center gap-2">
-                  <span className="font-mono text-indigo-700">{r.requestNumber}</span>
+                  <span className="font-mono text-brand-700">{r.requestNumber}</span>
                   {r.status === 'converted'
                     ? <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">تم التحويل ({r.convertedToPOs?.length || 0})</span>
-                    : <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">مرسل</span>}
+                    : <span className="text-[10px] font-bold bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full">مرسل</span>}
                 </p>
                 <p className="text-slate-500 font-bold mt-1">فرع {r.branchName} — {r.date} — {r.items.length} صنف — {fmtMoney(r.totalValue)}</p>
               </div>
@@ -271,7 +271,7 @@ export const PurchaseRequestView: React.FC = () => {
                 {viewReq?.items.map((i) => (
                   <tr key={i.rawMaterialId}>
                     <td className="p-2 font-bold text-slate-900">{i.materialName}</td>
-                    <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(i.quantityPU)} {i.purchaseUnit}</td>
+                    <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(i.quantityPU)} {i.purchaseUnit}</td>
                     <td className="tnum text-left p-2 text-slate-700">{fmtMoney(i.lastPricePU)}</td>
                     <td className="p-2">{i.lastSupplierName}</td>
                     <td className="tnum text-left p-2 text-slate-700">{fmtMoney(i.quantityPU * i.lastPricePU)}</td>

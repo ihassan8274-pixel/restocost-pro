@@ -246,10 +246,10 @@ export const ProfitCenterPLReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-amber-800 font-mono block">{grossPct.toFixed(1)}%</strong>
           <span className="text-[10px] text-amber-500 block">{fmtMoney(current.food)}</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">هامش المساهمة %</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{current.cmPct.toFixed(1)}%</strong>
-          <span className="text-[10px] text-indigo-500 block">{fmtMoney(current.cm)}</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">هامش المساهمة %</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{current.cmPct.toFixed(1)}%</strong>
+          <span className="text-[10px] text-brand-500 block">{fmtMoney(current.cm)}</span>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <span className="text-[10px] text-blue-600 font-bold block">نقطة التعادل</span>
@@ -334,7 +334,7 @@ export const ProfitCenterPLReport: React.FC = () => {
                   <td className="p-2 font-bold text-slate-800">{c.centerName}</td>
                   <td className="tnum p-2 text-left text-blue-700">{fmtMoney(c.net)}</td>
                   <td className="tnum p-2 text-left text-amber-700">{c.net > 0 ? ((c.food / c.net) * 100).toFixed(1) : 0}%</td>
-                  <td className="tnum p-2 text-left text-indigo-700">{c.cmPct.toFixed(1)}%</td>
+                  <td className="tnum p-2 text-left text-brand-700">{c.cmPct.toFixed(1)}%</td>
                   <td className="tnum p-2 text-left text-slate-600">{fmtMoney(c.labor)}</td>
                   <td className="tnum p-2 text-left text-slate-600">{fmtMoney(c.opex)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${posNeg(c.profit)}`}>{fmtMoney(c.profit)}</td>

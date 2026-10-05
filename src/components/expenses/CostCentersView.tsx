@@ -206,7 +206,7 @@ export const CostCentersView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="مراكز التكلفة (الفروع)" subtitle="كل فرع مركز تكلفة مستقل: تكلفة طعام، عمالة، تشغيلية، هالك، وتخصيص المصاريف المركزية المشتركة حسب الإيراد" icon={<Boxes className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="مراكز التكلفة (الفروع)" subtitle="كل فرع مركز تكلفة مستقل: تكلفة طعام، عمالة، تشغيلية، هالك، وتخصيص المصاريف المركزية المشتركة حسب الإيراد" icon={<Boxes className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="مراكز_التكلفة" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -214,7 +214,7 @@ export const CostCentersView: React.FC = () => {
         </>} />
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الإيراد</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الإيراد</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تكلفة الطعام</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{fmtMoney(totalFoodCost)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">العمالة</span><strong className="text-lg font-extrabold font-mono text-violet-700 block mt-1">{fmtMoney(totalLabor)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">التشغيلية المباشرة</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(totalOpex)}</strong></div>
@@ -223,12 +223,12 @@ export const CostCentersView: React.FC = () => {
       </div>
 
       <Card className="p-4 flex flex-wrap items-center gap-4 text-xs">
-        <span className="font-extrabold text-slate-700 flex items-center gap-2"><Boxes className="w-4 h-4 text-indigo-500" /> توزيع المصاريف المركزية المشتركة ({fmtMoney(sharedPool)})</span>
+        <span className="font-extrabold text-slate-700 flex items-center gap-2"><Boxes className="w-4 h-4 text-brand-500" /> توزيع المصاريف المركزية المشتركة ({fmtMoney(sharedPool)})</span>
         <button onClick={() => setAllocMode('none')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'none' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-300'}`}>بدون توزيع</button>
-        <button onClick={() => setAllocMode('revenue')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'revenue' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>حسب الإيراد</button>
-        <button onClick={() => setAllocMode('orders')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'orders' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>حسب العمليات</button>
-        <button onClick={() => setAllocMode('labor')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'labor' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>حسب العمالة</button>
-        <button onClick={() => setAllocMode('equal')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'equal' ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300'}`}>بالتساوي</button>
+        <button onClick={() => setAllocMode('revenue')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'revenue' ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>حسب الإيراد</button>
+        <button onClick={() => setAllocMode('orders')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'orders' ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>حسب العمليات</button>
+        <button onClick={() => setAllocMode('labor')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'labor' ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>حسب العمالة</button>
+        <button onClick={() => setAllocMode('equal')} className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${alloc === 'equal' ? 'bg-brand-600 text-white border-brand-700' : 'bg-white text-slate-600 border-slate-300'}`}>بالتساوي</button>
         <span className="text-slate-400 text-[10px]">سجّل أي مصروف بمركز "مركزية (مشتركة)" ليُوزَّع على الفروع حسب المحرّك المختار.</span>
       </Card>
 
@@ -290,7 +290,7 @@ export const CostCentersView: React.FC = () => {
           </Card>
 
           <Card className="overflow-hidden">
-            <h3 className="font-bold text-slate-800 text-xs p-3 border-b border-slate-100 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-indigo-500" /> نقطة التعادل حسب المركز</h3>
+            <h3 className="font-bold text-slate-800 text-xs p-3 border-b border-slate-100 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-brand-500" /> نقطة التعادل حسب المركز</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
@@ -325,7 +325,7 @@ export const CostCentersView: React.FC = () => {
                 {Object.entries(costByCategory).map(([c, v]) => (
                   <div key={c} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3">
                     <span className="font-bold text-slate-700 text-xs">{EXPENSE_CATEGORY_LABELS[c as OperatingExpenseCategory] || c}</span>
-                    <span className="font-mono font-extrabold text-indigo-700">{fmt(v, 0)} ر.س</span>
+                    <span className="font-mono font-extrabold text-brand-700">{fmt(v, 0)} ر.س</span>
                   </div>
                 ))}
                 {Object.keys(costByCategory).length === 0 && <p className="text-center text-slate-400 text-xs py-6">لا توجد مصاريف مدفوعة</p>}
@@ -375,7 +375,7 @@ export const CostCentersView: React.FC = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الموازنة</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmtMoney(totalBudgeted)}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الفعلي</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalActual)}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الفعلي</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalActual)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الفرق</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${totalActual - totalBudgeted > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{fmtMoney(totalActual - totalBudgeted)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نسبة التنفيذ</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{totalBudgeted ? ((totalActual / totalBudgeted) * 100).toFixed(2) : '0.0'}%</strong></div>
           </div>
@@ -440,7 +440,7 @@ export const CostCentersView: React.FC = () => {
             <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowBudgetModal(false)}>
               <Card className="p-5 w-full max-w-lg" >
                 <div onClick={(e) => e.stopPropagation()}>
-                  <SectionHeader title={`موازنة ${branchLabel(bBranch)} — ${monthLabel(bMonth)}`} subtitle={bBranch === 'all' ? 'اختر مركزاً واحداً لحفظ الموازنة' : 'أدخل مبالغ الموازنة لكل تصنيف'} icon={<Boxes className="w-5 h-5 text-indigo-600" />} />
+                  <SectionHeader title={`موازنة ${branchLabel(bBranch)} — ${monthLabel(bMonth)}`} subtitle={bBranch === 'all' ? 'اختر مركزاً واحداً لحفظ الموازنة' : 'أدخل مبالغ الموازنة لكل تصنيف'} icon={<Boxes className="w-5 h-5 text-brand-600" />} />
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-80 overflow-y-auto">
                     {(Object.keys(EXPENSE_CATEGORY_LABELS) as OperatingExpenseCategory[]).map((c) => (
                       <div key={c} className="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
@@ -451,7 +451,7 @@ export const CostCentersView: React.FC = () => {
                   </div>
                   <div className="pt-3 flex justify-end gap-2">
                     <button onClick={() => setShowBudgetModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium text-xs">إلغاء</button>
-                    <button onClick={saveBudget} disabled={bBranch === 'all'} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-xs disabled:opacity-40">حفظ الموازنة</button>
+                    <button onClick={saveBudget} disabled={bBranch === 'all'} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium text-xs disabled:opacity-40">حفظ الموازنة</button>
                   </div>
                 </div>
               </Card>

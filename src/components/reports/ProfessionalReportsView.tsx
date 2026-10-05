@@ -170,7 +170,7 @@ export const ProfessionalReportsView: React.FC = () => {
 
   const exhibits: Exhibit[] = [
     {
-      id: 'supplier_ledger', icon: <Truck className="w-5 h-5 text-indigo-500" />,
+      id: 'supplier_ledger', icon: <Truck className="w-5 h-5 text-brand-500" />,
       title: 'كشف حساب الموردين', subtitle: 'الفواتير، إرجاعات الموردين، والمدفوعات مع الرصيد التراكمي لكل مورد',
       columns: [
         { key: 'supplier', label: 'المورد' }, { key: 'date', label: 'التاريخ', type: 'date' },
@@ -252,7 +252,7 @@ export const ProfessionalReportsView: React.FC = () => {
       }], [{ label: 'إجمالي قيمة المخزون', value: fmtMoney(valSum) }]),
     },
     {
-      id: 'pl', icon: <BarChart3 className="w-5 h-5 text-indigo-500" />,
+      id: 'pl', icon: <BarChart3 className="w-5 h-5 text-brand-500" />,
       title: 'قائمة الدخل برسوم احترافية', subtitle: 'المبيعات والتكاليف وهامش الربح لكل فترة وفرع',
       columns: [
         { key: 'period', label: 'الفترة' }, { key: 'branch', label: 'الفرع' }, { key: 'sales', label: 'المبيعات', type: 'money' },
@@ -296,7 +296,7 @@ export const ProfessionalReportsView: React.FC = () => {
               <button title="تصدير PDF احترافي" onClick={() => download(ex.title, ex.spec())} disabled={busy === ex.id} className="p-1.5 text-rose-500 hover:text-rose-700 rounded-lg hover:bg-rose-50 disabled:opacity-40">
                 {busy === ex.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
               </button>
-              <button title="تصدير CSV" onClick={() => csv(ex.title, ex.csvHeader, ex.rows.map((r) => ex.columns.map((c) => String(r[c.key] ?? ''))))} className="p-1.5 text-indigo-500 hover:text-indigo-700 rounded-lg hover:bg-indigo-50"><FileSpreadsheet className="w-4 h-4" /></button>
+              <button title="تصدير CSV" onClick={() => csv(ex.title, ex.csvHeader, ex.rows.map((r) => ex.columns.map((c) => String(r[c.key] ?? ''))))} className="p-1.5 text-brand-500 hover:text-brand-700 rounded-lg hover:bg-brand-50"><FileSpreadsheet className="w-4 h-4" /></button>
               <button title="طباعة" onClick={print} className="p-1.5 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-100"><Printer className="w-4 h-4" /></button>
             </div>
           }
@@ -335,11 +335,11 @@ export const ProfessionalReportsView: React.FC = () => {
       <PageHeader
         title="التقارير الاحترافية المتكاملة"
         subtitle="مستندات PDF مصمّمة باحترافية (ترويسة موحدة + ترقيم صفحات + تنسيق أعمدة) لكل تقرير على حدة — جاهزة للطباعة والاعتماد"
-        icon={<FileText className="w-6 h-6 text-indigo-600" />}
+        icon={<FileText className="w-6 h-6 text-brand-600" />}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-slate-300">الفرع:</span>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="border border-slate-700 rounded-lg p-2 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-800 !w-56">
+            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="border border-slate-700 rounded-lg p-2 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-brand-500 bg-slate-800 !w-56">
               <option value="all">كل الفروع</option>
               {allBranches.map((b) => <option key={b.id} value={b.id}>{getBranchName(b.id)}</option>)}
             </select>

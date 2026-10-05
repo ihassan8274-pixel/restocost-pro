@@ -28,12 +28,12 @@ export const CurrenciesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="العملات المتعددة" subtitle="تعريف العملات وأسعار صرفها مقابل الريال (عملة الأساس) — تُستخدم على أوامر الشراء والاستلام والإرجاع والفواتير" icon={<Coins className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="العملات المتعددة" subtitle="تعريف العملات وأسعار صرفها مقابل الريال (عملة الأساس) — تُستخدم على أوامر الشراء والاستلام والإرجاع والفواتير" icon={<Coins className="w-6 h-6 text-brand-600" />}
         actions={<Btn onClick={openCreate}><Plus className="w-4 h-4" /> عملة جديدة</Btn>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">عدد العملات</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{currencies.length}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs"><span className="text-indigo-600 text-[11px] block">عملة الأساس</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">SAR — ر.س</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs"><span className="text-brand-600 text-[11px] block">عملة الأساس</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">SAR — ر.س</strong></div>
         <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs"><span className="text-emerald-600 text-[11px] block">عملات نشطة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{currencies.filter((c) => c.isActive).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">أعلى سعر صرف</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{Math.max(...currencies.filter((c) => !c.isBase).map((c) => c.rateToBase), 0)}</strong></div>
       </div>
@@ -48,14 +48,14 @@ export const CurrenciesView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {currencies.map((c) => (
                   <tr key={c.code} className="hover:bg-slate-50">
-                    <td className="tnum text-left p-3 font-extrabold text-indigo-700">{c.code}{c.isBase && <span className="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full mr-1">الأساس</span>}</td>
+                    <td className="tnum text-left p-3 font-extrabold text-brand-700">{c.code}{c.isBase && <span className="text-[9px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full mr-1">الأساس</span>}</td>
                     <td className="p-3 font-bold text-slate-900">{c.nameAr}</td>
                     <td className="tnum text-left p-3 font-bold">{c.symbol}</td>
                     <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmtNum(c.rateToBase, 4)}</td>
                     <td className="p-3">{c.isActive ? <span className="text-emerald-600 font-bold">نشطة</span> : <span className="text-slate-400 font-bold">موقوفة</span>}</td>
                     <td className="p-3">
                       <div className="flex gap-1">
-                        <button onClick={() => openEdit(c)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="تعديل"><RefreshCw className="w-4 h-4" /></button>
+                        <button onClick={() => openEdit(c)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="تعديل"><RefreshCw className="w-4 h-4" /></button>
                         <button onClick={() => deleteCurrency(c.code)} disabled={c.isBase} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg disabled:opacity-30" title={c.isBase ? 'عملة الأساس لا تُحذف' : 'حذف'}><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -67,7 +67,7 @@ export const CurrenciesView: React.FC = () => {
         </Card>
 
         <Card className="p-5">
-          <h3 className="font-bold text-slate-800 text-xs mb-3 flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-indigo-500" /> محول العملات</h3>
+          <h3 className="font-bold text-slate-800 text-xs mb-3 flex items-center gap-2"><ArrowRightLeft className="w-4 h-4 text-brand-500" /> محول العملات</h3>
           <div className="space-y-3 text-xs">
             <Field label="المبلغ">
               <input type="number" step="any" value={calcAmount || ''} onChange={(e) => setCalcAmount(parseFloat(e.target.value) || 0)} className={inputCls} />
@@ -80,10 +80,10 @@ export const CurrenciesView: React.FC = () => {
                 <select value={calcTo} onChange={(e) => setCalcTo(e.target.value)} className={inputCls}>{currencies.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}</select>
               </Field>
             </div>
-            <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 text-center">
-              <span className="text-[11px] font-bold text-indigo-950 block">{fmtCur(calcAmount, currencies.find((c) => c.code === calcFrom)?.symbol || '')}</span>
-              <span className="text-lg font-black text-indigo-800 font-mono block mt-1">{fmtCur(result, currencies.find((c) => c.code === calcTo)?.symbol || '')}</span>
-              <span className="text-[10px] font-bold text-indigo-500 block mt-1">المعادل بالريال: {fmtMoney(convertToBase(calcAmount, calcFrom))}</span>
+            <div className="p-4 bg-brand-50 rounded-xl border border-brand-200 text-center">
+              <span className="text-[11px] font-bold text-brand-950 block">{fmtCur(calcAmount, currencies.find((c) => c.code === calcFrom)?.symbol || '')}</span>
+              <span className="text-lg font-black text-brand-800 font-mono block mt-1">{fmtCur(result, currencies.find((c) => c.code === calcTo)?.symbol || '')}</span>
+              <span className="text-[10px] font-bold text-brand-500 block mt-1">المعادل بالريال: {fmtMoney(convertToBase(calcAmount, calcFrom))}</span>
             </div>
           </div>
           <p className="mt-3 text-[10px] text-slate-500 font-bold leading-relaxed">عند إصدار مستند بعملة أجنبية يُسجَّل المبلغ بعملة المستند + المعادل بالريال (تسعير سعر الصرف لحظة الإصدار)، وتُبقى المحاسبة والقيود بالريال دائماً.</p>
@@ -103,7 +103,7 @@ export const CurrenciesView: React.FC = () => {
           <label className="flex items-center gap-2 font-bold text-slate-700 text-xs"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} /> عملة نشطة (متاحة للاختيار على المستندات)</label>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editing ? 'حفظ التعديل' : 'إضافة العملة'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editing ? 'حفظ التعديل' : 'إضافة العملة'}</button>
           </div>
         </form>
       </Modal>

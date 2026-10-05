@@ -249,11 +249,11 @@ export const AIExecutiveReportView: React.FC = () => {
   };
 
   if (!can('use_ai')) {
-    return <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد بالذكاء الاصطناعي لكل المؤشرات" icon={<FileText className="w-6 h-6 text-indigo-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح — تواصل مع مدير النظام.</Card>} />;
+    return <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد بالذكاء الاصطناعي لكل المؤشرات" icon={<FileText className="w-6 h-6 text-brand-600" />} actions={<Card className="p-4 text-center text-xs font-bold text-slate-500">صلاحيتك الحالية لا تسمح — تواصل مع مدير النظام.</Card>} />;
   }
 
   const kpis = [
-    { label: 'الإيراد', value: fmtMoney(revenue), tone: 'text-indigo-700' },
+    { label: 'الإيراد', value: fmtMoney(revenue), tone: 'text-brand-700' },
     { label: 'تكلفة الطعام', value: `${fcPct.toFixed(2)}%`, tone: fcPct > 35 ? 'text-rose-600' : 'text-emerald-700' },
     { label: 'العمالة', value: `${laborPct.toFixed(2)}%`, tone: 'text-violet-700' },
     { label: 'التشغيلية', value: `${opexPct.toFixed(2)}%`, tone: 'text-amber-700' },
@@ -265,7 +265,7 @@ export const AIExecutiveReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد: مبيعات، تكاليف، مراكز تكلفة، مخزون، ضريبة — مع توليد تقرير تنفيذي بالذكاء الاصطناعي" icon={<FileText className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="التقرير التنفيذي الذكي" subtitle="تقرير موحّد: مبيعات، تكاليف، مراكز تكلفة، مخزون، ضريبة — مع توليد تقرير تنفيذي بالذكاء الاصطناعي" icon={<FileText className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="التقرير_التنفيذي_الذكي" sheets={[
             { name: 'ملخص تنفيذي', header: ['المؤشر', 'القيمة'], rows: [['الإيراد', revenue], ['تكلفة الطعام', foodCost], ['Food Cost %', fcPct.toFixed(2)], ['العمالة', labor], ['التشغيلية', opex], ['الهالك', wastage], ['الربح', profit], ['الهامش %', margin.toFixed(2)], ['صافي الضريبة', vatNet]] },
@@ -354,7 +354,7 @@ export const AIExecutiveReportView: React.FC = () => {
                 <tr><td className="p-2 font-bold">العمالة</td><td className="tnum text-left p-2">{fmtMoney(labor)}</td><td className="tnum text-left p-2">{laborPct.toFixed(2)}%</td></tr>
                 <tr><td className="p-2 font-bold">التشغيلية المدفوعة</td><td className="tnum text-left p-2">{fmtMoney(opex)}</td><td className="tnum text-left p-2">{opexPct.toFixed(2)}%</td></tr>
                 <tr><td className="p-2 font-bold">الهوالك</td><td className="tnum text-left p-2">{fmtMoney(wastage)}</td><td className="tnum text-left p-2">{wastagePct.toFixed(2)}%</td></tr>
-                <tr className="bg-indigo-50/60"><td className="p-2 font-extrabold">إجمالي التكاليف</td><td className="tnum text-left p-2 font-extrabold">{fmtMoney(totalCost)}</td><td className="tnum text-left p-2 font-extrabold">{revenue ? ((totalCost / revenue) * 100).toFixed(2) : '0'}%</td></tr>
+                <tr className="bg-brand-50/60"><td className="p-2 font-extrabold">إجمالي التكاليف</td><td className="tnum text-left p-2 font-extrabold">{fmtMoney(totalCost)}</td><td className="tnum text-left p-2 font-extrabold">{revenue ? ((totalCost / revenue) * 100).toFixed(2) : '0'}%</td></tr>
                 <tr className="bg-emerald-50/60"><td className="p-2 font-extrabold text-emerald-800">الربح الصافي</td><td className="tnum text-left p-2 font-extrabold text-emerald-800">{fmtMoney(profit)}</td><td className="tnum text-left p-2 font-extrabold text-emerald-800">{margin.toFixed(2)}%</td></tr>
                 <tr><td className="p-2 font-bold">ضريبة خرج (مبيعات)</td><td className="tnum text-left p-2">{fmtMoney(vatOutput)}</td><td className="tnum text-left p-2">—</td></tr>
                 <tr><td className="p-2 font-bold">ضريبة دخل (مشتريات)</td><td className="tnum text-left p-2">{fmtMoney(vatInput)}</td><td className="tnum text-left p-2">—</td></tr>
@@ -368,7 +368,7 @@ export const AIExecutiveReportView: React.FC = () => {
       {tab === 'recommendations' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="p-4">
-            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-indigo-600" /> التوصيات الآلية الفورية</h3>
+            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-brand-600" /> التوصيات الآلية الفورية</h3>
             <div className="space-y-2">
               {insights.map((i, idx) => (
                 <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] leading-relaxed font-bold text-slate-700">• {i}</div>
@@ -400,7 +400,7 @@ export const AIExecutiveReportView: React.FC = () => {
 
       {tab === 'recommendations' && (
         <Card className="p-4">
-          <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-indigo-600" /> اسأل نظامك مباشرة (بالعربية)</h3>
+          <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-brand-600" /> اسأل نظامك مباشرة (بالعربية)</h3>
           <p className="text-[11px] text-slate-500 font-bold leading-relaxed mb-3">مثال: "أين زادت تكلفة الطعام؟"، "كم الهالك؟"، "أفضل مركز هامشاً؟"، "قيمة المخزون؟" — إجابة آلية فورية، ويمكن توسيعها بالذكاء الاصطناعي.</p>
           <div className="flex flex-wrap gap-2 mb-3">
             <input value={qaText} onChange={(e) => setQaText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && askQuestion()} placeholder="اكتب سؤالك هنا..." className={inputCls + ' flex-1 min-w-56'} />

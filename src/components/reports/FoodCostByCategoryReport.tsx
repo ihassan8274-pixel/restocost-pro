@@ -298,7 +298,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
       <PageHeader
         title="تكلفة الأصناف المباعة"
         subtitle={`${COMPANY} — ${periodLabel} — ${branchLabel}`}
-        icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
+        icon={<BarChart3 className="w-6 h-6 text-brand-600" />}
         actions={
           <>
             <TabBar
@@ -467,7 +467,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
                       {row.branches.map((val, bi) => (
                         <td key={bi} className="p-2 text-center font-mono">{fmt(val)}</td>
                       ))}
-                      <td className="tnum p-2 text-left font-bold text-indigo-700">{fmt(row.total)}</td>
+                      <td className="tnum p-2 text-left font-bold text-brand-700">{fmt(row.total)}</td>
                     </tr>
                   ))}
                   <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
@@ -475,7 +475,7 @@ export const FoodCostByCategoryReport: React.FC = () => {
                     {branchQuantityData.branchNames.map((_, bi) => (
                       <td key={bi} className="p-2 text-center font-mono">{fmt(branchQuantityData.data.reduce((s, r) => s + r.branches[bi], 0))}</td>
                     ))}
-                    <td className="tnum p-2 text-left font-bold text-indigo-700">{fmt(branchQuantityData.data.reduce((s, r) => s + r.total, 0))}</td>
+                    <td className="tnum p-2 text-left font-bold text-brand-700">{fmt(branchQuantityData.data.reduce((s, r) => s + r.total, 0))}</td>
                   </tr>
                 </tbody>
               </table>

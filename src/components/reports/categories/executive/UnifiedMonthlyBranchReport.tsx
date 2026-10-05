@@ -122,7 +122,7 @@ export const UnifiedMonthlyBranchReport: React.FC = () => {
             const to = `${m}-31`;
             setFilters({ ...filters, from: monthBounds(m), to });
           }}
-          className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none"
+          className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-brand-500 focus:outline-none"
         />
       </label>
     );

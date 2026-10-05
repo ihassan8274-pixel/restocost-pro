@@ -151,10 +151,10 @@ export const SalesDailySummaryReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-blue-800 font-mono block">{rows.length ? fmtMoney(totalNet / rows.length) : '—'}</strong>
           <span className="text-[10px] text-blue-500 block">{rows.length} يوم نشط في الفترة</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">متوسط السجل المصفّف</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{totalRecords ? fmtMoney(totalNet / totalRecords) : '—'}</strong>
-          <span className="text-[10px] text-indigo-500 block">من {totalRecords} سجل</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">متوسط السجل المصفّف</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{totalRecords ? fmtMoney(totalNet / totalRecords) : '—'}</strong>
+          <span className="text-[10px] text-brand-500 block">من {totalRecords} سجل</span>
         </div>
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
           <span className="text-[10px] text-rose-600 font-bold block">تكلفة الطعام + الضريبة</span>

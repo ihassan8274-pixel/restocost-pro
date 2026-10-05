@@ -139,7 +139,7 @@ export const SupplierScorecardView: React.FC = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الموردون المقيمون</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{rows.length}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي قيمة المشتريات</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmt(rows.reduce((s, r) => s + r.totalAmount, 0))} ر.س</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي قيمة المشتريات</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmt(rows.reduce((s, r) => s + r.totalAmount, 0))} ر.س</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">متوسط الجودة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(avg((r) => r.quality), 1)}%</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">متوسط الالتزام بالمواعيد</span><strong className="text-lg font-extrabold font-mono text-sky-700 block mt-1">{fmt(avg((r) => r.onTime), 1)}%</strong></div>
       </div>
@@ -155,7 +155,7 @@ export const SupplierScorecardView: React.FC = () => {
                 <th className="text-right p-2 font-bold">قيمة المشتريات</th>
                 <th className="text-right p-2 font-bold text-emerald-700">الجودة</th>
                 <th className="text-right p-2 font-bold text-sky-700">المواعيد</th>
-                <th className="text-right p-2 font-bold text-indigo-700">دقة الكميات</th>
+                <th className="text-right p-2 font-bold text-brand-700">دقة الكميات</th>
                 <th className="text-right p-2 font-bold text-amber-700">انحراف الأسعار</th>
                 <th className="text-right p-2 font-bold">التقييم</th>
                 <th className="text-right p-2 font-bold">التصنيف</th>
@@ -172,11 +172,11 @@ export const SupplierScorecardView: React.FC = () => {
                   <td className="tnum text-left p-2 font-bold text-slate-700">{fmt(r.totalAmount)} ر.س</td>
                   <td className="tnum text-left p-2 font-bold text-emerald-700">{r.quality === null ? '—' : `${fmt(r.quality, 1)}%`}</td>
                   <td className="tnum text-left p-2 font-bold text-sky-700">{r.onTime === null ? '—' : `${fmt(r.onTime, 1)}%`}</td>
-                  <td className="tnum text-left p-2 font-bold text-indigo-700">{r.accuracy === null ? '—' : `${fmt(r.accuracy, 1)}%`}</td>
+                  <td className="tnum text-left p-2 font-bold text-brand-700">{r.accuracy === null ? '—' : `${fmt(r.accuracy, 1)}%`}</td>
                   <td className={`p-2 font-mono font-bold ${r.priceDev === null ? 'text-slate-400' : (r.priceDev || 0) > 0.001 ? 'text-rose-600' : 'text-emerald-700'}`}>{r.priceDev === null ? '—' : `${(r.priceDev! * 100).toFixed(2)}%`}</td>
                   <td className="p-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 rounded-full bg-slate-100 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-indigo-500" style={{ width: `${r.score}%` }} /></div>
+                      <div className="w-20 h-2 rounded-full bg-slate-100 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-brand-500" style={{ width: `${r.score}%` }} /></div>
                       <span className="font-mono font-extrabold text-slate-800 text-xs">{r.score}</span>
                     </div>
                   </td>

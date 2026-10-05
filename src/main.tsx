@@ -2,6 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { applyTheme } from './context/domains/ui';
+
+// Apply the persisted theme before the first paint. React state is not ready
+// this early, so read the same localStorage key the store persists to and set
+// the class on <html> directly — otherwise a dark-mode user sees a white flash
+// on every reload.
+try {
+  const stored = localStorage.getItem('rcerp-ui');
+  if (stored) {
+    const parsed = JSON.parse(stored) as { state?: { theme?: 'light' | 'dark' } };
+    if (parsed?.state?.theme) applyTheme(parsed.state.theme);
+  }
+} catch {
+  /* private mode / corrupt entry — fall back to light */
+}
 
 // حارس النسخ القديمة: عند فشل تحميل chunk ديناميكي (نشرنا نسخة جديدة وأسماؤها تغيّرت)
 // أعد تحميل الصفحة مرة واحدة ليتناول المتصفح أحدث index.html وأحدث الشل.

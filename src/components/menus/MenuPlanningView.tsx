@@ -132,7 +132,7 @@ export const MenuPlanningView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تخطيط القوائم والأطعمة" subtitle="خطط كميات الإنتاج/المبيعات المتوقعة لكل يوم وفرع ووجبة، مع الإيراد والهامش المخطط" icon={<CalendarDays className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="تخطيط القوائم والأطعمة" subtitle="خطط كميات الإنتاج/المبيعات المتوقعة لكل يوم وفرع ووجبة، مع الإيراد والهامش المخطط" icon={<CalendarDays className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="تخطيط القوائم والأطعمة" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printReport}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -154,7 +154,7 @@ export const MenuPlanningView: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">خطط في النطاق</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{scopePlans.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">خطط في النطاق</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{scopePlans.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">كمية مخططة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmt(scopeTotals.qty, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إيراد مخطط</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmtMoney(scopeTotals.revenue)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">هامش مخطط</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${scopeTotals.revenue - scopeTotals.cost >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{scopeTotals.revenue ? ((scopeTotals.revenue - scopeTotals.cost) / scopeTotals.revenue * 100).toFixed(2) : '0.00'}%</strong></div>
@@ -179,7 +179,7 @@ export const MenuPlanningView: React.FC = () => {
               <Card key={p.id} className="p-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <UtensilsCrossed className="w-4 h-4 text-indigo-500" />
+                    <UtensilsCrossed className="w-4 h-4 text-brand-500" />
                     <div>
                       <strong className="text-slate-800 text-xs block">{getBranchName(p.branchId)}</strong>
                       <span className="text-[10px] text-slate-500 font-bold">{p.date} · {MEAL_LABELS[p.mealType]}</span>
@@ -194,7 +194,7 @@ export const MenuPlanningView: React.FC = () => {
                   {p.items.map((i) => (
                     <div key={i.recipeId} className="flex items-center justify-between py-1 text-[11px]">
                       <span className="font-bold text-slate-700">{i.recipeNameAr}</span>
-                      <span className="font-mono font-extrabold text-indigo-700">{fmt(i.plannedQty, 0)}</span>
+                      <span className="font-mono font-extrabold text-brand-700">{fmt(i.plannedQty, 0)}</span>
                     </div>
                   ))}
                   {p.items.length === 0 && <div className="text-[11px] text-slate-400 py-2 text-center">لا أصناف</div>}
@@ -235,7 +235,7 @@ export const MenuPlanningView: React.FC = () => {
                   return (
                     <tr key={p.id + i.recipeId} className="border-b border-slate-50 hover:bg-slate-50">
                       <td className="p-2 font-bold text-slate-800">{i.recipeNameAr} <span className="text-[9px] text-slate-400 font-bold">({getBranchName(p.branchId)} · {MEAL_LABELS[p.mealType]})</span></td>
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(i.plannedQty, 0)}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(i.plannedQty, 0)}</td>
                       <td className="tnum text-left p-2 text-slate-500">—</td>
                       <td className="tnum text-left p-2 text-slate-600">—</td>
                       <td className="tnum text-left p-2 text-slate-400">—</td>

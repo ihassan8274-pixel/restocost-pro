@@ -32,13 +32,13 @@ export const UnitsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="وحدات القياس (التداول)" subtitle="ماديول وحدات القياس القياسية المستخدمة في الوصفات — حوِّل رصيدك من وحدة المخزون إلى وحدات قياس (لتر/كغم/قطعة) بسلسلة: شراء ← مخزون ← تداول" icon={<Ruler className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="وحدات القياس (التداول)" subtitle="ماديول وحدات القياس القياسية المستخدمة في الوصفات — حوِّل رصيدك من وحدة المخزون إلى وحدات قياس (لتر/كغم/قطعة) بسلسلة: شراء ← مخزون ← تداول" icon={<Ruler className="w-6 h-6 text-brand-600" />}
         actions={<Btn onClick={openCreate}><Plus className="w-4 h-4" /> وحدة قياس جديدة</Btn>} />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الوحدات</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{unitsOfMeasure.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs"><span className="text-emerald-600 text-[11px] block">وحدات نشطة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{unitsOfMeasure.filter((u) => u.isActive).length}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs"><span className="text-indigo-600 text-[11px] block">أصناف مرتبطة بوحدة تداول</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{rawMaterials.filter((m) => m.tradeUomId).length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs"><span className="text-brand-600 text-[11px] block">أصناف مرتبطة بوحدة تداول</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{rawMaterials.filter((m) => m.tradeUomId).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">فئات الوحدات (حجم/وزن/عدد/طول)</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{new Set(unitsOfMeasure.map((u) => u.uomClass)).size}</strong></div>
       </div>
 
@@ -51,7 +51,7 @@ export const UnitsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {unitsOfMeasure.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
-                  <td className="tnum text-left p-3 font-extrabold text-indigo-700">{u.code}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-brand-700">{u.code}</td>
                   <td className="p-3 font-bold text-slate-900">{u.nameAr}</td>
                   <td className="p-3 text-slate-500">{u.nameEn}</td>
                   <td className="p-3"><span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{UOM_CLASS_LABELS[u.uomClass]}</span></td>
@@ -59,7 +59,7 @@ export const UnitsView: React.FC = () => {
                   <td className="p-3">{u.isActive ? <span className="text-emerald-600 font-bold">نشطة</span> : <span className="text-slate-400 font-bold">موقوفة</span>}</td>
                   <td className="p-3">
                     <div className="flex gap-1">
-                      <button onClick={() => openEdit(u)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="تعديل"><RefreshCw className="w-4 h-4" /></button>
+                      <button onClick={() => openEdit(u)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="تعديل"><RefreshCw className="w-4 h-4" /></button>
                       <button onClick={() => { const res = deleteUnitOfMeasure(u.id); if (!res.ok) alert(res.error); }} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="حذف"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
@@ -87,10 +87,10 @@ export const UnitsView: React.FC = () => {
           </div>
           <Field label="الاسم بالعربية" required><input value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} className={inputCls} placeholder="لتر / كيلوغرام / قطعة" required /></Field>
           <Field label="الاسم بالإنجليزية"><input value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} className={inputCls} dir="ltr" placeholder="Liter / Kilogram / Piece" /></Field>
-          <label className="flex items-center gap-2 font-bold text-slate-700 text-xs"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="accent-indigo-600" /> وحدة نشطة (متاحة للاختيار على الأصناف)</label>
+          <label className="flex items-center gap-2 font-bold text-slate-700 text-xs"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="accent-brand-600" /> وحدة نشطة (متاحة للاختيار على الأصناف)</label>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editing ? 'حفظ التعديل' : 'إضافة الوحدة'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editing ? 'حفظ التعديل' : 'إضافة الوحدة'}</button>
           </div>
         </form>
       </Modal>

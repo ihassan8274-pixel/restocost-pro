@@ -23,7 +23,7 @@ export const SectionHeader: React.FC<{ title: string; subtitle?: string; icon?: 
 
 export const StatCard: React.FC<{ label: string; value: string; sub?: string; tone?: 'default' | 'emerald' | 'amber' | 'rose' | 'indigo'; icon?: React.ReactNode }> = ({ label, value, sub, tone = 'default', icon }) => {
   const tones = {
-    default: 'text-slate-900', emerald: 'text-emerald-700', amber: 'text-primary-700', rose: 'text-rose-700', indigo: 'text-indigo-700',
+    default: 'text-slate-900', emerald: 'text-emerald-700', amber: 'text-primary-700', rose: 'text-rose-700', indigo: 'text-brand-700',
   };
   return (
     <div className="bg-surface p-4 rounded-xl border border-line shadow-card">
@@ -164,8 +164,8 @@ export const StatusPill: React.FC<{ status: string; map: Record<string, string>;
     pending: 'bg-amber-50 text-amber-800 border-amber-200',
     overdue: 'bg-rose-50 text-rose-800 border-rose-200',
     completed: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    confirmed: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-    approved: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+    confirmed: 'bg-brand-50 text-brand-800 border-brand-200',
+    approved: 'bg-brand-50 text-brand-800 border-brand-200',
     received: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     cancelled: 'bg-slate-100 text-slate-600 border-slate-200',
     rejected: 'bg-rose-50 text-rose-700 border-rose-200',

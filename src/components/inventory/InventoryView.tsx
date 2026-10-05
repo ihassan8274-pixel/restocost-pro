@@ -184,7 +184,7 @@ export const InventoryView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المخزون والتحويلات والجرد" subtitle="مراقبة الأرصدة، تنبيهات الحد الأدنى، التحويلات بين الفروع، والجرد الدوري" icon={<Warehouse className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="المخزون والتحويلات والجرد" subtitle="مراقبة الأرصدة، تنبيهات الحد الأدنى، التحويلات بين الفروع، والجرد الدوري" icon={<Warehouse className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="المخزون"
@@ -234,9 +234,9 @@ export const InventoryView: React.FC = () => {
                       <td className="p-3 text-slate-600">{i.branchId === 'b-ck' ? 'المطبخ المركزي' : i.branchId}</td>
                       <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
                       <td className="p-3 text-slate-500">{mat?.unit}</td>
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
                       <td className="tnum text-left p-3 text-slate-500">{fmt(mat?.standardPrice || 0)}</td>
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
                       <td className="p-3">{isLow ? <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">منخفض</span> : <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>}</td>
                     </tr>
                   );
@@ -250,7 +250,7 @@ export const InventoryView: React.FC = () => {
       {tab === 'items' && (
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between p-3 border-b border-slate-100">
-            <p className="text-xs font-extrabold text-slate-700 flex items-center gap-2"><Package className="w-4 h-4 text-indigo-500" /> الأصناف المسجلة ({rawMaterials.length})</p>
+            <p className="text-xs font-extrabold text-slate-700 flex items-center gap-2"><Package className="w-4 h-4 text-brand-500" /> الأصناف المسجلة ({rawMaterials.length})</p>
             <div className="flex gap-2">
               <Btn onClick={() => setScanning(true)}><Scan className="w-4 h-4" /> مسح QR</Btn>
               <Btn onClick={openAddItem}><Plus className="w-4 h-4" /> إضافة صنف</Btn>
@@ -265,7 +265,7 @@ export const InventoryView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {rawMaterials.map((m) => (
                   <tr key={m.id} className="hover:bg-slate-50">
-                    <td className="tnum text-left p-3 font-bold text-indigo-700">{m.code}</td>
+                    <td className="tnum text-left p-3 font-bold text-brand-700">{m.code}</td>
                     <td className="p-3 font-bold text-slate-900">{m.nameAr}</td>
                     <td className="p-3 text-slate-600">{categoryLabel(m.category, materialCategories)}</td>
                     <td className="p-3 text-slate-500">{m.unit}</td>
@@ -279,7 +279,7 @@ export const InventoryView: React.FC = () => {
                     <td className="p-3">
                       <div className="flex gap-1">
                         <button onClick={() => printQrLabel(m, filterBranch !== 'all' ? filterBranch : visibleBranchIds[0] || 'b-ck')} className="p-1.5 rounded-lg text-slate-500 hover:text-amber-700 hover:bg-amber-50 transition-colors" title="طباعة ملصق QR"><QrCode className="w-4 h-4" /></button>
-                        <button onClick={() => openEditItem(m)} className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors" title="تعديل الصنف"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => openEditItem(m)} className="p-1.5 rounded-lg text-slate-500 hover:text-brand-700 hover:bg-brand-50 transition-colors" title="تعديل الصنف"><Pencil className="w-4 h-4" /></button>
                         <button onClick={() => {
                           if (!window.confirm(`حذف الصنف «${m.nameAr}»؟`)) return;
                           const res = deleteRawMaterial(m.id);
@@ -305,7 +305,7 @@ export const InventoryView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {stockTransfers.map((t) => (
                   <tr key={t.id} className="hover:bg-slate-50">
-                    <td className="tnum text-left p-3 font-bold text-indigo-700">{t.transferNumber}</td>
+                    <td className="tnum text-left p-3 font-bold text-brand-700">{t.transferNumber}</td>
                     <td className="p-3">{getBranchName(t.fromBranchId)}</td>
                     <td className="p-3">{getBranchName(t.toBranchId)}</td>
                     <td className="tnum text-left p-3 text-slate-600">{t.date}</td>
@@ -403,7 +403,7 @@ export const InventoryView: React.FC = () => {
             </div>
             <Card className="overflow-hidden">
               <div className="flex items-center justify-between p-3 border-b border-slate-100">
-                <p className="text-xs font-extrabold text-slate-700 flex items-center gap-2"><Clock4 className="w-4 h-4 text-indigo-500" /> تتبع الصلاحية حسب الدفعات (batchNumber / expiryDate)</p>
+                <p className="text-xs font-extrabold text-slate-700 flex items-center gap-2"><Clock4 className="w-4 h-4 text-brand-500" /> تتبع الصلاحية حسب الدفعات (batchNumber / expiryDate)</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-xs">
@@ -419,7 +419,7 @@ export const InventoryView: React.FC = () => {
                           <td className="p-3 font-bold text-slate-900">{getRawMaterialName(i.rawMaterialId)}</td>
                       <td className="p-3 text-slate-600">{getBranchName(i.branchId)}</td>
                           <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
-                          <td className="tnum text-left p-3 text-indigo-700">{i.batchNumber || '—'}</td>
+                          <td className="tnum text-left p-3 text-brand-700">{i.batchNumber || '—'}</td>
                           <td className="tnum text-left p-3 text-slate-600">{i.expiryDate}</td>
                           <td className={`p-3 font-mono font-extrabold ${d <= 0 ? 'text-rose-700' : d <= 14 ? 'text-amber-700' : 'text-emerald-700'}`}>{d <= 0 ? `منتهية منذ ${Math.abs(d)} يوم` : `${d} يوم`}</td>
                           <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badge.c}`}>{badge.t}</span></td>
@@ -458,14 +458,14 @@ export const InventoryView: React.FC = () => {
                   <input type="number" min="0" step="any" data-nav value={item.quantity || ''} onChange={(e) => setTransferItems(transferItems.map((it, i) => (i === idx ? { ...it, quantity: parseFloat(e.target.value) || 0 } : it)))} onKeyDown={navOnEnter} className={inputCls} placeholder="الكمية" />
                   <button type="button" onClick={() => setTransferItems(transferItems.filter((_, i) => i !== idx))} className="text-rose-500 p-1">✕</button>
                 </div>
-                <p className="col-span-2 text-[10px] font-bold text-indigo-600">متوسط سعر الوحدة: {fmt(getAverageUnitCost(item.rawMaterialId))} ر.س</p>
+                <p className="col-span-2 text-[10px] font-bold text-brand-600">متوسط سعر الوحدة: {fmt(getAverageUnitCost(item.rawMaterialId))} ر.س</p>
               </div>
             ))}
           </div>
           <Btn onClick={() => setTransferItems([...transferItems, { rawMaterialId: rawMaterials[0]?.id || '', quantity: 0 }])}><Plus className="w-3.5 h-3.5" /> صنف إضافي</Btn>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowTransfer(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">تنفيذ التحويل</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">تنفيذ التحويل</button>
           </div>
         </form>
       </Modal>
@@ -493,7 +493,7 @@ export const InventoryView: React.FC = () => {
                   const variance = actual - theoretical;
                   return (
                     <tr key={m.id} className="hover:bg-slate-50">
-                      <td className="tnum text-left p-2 font-bold text-indigo-700">{m.code}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{m.code}</td>
                       <td className="p-2 font-bold text-slate-800">{m.nameAr}</td>
                       <td className="p-2 text-slate-500">{m.unit}</td>
                       <td className="tnum text-left p-2 text-slate-600">{fmt(theoretical)}</td>
@@ -595,7 +595,7 @@ export const InventoryView: React.FC = () => {
             </Field>
           </div>
           <label className="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
-            <input type="checkbox" checked={itemForm.isActive} onChange={(e) => setF({ isActive: e.target.checked })} className="accent-indigo-600 w-4 h-4" />
+            <input type="checkbox" checked={itemForm.isActive} onChange={(e) => setF({ isActive: e.target.checked })} className="accent-brand-600 w-4 h-4" />
             الصنف نشط (متاح للاستخدام في الوصفات والشراء)
           </label>
 
@@ -603,7 +603,7 @@ export const InventoryView: React.FC = () => {
           {editingId && (
             <div className="border border-slate-200 rounded-xl p-3 space-y-3">
               <div className="flex items-center gap-2">
-                <Barcode className="w-4 h-4 text-indigo-600" />
+                <Barcode className="w-4 h-4 text-brand-600" />
                 <h4 className="font-bold text-slate-800 text-sm">الباركودات ({itemBarcodes.length})</h4>
                 <p className="text-[10px] text-slate-400">نفس المنتج قد يُورد من أكثر من مورد وكل مورد له باركود مختلف</p>
               </div>
@@ -625,18 +625,18 @@ export const InventoryView: React.FC = () => {
                   <tbody>
                     {itemBarcodes.map((b) => (
                       <tr key={b.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="tnum py-1.5 px-2 font-bold text-indigo-700 dir-ltr text-left">{b.barcode}</td>
+                        <td className="tnum py-1.5 px-2 font-bold text-brand-700 dir-ltr text-left">{b.barcode}</td>
                         <td className="py-1.5 px-2">{b.supplierId ? (suppliers.find((s) => s.id === b.supplierId)?.name || '—') : 'عام'}</td>
                         <td className="py-1.5 px-2 text-slate-600">{b.packagingLevel === 'unit' ? 'وحدة' : b.packagingLevel === 'carton' ? 'كرتون' : b.packagingLevel === 'pallet' ? 'باليت' : 'مخصص'}</td>
                         <td className="tnum text-left py-1.5 px-2">{b.packagingQty || '—'}</td>
                         <td className="py-1.5 px-2">
-                          <button type="button" onClick={() => updateMaterialBarcode(b.id, { isPrimary: !b.isPrimary })} className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${b.isPrimary ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
+                          <button type="button" onClick={() => updateMaterialBarcode(b.id, { isPrimary: !b.isPrimary })} className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${b.isPrimary ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
                             {b.isPrimary ? 'الافتراضي' : 'جعله أساسي'}
                           </button>
                         </td>
                         <td className="py-1.5 px-2">
                           <div className="flex items-center gap-1">
-                            <button type="button" onClick={() => startEditBarcode(b)} className="p-1 rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600" title="تعديل"><Pencil className="w-3.5 h-3.5" /></button>
+                            <button type="button" onClick={() => startEditBarcode(b)} className="p-1 rounded-lg text-slate-400 hover:bg-brand-50 hover:text-brand-600" title="تعديل"><Pencil className="w-3.5 h-3.5" /></button>
                             <button type="button" onClick={() => deleteMaterialBarcode(b.id)} className="p-1 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="حذف"><Trash2 className="w-3.5 h-3.5" /></button>
                           </div>
                         </td>
@@ -670,14 +670,14 @@ export const InventoryView: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between gap-2 md:col-span-3">
                   <label className="flex items-center gap-2 text-[11px] font-bold text-slate-600 cursor-pointer">
-                    <input type="checkbox" checked={bcForm.isPrimary} onChange={(e) => setBc({ isPrimary: e.target.checked })} className="accent-indigo-600 w-3.5 h-3.5" />
+                    <input type="checkbox" checked={bcForm.isPrimary} onChange={(e) => setBc({ isPrimary: e.target.checked })} className="accent-brand-600 w-3.5 h-3.5" />
                     باركود افتراضي (للطباعة والبحث السريع)
                   </label>
                   <div className="flex items-center gap-2">
                     {bcEditId && (
                       <button type="button" onClick={() => { setBcForm(emptyBcForm()); setBcEditId(null); setBcError(''); }} className="px-3 py-1.5 rounded-lg border border-slate-300 text-[11px] font-bold text-slate-600">إلغاء التعديل</button>
                     )}
-                    <button type="submit" className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold flex items-center gap-1">
+                    <button type="submit" className="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-[11px] font-bold flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" /> {bcEditId ? 'حفظ الباركود' : 'إضافة الباركود'}
                     </button>
                   </div>
@@ -692,7 +692,7 @@ export const InventoryView: React.FC = () => {
 
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowItemModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editingId ? 'حفظ التعديلات' : 'إضافة الصنف'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editingId ? 'حفظ التعديلات' : 'إضافة الصنف'}</button>
           </div>
         </form>
       </Modal>

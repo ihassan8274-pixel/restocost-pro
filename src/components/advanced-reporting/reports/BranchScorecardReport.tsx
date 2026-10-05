@@ -276,10 +276,10 @@ export const BranchScorecardReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-blue-800 font-mono">{fmtMoney(totals.netRevenue)}</strong>
           <span className="text-[10px] text-blue-500 block">{totals.records} سجل مبيعات</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">الكمية المباعة</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono">{fmt(totals.qtySold)}</strong>
-          <span className="text-[10px] text-indigo-500 block">عبر {totals.branches} فرع</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">الكمية المباعة</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono">{fmt(totals.qtySold)}</strong>
+          <span className="text-[10px] text-brand-500 block">عبر {totals.branches} فرع</span>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <span className="text-[10px] text-amber-600 font-bold block">متوسط نسبة الطعام</span>

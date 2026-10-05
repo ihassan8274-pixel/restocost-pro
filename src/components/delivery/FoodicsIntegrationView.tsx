@@ -443,7 +443,7 @@ const FoodicsIntegrationView: React.FC = () => {
     { label: 'إجمالي تكلفة الطعام', value: fmtMoney(tCost), cls: 'text-amber-700' },
     { label: 'Food Cost %', value: `${tFcPct}%`, cls: tFcPct > 35 ? 'text-rose-600' : 'text-emerald-700' },
     { label: 'إجمالي الكمية', value: fmtNum(tQty, 0), cls: 'text-slate-900' },
-    { label: 'عدد السجلات', value: `${filteredRecords.length}`, cls: 'text-indigo-700' },
+    { label: 'عدد السجلات', value: `${filteredRecords.length}`, cls: 'text-brand-700' },
   ];
 
   const excelSheets = [
@@ -570,13 +570,13 @@ const FoodicsIntegrationView: React.FC = () => {
           {Object.keys(branchMap).length > 0 && (
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Settings2 className="w-5 h-5 text-indigo-600" />
+                <Settings2 className="w-5 h-5 text-brand-600" />
                 <h3 className="font-extrabold text-slate-800 text-sm">ربط الفروع ({Object.values(branchMap).filter(Boolean).length}/{new Set(rawRows.map((r) => r.branch)).size})</h3>
               </div>
               <div className="space-y-2">
                 {[...new Set(rawRows.map((r) => r.branch))].map((bn) => (
                   <div key={bn} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                    <span className="font-bold text-indigo-700 text-xs shrink-0 w-32">{bn}</span>
+                    <span className="font-bold text-brand-700 text-xs shrink-0 w-32">{bn}</span>
                     <ArrowLeftRight className="w-4 h-4 text-slate-400 shrink-0" />
                     <select
                       value={branchMap[bn] || ''}
@@ -597,7 +597,7 @@ const FoodicsIntegrationView: React.FC = () => {
 
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Settings2 className="w-5 h-5 text-indigo-600" />
+              <Settings2 className="w-5 h-5 text-brand-600" />
               <h3 className="font-extrabold text-slate-800 text-sm">ربط المنتجات بالوصفة</h3>
             </div>
             <p className="text-[11px] text-slate-500 font-bold mb-3">اختر وصفة لكل منتج — السعر يُأخذ تلقائياً من سعر المنيو المحفوظ</p>
@@ -609,7 +609,7 @@ const FoodicsIntegrationView: React.FC = () => {
                 return (
                   <div key={pe} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                     <div className="w-36 shrink-0">
-                      <span className="font-bold text-indigo-700 text-xs font-mono block">{pe}</span>
+                      <span className="font-bold text-brand-700 text-xs font-mono block">{pe}</span>
                       <span className="text-[10px] text-slate-500">كمية: {fmtNum(totalQty, 0)}</span>
                     </div>
                     <ArrowLeftRight className="w-4 h-4 text-slate-400 shrink-0" />
@@ -655,7 +655,7 @@ const FoodicsIntegrationView: React.FC = () => {
                       <td className="p-2">
                         {branchLinked ? <span className="text-emerald-600 font-bold text-[10px]">✓ مربوط</span> : <span className="text-rose-500 font-bold text-[10px]">✕ غير مربوط</span>}
                       </td>
-                      <td className="tnum text-left p-2 text-indigo-700">{r.productEn}</td>
+                      <td className="tnum text-left p-2 text-brand-700">{r.productEn}</td>
                       <td className="p-2 font-bold text-slate-700">{r.matched ? r.recipeNameAr : <span className="text-rose-500">غير مربوط</span>}</td>
                       <td className="tnum text-left p-2">{fmtNum(r.netQuantity, 0)}</td>
                       <td className="tnum text-left p-2 text-emerald-700">{price > 0 ? fmt(price) : '—'}</td>
@@ -744,7 +744,7 @@ const FoodicsIntegrationView: React.FC = () => {
                   {productTotals.slice(0, 15).map((p) => (
                     <tr key={p.nameEn} className="hover:bg-slate-50 border-b border-slate-100">
                       <td className="p-2 font-bold text-slate-800">{p.nameAr}</td>
-                      <td className="tnum text-left p-2 text-indigo-600 text-[10px]">{p.nameEn}</td>
+                      <td className="tnum text-left p-2 text-brand-600 text-[10px]">{p.nameEn}</td>
                       <td className="tnum text-left p-2">{fmtNum(p.qty, 0)}</td>
                       <td className="tnum text-left p-2">{fmt(p.revenue)}</td>
                       <td className="tnum text-left p-2 text-amber-700">{fmt(p.cost)}</td>
@@ -762,7 +762,7 @@ const FoodicsIntegrationView: React.FC = () => {
         <>
           <Card className="p-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-indigo-600" />
+              <ClipboardList className="w-5 h-5 text-brand-600" />
               <h3 className="font-extrabold text-slate-800 text-sm">سجل مبيعات فودكس ({filteredRecords.length})</h3>
             </div>
             <div className="flex flex-wrap items-center gap-2">

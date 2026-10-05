@@ -107,7 +107,7 @@ export const SyncStrip: React.FC = () => {
         )}
         {isAdmin && (
           <>
-            <button onClick={forceSyncRecentDocs} title="جلب المستندات الأخيرة من الخادم" className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-100 border border-indigo-300 hover:bg-indigo-200 text-indigo-800 transition-colors">
+            <button onClick={forceSyncRecentDocs} title="جلب المستندات الأخيرة من الخادم" className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-100 border border-brand-300 hover:bg-brand-200 text-brand-800 transition-colors">
               <RotateCcw className="w-3 h-3" /> Recent Docs
             </button>
             <button onClick={forceSyncAll} title="مزامنة قسرية شاملة لجميع الأجهزة" className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 border border-amber-300 hover:bg-amber-200 text-amber-800 transition-colors">

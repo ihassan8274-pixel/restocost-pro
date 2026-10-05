@@ -164,7 +164,7 @@ export const DetailedReportsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التقارير التفصيلية والدمج الموحد" subtitle="تقارير تفصيلية احترافية قابلة للطباعة والتصدير: شيخوخة المخزون، تفصيل الاستلام، تكلفة الأطباق، ورقة الإقفال، والدمج المالي للشركات" icon={<FileSpreadsheet className="w-6 h-6 text-indigo-600" />} />
+      <PageHeader title="التقارير التفصيلية والدمج الموحد" subtitle="تقارير تفصيلية احترافية قابلة للطباعة والتصدير: شيخوخة المخزون، تفصيل الاستلام، تكلفة الأطباق، ورقة الإقفال، والدمج المالي للشركات" icon={<FileSpreadsheet className="w-6 h-6 text-brand-600" />} />
 
       <TabBar tabs={[
         { id: 'aging', label: 'شيخوخة المخزون' },
@@ -180,7 +180,7 @@ export const DetailedReportsView: React.FC = () => {
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">بنود قريبة من الانتهاء</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{agingRows.length}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-rose-200 shadow-xs"><span className="text-rose-600 text-[11px] block">منتهية الصلاحية</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{expiredCount}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">تنتهي خلال 7 أيام</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{expiringCount}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs"><span className="text-indigo-600 text-[11px] block">قيمة المعرضة</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(agingValue)}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs"><span className="text-brand-600 text-[11px] block">قيمة المعرضة</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(agingValue)}</strong></div>
           </div>
           <div className="flex gap-2">
             <Btn onClick={printAging}><Printer className="w-4 h-4" /> طباعة التقرير</Btn>
@@ -224,7 +224,7 @@ export const DetailedReportsView: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {receivingRows.map((r, idx) => (
                     <tr key={idx} className="hover:bg-slate-50">
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{r.grn}</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{r.grn}</td>
                       <td className="p-3 font-bold text-slate-900">{r.supplier}</td>
                       <td className="p-3 text-slate-600">{r.branch}</td>
                       <td className="tnum text-left p-3 text-slate-600">{r.date}</td>
@@ -263,7 +263,7 @@ export const DetailedReportsView: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {menuRows.map((r, idx) => (
                     <tr key={idx} className={r.status === 'low' ? 'bg-rose-50/50' : r.status === 'ok' ? 'bg-emerald-50/30' : ''}>
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{r.code}</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{r.code}</td>
                       <td className="p-3 font-bold text-slate-900">{r.name}</td>
                       <td className="p-3 text-slate-500">{r.portion}</td>
                       <td className="p-3 font-bold">{r.ingredients}</td>
@@ -302,7 +302,7 @@ export const DetailedReportsView: React.FC = () => {
                   {closingRows.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="p-3 font-bold text-slate-900">{r.branch}</td>
-                      <td className="tnum text-left p-3 font-bold text-indigo-700">{r.month}</td>
+                      <td className="tnum text-left p-3 font-bold text-brand-700">{r.month}</td>
                       <td className="tnum text-left p-3">{fmtMoney(r.totalOpening)}</td>
                       <td className="tnum text-left p-3">{fmtMoney(r.totalPurchased)}</td>
                       <td className="tnum text-left p-3">{fmtMoney(r.totalUsage)}</td>
@@ -325,7 +325,7 @@ export const DetailedReportsView: React.FC = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الشركات</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{consolidation.rowsOut.length}</strong></div>
-            <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs"><span className="text-indigo-600 text-[11px] block">الإيراد الموحد</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(consolidation.total.sales)}</strong></div>
+            <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs"><span className="text-brand-600 text-[11px] block">الإيراد الموحد</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(consolidation.total.sales)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs"><span className="text-emerald-600 text-[11px] block">صافي الربح الموحد</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${consolidation.total.net >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmtMoney(consolidation.total.net)}</strong></div>
             <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs"><span className="text-amber-600 text-[11px] block">قيمة المخزون الموحدة</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(consolidation.total.inventoryValue)}</strong></div>
           </div>
@@ -357,7 +357,7 @@ export const DetailedReportsView: React.FC = () => {
               </table>
             </div>
           </Card>
-          <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500"><Layers className="w-4 h-4 text-indigo-400" /> الدمج يحسب الإيراد والتكلفة والعمالة والتشغيلية والهالك لكل فرع عبر "قوائم الدخل" ثم يجمعها حسب شركة كل فرع، ويضيف تقييم المخزون الفعلي لكل فرع.</div>
+          <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500"><Layers className="w-4 h-4 text-brand-400" /> الدمج يحسب الإيراد والتكلفة والعمالة والتشغيلية والهالك لكل فرع عبر "قوائم الدخل" ثم يجمعها حسب شركة كل فرع، ويضيف تقييم المخزون الفعلي لكل فرع.</div>
         </div>
       )}
     </div>

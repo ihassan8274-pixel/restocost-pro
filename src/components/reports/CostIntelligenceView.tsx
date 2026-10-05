@@ -50,7 +50,7 @@ interface DrillLine {
   yieldPct: number; wastePct: number; effQty: number; price: number; cost: number;
 }
 
-const Kpi: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone = 'text-indigo-700' }) => (
+const Kpi: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone = 'text-brand-700' }) => (
   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
     <div className="text-[10px] font-bold text-slate-500 mb-1">{label}</div>
     <div className={`text-sm font-extrabold font-mono ${tone}`}>{value}</div>
@@ -444,7 +444,7 @@ export const CostIntelligenceView: React.FC = () => {
       <PageHeader
         title="مركز تقارير التكلفة المتقدمة"
         subtitle="نقطة التعادل · هامش المساهمة · Prime Cost · الاتجاه والتنبؤ · تفصيل الطبق · أثر الهالك"
-        icon={<BarChart3 className="w-6 h-6 text-indigo-600" />}
+        icon={<BarChart3 className="w-6 h-6 text-brand-600" />}
         actions={<ViewToolbar filename="مركز_تقارير_التكلفة_المتقدمة" sheets={excelSheets} />}
       />
       <TabBar tabs={TABS} active={tab} onChange={(id) => setTab(id as TabId)} />
@@ -453,7 +453,7 @@ export const CostIntelligenceView: React.FC = () => {
       {tab === 'breakeven' && (
         <Card className="p-5 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2"><Target className="w-4 h-4 text-indigo-500" /> تحليل نقطة التعادل</h3>
+            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2"><Target className="w-4 h-4 text-brand-500" /> تحليل نقطة التعادل</h3>
             <div className="flex gap-2">
               <Btn tone="ghost" onClick={csvBreakeven}><FileSpreadsheet className="w-4 h-4" /> CSV</Btn>
               <Btn tone="primary" onClick={printBreakeven}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -525,7 +525,7 @@ export const CostIntelligenceView: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Kpi label="إجمالي هامش المساهمة" value={fmtMoney(cmTotal)} tone="text-emerald-700" />
             <Kpi label="عدد الأطباق المباعة" value={fmt(cmRows.length)} />
-            <Kpi label="أعلى طبق مساهمة" value={cmRows[0]?.name || '—'} tone="text-indigo-700" />
+            <Kpi label="أعلى طبق مساهمة" value={cmRows[0]?.name || '—'} tone="text-brand-700" />
             <Kpi label="متوسط هامش الوحدة %" value={cmRows.length ? pctTxt(cmRows.reduce((s, r) => s + r.cmPct, 0) / cmRows.length) : '0.00%'} tone="text-sky-700" />
           </div>
           <ResponsiveContainer width="100%" height={Math.max(220, Math.min(cmRows.length, 10) * 34 + 60)}>
@@ -618,7 +618,7 @@ export const CostIntelligenceView: React.FC = () => {
             <Kpi label="آخر FC فعلي" value={trend.rows.length ? pctTxt(trend.rows[trend.rows.length - 1].fcPct) : '—'} tone="text-rose-600" />
             <Kpi label="آخر FC نظري" value={trend.rows.length ? pctTxt(trend.rows[trend.rows.length - 1].theoPct) : '—'} tone="text-slate-700" />
             <Kpi label="آخر انحراف عن النظري" value={trend.rows.length ? pctTxt(trend.rows[trend.rows.length - 1].variancePct) : '—'} tone="text-amber-600" />
-            <Kpi label={`تنبؤ ${trend.nextLabels[0]}`} value={`${(trend.fcFcst[0] ?? 0).toFixed(2)}%`} tone="text-indigo-700" />
+            <Kpi label={`تنبؤ ${trend.nextLabels[0]}`} value={`${(trend.fcFcst[0] ?? 0).toFixed(2)}%`} tone="text-brand-700" />
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={trend.chartData}>
@@ -699,7 +699,7 @@ export const CostIntelligenceView: React.FC = () => {
                       ))}
                       <tr className="bg-slate-50 font-bold">
                         <td className={`${td} text-slate-800`} colSpan={7}>إجمالي تكلفة المكونات والتحضيرات</td>
-                        <td className={`${td} text-indigo-700`}>{fmt(drill.foodCost)}</td>
+                        <td className={`${td} text-brand-700`}>{fmt(drill.foodCost)}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -717,7 +717,7 @@ export const CostIntelligenceView: React.FC = () => {
                   <div className="space-y-1 text-[11px] font-bold mt-2">
                     <div className="flex justify-between bg-slate-50 rounded-lg px-3 py-1.5"><span className="text-slate-500">العمالة المباشرة</span><span className="font-mono">{fmtMoney(selRecipe.directLaborCost)}</span></div>
                     <div className="flex justify-between bg-slate-50 rounded-lg px-3 py-1.5"><span className="text-slate-500">التغليف</span><span className="font-mono">{fmtMoney(selRecipe.packagingCost)}</span></div>
-                    <div className="flex justify-between bg-indigo-50 rounded-lg px-3 py-1.5"><span className="text-indigo-600">إجمالي التكلفة</span><span className="font-mono text-indigo-700">{fmtMoney(drill.totalCost)}</span></div>
+                    <div className="flex justify-between bg-brand-50 rounded-lg px-3 py-1.5"><span className="text-brand-600">إجمالي التكلفة</span><span className="font-mono text-brand-700">{fmtMoney(drill.totalCost)}</span></div>
                   </div>
                 </div>
               </div>
@@ -740,7 +740,7 @@ export const CostIntelligenceView: React.FC = () => {
             <Kpi label="إجمالي الهالك" value={fmtMoney(wasteTotal)} tone="text-rose-600" />
             <Kpi label="% من المبيعات الصافية" value={pctTxt(branchAgg.total.net ? (wasteTotal / branchAgg.total.net) * 100 : 0)} tone="text-amber-600" />
             <Kpi label="أعلى فرع" value={wasteBranch[0]?.name || '—'} tone="text-rose-600" />
-            <Kpi label="أكبر فئة" value={wasteByCat[0]?.name || '—'} tone="text-indigo-700" />
+            <Kpi label="أكبر فئة" value={wasteByCat[0]?.name || '—'} tone="text-brand-700" />
           </div>
           <div className="grid md:grid-cols-2 gap-4 items-start">
             <ResponsiveContainer width="100%" height={260}>

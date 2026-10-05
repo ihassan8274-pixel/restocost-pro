@@ -126,7 +126,7 @@ export const PotentialUsageView: React.FC = () => {
       <PageHeader
         title="الاستهلاك المتوقع (Potential Usage)"
         subtitle="كما في Oracle Material Control — مقارنة الاستهلاك النظري (من الوصفات × مبيعات POS) بالفعلي؛ كشف الهسر والتلاعب"
-        icon={<Calculator className="w-6 h-6 text-indigo-600" />}
+        icon={<Calculator className="w-6 h-6 text-brand-600" />}
         actions={
           <ViewToolbar
             filename={`الاستهلاك_المتوقع_${month}`}
@@ -150,7 +150,7 @@ export const PotentialUsageView: React.FC = () => {
       />
 
       <Card className="p-5">
-        <SectionHeader title="فلترة التقرير" subtitle="اختر الفرع والشهر لمقارنة الاستهلاك النظري (POT) بالفعلي (ACT)" icon={<Calculator className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="فلترة التقرير" subtitle="اختر الفرع والشهر لمقارنة الاستهلاك النظري (POT) بالفعلي (ACT)" icon={<Calculator className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
           <Field label="الفرع">
             <select value={branch} onChange={(e) => setBranch(e.target.value)} className={inputCls}>
@@ -173,7 +173,7 @@ export const PotentialUsageView: React.FC = () => {
           <div className="p-4 flex items-center justify-between">
             <h3 className="font-bold text-slate-800 text-xs">مقارنة الاستهلاك النظري والفعلي — فرع {getBranchName(branch)}</h3>
             <div className="flex gap-2 text-[11px] font-bold">
-              <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">{rows.length} صنف</span>
+              <span className="px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">{rows.length} صنف</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">POT {fmt(totalPOT)}</span>
               <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">ACT {fmt(totalACT)}</span>
               <span className={`px-2 py-0.5 rounded-full ${totalVariance >= 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>فرق {fmt(totalVariance)}</span>

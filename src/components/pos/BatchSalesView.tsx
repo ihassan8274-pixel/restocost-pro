@@ -204,7 +204,7 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المبيعات اليومية و Food Cost" subtitle="إدخال مبيعات اليوم، فتح وتعديل وحذف، طباعة وتصدير، وتتبع نسبة تكلفة الطعام" icon={<TrendingUp className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="المبيعات اليومية و Food Cost" subtitle="إدخال مبيعات اليوم، فتح وتعديل وحذف، طباعة وتصدير، وتتبع نسبة تكلفة الطعام" icon={<TrendingUp className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="المبيعات_اليومية"
@@ -231,14 +231,14 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الفترة (شامل الضريبة)</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmtMoney(totalRevenue)}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الإيرادات</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalNet)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الإيرادات</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalNet)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">ضريبة القيمة المضافة</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{fmtMoney(totalVat)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">متوسط Food Cost (على الصافي)</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{avgFc.toFixed(2)}%</strong></div>
       </div>
 
       <Card className="p-4">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <h3 className="text-sm font-bold flex items-center gap-2"><BarChart3 className="w-4 h-4 text-indigo-600" /> تكلفة الفروع — يوم {reportDate} وتراكم شهر {reportDate.slice(0, 7)}</h3>
+          <h3 className="text-sm font-bold flex items-center gap-2"><BarChart3 className="w-4 h-4 text-brand-600" /> تكلفة الفروع — يوم {reportDate} وتراكم شهر {reportDate.slice(0, 7)}</h3>
           <Btn tone="ghost" onClick={printBranchCost}><Printer className="w-4 h-4" /> طباعة</Btn>
         </div>
         <div className="overflow-x-auto">
@@ -250,10 +250,10 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
               {branchCostRows.map((r) => (
                 <tr key={r.name}>
                   <td className="p-2 font-bold text-slate-900">{r.name}</td>
-                  <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(r.dNet)}</td>
+                  <td className="tnum text-left p-2 text-brand-700">{fmtMoney(r.dNet)}</td>
                   <td className="tnum text-left p-2">{fmtMoney(r.dFood)}</td>
                   <td className={'p-2 font-mono ' + (r.dNet && (r.dFood / r.dNet) * 100 > 35 ? 'text-rose-600 font-bold' : 'text-emerald-700')}>{fmtPct(r.dNet ? (r.dFood / r.dNet) * 100 : 0)}</td>
-                  <td className="tnum text-left p-2 text-indigo-700">{fmtMoney(r.mNet)}</td>
+                  <td className="tnum text-left p-2 text-brand-700">{fmtMoney(r.mNet)}</td>
                   <td className="tnum text-left p-2">{fmtMoney(r.mFood)}</td>
                   <td className={'p-2 font-mono ' + (r.mNet && (r.mFood / r.mNet) * 100 > 35 ? 'text-rose-600 font-bold' : 'text-emerald-700')}>{fmtPct(r.mNet ? (r.mFood / r.mNet) * 100 : 0)}</td>
                 </tr>
@@ -261,10 +261,10 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
               {branchCostRows.length > 0 && (
                 <tr className="bg-slate-50 font-bold border-t-2 border-slate-300">
                   <td className="p-2">الإجمالي</td>
-                  <td className="tnum text-left p-2 text-indigo-800">{fmtMoney(bcTotals.dNet)}</td>
+                  <td className="tnum text-left p-2 text-brand-800">{fmtMoney(bcTotals.dNet)}</td>
                   <td className="tnum text-left p-2">{fmtMoney(bcTotals.dFood)}</td>
                   <td className="tnum text-left p-2">{fmtPct(bcTotals.dNet ? (bcTotals.dFood / bcTotals.dNet) * 100 : 0)}</td>
-                  <td className="tnum text-left p-2 text-indigo-800">{fmtMoney(bcTotals.mNet)}</td>
+                  <td className="tnum text-left p-2 text-brand-800">{fmtMoney(bcTotals.mNet)}</td>
                   <td className="tnum text-left p-2">{fmtMoney(bcTotals.mFood)}</td>
                   <td className="tnum text-left p-2">{fmtPct(bcTotals.mNet ? (bcTotals.mFood / bcTotals.mNet) * 100 : 0)}</td>
                 </tr>
@@ -303,18 +303,18 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
             <tbody className="divide-y divide-slate-100">
               {filteredRecords.map((b) => (
                 <tr key={b.id} className="hover:bg-slate-50">
-                  <td className="tnum text-left p-3 font-bold text-indigo-700">{b.batchNumber}</td>
+                  <td className="tnum text-left p-3 font-bold text-brand-700">{b.batchNumber}</td>
                   <td className="tnum text-left p-3 text-slate-600">{b.date}</td>
                   <td className="p-3 font-bold text-slate-900">{b.branchName}</td>
                   <td className="tnum text-left p-3 font-extrabold text-emerald-700">{fmt(b.totalRevenue, 2)}</td>
-                  <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(netOf(b), 2)}</td>
+                  <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(netOf(b), 2)}</td>
                   <td className="tnum text-left p-3 text-amber-700">{fmt(vatOf(b), 2)}</td>
                   <td className="tnum text-left p-3">{fmt(b.totalFoodCost, 2)}</td>
                   <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${fcNet(b) > 35 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{fcNet(b).toFixed(2)}%</span></td>
                   <td className="p-3"><span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">مخصوم المخزون</span></td>
                   <td className="p-3">
                     <div className="flex gap-1">
-                      <button onClick={() => printRecord(b)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="طباعة التقرير"><Printer className="w-4 h-4" /></button>
+                      <button onClick={() => printRecord(b)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="طباعة التقرير"><Printer className="w-4 h-4" /></button>
                       <button onClick={() => openEdit(b)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg" title="تعديل السجل"><Pencil className="w-4 h-4" /></button>
                       <button onClick={() => confirmDelete(b)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="حذف السجل"><Trash2 className="w-4 h-4" /></button>
                     </div>

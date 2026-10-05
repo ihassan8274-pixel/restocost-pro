@@ -169,10 +169,10 @@ export const PurchasesBySupplierReport: React.FC = () => {
           <strong className="text-lg font-extrabold text-blue-800 font-mono block">{suppliersCount}</strong>
           <span className="text-[10px] text-blue-500 block">موردون نشطون</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">أكبر مورد</span>
-          <strong className="text-sm font-extrabold text-indigo-800 block">{top ? top.name : '—'}</strong>
-          <span className="text-[10px] text-indigo-500 block">{topShare.toFixed(0)}% من المشتريات</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">أكبر مورد</span>
+          <strong className="text-sm font-extrabold text-brand-800 block">{top ? top.name : '—'}</strong>
+          <span className="text-[10px] text-brand-500 block">{topShare.toFixed(0)}% من المشتريات</span>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <span className="text-[10px] text-amber-600 font-bold block">متوسط السند</span>

@@ -237,7 +237,7 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تقرير الاستهلاك النظري (المبيعات → المواد الخام)" subtitle="إجمالي الأصناف المباعة لكل فرع محولة إلى كميات مواد خام/وصفات تحضيرية وفق الوصفات القياسية" icon={<Calculator className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="تقرير الاستهلاك النظري (المبيعات → المواد الخام)" subtitle="إجمالي الأصناف المباعة لكل فرع محولة إلى كميات مواد خام/وصفات تحضيرية وفق الوصفات القياسية" icon={<Calculator className="w-6 h-6 text-brand-600" />}
         actions={
           <>
             <Btn onClick={printReport} tone="dark"><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -246,11 +246,11 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
         } />
 
       <Card className="p-5">
-        <SectionHeader title="المرشحات" icon={<Filter className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="المرشحات" icon={<Filter className="w-5 h-5 text-brand-500" />} />
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Clock className="w-4 h-4 text-indigo-500" />
+          <Clock className="w-4 h-4 text-brand-500" />
           {PERIOD_PRESETS.map((label) => (
-            <button key={label} onClick={() => periodPreset(label)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-indigo-600 hover:text-white text-slate-700 transition-colors">
+            <button key={label} onClick={() => periodPreset(label)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-700 transition-colors">
               {label}
             </button>
           ))}
@@ -295,12 +295,12 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
               </button>
               {showRecipePicker && (
                 <div className="absolute top-full right-0 mt-1 w-72 bg-white border border-slate-300 rounded-lg shadow-lg p-2 z-20 max-h-72 overflow-auto">
-                  <button onClick={() => { setRecipeFilterId(''); setShowRecipePicker(false); }} className="w-full text-right text-xs p-1.5 rounded hover:bg-indigo-50 font-bold text-indigo-600">
+                  <button onClick={() => { setRecipeFilterId(''); setShowRecipePicker(false); }} className="w-full text-right text-xs p-1.5 rounded hover:bg-brand-50 font-bold text-brand-600">
                     كل الوصفات
                   </button>
                   <div className="text-[10px] font-extrabold text-slate-400 mt-1 mb-0.5 px-1">الوصفات الرئيسية ({menuRecipes.length})</div>
                   {menuRecipes.map((r) => (
-                    <button key={r.id} onClick={() => { setRecipeFilterId(r.id); setShowRecipePicker(false); }} className="w-full text-right text-xs p-1.5 rounded hover:bg-indigo-50 block truncate">
+                    <button key={r.id} onClick={() => { setRecipeFilterId(r.id); setShowRecipePicker(false); }} className="w-full text-right text-xs p-1.5 rounded hover:bg-brand-50 block truncate">
                       {r.code} — {r.nameAr}
                     </button>
                   ))}
@@ -318,7 +318,7 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
       </Card>
 
       <Card className="p-5">
-        <SectionHeader title="تفصيل الاستهلاك النظري لكل فرع" icon={<BarChart2 className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="تفصيل الاستهلاك النظري لكل فرع" icon={<BarChart2 className="w-5 h-5 text-brand-500" />} />
         {selectedBranches.length === 0 ? (
           <p className="text-center text-slate-500 py-8">اختر فرعًا واحدًا على الأقل</p>
         ) : (
@@ -330,12 +330,12 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
               const prepQty = selectedRecipe?.category === 'sub_prep' ? (bPrep[selectedRecipe.id] || 0) : 0;
               return (
                 <div key={branch.id} className="mb-4 border border-slate-200 rounded-xl overflow-hidden">
-                  <button onClick={() => setCollapsed({ ...collapsed, [branch.id]: !isCollapsed })} className="w-full p-4 bg-indigo-50 flex items-center justify-between gap-4">
+                  <button onClick={() => setCollapsed({ ...collapsed, [branch.id]: !isCollapsed })} className="w-full p-4 bg-brand-50 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <span>{isCollapsed ? <ChevronDown className="w-5 h-5 text-indigo-600" /> : <ChevronUp className="w-5 h-5 text-indigo-600" />}</span>
+                      <span>{isCollapsed ? <ChevronDown className="w-5 h-5 text-brand-600" /> : <ChevronUp className="w-5 h-5 text-brand-600" />}</span>
                       <div>
-                        <div className="font-bold text-indigo-800">{branch.nameAr}</div>
-                        <div className="text-xs text-indigo-600">
+                        <div className="font-bold text-brand-800">{branch.nameAr}</div>
+                        <div className="text-xs text-brand-600">
                           إجمالي الكمية النظرية: {fmt(branchTotals[branch.id] || 0, 3)}
                           {selectedRecipe?.category === 'sub_prep' && (
                             <span className="ml-3 bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg font-bold">
@@ -363,19 +363,19 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
                         if (catItems.length === 0) return null;
                         return (
                           <div key={catKey} className="py-2">
-                            <div className="font-bold text-indigo-700 text-sm mb-1">{catLabel}</div>
+                            <div className="font-bold text-brand-700 text-sm mb-1">{catLabel}</div>
                             {catItems.map((m) => (
                               <div key={m.id} className="flex items-center justify-between py-1 text-xs">
                                 <span className="flex-1 pr-2">{m.code} - {m.nameAr}</span>
-                                <span className="font-mono font-bold text-indigo-700 w-20 text-left">{fmt(bMap[m.id] || 0, 3)}</span>
+                                <span className="font-mono font-bold text-brand-700 w-20 text-left">{fmt(bMap[m.id] || 0, 3)}</span>
                                 <span className="text-slate-500 w-16 text-left">{m.unit}</span>
                                 <span className="font-mono text-slate-600 w-24 text-left">{fmtMoney(getAverageUnitCost(m.id))}</span>
-                                <span className="font-mono font-bold text-indigo-700 w-24 text-left">{fmtMoney((bMap[m.id] || 0) * getAverageUnitCost(m.id))}</span>
+                                <span className="font-mono font-bold text-brand-700 w-24 text-left">{fmtMoney((bMap[m.id] || 0) * getAverageUnitCost(m.id))}</span>
                               </div>
                             ))}
                             <div className="border-t border-slate-200 pt-1 mt-1 flex items-center justify-between text-xs font-bold">
                               <span>إجمالي التصنيف</span>
-                              <span className="font-mono text-indigo-700">{fmt(catItems.reduce((s, m) => s + (bMap[m.id] || 0), 0), 3)}</span>
+                              <span className="font-mono text-brand-700">{fmt(catItems.reduce((s, m) => s + (bMap[m.id] || 0), 0), 3)}</span>
                             </div>
                           </div>
                         );
@@ -435,7 +435,7 @@ export const TheoreticalConsumptionReportView: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t-2 border-indigo-200">
+        <div className="mt-6 pt-4 border-t-2 border-brand-200">
           <SectionHeader title="الإجمالي العام (جميع الفروع)" icon={<Calculator className="w-5 h-5 text-emerald-500" />} />
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-right text-xs border-collapse">

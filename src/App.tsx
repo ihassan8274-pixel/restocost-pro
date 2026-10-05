@@ -125,7 +125,7 @@ const WastageView = lazyNamed(() => import('./components/production/WastageView'
 
 const LoadingScreen: React.FC<{ label?: string }> = ({ label = 'جارِ تحميل الشاشة...' }) => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-    <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+    <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
     <p className="text-sm font-bold text-slate-500">{label}</p>
   </div>
 );
@@ -457,7 +457,7 @@ const Shell: React.FC = () => {
                 </div>
               </div>
               <div className="mt-2 bg-white/70 border border-slate-100 rounded-lg p-2 text-[10px] text-slate-600 font-bold flex items-center justify-between">
-                <span>السعر المقترح للوصول للهدف: <span className="font-mono text-indigo-700">{a.suggestedPriceForTarget.toFixed(2)}</span></span>
+                <span>السعر المقترح للوصول للهدف: <span className="font-mono text-brand-700">{a.suggestedPriceForTarget.toFixed(2)}</span></span>
                 <span>الزيادة لكل حصة: <span className="font-mono text-rose-700">{a.excessCostPerPortion.toFixed(2)}</span></span>
               </div>
             </div>

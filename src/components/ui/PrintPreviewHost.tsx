@@ -39,7 +39,7 @@ const PrintPreviewOverlay: React.FC = () => {
       <div className="h-12 shrink-0 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-4 shadow-lg">
         <strong className="text-white text-sm truncate">{doc.title}</strong>
         <div className="flex items-center gap-2">
-          <button onClick={doPrint} className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
+          <button onClick={doPrint} className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white transition-colors">
             <Printer className="w-4 h-4" /> طباعة
           </button>
           <button onClick={close} className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 transition-colors">

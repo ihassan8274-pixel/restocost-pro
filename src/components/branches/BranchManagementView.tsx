@@ -61,7 +61,7 @@ export const BranchManagementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة الفروع" subtitle="إضافة وتعديل الفروع والمطبخ المركزي — ترتبط بها المخزون ونقاط البيع وأوامر التصنيع" icon={<Building2 className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="إدارة الفروع" subtitle="إضافة وتعديل الفروع والمطبخ المركزي — ترتبط بها المخزون ونقاط البيع وأوامر التصنيع" icon={<Building2 className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="الفروع"
@@ -76,7 +76,7 @@ export const BranchManagementView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الفروع</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{branches.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الفروع النشطة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{activeCount}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مطاعم</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{branches.filter((b) => b.type === 'restaurant').length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مطاعم</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{branches.filter((b) => b.type === 'restaurant').length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مطابخ مركزية</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{branches.filter((b) => b.type === 'central_kitchen').length}</strong></div>
       </div>
 
@@ -89,7 +89,7 @@ export const BranchManagementView: React.FC = () => {
             <Card key={b.id} className="p-5 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${b.type === 'central_kitchen' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${b.type === 'central_kitchen' ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-700'}`}>
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -104,7 +104,7 @@ export const BranchManagementView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${b.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{b.isActive ? 'نشط' : 'موقوف'}</span>
-                  <button onClick={() => openEdit(b)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                  <button onClick={() => openEdit(b)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => {
                     if (!window.confirm(`حذف الفرع «${b.nameAr}»؟ سيُحذف السجل نهائياً.`)) return;
                     deleteBranch(b.id);
@@ -178,7 +178,7 @@ export const BranchManagementView: React.FC = () => {
           </label>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editingId ? 'حفظ التعديلات' : 'إضافة الفرع'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editingId ? 'حفظ التعديلات' : 'إضافة الفرع'}</button>
           </div>
         </form>
       </Modal>

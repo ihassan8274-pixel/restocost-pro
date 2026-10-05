@@ -195,7 +195,7 @@ export const ERPFinancialReportsView: React.FC = () => {
   const exhibits: Exhibit[] = [
     // ============ ميزان المراجعة ============
     {
-      id: 'trial_balance', icon: <Scale className="w-5 h-5 text-indigo-500" />,
+      id: 'trial_balance', icon: <Scale className="w-5 h-5 text-brand-500" />,
       title: 'ميزان المراجعة (Trial Balance)', subtitle: 'أرصدة كل الحسابات (مدين/دائن) من دفتر الأستاذ العام',
       columns: [
         { key: 'code', label: 'الرمز' }, { key: 'name', label: 'الحساب' }, { key: 'type', label: 'النوع' },
@@ -375,11 +375,11 @@ export const ERPFinancialReportsView: React.FC = () => {
       <PageHeader
         title="التقارير المالية والمحاسبية (بمعايير ERP / QuickBooks)"
         subtitle="ميزان المراجعة، دفتر اليومية، الأستاذ العام، الميزانية العمومية، الأصول الثابتة والاهتلاك، ضريبة القيمة المضافة، وتحليلات أعمار القبض والدفع — مع تصدير PDF احترافي و CSV لكل تقرير"
-        icon={<FileText className="w-6 h-6 text-indigo-600" />}
+        icon={<FileText className="w-6 h-6 text-brand-600" />}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-slate-300">الفرع:</span>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="border border-slate-700 rounded-lg p-2 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-800 !w-56">
+            <select value={branch} onChange={(e) => setBranch(e.target.value)} className="border border-slate-700 rounded-lg p-2 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-brand-500 bg-slate-800 !w-56">
               <option value="all">كل الفروع</option>
               {branches.map((b) => <option key={b.id} value={b.id}>{getBranchName(b.id)}</option>)}
             </select>

@@ -182,10 +182,10 @@ export const AbcXyzReport: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">مواد A (80% من القيمة)</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{abcCount('A')}</strong>
-          <span className="text-[10px] text-indigo-500 block">{aShare.toFixed(0)}% من قيمة الاستهلاك</span>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">مواد A (80% من القيمة)</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{abcCount('A')}</strong>
+          <span className="text-[10px] text-brand-500 block">{aShare.toFixed(0)}% من قيمة الاستهلاك</span>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <span className="text-[10px] text-blue-600 font-bold block">مواد B (15% التالية)</span>
@@ -254,7 +254,7 @@ export const AbcXyzReport: React.FC = () => {
                   <td className="p-2 text-center text-slate-500">{r.category}</td>
                   <td className="tnum p-2 text-left text-slate-600">{fmtMoney(r.value)}</td>
                   <td className="tnum p-2 text-left text-slate-500">{r.cumPct.toFixed(1)}%</td>
-                  <td className="tnum p-2 text-left font-bold text-indigo-700">{r.abc}</td>
+                  <td className="tnum p-2 text-left font-bold text-brand-700">{r.abc}</td>
                   <td className="tnum p-2 text-left">{r.daysActive}</td>
                   <td className="tnum p-2 text-left text-slate-500">{r.regularity.toFixed(0)}%</td>
                   <td className="tnum p-2 text-left font-bold text-emerald-700">{r.xyz}</td>

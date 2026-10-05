@@ -43,7 +43,7 @@ interface ReorderRow {
   priority: 'out' | 'critical' | 'low';
 }
 
-const Kpi: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone = 'text-indigo-700' }) => (
+const Kpi: React.FC<{ label: string; value: string; tone?: string }> = ({ label, value, tone = 'text-brand-700' }) => (
   <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
     <div className="text-[10px] font-bold text-slate-500 mb-1">{label}</div>
     <div className={`text-sm font-extrabold font-mono ${tone}`}>{value}</div>
@@ -374,7 +374,7 @@ export const OperationsControlView: React.FC = () => {
       <PageHeader
         title="مركز الرقابة التشغيلية"
         subtitle="إعادة الطلب · تحليل ABC · دقة الجرد · انحرافات الأسعار · رقابة الهالك · الصلاحية والجودة"
-        icon={<PackageSearch className="w-6 h-6 text-indigo-600" />}
+        icon={<PackageSearch className="w-6 h-6 text-brand-600" />}
         actions={<ViewToolbar filename="مركز_الرقابة_التشغيلية" sheets={excelSheets} />}
       />
       <TabBar tabs={TABS} active={tab} onChange={(id) => setTab(id as TabId)} />
@@ -383,7 +383,7 @@ export const OperationsControlView: React.FC = () => {
       {tab === 'reorder' && (
         <Card className="p-5 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2"><ShoppingCart className="w-4 h-4 text-indigo-500" /> خطة إعادة الطلب حسب حدود كل فرع</h3>
+            <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2"><ShoppingCart className="w-4 h-4 text-brand-500" /> خطة إعادة الطلب حسب حدود كل فرع</h3>
             <div className="flex gap-2 flex-wrap">
               <Btn tone="ghost" onClick={csvReorder}><FileSpreadsheet className="w-4 h-4" /> CSV</Btn>
               <Btn tone="ghost" onClick={printReorder}><Printer className="w-4 h-4" /> طباعة</Btn>
@@ -432,12 +432,12 @@ export const OperationsControlView: React.FC = () => {
                 {scopedReorder.map((r) => (
                   <tr key={`${r.branchId}-${r.matId}`} className="hover:bg-slate-50">
                     <td className={`${td} font-bold text-slate-700`}>{r.branchName}</td>
-                    <td className={`${td} font-bold text-slate-700`}>{r.name}{r.full && <span className="text-[9px] text-violet-600 mr-1">(طلب كامل دائماً)</span>}{r.override && <span className="text-[9px] text-indigo-600 mr-1">(حد مخصص)</span>}</td>
+                    <td className={`${td} font-bold text-slate-700`}>{r.name}{r.full && <span className="text-[9px] text-violet-600 mr-1">(طلب كامل دائماً)</span>}{r.override && <span className="text-[9px] text-brand-600 mr-1">(حد مخصص)</span>}</td>
                     <td className={td}>{fmt(r.stock)} {r.unit}</td>
                     <td className={td}>{fmt(r.min)}</td>
                     <td className={td}>{fmt(r.max)}</td>
                     <td className={td}>{fmt(r.onOrder)}</td>
-                    <td className={`${td} font-extrabold text-indigo-700`}>{fmt(r.suggested)}</td>
+                    <td className={`${td} font-extrabold text-brand-700`}>{fmt(r.suggested)}</td>
                     <td className={td}>{fmt(r.value)}</td>
                     <td className={td}><PrioBadge p={r.priority} /></td>
                   </tr>

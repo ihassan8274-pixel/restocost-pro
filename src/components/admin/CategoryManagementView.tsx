@@ -109,13 +109,13 @@ export const CategoryManagementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة تصنيفات المواد" subtitle="الثمانية تصنيفات الافتراضية مدمجة ولا يمكن حذفها — يمكنك إضافة تصنيفات مخصصة خاصة بمنشأتك" icon={<Palette className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="إدارة تصنيفات المواد" subtitle="الثمانية تصنيفات الافتراضية مدمجة ولا يمكن حذفها — يمكنك إضافة تصنيفات مخصصة خاصة بمنشأتك" icon={<Palette className="w-6 h-6 text-brand-600" />}
         actions={
           <Btn onClick={openNew} tone="success"><Plus className="w-4 h-4" /> إضافة تصنيف مخصص</Btn>
         } />
 
       <Card className="p-5">
-        <SectionHeader title="التصنيفات الحالية" subtitle={allCategories.length > 0 ? '' : 'لا توجد تصنيفات مضافة'} icon={<Palette className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="التصنيفات الحالية" subtitle={allCategories.length > 0 ? '' : 'لا توجد تصنيفات مضافة'} icon={<Palette className="w-5 h-5 text-brand-500" />} />
 
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-right text-xs border-collapse min-w-[800px]">
@@ -138,7 +138,7 @@ export const CategoryManagementView: React.FC = () => {
                 <tr key={cat.id} className="hover:bg-slate-50">
                   <td className="tnum text-left border border-slate-300 p-2 font-bold text-slate-700">{idx + 1}</td>
                   <td className="border border-slate-300 p-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cat.isDefault ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cat.isDefault ? 'bg-brand-100 text-brand-700' : 'bg-emerald-100 text-emerald-700'}`}>
                       {cat.isDefault ? 'افتراضي' : 'مخصص'}
                     </span>
                   </td>
@@ -157,11 +157,11 @@ export const CategoryManagementView: React.FC = () => {
                       {cat.isActive ? 'نشط' : 'غير نشط'}
                     </span>
                   </td>
-                  <td className="tnum text-left border border-slate-300 p-2 font-bold text-indigo-700">{usedByMaterials[cat.key] || 0} صنف</td>
+                  <td className="tnum text-left border border-slate-300 p-2 font-bold text-brand-700">{usedByMaterials[cat.key] || 0} صنف</td>
                   <td className="border border-slate-300 p-2">
                     <div className="flex items-center gap-1">
                       {!cat.isDefault && (
-                        <button onClick={() => openEdit(cat as MaterialCategoryDef)} className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="تعديل"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => openEdit(cat as MaterialCategoryDef)} className="p-1.5 rounded-lg text-brand-600 hover:bg-brand-50" title="تعديل"><Pencil className="w-4 h-4" /></button>
                       )}
                       {!cat.isDefault && (
                         <button onClick={() => confirmDelete(cat.id)} className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="حذف"><Trash2 className="w-4 h-4" /></button>
@@ -176,7 +176,7 @@ export const CategoryManagementView: React.FC = () => {
       </Card>
 
       <Card className="p-5">
-        <SectionHeader title="تصدير وطباعة" subtitle="تصدير قائمة التصنيفات الكاملة (افتراضية + مخصصة)" icon={<Palette className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="تصدير وطباعة" subtitle="تصدير قائمة التصنيفات الكاملة (افتراضية + مخصصة)" icon={<Palette className="w-5 h-5 text-brand-500" />} />
         <div className="mt-4 flex items-center gap-2">
           <Btn tone="primary" onClick={() => openPrintWindow({
             title: 'دليل تصنيفات المواد',

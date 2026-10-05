@@ -281,9 +281,9 @@ export const MarginAnalysisReport: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">المبيعات الصافية</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono">{fmtMoney(total.netRevenue)}</strong>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">المبيعات الصافية</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono">{fmtMoney(total.netRevenue)}</strong>
         </div>
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
           <span className="text-[10px] text-rose-600 font-bold block">تكاليف متغيرة</span>
@@ -329,7 +329,7 @@ export const MarginAnalysisReport: React.FC = () => {
       <Card className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-            <Target className="w-5 h-5 text-indigo-600" /> تحليل التعادل حسب الفرع
+            <Target className="w-5 h-5 text-brand-600" /> تحليل التعادل حسب الفرع
           </h3>
           <Btn tone="ghost" onClick={() => printReport('breakeven')}>
             <Printer className="w-4 h-4" /> طباعة
@@ -353,7 +353,7 @@ export const MarginAnalysisReport: React.FC = () => {
               {branchData.rows.map((r, i) => (
                 <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
-                  <td className="tnum p-2 text-left text-indigo-700">{fmtMoney(r.netRevenue)}</td>
+                  <td className="tnum p-2 text-left text-brand-700">{fmtMoney(r.netRevenue)}</td>
                   <td className="tnum p-2 text-left text-rose-600">{fmtMoney(r.variableCost)}</td>
                   <td className="tnum p-2 text-left text-amber-600">{fmtMoney(r.fixedCost)}</td>
                   <td className={`p-2 text-center font-mono font-bold ${r.cmPct >= 60 ? 'text-emerald-700' : r.cmPct >= 45 ? 'text-sky-700' : 'text-rose-700'}`}>
@@ -372,7 +372,7 @@ export const MarginAnalysisReport: React.FC = () => {
               ))}
               <tr className="bg-slate-100 font-bold border-t-2 border-slate-300">
                 <td className="p-2">الإجمالي</td>
-                <td className="tnum p-2 text-left text-indigo-700">{fmtMoney(total.netRevenue)}</td>
+                <td className="tnum p-2 text-left text-brand-700">{fmtMoney(total.netRevenue)}</td>
                 <td className="tnum p-2 text-left text-rose-600">{fmtMoney(total.variableCost)}</td>
                 <td className="tnum p-2 text-left text-amber-600">{fmtMoney(total.fixedCost)}</td>
                 <td className="tnum p-2 text-left text-sky-700 text-lg">{total.cmPct.toFixed(1)}%</td>
@@ -517,7 +517,7 @@ export const MarginAnalysisReport: React.FC = () => {
                 return (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="p-2 font-bold text-slate-800">{r.branchName}</td>
-                    <td className="tnum p-2 text-left text-indigo-700">{fmtMoney(r.netRevenue)}</td>
+                    <td className="tnum p-2 text-left text-brand-700">{fmtMoney(r.netRevenue)}</td>
                     <td className="tnum p-2 text-left text-rose-600">{fmtMoney(r.foodCost)}</td>
                     <td className="tnum p-2 text-left text-amber-600">{fmtMoney(r.laborCost)}</td>
                     <td className="tnum p-2 text-left text-amber-600">{fmtMoney(r.opexCost)}</td>

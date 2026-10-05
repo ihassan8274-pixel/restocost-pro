@@ -92,7 +92,7 @@ export const BranchComparisonView: React.FC = () => {
       <PageHeader
         title="مقارنة الفروع — حدود المخزون"
         subtitle="كل الفروع في شاشة واحدة: الرصيد مقابل الحد الأدنى/الأقصى المخصص لكل فرع، مع كمية الطلب المقترحة وقيمتها"
-        icon={<GitCompare className="w-6 h-6 text-indigo-600" />}
+        icon={<GitCompare className="w-6 h-6 text-brand-600" />}
         actions={<>
           <Btn onClick={exportCsv}><FileSpreadsheet className="w-4 h-4" /> تصدير CSV</Btn>
           <Btn tone="dark" onClick={printReport}><Printer className="w-4 h-4" /> طباعة التقرير</Btn>
@@ -107,9 +107,9 @@ export const BranchComparisonView: React.FC = () => {
           <span className="text-slate-500 text-[11px] block">حالات تحتاج طلباً</span>
           <strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{flatRows.length}</strong>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs">
+        <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">أصناف بحدود مخصصة</span>
-          <strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{customCount}</strong>
+          <strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{customCount}</strong>
         </div>
         <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">قيمة الطلب المقترح (كل الفروع)</span>
@@ -124,7 +124,7 @@ export const BranchComparisonView: React.FC = () => {
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} className={inputCls + ' pr-8 !w-56'} placeholder="اسم الصنف أو الكود" />
           </div>
         </Field>
-        <button onClick={() => setShowAll((v) => !v)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold border transition-colors ${showAll ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+        <button onClick={() => setShowAll((v) => !v)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold border transition-colors ${showAll ? 'bg-brand-50 border-brand-300 text-brand-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
           {showAll ? 'إظهار المحتاج للطلب فقط' : 'إظهار كل الأصناف'}
         </button>
         <span className="text-[10px] text-slate-400 font-bold mr-auto">خلية كل فرع تعرض: الرصيد — وكمية الطلب المقترحة عند الحاجة</span>
@@ -136,17 +136,17 @@ export const BranchComparisonView: React.FC = () => {
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 sticky top-0">
               <tr>
                 <th className="p-3">الكود</th><th className="p-3">الصنف</th><th className="p-3">الوحدة</th>
-                {visibleBranches.map((b) => <th key={b.id} className="p-3 bg-indigo-50/60">{b.nameAr}</th>)}
+                {visibleBranches.map((b) => <th key={b.id} className="p-3 bg-brand-50/60">{b.nameAr}</th>)}
                 <th className="p-3 bg-emerald-50">المطلوب (كل الفروع)</th><th className="p-3">القيمة</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (
                 <tr key={r.mat.id} className={`hover:bg-slate-50 ${r.anyNeed ? '' : 'opacity-70'}`}>
-                  <td className="tnum text-left p-3 text-indigo-700">{r.mat.code}</td>
+                  <td className="tnum text-left p-3 text-brand-700">{r.mat.code}</td>
                   <td className="p-3 font-bold text-slate-900">
                     {r.mat.nameAr}
-                    {r.anyCustom && <span className="ml-1 text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">حدود مخصصة</span>}
+                    {r.anyCustom && <span className="ml-1 text-[9px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">حدود مخصصة</span>}
                   </td>
                   <td className="p-3 text-slate-500">{r.mat.unit}</td>
                   {r.cells.map((c) => (
@@ -162,7 +162,7 @@ export const BranchComparisonView: React.FC = () => {
                       )}
                     </td>
                   ))}
-                  <td className="tnum text-left p-3 font-extrabold text-indigo-700 bg-emerald-50/40">{r.totalSuggested > 0 ? `${fmt(r.totalSuggested)} ${r.mat.unit}` : '—'}</td>
+                  <td className="tnum text-left p-3 font-extrabold text-brand-700 bg-emerald-50/40">{r.totalSuggested > 0 ? `${fmt(r.totalSuggested)} ${r.mat.unit}` : '—'}</td>
                   <td className="tnum text-left p-3 text-slate-600">{r.totalSuggested > 0 ? fmtMoney(r.value) : '—'}</td>
                 </tr>
               ))}

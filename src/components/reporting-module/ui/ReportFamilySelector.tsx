@@ -32,8 +32,8 @@ export const ReportFamilySelector: React.FC<ReportFamilySelectorProps> = ({
         onClick={() => onSelect('all')}
         className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors flex items-center gap-1.5 ${
           selectedFamily === 'all'
-            ? 'border-indigo-500 bg-indigo-500 text-white'
-            : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300'
+            ? 'border-brand-500 bg-brand-500 text-white'
+            : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300'
         }`}
       >
         <BarChart3 className="w-3.5 h-3.5" />
@@ -50,8 +50,8 @@ export const ReportFamilySelector: React.FC<ReportFamilySelectorProps> = ({
             onClick={() => onSelect(family.id)}
             className={`px-3 py-2 rounded-lg border text-xs font-bold transition-colors flex items-center gap-1.5 ${
               isSelected
-                ? 'border-indigo-500 bg-indigo-500 text-white'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300'
+                ? 'border-brand-500 bg-brand-500 text-white'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />

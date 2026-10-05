@@ -87,9 +87,9 @@ export const NotificationsView: React.FC<Props> = ({ onNavigate }) => {
           </div>
         </Field>
         <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
-          <BellRing className="w-4 h-4 text-indigo-500" />
+          <BellRing className="w-4 h-4 text-brand-500" />
           <span className="font-bold text-slate-700">إشعارات سطح المكتب</span>
-          <button type="button" onClick={toggleDesktop} className={`relative w-11 h-6 rounded-full transition-colors ${desktopEnabled ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+          <button type="button" onClick={toggleDesktop} className={`relative w-11 h-6 rounded-full transition-colors ${desktopEnabled ? 'bg-brand-600' : 'bg-slate-300'}`}>
             <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${desktopEnabled ? 'left-0.5' : 'left-[22px]'}`} />
           </button>
           {permHint && desktopEnabled && <span className="text-[10px] font-bold text-rose-600">المتصفح يمنع الإشعارات</span>}
@@ -116,7 +116,7 @@ export const NotificationsView: React.FC<Props> = ({ onNavigate }) => {
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1 leading-snug">{n.description}</p>
                   {n.tab && (
-                    <button onClick={() => onNavigate(n.tab!)} className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800">
+                    <button onClick={() => onNavigate(n.tab!)} className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-brand-600 hover:text-brand-800">
                       <ExternalLink className="w-3 h-3" /> فتح الملف ذي الصلة
                     </button>
                   )}

@@ -408,7 +408,7 @@ export const PurchasesReportView: React.FC = () => {
           <h3 className="text-sm font-extrabold text-slate-800">{title}</h3>
           <p className="text-[10px] text-slate-400 font-bold">{subtitle}</p>
         </div>
-        {badgeCount && <span className="text-[10px] font-extrabold rounded-full px-2 py-0.5 bg-indigo-50 text-indigo-600">{badgeCount}</span>}
+        {badgeCount && <span className="text-[10px] font-extrabold rounded-full px-2 py-0.5 bg-brand-50 text-brand-600">{badgeCount}</span>}
         {onPartPrint && <button
           onClick={(e) => { e.stopPropagation(); onPartPrint(); }}
           className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
@@ -421,8 +421,8 @@ export const PurchasesReportView: React.FC = () => {
   );
 
   const GroupHeader: React.FC<{ name: string; right: React.ReactNode; open: boolean; onToggle: () => void; tone?: string; action?: React.ReactNode }> = ({ name, right, open, onToggle, tone, action }) => (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${open ? 'border-indigo-100 bg-indigo-50/50' : 'border-slate-100 bg-slate-50'}`} onClick={onToggle}>
-      <button className="p-0.5">{open ? <ChevronDown className="w-4 h-4 text-indigo-500" /> : <ChevronLeft className="w-4 h-4 text-slate-400" />}</button>
+    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${open ? 'border-brand-100 bg-brand-50/50' : 'border-slate-100 bg-slate-50'}`} onClick={onToggle}>
+      <button className="p-0.5">{open ? <ChevronDown className="w-4 h-4 text-brand-500" /> : <ChevronLeft className="w-4 h-4 text-slate-400" />}</button>
       <span className={`text-xs font-extrabold ${tone || 'text-slate-700'}`}>{name}</span>
       <div className="flex-1" />
       <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">{right}</div>
@@ -437,7 +437,7 @@ export const PurchasesReportView: React.FC = () => {
   const thC = 'bg-slate-50 text-slate-500 font-bold border-b border-line';
   // الأرقام: tnum + محاذاة يسار (قاعدة النظام)
   const tdN = 'p-2 text-left tnum whitespace-nowrap';
-  const inputCls = 'border border-slate-300 rounded-lg p-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white';
+  const inputCls = 'border border-slate-300 rounded-lg p-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-brand-500 bg-white';
   const chipCls = 'rounded-full px-3 py-1 text-[11px] font-bold border transition-colors';
 
   return (
@@ -564,7 +564,7 @@ export const PurchasesReportView: React.FC = () => {
                         <td className="tnum text-left p-2 whitespace-nowrap text-slate-700">{fmtMoney(d.last)}</td>
                         <td className="tnum text-left p-2 whitespace-nowrap text-emerald-700">{fmtMoney(d.min)}</td>
                         <td className="tnum text-left p-2 whitespace-nowrap text-rose-700">{fmtMoney(d.max)}</td>
-                        <td className="tnum text-left p-2 whitespace-nowrap font-bold text-indigo-700">{fmtMoney(d.avg)}</td>
+                        <td className="tnum text-left p-2 whitespace-nowrap font-bold text-brand-700">{fmtMoney(d.avg)}</td>
                         <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmtMoney(d.spread)}</td>
                         <td className="p-2 whitespace-nowrap">
                           <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${d.spreadPct > DEV_THRESHOLD ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{d.spreadPct.toFixed(1)}%</span>
@@ -585,13 +585,13 @@ export const PurchasesReportView: React.FC = () => {
                               <Fragment key={b.branchId}>
                                 <tr className={`cursor-pointer hover:bg-slate-100 ${bOpen ? 'bg-slate-50' : ''} ${devCls}`} onClick={() => toggleBranchOpen(d.id, b.branchId)}>
                                   <td className="p-2 whitespace-nowrap font-bold text-slate-700">
-                                    <span className="inline-flex items-center gap-1">{bOpen ? <ChevronDown className="w-3 h-3 text-indigo-500" /> : <ChevronLeft className="w-3 h-3 text-slate-400" />} {getBranchName(b.branchId)}</span>
+                                    <span className="inline-flex items-center gap-1">{bOpen ? <ChevronDown className="w-3 h-3 text-brand-500" /> : <ChevronLeft className="w-3 h-3 text-slate-400" />} {getBranchName(b.branchId)}</span>
                                   </td>
                                   <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{b.count}</td>
                                   <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmt(b.qty)} {d.unit}</td>
                                   <td className="tnum text-left p-2 whitespace-nowrap text-emerald-700">{fmtMoney(b.min)}</td>
                                   <td className="tnum text-left p-2 whitespace-nowrap text-rose-700">{fmtMoney(b.max)}</td>
-                                  <td className="tnum text-left p-2 whitespace-nowrap font-bold text-indigo-700">{fmtMoney(b.avg)}</td>
+                                  <td className="tnum text-left p-2 whitespace-nowrap font-bold text-brand-700">{fmtMoney(b.avg)}</td>
                                   <td className="p-2 whitespace-nowrap">
                                     <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${b.spreadPct > DEV_THRESHOLD ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{b.spreadPct.toFixed(1)}%</span>
                                   </td>
@@ -669,7 +669,7 @@ export const PurchasesReportView: React.FC = () => {
       </SectionShell>
 
       {/* 2. إحصائيات المشتريات حسب المورد */}
-      <SectionShell id="supplier" title="إحصائيات المشتريات حسب المورد (Purchase Statistics)" subtitle="كل مورد في قسم مستقل: رقم الفاتورة، التاريخ، الصافي، الضريبة، الإجمالي + إجمالي المورد" icon={<Truck className="w-5 h-5 text-indigo-500" />} badgeCount={`${supplierStats.length} مورد`} onPartPrint={() => printPart('supplier')}>
+      <SectionShell id="supplier" title="إحصائيات المشتريات حسب المورد (Purchase Statistics)" subtitle="كل مورد في قسم مستقل: رقم الفاتورة، التاريخ، الصافي، الضريبة، الإجمالي + إجمالي المورد" icon={<Truck className="w-5 h-5 text-brand-500" />} badgeCount={`${supplierStats.length} مورد`} onPartPrint={() => printPart('supplier')}>
         <div className="space-y-2">
           {supplierStats.map((s) => (
             <div key={s.name}>
@@ -725,7 +725,7 @@ export const PurchasesReportView: React.FC = () => {
                             <td className="p-2 whitespace-nowrap">
                               <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${dp > DEV_THRESHOLD ? (r.price > a.avg ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700') : 'bg-slate-100 text-slate-500'}`}>{dp.toFixed(1)}%</span>
                             </td>
-                            <td className="tnum text-left p-2 whitespace-nowrap text-indigo-700 font-bold">{fmtMoney(a.avg)}</td>
+                            <td className="tnum text-left p-2 whitespace-nowrap text-brand-700 font-bold">{fmtMoney(a.avg)}</td>
                             <td className="tnum text-left p-2 whitespace-nowrap font-bold text-emerald-700">{fmtMoney(r.gross)}</td>
                           </tr>
                         );
@@ -754,7 +754,7 @@ export const PurchasesReportView: React.FC = () => {
                   <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{fmt(a.qty)}</td>
                   <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{a.pctNo.toFixed(2)}%</td>
                   <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmtMoney(a.value)}</td>
-                  <td className="tnum text-left p-2 whitespace-nowrap text-indigo-700 font-bold">{a.cumPct.toFixed(2)}%</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-brand-700 font-bold">{a.cumPct.toFixed(2)}%</td>
                   <td className="p-2 whitespace-nowrap"><span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-extrabold ${ABC_CLASS[a.cls]}`}>{a.cls}</span></td>
                 </tr>
               ))}
@@ -794,7 +794,7 @@ export const PurchasesReportView: React.FC = () => {
                   <td className="tnum text-left p-2 whitespace-nowrap font-bold text-slate-800">{fmtMoney(r.net)}</td>
                   <td className="tnum text-left p-2 whitespace-nowrap text-slate-600">{r.qAll}</td>
                   <td className="tnum text-left p-2 whitespace-nowrap font-bold text-emerald-700">{r.quality}%</td>
-                  <td className="tnum text-left p-2 whitespace-nowrap text-indigo-700 font-bold">{r.haccpPct}%</td>
+                  <td className="tnum text-left p-2 whitespace-nowrap text-brand-700 font-bold">{r.haccpPct}%</td>
                 </tr>
               ))}
             </tbody>

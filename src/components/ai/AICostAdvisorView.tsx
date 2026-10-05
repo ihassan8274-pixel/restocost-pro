@@ -123,12 +123,12 @@ const {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="المستشار الذكي للتكاليف" subtitle="تحليل تلقائي للبيانات مع توصيات قابلة للتنفيذ لخفض التكاليف ورفع الهامش" icon={<Sparkles className="w-6 h-6 text-indigo-600" />} />
+      <PageHeader title="المستشار الذكي للتكاليف" subtitle="تحليل تلقائي للبيانات مع توصيات قابلة للتنفيذ لخفض التكاليف ورفع الهامش" icon={<Sparkles className="w-6 h-6 text-brand-600" />} />
 
-      <div className="flex items-start gap-3 bg-gradient-to-l from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-4">
-        <Sparkles className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
+      <div className="flex items-start gap-3 bg-gradient-to-l from-brand-50 to-violet-50 border border-brand-100 rounded-2xl p-4">
+        <Sparkles className="w-5 h-5 text-brand-600 mt-0.5 shrink-0" />
         <div>
-          <p className="text-xs font-extrabold text-indigo-800">رؤية سريعة</p>
+          <p className="text-xs font-extrabold text-brand-800">رؤية سريعة</p>
           <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">يستعرض هذا المستشار بياناتك الفعلية (مخزون، مبيعات، هوالك، مصاريف) وينتج توصيات مرتّبة حسب الأولوية. استخدمه بانتظام مع تقارير التكلفة لاتخاذ قرارات مبنية على الأرقام.</p>
         </div>
       </div>
@@ -141,7 +141,7 @@ const {
         {sorted.map((a, idx) => (
           <Card key={idx} className={`p-4 border ${impactColor[a.impact]}`}>
             <div className="flex items-center justify-between mb-2">
-              <span className="flex items-center gap-1.5 text-[10px] font-extrabold text-slate-600"><Target className="w-3.5 h-3.5 text-indigo-500" /> {a.module}</span>
+              <span className="flex items-center gap-1.5 text-[10px] font-extrabold text-slate-600"><Target className="w-3.5 h-3.5 text-brand-500" /> {a.module}</span>
               <span className={`flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${impactColor[a.impact]}`}>{impactIcon[a.impact]}{a.impact === 'high' ? 'أولوية عالية' : a.impact === 'medium' ? 'أولوية متوسطة' : 'متابعة'}</span>
             </div>
             <p className="font-extrabold text-slate-900 text-xs">{a.title}</p>

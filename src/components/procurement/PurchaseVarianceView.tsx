@@ -156,7 +156,7 @@ export const PurchaseVarianceView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">صافي الانحراف (استلام - طلب)</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${stats.netVariance > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.netVariance > 0 ? '+' : ''}{fmt(stats.netVariance)} ر.س</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">بنود بها انحراف</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1 flex items-center gap-1"><CircleAlert className="w-4 h-4" />{stats.varianceLines}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نسبة التسليم الفعلي</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmt(stats.deliveredPct, 1)}%</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نسبة التسليم الفعلي</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmt(stats.deliveredPct, 1)}%</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">ارتفاع أسعار عن الطلب</span><strong className="text-lg font-extrabold font-mono text-rose-700 block mt-1">{stats.priceHike} بند</strong></div>
       </div>
 
@@ -173,7 +173,7 @@ export const PurchaseVarianceView: React.FC = () => {
           {visibleBranches.map((b) => <option key={b.id} value={b.id}>{b.nameAr}</option>)}
         </select>
         <label className="flex items-center gap-2 font-bold text-slate-600 cursor-pointer">
-          <input type="checkbox" checked={showZero} onChange={(e) => setShowZero(e.target.checked)} className="accent-indigo-600 w-4 h-4" />
+          <input type="checkbox" checked={showZero} onChange={(e) => setShowZero(e.target.checked)} className="accent-brand-600 w-4 h-4" />
           إظهار الأوامر بدون انحراف
         </label>
         <span className="font-bold text-slate-500 mr-auto">{filteredRows.length} أمر شراء مرتبط</span>
@@ -199,7 +199,7 @@ export const PurchaseVarianceView: React.FC = () => {
               <div className="flex items-center gap-3">
                 <PackageSearch className={`w-5 h-5 ${hasVariance ? 'text-amber-600' : 'text-emerald-600'}`} />
                 <div>
-                  <p className="font-mono font-extrabold text-indigo-700 text-xs">{r.poNumber}</p>
+                  <p className="font-mono font-extrabold text-brand-700 text-xs">{r.poNumber}</p>
                   <p className="text-[10px] text-slate-500">{r.supplierName} · {branchName(r.branchId)} · {r.orderDate}</p>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export const PurchaseVarianceView: React.FC = () => {
       {unmatchedGRNs.length > 0 && (
         <Card className="overflow-hidden">
           <div className="p-4 border-b border-slate-100">
-            <SectionHeader title="إشعارات استلام بدون أمر شراء" subtitle="هذه الاستلامات لا تشملها المقارنة — اربطها بأمر شراء عند الإنشاء" icon={<ArrowLeftRight className="w-5 h-5 text-indigo-600" />} />
+            <SectionHeader title="إشعارات استلام بدون أمر شراء" subtitle="هذه الاستلامات لا تشملها المقارنة — اربطها بأمر شراء عند الإنشاء" icon={<ArrowLeftRight className="w-5 h-5 text-brand-600" />} />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
@@ -326,7 +326,7 @@ export const PurchaseVarianceView: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {unmatchedGRNs.map((g) => (
                   <tr key={g.id} className="hover:bg-slate-50">
-                    <td className="tnum text-left p-3 font-bold text-indigo-700">{g.grnNumber}</td>
+                    <td className="tnum text-left p-3 font-bold text-brand-700">{g.grnNumber}</td>
                     <td className="p-3 font-bold text-slate-800">{g.supplierName}</td>
                     <td className="tnum text-left p-3 text-slate-600">{g.date}</td>
                     <td className="tnum text-left p-3 font-bold">{fmt(g.totalAmount)}</td>

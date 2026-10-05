@@ -4,19 +4,41 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* ===== الألوان الأساسية (هوية معصوبي — ذهبي/عنبري) ===== */
-  --color-primary-50:  #fffbeb;
-  --color-primary-100: #fef3c7;
-  --color-primary-200: #fde68a;
-  --color-primary-300: #fcd34d;
-  --color-primary-400: #fbbf24;
-  --color-primary-500: #f59e0b;
-  --color-primary-600: #d97706;
-  --color-primary-700: #b45309;
-  --color-primary-800: #92400e;
-  --color-primary-900: #78350f;
-  --color-primary-950: #451a03;
+  /* ============================================================
+     هوية مساري — أخضر مؤسسي عميق + ذهبي للتمييز
+     ============================================================
+     درجة اللون الأساسي. هذه هي العائل التي استخدمها الكود باسم
+     indigo-* قبل التحويل (1,266 استبدالاً) — فكان لون الإجراء
+     الأساسي فعلياً، بينما كان ذهبي "primary" هوية معلنة بلا usages.
+     الآن صار الاثنان متّسقين: أخضر للأفعال، ذهبي للتمييز.
+  */
+  --color-brand-50:  #f0fbf8;
+  --color-brand-100: #d3f2e9;
+  --color-brand-200: #a7e5d5;
+  --color-brand-300: #6fd4bd;
+  --color-brand-400: #34b89b;
+  --color-brand-500: #0d9a80;
+  --color-brand-600: #0a7d68;
+  --color-brand-700: #086556;
+  --color-brand-800: #075043;
+  --color-brand-900: #063d31;
+  --color-brand-950: #032620;
 
+  /* درجة التمييز — ذهبي هادئ: شارات، إبراز، حالات ثانوية.
+     لا يُستخدم لأزرار الحفظ الأساسية (هذه يستخدمها brand). */
+  --color-primary-50:  #fdf8f3;
+  --color-primary-100: #f8ecd4;
+  --color-primary-200: #f0d9a8;
+  --color-primary-300: #e5c076;
+  --color-primary-400: #d9a94a;
+  --color-primary-500: #c99733;
+  --color-primary-600: #a97a1f;
+  --color-primary-700: #8a6116;
+  --color-primary-800: #6b4a10;
+  --color-primary-900: #4d350b;
+  --color-primary-950: #2a1d04;
+
+  /* دفء الخلفية — يوحي بالطاعم دون أن ينافس الأخضر الأساسي */
   --color-warm-50:  #fdf8f3;
   --color-warm-100: #faefdf;
   --color-warm-200: #f5dbbf;
@@ -35,14 +57,20 @@
   --color-fin-bg:   #f5f0e8;
   --color-fin-txt:  #44403c;
 
-  /* ===== الخطوط ===== */
+  /* ===== الخطوط =====
+     IBM Plex Sans Arabic: الأدق في الجداول المالية والأرقام.
+     Inter للأرقام اللاتينية والعرض بعرض ثابت (tabular) لمحاذاة الأعمدة. */
   --font-sans: "IBM Plex Sans Arabic", "Cairo", "Tahoma", system-ui, sans-serif;
+  --font-num:  "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-mono: "Cascadia Mono", "Courier New", monospace;
 
-  /* ===== الظلال ===== */
+  /* ===== الظلال =====
+     ظل البطاقة الغائر كان يحمل صبغة ذهبية (180 83 9) متوائمة مع
+     الهوية القديمة، فحُوِّر إلى أخضر يتبع الدرجة الأساسية الجديدة
+     (rgb 8 101 86 ≈ brand-700). */
   --shadow-card:   0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
-  --shadow-card-hover: 0 8px 24px -6px rgb(180 83 9 / 0.16), 0 4px 8px -4px rgb(0 0 0 / 0.06);
-  --shadow-focus: 0 0 0 3px rgb(217 119 6 / 0.28);
+  --shadow-card-hover: 0 8px 24px -6px rgb(8 101 86 / 0.18), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  --shadow-focus: 0 0 0 3px rgb(10 125 104 / 0.28);
 }
 
 :root {
@@ -66,7 +94,10 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #fcd34d transparent;
+  /* Was #fcd34d (amber-300) — a pale amber on a pale background, which
+     effectively disappears and fails WCAG 1.4.11 non-text contrast.
+     brand-400 keeps the warm tint but is dark enough to be visible. */
+  scrollbar-color: #34b89b transparent;
 }
 
 ::-webkit-scrollbar {
@@ -74,11 +105,11 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #fcd34d;
+  background: #34b89b;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #f59e0b;
+  background: #0d9a80;
 }
 
 /* Hide the up/down spinner arrows on number inputs; quantities are typed manually */
@@ -92,7 +123,15 @@ input[type="number"] {
   appearance: textfield;
 }
 
-/* ============ DARK THEME ============ */
+/* ============ DARK THEME ============
+   These overrides previously never ran: the store held `theme` and the header
+   toggled it, but nothing ever added `.dark` to <html> (fixed in ui.ts +
+   main.tsx). Now that they actually apply, they need to agree with the
+   identity — bg-brand-50 was still mapped to a purple left over from when the
+   action colour was indigo.
+
+   Neutrals stay warm (stone), matching the light theme. The old values mixed
+   cool slate text into a warm surface, so text shifted hue when toggling. */
 .dark {
   color-scheme: dark;
 }
@@ -104,22 +143,28 @@ input[type="number"] {
 .dark .bg-slate-100 { background-color: #1c1917; }
 .dark .bg-slate-200 { background-color: #44403c; }
 .dark .bg-slate-900 { background-color: #0c0a09; }
-.dark .bg-indigo-50 { background-color: #2a2342; }
+/* brand is now the green action colour — dark surface is a deep desaturated green */
+.dark .bg-brand-50 { background-color: #06302a; }
+.dark .bg-brand-100 { background-color: #0a3d34; }
+.dark .text-brand-600 { color: #6fd4bd; }
+.dark .text-brand-700 { color: #6fd4bd; }
+.dark .text-brand-900 { color: #d3f2e9; }
+.dark .border-brand-200 { border-color: #0a7d68; }
 .dark .bg-amber-50 { background-color: #451a03; }
 .dark .bg-rose-50 { background-color: #351f2a; }
 .dark .bg-emerald-50 { background-color: #14302a; }
 .dark .bg-cyan-50 { background-color: #0f2b38; }
 .dark .bg-violet-50 { background-color: #2a2342; }
-.dark .text-slate-900 { color: #e2e8f0; }
-.dark .text-slate-800 { color: #d7dee8; }
-.dark .text-slate-700 { color: #cbd5e1; }
-.dark .text-slate-600 { color: #b3bdcb; }
-.dark .text-slate-500 { color: #94a3b8; }
-.dark .text-slate-400 { color: #7e8ca1; }
+.dark .text-slate-900 { color: #fafaf9; }
+.dark .text-slate-800 { color: #f5f5f4; }
+.dark .text-slate-700 { color: #e7e5e4; }
+.dark .text-slate-600 { color: #d6d3d1; }
+.dark .text-slate-500 { color: #a8a29e; }
+.dark .text-slate-400 { color: #8a8279; }
 .dark .border-slate-100 { border-color: #44403c; }
 .dark .border-slate-200 { border-color: #44403c; }
 .dark .border-slate-300 { border-color: #57534e; }
-.dark .bg-indigo-50\/30, .dark .bg-amber-50\/60, .dark .bg-rose-50\/60 { background-color: #292524; }
+.dark .bg-brand-50\/30, .dark .bg-amber-50\/60, .dark .bg-rose-50\/60 { background-color: #292524; }
 .dark .bg-white\/70 { background-color: rgba(41, 37, 36, 0.85); }
 .dark .bg-white\/95 { background-color: rgba(28, 25, 23, 0.95); }
 .dark ::-webkit-scrollbar-thumb { background: #44403c; }

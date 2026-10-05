@@ -201,18 +201,18 @@ export const ConsumptionMatrixReportView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="استهلاك يومي مصفوفي (تاريخ × فرع)" subtitle="يعرض استهلاك صنف أو وصفة تحضيرية بشكل يومي لكل فرع في شكل مصفوفة (جداول متقاطعة)" icon={<CalendarDays className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="استهلاك يومي مصفوفي (تاريخ × فرع)" subtitle="يعرض استهلاك صنف أو وصفة تحضيرية بشكل يومي لكل فرع في شكل مصفوفة (جداول متقاطعة)" icon={<CalendarDays className="w-6 h-6 text-brand-600" />}
         actions={<>
           <Btn onClick={printReport} tone="dark" disabled={!hasData}><Printer className="w-4 h-4" /> طباعة</Btn>
           <Btn onClick={exportCSV} tone="primary" disabled={!hasData}><Download className="w-4 h-4" /> تصدير CSV</Btn>
         </>} />
 
       <Card className="p-5">
-        <SectionHeader title="اختيار العنصر والفترة" icon={<Filter className="w-5 h-5 text-indigo-500" />} />
+        <SectionHeader title="اختيار العنصر والفترة" icon={<Filter className="w-5 h-5 text-brand-500" />} />
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-indigo-500" />
+          <CalendarDays className="w-4 h-4 text-brand-500" />
           {PERIOD_PRESETS.map((label) => (
-            <button key={label} onClick={() => periodPreset(label)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-indigo-600 hover:text-white text-slate-700 transition-colors">
+            <button key={label} onClick={() => periodPreset(label)} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-brand-600 hover:text-white text-slate-700 transition-colors">
               {label}
             </button>
           ))}
@@ -222,10 +222,10 @@ export const ConsumptionMatrixReportView: React.FC = () => {
           <Field label="إلى تاريخ"><input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className={inputCls} /></Field>
           <Field label="نوع العنصر">
             <div className="flex gap-1 bg-slate-100 rounded-lg p-0.5">
-              <button onClick={() => { setSelectedType('material'); setSelectedId(''); setMaterialQuery(''); }} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedType === 'material' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 hover:bg-slate-200'}`}>
+              <button onClick={() => { setSelectedType('material'); setSelectedId(''); setMaterialQuery(''); }} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedType === 'material' ? 'bg-brand-600 text-white shadow' : 'text-slate-600 hover:bg-slate-200'}`}>
                 <Package className="w-3.5 h-3.5" /> صنف
               </button>
-              <button onClick={() => { setSelectedType('recipe'); setSelectedId(''); setRecipeQuery(''); }} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedType === 'recipe' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 hover:bg-slate-200'}`}>
+              <button onClick={() => { setSelectedType('recipe'); setSelectedId(''); setRecipeQuery(''); }} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedType === 'recipe' ? 'bg-brand-600 text-white shadow' : 'text-slate-600 hover:bg-slate-200'}`}>
                 <ChefHat className="w-3.5 h-3.5" /> وصفة
               </button>
             </div>
@@ -256,7 +256,7 @@ export const ConsumptionMatrixReportView: React.FC = () => {
                     </div>
                     <div className="max-h-60 overflow-auto p-1">
                       {filteredMaterials.slice(0, 100).map((m) => (
-                        <button key={m.id} onClick={() => { setSelectedId(m.id); setShowMaterialPicker(false); }} className={`w-full text-right text-xs p-1.5 rounded hover:bg-indigo-50 block truncate ${m.id === selectedId ? 'bg-indigo-100 font-bold' : ''}`}>
+                        <button key={m.id} onClick={() => { setSelectedId(m.id); setShowMaterialPicker(false); }} className={`w-full text-right text-xs p-1.5 rounded hover:bg-brand-50 block truncate ${m.id === selectedId ? 'bg-brand-100 font-bold' : ''}`}>
                           {m.code} — {m.nameAr}
                         </button>
                       ))}
@@ -280,9 +280,9 @@ export const ConsumptionMatrixReportView: React.FC = () => {
                     </div>
                     <div className="max-h-60 overflow-auto p-1">
                       {menuRecipes.length > 0 && <>
-                        <div className="text-[10px] font-extrabold text-indigo-500 px-1 mb-0.5">وصفات رئيسية ({menuRecipes.length})</div>
+                        <div className="text-[10px] font-extrabold text-brand-500 px-1 mb-0.5">وصفات رئيسية ({menuRecipes.length})</div>
                         {menuRecipes.slice(0, 50).map((r) => (
-                          <button key={r.id} onClick={() => { setSelectedId(r.id); setShowRecipePicker(false); }} className={`w-full text-right text-xs p-1.5 rounded hover:bg-indigo-50 block truncate ${r.id === selectedId ? 'bg-indigo-100 font-bold' : ''}`}>
+                          <button key={r.id} onClick={() => { setSelectedId(r.id); setShowRecipePicker(false); }} className={`w-full text-right text-xs p-1.5 rounded hover:bg-brand-50 block truncate ${r.id === selectedId ? 'bg-brand-100 font-bold' : ''}`}>
                             {r.code} — {r.nameAr}
                           </button>
                         ))}
@@ -314,9 +314,9 @@ export const ConsumptionMatrixReportView: React.FC = () => {
 
       {selectedId && (
         <Card className="p-5 overflow-x-auto">
-          <SectionHeader title="المصفوفة اليومية" icon={<CalendarDays className="w-5 h-5 text-indigo-500" />} />
+          <SectionHeader title="المصفوفة اليومية" icon={<CalendarDays className="w-5 h-5 text-brand-500" />} />
           <div className="mt-3 mb-3 flex items-center gap-3 text-xs">
-            <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg font-bold">{itemName}</span>
+            <span className="bg-brand-100 text-brand-700 px-2 py-0.5 rounded-lg font-bold">{itemName}</span>
             <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg">{unit}</span>
             <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-lg font-bold">الإجمالي: {fmtCell(grandTotal)}</span>
             <span className="text-slate-400">{dates.length} يوم × {matrixBranches.length} فرع</span>
@@ -325,38 +325,38 @@ export const ConsumptionMatrixReportView: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-right text-[11px] border-collapse min-w-max">
                 <thead>
-                  <tr className="bg-indigo-50 border-b-2 border-indigo-200 sticky top-0">
-                    <th className="p-2 font-bold text-indigo-800 border-l border-indigo-200 whitespace-nowrap">التاريخ</th>
+                  <tr className="bg-brand-50 border-b-2 border-brand-200 sticky top-0">
+                    <th className="p-2 font-bold text-brand-800 border-l border-brand-200 whitespace-nowrap">التاريخ</th>
                     {matrixBranches.map((b) => (
-                      <th key={b.id} className="p-2 font-bold text-indigo-800 border-l border-indigo-100 whitespace-nowrap" style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', maxHeight: 120 }}>
+                      <th key={b.id} className="p-2 font-bold text-brand-800 border-l border-brand-100 whitespace-nowrap" style={{ writingMode: 'vertical-lr', textOrientation: 'mixed', maxHeight: 120 }}>
                         {b.nameAr}
                       </th>
                     ))}
-                    <th className="p-2 font-bold text-indigo-800 bg-indigo-100 whitespace-nowrap">الإجمالي</th>
+                    <th className="p-2 font-bold text-brand-800 bg-brand-100 whitespace-nowrap">الإجمالي</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dates.map((d, idx) => (
-                    <tr key={d} className={`border-b border-slate-100 hover:bg-indigo-50/50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                      <td className="p-2 font-bold text-indigo-700 border-l border-indigo-100 whitespace-nowrap" dir="ltr">{fmtShortDate(d)}</td>
+                    <tr key={d} className={`border-b border-slate-100 hover:bg-brand-50/50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                      <td className="p-2 font-bold text-brand-700 border-l border-brand-100 whitespace-nowrap" dir="ltr">{fmtShortDate(d)}</td>
                       {matrixBranches.map((b) => {
                         const raw = matrix[d]?.[b.id] || 0;
                         const v = toUnitValue(raw);
                         return (
-                          <td key={b.id} className={`p-2 border-l border-indigo-50 font-mono whitespace-nowrap ${v > 0 ? 'text-indigo-700 font-bold bg-indigo-50/30' : 'text-slate-300'}`}>
+                          <td key={b.id} className={`p-2 border-l border-brand-50 font-mono whitespace-nowrap ${v > 0 ? 'text-brand-700 font-bold bg-brand-50/30' : 'text-slate-300'}`}>
                             {v > 0 ? fmtCell(v) : '—'}
                           </td>
                         );
                       })}
-                      <td className="tnum text-left p-2 font-bold bg-indigo-50 border-l border-indigo-100 text-indigo-700 whitespace-nowrap">{fmtCell(rowTotals[d] || 0)}</td>
+                      <td className="tnum text-left p-2 font-bold bg-brand-50 border-l border-brand-100 text-brand-700 whitespace-nowrap">{fmtCell(rowTotals[d] || 0)}</td>
                     </tr>
                   ))}
-                  <tr className="bg-indigo-100 border-t-2 border-indigo-300 font-extrabold">
-                    <td className="p-2 border-l border-indigo-200">الإجمالي</td>
+                  <tr className="bg-brand-100 border-t-2 border-brand-300 font-extrabold">
+                    <td className="p-2 border-l border-brand-200">الإجمالي</td>
                     {matrixBranches.map((b) => (
-                      <td key={b.id} className="p-2 border-l border-indigo-200 font-mono whitespace-nowrap">{fmtCell(columnTotals[b.id] || 0)}</td>
+                      <td key={b.id} className="p-2 border-l border-brand-200 font-mono whitespace-nowrap">{fmtCell(columnTotals[b.id] || 0)}</td>
                     ))}
-                    <td className="tnum text-left p-2 bg-indigo-200 border-l border-indigo-300 whitespace-nowrap">{fmtCell(grandTotal)}</td>
+                    <td className="tnum text-left p-2 bg-brand-200 border-l border-brand-300 whitespace-nowrap">{fmtCell(grandTotal)}</td>
                   </tr>
                 </tbody>
               </table>

@@ -155,7 +155,7 @@ export const BranchStockLimitsView: React.FC = () => {
       <PageHeader
         title="حدود المخزون للفروع (الأدنى والأقصى)"
         subtitle="لكل فرع حد أدنى وأقصى مختلف لكل صنف — الطلب يتم حتى الحد الأقصى عند وصول الرصيد للحد الأدنى، ويمكن استثناء أصناف لتُطلب بالكمية القصوى كاملة دون النظر للرصيد"
-        icon={<SlidersHorizontal className="w-6 h-6 text-indigo-600" />}
+        icon={<SlidersHorizontal className="w-6 h-6 text-brand-600" />}
         actions={<>
           <Btn onClick={exportCsv}><FileSpreadsheet className="w-4 h-4" /> تصدير CSV</Btn>
           <Btn onClick={() => setImportModal(true)}><Upload className="w-4 h-4" /> استيراد من Excel</Btn>
@@ -170,9 +170,9 @@ export const BranchStockLimitsView: React.FC = () => {
           <span className="text-slate-500 text-[11px] block">أصناف تحت الحد الأدنى</span>
           <strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{belowMinCount}</strong>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-xs">
+        <div className="bg-white p-4 rounded-xl border border-brand-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">أصناف بحدود مخصصة لهذا الفرع</span>
-          <strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{overrideCount}</strong>
+          <strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{overrideCount}</strong>
         </div>
         <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-xs">
           <span className="text-slate-500 text-[11px] block">أصناف "طلب كامل" (مستثناة)</span>
@@ -204,7 +204,7 @@ export const BranchStockLimitsView: React.FC = () => {
             <option value="needsOrder">بالحاجة للطلب</option>
           </select>
         </Field>
-        <button onClick={() => setOnlyOverrides((v) => !v)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold border transition-colors ${onlyOverrides ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+        <button onClick={() => setOnlyOverrides((v) => !v)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold border transition-colors ${onlyOverrides ? 'bg-brand-50 border-brand-300 text-brand-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
           {onlyOverrides ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
           المخصص فقط
         </button>
@@ -216,7 +216,7 @@ export const BranchStockLimitsView: React.FC = () => {
           <SectionHeader
             title={`حدود ${getBranchName(branchId)}`}
             subtitle="عدّل الحد الأدنى/الأقصى مباشرة — التغيير يُحفظ تلقائياً لهذا الفرع. زر ⟲ يعيد الافتراضي العام."
-            icon={<SlidersHorizontal className="w-5 h-5 text-indigo-500" />} />
+            icon={<SlidersHorizontal className="w-5 h-5 text-brand-500" />} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs min-w-[1100px]">
@@ -224,8 +224,8 @@ export const BranchStockLimitsView: React.FC = () => {
               <tr>
                 <th className="p-3">الكود</th><th className="p-3">الصنف</th><th className="p-3">الوحدة</th>
                 <th className="p-3">الرصيد الحالي</th>
-                <th className="p-3 bg-indigo-50">الحد الأدنى</th>
-                <th className="p-3 bg-indigo-50">الحد الأقصى</th>
+                <th className="p-3 bg-brand-50">الحد الأدنى</th>
+                <th className="p-3 bg-brand-50">الحد الأقصى</th>
                 <th className="p-3 bg-amber-50">طلب كامل (استثناء)</th>
                 <th className="p-3">الحالة</th>
                 <th className="p-3">الكمية المقترحة</th>
@@ -236,21 +236,21 @@ export const BranchStockLimitsView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (
                 <tr key={r.mat.id} className={`hover:bg-slate-50 ${r.needsOrder ? 'bg-rose-50/40' : ''}`}>
-                  <td className="tnum text-left p-3 text-indigo-700">{r.mat.code}</td>
+                  <td className="tnum text-left p-3 text-brand-700">{r.mat.code}</td>
                   <td className="p-3 font-bold text-slate-900">
                     {r.mat.nameAr}
                     {(r.isOverride || r.alwaysOrderFullMax) && (
-                      <span className="ml-1 text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">مخصص</span>
+                      <span className="ml-1 text-[9px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">مخصص</span>
                     )}
                   </td>
                   <td className="p-3 text-slate-500">{r.mat.unit}</td>
                   <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(r.qty)}</td>
-                  <td className="p-3 bg-indigo-50/30">
+                  <td className="p-3 bg-brand-50/30">
                     <input type="number" min="0" step="any" value={r.minStockLevel || ''}
                       onChange={(e) => upsertBranchStockLimit(branchId, r.mat.id, { minStockLevel: parseFloat(e.target.value) || 0 })}
                       className={inputCls + ' !w-24 !h-8'} />
                   </td>
-                  <td className="p-3 bg-indigo-50/30">
+                  <td className="p-3 bg-brand-50/30">
                     <input type="number" min="0" step="any" value={r.maxStockLevel || ''}
                       onChange={(e) => upsertBranchStockLimit(branchId, r.mat.id, { maxStockLevel: parseFloat(e.target.value) || 0 })}
                       className={inputCls + ' !w-24 !h-8'} />
@@ -272,7 +272,7 @@ export const BranchStockLimitsView: React.FC = () => {
                       <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>
                     )}
                   </td>
-                  <td className="tnum text-left p-3 font-extrabold text-indigo-700">
+                  <td className="tnum text-left p-3 font-extrabold text-brand-700">
                     {r.needsOrder ? `${fmt(r.suggestedQty)} ${r.mat.unit}` : '—'}
                   </td>
                   <td className="tnum text-left p-3 text-slate-600">{r.needsOrder ? fmtMoney(r.value) : '—'}</td>
@@ -302,8 +302,8 @@ export const BranchStockLimitsView: React.FC = () => {
 
       <Modal open={importModal} onClose={() => setImportModal(false)} title="استيراد حدود المخزون من Excel / CSV" wide>
         <div className="space-y-4 text-xs">
-          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-            <p className="font-bold text-indigo-950">تعليمات الاستيراد:</p>
+          <div className="bg-brand-50 border border-brand-200 rounded-xl p-3">
+            <p className="font-bold text-brand-950">تعليمات الاستيراد:</p>
             <ul className="list-disc list-inside mt-1 space-y-1 text-slate-700">
               <li>الملف يجب أن يحتوي على الأعمدة: <b>الكود</b>، <b>الحد الأدنى</b>، <b>الحد الأقصى</b>، <b>طلب كامل (نعم/لا)</b></li>
               <li>الكود يجب أن يطابق كود الصنف في النظام (مثال: RM-001)</li>
@@ -316,7 +316,7 @@ export const BranchStockLimitsView: React.FC = () => {
           </Field>
           <div className="pt-2 flex justify-end gap-2">
             <button onClick={() => { setImportModal(false); setImportFile(null); }} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button onClick={handleImport} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">استيراد وتطبيق</button>
+            <button onClick={handleImport} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">استيراد وتطبيق</button>
           </div>
         </div>
       </Modal>

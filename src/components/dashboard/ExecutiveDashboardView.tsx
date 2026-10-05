@@ -350,7 +350,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2 p-5">
           <SectionHeader title="أداء المجموعة الشهري" subtitle="المبيعات وصافي الربح حسب الفترة"
-            icon={<TrendingUp className="w-5 h-5 text-indigo-600" />}
+            icon={<TrendingUp className="w-5 h-5 text-brand-600" />}
             extra={<span className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${momGrowth >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
               {momGrowth >= 0 ? <ArrowUpRight className="w-3 h-3 inline" /> : <ArrowDownRight className="w-3 h-3 inline" />} {Math.abs(momGrowth).toFixed(2)}% شهري
             </span>} />
@@ -386,7 +386,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
               <div className="grid grid-cols-3 gap-2 mt-4">
                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-2">
                   <p className="text-[10px] text-slate-500 font-bold">المبيعات</p>
-                  <p className="font-mono font-extrabold text-indigo-700 text-xs mt-0.5">{fmt(bestBranch.totalSales)}</p>
+                  <p className="font-mono font-extrabold text-brand-700 text-xs mt-0.5">{fmt(bestBranch.totalSales)}</p>
                 </div>
                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-2">
                   <p className="text-[10px] text-slate-500 font-bold">Food Cost</p>
@@ -397,7 +397,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                   <p className="font-mono font-extrabold text-emerald-700 text-xs mt-0.5">{bestBranch.netProfitPercent.toFixed(2)}%</p>
                 </div>
               </div>
-              <button onClick={() => onNavigate('pl_statement')} className="mt-4 w-full text-xs font-bold text-indigo-600 hover:text-indigo-800">
+              <button onClick={() => onNavigate('pl_statement')} className="mt-4 w-full text-xs font-bold text-brand-600 hover:text-brand-800">
                 الانتقال إلى القوائم المالية
               </button>
             </div>
@@ -411,7 +411,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
       <Card className="p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeader title="ترتيب الفروع" subtitle="مقارنة أداء الفروع حسب المبيعات والهوامش"
-            icon={<BarChart className="w-5 h-5 text-indigo-600" />} />
+            icon={<BarChart className="w-5 h-5 text-brand-600" />} />
           <Btn tone="ghost" onClick={printBranchRanking}><Printer className="w-4 h-4" /> طباعة</Btn>
         </div>
         <div className="overflow-x-auto mt-4">
@@ -438,7 +438,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                       <span className={`w-6 h-6 inline-flex items-center justify-center rounded-lg font-extrabold ${p.rank === 1 ? 'bg-amber-400 text-white' : 'bg-slate-100 text-slate-600'}`}>{p.rank}</span>
                     </td>
                     <td className="p-2 font-bold text-slate-800">{p.branchName.replace('فرع ', '')}</td>
-                    <td className="tnum text-left p-2 font-bold text-indigo-700">{fmt(p.totalSales)}</td>
+                    <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(p.totalSales)}</td>
                     <td className="tnum text-left p-2 font-bold text-rose-600">{p.foodCostPercent.toFixed(2)}%</td>
                     <td className="tnum text-left p-2 font-bold text-amber-700">{p.laborCostPercent.toFixed(2)}%</td>
                     <td className="tnum text-left p-2 font-bold text-slate-600">{fmt(p.operatingExpenses)}</td>
@@ -446,7 +446,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                     <td className="tnum text-left p-2 font-bold text-slate-900">{p.netProfitPercent.toFixed(2)}%</td>
                     <td className="p-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 rounded-full" style={{ width: `${share}%` }} /></div>
+                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-brand-500 rounded-full" style={{ width: `${share}%` }} /></div>
                         <span className="font-mono text-[10px] text-slate-500">{share.toFixed(2)}%</span>
                       </div>
                     </td>
@@ -462,7 +462,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2 p-5">
           <SectionHeader title="الميزانية مقابل الفعلي" subtitle={`مصاريف ${currentMonth} حسب البند`}
-            icon={<Wallet className="w-5 h-5 text-indigo-600" />}
+            icon={<Wallet className="w-5 h-5 text-brand-600" />}
             extra={overBudget.length > 0 ? <span className="text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 px-2 py-1 rounded-lg">{overBudget.length} بنود تجاوزت الميزانية</span> : <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg"><CheckCircle2 className="w-3 h-3 inline" /> ضمن الميزانية</span>} />
           <div className="h-64 mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -480,7 +480,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
         </Card>
 
         <Card className="p-5">
-          <SectionHeader title="مكونات التكلفة" icon={<PieChart className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="مكونات التكلفة" icon={<PieChart className="w-5 h-5 text-brand-600" />} />
           <div className="h-48 mt-2">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -524,12 +524,12 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
               <span className="text-slate-600 font-bold">مستحقات موردين</span>
               <span className="font-mono font-extrabold text-slate-700">{fmt(payables)}</span>
             </div>
-            <button onClick={() => onNavigate('cash_flow')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">قائمة التدفقات النقدية</button>
+            <button onClick={() => onNavigate('cash_flow')} className="w-full text-[10px] font-bold text-brand-600 hover:text-brand-800 text-center">قائمة التدفقات النقدية</button>
           </div>
         </Card>
 
         <Card className="p-4">
-          <SectionHeader title="حجوزات اليوم" icon={<CalendarCheck className="w-5 h-5 text-indigo-500" />} extra={<span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">{todayReservations.length}</span>} />
+          <SectionHeader title="حجوزات اليوم" icon={<CalendarCheck className="w-5 h-5 text-brand-500" />} extra={<span className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-200">{todayReservations.length}</span>} />
           <div className="mt-3 space-y-2">
             {todayReservations.length === 0 && <p className="text-xs text-slate-500 bg-slate-50 rounded-xl p-3">لا توجد حجوزات اليوم</p>}
             {todayReservations.slice(0, 5).map((r) => (
@@ -538,10 +538,10 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                   <p className="text-xs font-bold text-slate-800">{r.customerName}</p>
                   <p className="text-[10px] text-slate-500">{r.time} · {r.guests} ضيوف</p>
                 </div>
-                <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">{RESERVATION_STATUS_LABELS[r.status]}</span>
+                <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">{RESERVATION_STATUS_LABELS[r.status]}</span>
               </div>
             ))}
-            <button onClick={() => onNavigate('eod_board')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">لوحة الإقفال اليومي</button>
+            <button onClick={() => onNavigate('eod_board')} className="w-full text-[10px] font-bold text-brand-600 hover:text-brand-800 text-center">لوحة الإقفال اليومي</button>
           </div>
         </Card>
 
@@ -562,7 +562,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
                 <p className="text-[11px] text-slate-800 font-bold">{unack[0].recipeNameAr} <span className="text-rose-600 font-mono">+{unack[0].excessCostPercent}%</span></p>
               ) : <p className="text-emerald-600 font-bold">لا توجد انحرافات</p>}
             </div>
-            <button onClick={() => onNavigate('cost_reports')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">تقارير التكلفة</button>
+            <button onClick={() => onNavigate('cost_reports')} className="w-full text-[10px] font-bold text-brand-600 hover:text-brand-800 text-center">تقارير التكلفة</button>
           </div>
         </Card>
 
@@ -581,7 +581,7 @@ export const ExecutiveDashboardView: React.FC<{ onNavigate: (tab: string) => voi
               <p className="text-slate-600 font-bold mb-1.5">قيمة الهالك ({wastageLogs.length} وقائع)</p>
               <p className="font-mono font-extrabold text-slate-800 text-sm">{fmt(totalWastage)} ر.س</p>
             </div>
-            <button onClick={() => onNavigate('analytics')} className="w-full text-[10px] font-bold text-indigo-600 hover:text-indigo-800 text-center">التحليلات والرسوم البيانية</button>
+            <button onClick={() => onNavigate('analytics')} className="w-full text-[10px] font-bold text-brand-600 hover:text-brand-800 text-center">التحليلات والرسوم البيانية</button>
           </div>
         </Card>
       </div>

@@ -209,9 +209,9 @@ export const PeriodOverPeriodReport: React.FC = () => {
           <span className={`text-[11px] font-mono font-bold ${posNeg(totRevDelta)}`}>{totRevDelta > 0 ? '▲' : '▼'} {totRevDelta > 0 ? '+' : ''}{totRevDelta.toFixed(1)}%</span>
           <span className="text-[10px] text-slate-400 block">({fmtMoney(Math.abs(totNetDelta))} {totNetDelta >= 0 ? 'زيادة' : 'نقصان'})</span>
         </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-          <span className="text-[10px] text-indigo-600 font-bold block">الكمية المباعة</span>
-          <strong className="text-lg font-extrabold text-indigo-800 font-mono block">{fmt(totalB.qty)}</strong>
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
+          <span className="text-[10px] text-brand-600 font-bold block">الكمية المباعة</span>
+          <strong className="text-lg font-extrabold text-brand-800 font-mono block">{fmt(totalB.qty)}</strong>
           <span className={`text-[11px] font-mono font-bold ${posNeg(totQtyDelta)}`}>{totQtyDelta > 0 ? '▲' : '▼'} {totQtyDelta > 0 ? '+' : ''}{totQtyDelta.toFixed(1)}%</span>
           <span className="text-[10px] text-slate-400 block">({totalB.records} سجل في {monthLabel(pb)})</span>
         </div>

@@ -365,7 +365,7 @@ export const TrueCostView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="التكلفة الحقيقية والشراء الذكي" subtitle="تكلفة الوحدة الكاملة، هامش المساهمة، تكلفة الدفعات، إعادة الطلب الذكية، إعادة التسعير التلقائية، وتنبؤ التكلفة" icon={<Layers className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="التكلفة الحقيقية والشراء الذكي" subtitle="تكلفة الوحدة الكاملة، هامش المساهمة، تكلفة الدفعات، إعادة الطلب الذكية، إعادة التسعير التلقائية، وتنبؤ التكلفة" icon={<Layers className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="التكلفة_الحقيقية_والشراء_الذكي" sheets={exportSheets} />
           <Btn tone="ghost" onClick={printKitchenCards}><Printer className="w-4 h-4" /> بطاقات المطبخ</Btn>
@@ -377,7 +377,7 @@ export const TrueCostView: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">دفعات إنتاج</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{batchRows.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">مواد تحتاج إعادة طلب</span><strong className="text-lg font-extrabold font-mono text-amber-600 block mt-1">{reorderRows.filter((r) => r.suggested > 0).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">وصفات متأثرة بأسعار</span><strong className="text-lg font-extrabold font-mono text-rose-600 block mt-1">{repricedRecipes.length}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نقاط تكلفة محفوظة</span><strong className="text-lg font-extrabold font-mono text-indigo-600 block mt-1">{snapshots.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نقاط تكلفة محفوظة</span><strong className="text-lg font-extrabold font-mono text-brand-600 block mt-1">{snapshots.length}</strong></div>
         <div className={`p-4 rounded-xl border shadow-xs ${fcOverTarget ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}><span className={`text-[11px] block ${fcOverTarget ? 'text-rose-500' : 'text-emerald-600'}`}>Food Cost المتوقعة</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${fcOverTarget ? 'text-rose-700' : 'text-emerald-700'}`}>{fcPctNext.toFixed(2)}%</strong></div>
       </div>
 
@@ -400,14 +400,14 @@ export const TrueCostView: React.FC = () => {
                 {categoryRows.map((c, idx) => (
                   <div key={c.cat} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
                     <span className="font-bold text-slate-700 text-xs">{idx + 1}. {c.cat} <span className="text-slate-400 font-mono">({c.qty} وحدة)</span></span>
-                    <span className="font-mono font-extrabold text-xs text-indigo-700">{fmtMoney(c.contribution)} <span className="text-emerald-700">({c.margin.toFixed(2)}%)</span></span>
+                    <span className="font-mono font-extrabold text-xs text-brand-700">{fmtMoney(c.contribution)} <span className="text-emerald-700">({c.margin.toFixed(2)}%)</span></span>
                   </div>
                 ))}
                 {categoryRows.length === 0 && <p className="text-center text-slate-400 text-xs py-6">لا توجد بيانات</p>}
               </div>
             </Card>
             <Card className="p-4">
-              <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><TrendingUp className="w-4 h-4 text-indigo-600" /> توزيع التكلفة لكل وحدة</h3>
+              <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><TrendingUp className="w-4 h-4 text-brand-600" /> توزيع التكلفة لكل وحدة</h3>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={absorptionRows.slice(0, 8).map((r) => ({ name: r.name, طعام: Math.round(r.unitFood), إجمالي: Math.round(r.unitTotal), كامل: Math.round(r.unitFull) }))} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -440,7 +440,7 @@ export const TrueCostView: React.FC = () => {
                       <td className={`p-2 font-mono font-extrabold ${r.fullMargin >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{r.fullMargin.toFixed(2)}</td>
                       <td className="tnum text-left p-2">{r.targetFc.toFixed(2)}</td>
                       <td className="tnum text-left p-2">{fmt(r.qty)}</td>
-                      <td className="tnum text-left p-2 font-extrabold text-indigo-700">{fmtMoney(r.totalContrib)}</td>
+                      <td className="tnum text-left p-2 font-extrabold text-brand-700">{fmtMoney(r.totalContrib)}</td>
                     </tr>
                   ))}
                   {absorptionRows.length === 0 && <tr><td colSpan={10} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -512,7 +512,7 @@ export const TrueCostView: React.FC = () => {
                       <td className="tnum text-left p-2 font-extrabold text-amber-700">{r.suggested > 0 ? `${fmt(r.suggested, 1)} ${r.unit}` : '—'}</td>
                       <td className="p-2 font-bold">{r.bestSupplier} {r.supplierRating > 0 ? `(${r.supplierRating}★)` : ''}</td>
                       <td className="tnum text-left p-2">{r.avgCost.toFixed(2)}</td>
-                      <td className="p-2">{r.suggested > 0 && <button onClick={() => createPO([r])} className="text-[10px] px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold"><PlusCircle className="w-3 h-3 inline ml-1" />PO</button>}</td>
+                      <td className="p-2">{r.suggested > 0 && <button onClick={() => createPO([r])} className="text-[10px] px-2 py-1 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-extrabold"><PlusCircle className="w-3 h-3 inline ml-1" />PO</button>}</td>
                     </tr>
                   ))}
                   {reorderRows.length === 0 && <tr><td colSpan={9} className="p-4 text-center text-slate-400">لا توجد بيانات</td></tr>}
@@ -526,10 +526,10 @@ export const TrueCostView: React.FC = () => {
       {tab === 'repricing' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="p-4">
-            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><RefreshCw className="w-4 h-4 text-indigo-600" /> وصفات أُعيد تسعيرها تلقائياً (مواد ارتفعت &gt; 15%)</h3>
+            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><RefreshCw className="w-4 h-4 text-brand-600" /> وصفات أُعيد تسعيرها تلقائياً (مواد ارتفعت &gt; 15%)</h3>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {repricedRecipes.map((r, idx) => (
-                <div key={idx} className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex items-center justify-between">
+                <div key={idx} className="bg-brand-50 border border-brand-200 rounded-xl p-3 flex items-center justify-between">
                   <span className="font-bold text-slate-700 text-xs">{r.name} <span className="text-slate-400 font-mono">({r.code})</span></span>
                   <span className={`font-mono font-extrabold text-xs ${r.fcPct > r.targetFc ? 'text-rose-700' : 'text-emerald-700'}`}>FC {r.fcPct.toFixed(2)}% / {fmtMoney(r.foodCost)}</span>
                 </div>
@@ -585,14 +585,14 @@ export const TrueCostView: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
             <div className="grid grid-cols-3 gap-3 mt-3">
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3"><span className="text-slate-500 text-[10px] block">إيراد متوقع</span><strong className="font-mono font-extrabold text-indigo-700 block mt-1">{fmtMoney(forecastRevenue)}</strong></div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3"><span className="text-slate-500 text-[10px] block">إيراد متوقع</span><strong className="font-mono font-extrabold text-brand-700 block mt-1">{fmtMoney(forecastRevenue)}</strong></div>
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3"><span className="text-slate-500 text-[10px] block">تكلفة متوقعة</span><strong className="font-mono font-extrabold text-rose-700 block mt-1">{fmtMoney(forecastFood)}</strong></div>
               <div className={`rounded-xl p-3 border ${fcOverTarget ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}><span className={`text-[10px] block ${fcOverTarget ? 'text-rose-500' : 'text-emerald-600'}`}>Food Cost متوقعة</span><strong className={`font-mono font-extrabold block mt-1 ${fcOverTarget ? 'text-rose-700' : 'text-emerald-700'}`}>{fcPctNext.toFixed(2)}%</strong></div>
             </div>
             {fcOverTarget && <p className="mt-3 bg-rose-50 border border-rose-200 text-rose-700 text-[11px] font-bold rounded-xl p-3 flex items-center gap-2"><PackageSearch className="w-4 h-4" /> تنبيه ما قبل التجاوز: Food Cost المتوقعة {fcPctNext.toFixed(2)}% أعلى من المستهدف {fcTarget.toFixed(2)}%.</p>}
           </Card>
           <Card className="p-4">
-            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-indigo-600" /> تنبؤ ذكي وتحليل</h3>
+            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><Sparkles className="w-4 h-4 text-brand-600" /> تنبؤ ذكي وتحليل</h3>
             <p className="text-[11px] text-slate-500 font-bold leading-relaxed mb-3">اضغط "تنبؤ ذكي" لعرض الملاحظات الآلية وتوليد تنبؤ سردي بالذكاء الاصطناعي مع توصيات.</p>
             <div className="space-y-2">
               {forecastInsights.map((i, idx) => (
@@ -609,7 +609,7 @@ export const TrueCostView: React.FC = () => {
       {tab === 'suppliers' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="overflow-hidden">
-            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs p-3 border-b border-slate-100"><Handshake className="w-4 h-4 text-indigo-600" /> تحليل الموردين</h3>
+            <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs p-3 border-b border-slate-100"><Handshake className="w-4 h-4 text-brand-600" /> تحليل الموردين</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
                 <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
@@ -648,7 +648,7 @@ export const TrueCostView: React.FC = () => {
 
       {tab === 'review' && (
         <Card className="p-4">
-          <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><ClipboardCheck className="w-4 h-4 text-indigo-600" /> نقاط مراجعة التكلفة الدورية</h3>
+          <h3 className="flex items-center gap-2 font-bold text-slate-800 text-xs mb-3"><ClipboardCheck className="w-4 h-4 text-brand-600" /> نقاط مراجعة التكلفة الدورية</h3>
           <p className="text-[11px] text-slate-500 font-bold leading-relaxed mb-3">راجع البنود أدناه وعلّم على ما تم إنجازه — تبقى الحالة محفوظة على جهازك.</p>
           <div className="space-y-2">
             {reviewIssues.map((iss) => {

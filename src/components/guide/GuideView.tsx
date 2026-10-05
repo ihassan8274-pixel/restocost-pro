@@ -22,10 +22,10 @@ export const GuideView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="دليل الاستخدام" subtitle="دليل عملي لبدء استخدام النظام وتشغيل العمليات اليومية" icon={<BookOpen className="w-6 h-6 text-indigo-600" />} />
+      <PageHeader title="دليل الاستخدام" subtitle="دليل عملي لبدء استخدام النظام وتشغيل العمليات اليومية" icon={<BookOpen className="w-6 h-6 text-brand-600" />} />
 
       <div className="flex items-start gap-3 bg-white border border-slate-200 rounded-2xl p-4">
-        <Shield className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
+        <Shield className="w-5 h-5 text-brand-600 mt-0.5 shrink-0" />
         <div>
           <p className="text-xs font-extrabold text-slate-800">دورك الحالي: {labels?.[currentUser?.role] || '-'}</p>
           <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">التنقل مقيد بصلاحيات دورك — الشاشات غير المتاحة لك لن تظهر في القائمة الجانبية.</p>
@@ -35,12 +35,12 @@ export const GuideView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {SECTIONS.map((s) => (
           <Card key={s.title} className="p-4">
-            <h3 className="font-extrabold text-slate-900 text-xs flex items-center gap-1.5"><LayoutDashboard className="w-4 h-4 text-indigo-500" /> {s.title}</h3>
+            <h3 className="font-extrabold text-slate-900 text-xs flex items-center gap-1.5"><LayoutDashboard className="w-4 h-4 text-brand-500" /> {s.title}</h3>
             <p className="text-[11px] text-slate-500 mt-0.5 mb-2">{s.desc}</p>
             <ol className="space-y-1.5">
               {s.steps.map((st, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-[11px] text-slate-700">
-                  <span className="w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-extrabold text-[9px]">{idx + 1}</span>
+                  <span className="w-5 h-5 shrink-0 flex items-center justify-center rounded-full bg-brand-100 text-brand-700 font-extrabold text-[9px]">{idx + 1}</span>
                   {st}
                 </li>
               ))}
@@ -50,7 +50,7 @@ export const GuideView: React.FC = () => {
       </div>
 
       <Card className="p-4">
-        <h3 className="font-extrabold text-slate-900 text-xs mb-3 flex items-center gap-1.5"><ChevronDown className="w-4 h-4 text-indigo-500" /> أسئلة شائعة</h3>
+        <h3 className="font-extrabold text-slate-900 text-xs mb-3 flex items-center gap-1.5"><ChevronDown className="w-4 h-4 text-brand-500" /> أسئلة شائعة</h3>
         <div className="space-y-2">
           {FAQ.map((f) => (
             <details key={f.q} className="bg-slate-50 border border-slate-200 rounded-xl p-3 group">

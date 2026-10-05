@@ -110,8 +110,8 @@ export const HACCPView: React.FC = () => {
           <p className="text-[10px] text-slate-400 font-bold mt-1">قراءات حرارة + تفتيشات</p>
         </Card>
         <Card className="p-4">
-          <div className="flex items-center gap-2 text-indigo-600"><Thermometer className="w-4 h-4" /><span className="text-xs font-extrabold text-slate-500">قراءات اليوم</span></div>
-          <p className="text-2xl font-extrabold text-indigo-700 mt-2 font-mono">{todayLogs.length}</p>
+          <div className="flex items-center gap-2 text-brand-600"><Thermometer className="w-4 h-4" /><span className="text-xs font-extrabold text-slate-500">قراءات اليوم</span></div>
+          <p className="text-2xl font-extrabold text-brand-700 mt-2 font-mono">{todayLogs.length}</p>
           <p className="text-[10px] text-slate-400 font-bold mt-1">آخر قراءة: {todayLogs[0] ? fmt(todayLogs[0].temperature, 1) + '°' : '—'}</p>
         </Card>
         <Card className="p-4">
@@ -140,7 +140,7 @@ export const HACCPView: React.FC = () => {
 
       <Card className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5"><Thermometer className="w-4 h-4 text-indigo-500" /> سجل درجات الحرارة</h3>
+          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5"><Thermometer className="w-4 h-4 text-brand-500" /> سجل درجات الحرارة</h3>
           <span className="text-[10px] font-bold text-slate-400">{filteredLogs.length} قراءة</span>
         </div>
         <div className="overflow-x-auto">

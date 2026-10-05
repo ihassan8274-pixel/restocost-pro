@@ -96,7 +96,7 @@ export const UserManagementView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="إدارة المستخدمين والصلاحيات" subtitle="تعيين الأدوار والشاشات المسموح بها لكل مستخدم — واعتماد طلبات الانضمام" icon={<ShieldCheck className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="إدارة المستخدمين والصلاحيات" subtitle="تعيين الأدوار والشاشات المسموح بها لكل مستخدم — واعتماد طلبات الانضمام" icon={<ShieldCheck className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar filename="المستخدمون" sheets={[
             {
@@ -159,11 +159,11 @@ export const UserManagementView: React.FC = () => {
               {activeUsers.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50">
                   <td className="p-3 font-bold text-slate-900 flex items-center gap-1.5">
-                    {u.id === currentUser?.id && <span className="text-[9px] font-bold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">أنت</span>}
+                    {u.id === currentUser?.id && <span className="text-[9px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">أنت</span>}
                     {u.name}
                   </td>
                   <td className="p-3 font-mono text-slate-600" dir="ltr">{u.email}</td>
-                  <td className="p-3"><span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{ROLE_LABELS[u.role]}</span></td>
+                  <td className="p-3"><span className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full">{ROLE_LABELS[u.role]}</span></td>
                   <td className="p-3">
                     {getRoleName(u.roleId)
                       ? <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">{getRoleName(u.roleId)}</span>
@@ -174,7 +174,7 @@ export const UserManagementView: React.FC = () => {
                   <td className="p-3">
                     <div className="flex gap-1">
                       {can('manage_users') && <>
-                        <button onClick={() => { setEditId(u.id); setForm({ name: u.name, email: u.email, password: '', role: u.role, branchId: u.branchId, roleId: u.roleId || '' }); setShowModal(true); }} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => { setEditId(u.id); setForm({ name: u.name, email: u.email, password: '', role: u.role, branchId: u.branchId, roleId: u.roleId || '' }); setShowModal(true); }} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
                         <button onClick={() => toggleActive(u.id, u.isActive)} className={`p-1.5 rounded-lg ${u.isActive ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}><Power className="w-4 h-4" /></button>
                         <button onClick={() => handleRevokeSessions(u.id, u.email)} className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg" title="إلغاء جلسات الدخول"><LogOut className="w-4 h-4" /></button>
                         {u.id !== currentUser?.id && <button onClick={() => handleDelete(u.id, u.email)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>}
@@ -215,7 +215,7 @@ export const UserManagementView: React.FC = () => {
           <p className="text-[10px] text-slate-400">دور الصلاحيات يحدد أي شاشات يمكن للمستخدم الوصول إليها وما يمكنه فعله فيها (عرض/إضافة/تعديل/حذف).</p>
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editId ? 'حفظ' : 'إنشاء'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editId ? 'حفظ' : 'إنشاء'}</button>
           </div>
         </form>
       </Modal>

@@ -137,7 +137,7 @@ export const InventoryValuationView: React.FC = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المخزون (FIFO)</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{fmtMoney(totalFifo)}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المخزون (متوسط)</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{fmtMoney(totalAvg)}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المخزون (متوسط)</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{fmtMoney(totalAvg)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الأثر بين الطريقتين</span><strong className={`text-lg font-extrabold font-mono block mt-1 ${totalFifo - totalAvg < 0 ? 'text-rose-600' : 'text-slate-900'}`}>{fmtMoney(totalFifo - totalAvg)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الأصناف المقيّمة</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{valuation.length}</strong></div>
       </div>
@@ -165,12 +165,12 @@ export const InventoryValuationView: React.FC = () => {
               <tbody>
                 {valuation.map((r) => (
                   <tr key={r.m.id} className="border-b border-slate-50 hover:bg-slate-50">
-                    <td className="tnum text-left p-2 font-bold text-indigo-700">{r.m.code}</td>
+                    <td className="tnum text-left p-2 font-bold text-brand-700">{r.m.code}</td>
                     <td className="p-2 font-bold text-slate-800">{r.m.nameAr}</td>
                     <td className="tnum text-left p-2 text-slate-800">{fmt(r.currentQty, 2)} {r.m.unit}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(r.totalReceived, 2)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(r.avgCost, 2)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(r.avgValue, 2)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(r.avgCost, 2)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(r.avgValue, 2)}</td>
                     <td className="tnum text-left p-2 text-emerald-700">{fmt(r.fifoCost, 2)}</td>
                     <td className="tnum text-left p-2 text-emerald-700">{fmt(r.fifoValue, 2)}</td>
                     <td className={`p-2 font-mono font-bold ${r.diff < -0.001 ? 'text-rose-600' : r.diff > 0.001 ? 'text-amber-600' : 'text-slate-400'}`}>{fmt(r.diff, 2)}</td>
@@ -182,7 +182,7 @@ export const InventoryValuationView: React.FC = () => {
           </div>
           <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500 font-bold">
             <Scale className="w-3.5 h-3.5 text-emerald-500" /> تُستهلك طبقات الاستلام حسب التاريخ (الأقدم أولاً)؛ وعند عدم كفاية الاستلامات يُقيَّم المتبقي بمتوسط تكلفة الاستلامات
-            <Layers className="w-3.5 h-3.5 text-indigo-500 mr-2" /> الأثر الإيجابي يعني أن متوسط التكلفة أعلى من FIFO
+            <Layers className="w-3.5 h-3.5 text-brand-500 mr-2" /> الأثر الإيجابي يعني أن متوسط التكلفة أعلى من FIFO
           </div>
         </Card>
       )}
@@ -220,7 +220,7 @@ export const InventoryValuationView: React.FC = () => {
                       <td className="tnum text-left p-2 text-slate-600">{l.date}</td>
                       <td className="p-2 font-bold text-slate-700">{l.ref}</td>
                       <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(l.qty, 2)}</td>
-                      <td className="tnum text-left p-2 text-indigo-700">{fmt(l.price, 2)}</td>
+                      <td className="tnum text-left p-2 text-brand-700">{fmt(l.price, 2)}</td>
                       <td className="tnum text-left p-2 text-slate-700">{fmt(l.qty * l.price, 2)}</td>
                     </tr>
                   ))}

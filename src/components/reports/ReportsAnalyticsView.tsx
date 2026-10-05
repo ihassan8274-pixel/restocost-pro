@@ -309,7 +309,7 @@ export const ReportsAnalyticsView: React.FC = () => {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-3"><span className="text-[10px] text-slate-500 block">صافي الإيراد — {periodLabel}</span><strong className="text-indigo-700 font-mono">{fmtMoney(kpiTotalNet)}</strong></Card>
+        <Card className="p-3"><span className="text-[10px] text-slate-500 block">صافي الإيراد — {periodLabel}</span><strong className="text-brand-700 font-mono">{fmtMoney(kpiTotalNet)}</strong></Card>
         <Card className="p-3"><span className="text-[10px] text-slate-500 block">الربح بعد المصروفات</span><strong className="text-emerald-700 font-mono">{fmtMoney(kpiProfit)}</strong></Card>
         <Card className="p-3"><span className="text-[10px] text-slate-500 block">أفضل طبق مساهمة</span><strong className="text-slate-800 text-xs">{topDishes[0]?.name || '—'} · {fmtMoney(topDishes[0]?.profit || 0)}</strong></Card>
         <Card className="p-3"><span className="text-[10px] text-slate-500 block">أطباق راكدة (30 يوم)</span><strong className="text-rose-600 font-mono">{deadDishes.length}</strong></Card>
@@ -331,7 +331,7 @@ export const ReportsAnalyticsView: React.FC = () => {
         <>
           <Card className="p-4">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2"><CalendarRange className="w-4 h-4 text-indigo-600" /> الإيراد والتكلفة والأرباح شهرياً</h3>
+              <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2"><CalendarRange className="w-4 h-4 text-brand-600" /> الإيراد والتكلفة والأرباح شهرياً</h3>
               <Btn tone="ghost" onClick={() => printSection('التقرير الاتجاهي الشهري', [{ title: 'الاتجاه الشهري', header: ['الشهر', 'الإيراد', 'التكلفة', 'المصروفات', 'الربح'], rows: monthlyTrend.map((r) => [r.name, r.إيراد, r.تكلفة, r.مصروفات, r.ربح]) }, { title: 'توزيع أيام الأسبوع', header: ['اليوم', 'المبيعات', 'الطلبات'], rows: dayOfWeek.map((d) => [d.name, d.مبيعات, d.طلبات]) }], '#ra-trend')}><Printer className="w-4 h-4" /> طباعة</Btn>
             </div>
             <div id="ra-trend">
@@ -478,7 +478,7 @@ export const ReportsAnalyticsView: React.FC = () => {
             </ResponsiveContainer>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 px-4 pb-4">
-            <Card className="!p-3"><span className="text-[10px] text-slate-500 block">صافي الصالة</span><strong className="font-mono text-indigo-700">{fmtMoney(channelTotals.صالة)}</strong></Card>
+            <Card className="!p-3"><span className="text-[10px] text-slate-500 block">صافي الصالة</span><strong className="font-mono text-brand-700">{fmtMoney(channelTotals.صالة)}</strong></Card>
             <Card className="!p-3"><span className="text-[10px] text-slate-500 block">صافي التوصيل (بعد العمولة)</span><strong className="font-mono text-amber-700">{fmtMoney(channelTotals.توصيل)}</strong></Card>
             <Card className="!p-3"><span className="text-[10px] text-slate-500 block">حصة التوصيل</span><strong className="font-mono">{channelTotals.صالة + channelTotals.توصيل ? ((channelTotals.توصيل / (channelTotals.صالة + channelTotals.توصيل)) * 100).toFixed(1) : '0'}%</strong></Card>
           </div>
@@ -543,15 +543,15 @@ export const ReportsAnalyticsView: React.FC = () => {
             <thead><tr>{['الفرع', 'المنطقة', 'صافي المبيعات', 'تكلفة الطعام', 'FC %', 'عدد الطلبات', 'متوسط الفاتورة', 'الحصة من الإجمالي'].map((h) => <th key={h} className="p-2 text-right font-bold text-slate-600 border-b border-slate-200 bg-slate-50">{h}</th>)}</tr></thead>
             <tbody>
               {regionTotals.length > 1 && (
-                <tr className="bg-indigo-50/70">
-                  <td colSpan={8} className="p-2 font-extrabold text-indigo-900 text-[11px]">إجماليات المناطق — {regionTotals.map((rg) => `${rg.name}: ${fmt(rg.net)} (${rg.branches} فرع)`).join(' · ')}</td>
+                <tr className="bg-brand-50/70">
+                  <td colSpan={8} className="p-2 font-extrabold text-brand-900 text-[11px]">إجماليات المناطق — {regionTotals.map((rg) => `${rg.name}: ${fmt(rg.net)} (${rg.branches} فرع)`).join(' · ')}</td>
                 </tr>
               )}
               {branchPerf.map((b, i) => (
                 <tr key={b.id} className={`border-b border-slate-50 hover:bg-slate-50 ${i === 0 && branchPerf.length > 1 ? 'bg-emerald-50/50' : ''}`}>
                   <td className="p-2 font-bold text-slate-800">{b.name}</td>
-                  <td className="p-2 text-[11px] font-bold text-indigo-700">{b.region}</td>
-                  <td className="tnum text-left p-2 text-indigo-700">{fmt(b.net)}</td>
+                  <td className="p-2 text-[11px] font-bold text-brand-700">{b.region}</td>
+                  <td className="tnum text-left p-2 text-brand-700">{fmt(b.net)}</td>
                   <td className="tnum text-left p-2 text-slate-500">{fmt(b.cost)}</td>
                   <td className={`p-2 font-mono ${b.fcPct > 40 ? 'text-rose-600 font-bold' : 'text-emerald-600'}`}>{b.fcPct.toFixed(1)}%</td>
                   <td className="tnum text-left p-2">{fmtNum(b.orders, 0)}</td>
@@ -590,7 +590,7 @@ export const ReportsAnalyticsView: React.FC = () => {
                   <tr key={s.name} className="border-b border-slate-50 hover:bg-slate-50">
                     <td className="p-2 font-bold text-slate-800">{s.name}</td>
                     <td className="tnum text-left p-2">{fmtNum(s.count, 0)}</td>
-                    <td className="tnum text-left p-2 text-indigo-700">{fmt(s.total)}</td>
+                    <td className="tnum text-left p-2 text-brand-700">{fmt(s.total)}</td>
                     <td className="tnum text-left p-2 text-slate-500">{fmt(s.avgOrder)}</td>
                     <td className={`p-2 font-mono ${s.fillPct >= 95 ? 'text-emerald-600' : s.fillPct >= 80 ? 'text-amber-600' : 'text-rose-600 font-bold'}`}>{s.fillPct.toFixed(1)}%</td>
                   </tr>
@@ -631,9 +631,9 @@ export const ReportsAnalyticsView: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 pb-3">
             <Card className="!p-3"><span className="text-[10px] text-slate-500 block">نمو آخر شهر</span><strong className={`font-mono ${forecast.momGrowth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{forecast.momGrowth.toFixed(1)}%</strong></Card>
-            <Card className="!p-3"><span className="text-[10px] text-slate-500 block">متوسط 3 أشهر مرجّح</span><strong className="font-mono text-indigo-700">{fmtMoney(forecast.wAvgNet)}</strong></Card>
+            <Card className="!p-3"><span className="text-[10px] text-slate-500 block">متوسط 3 أشهر مرجّح</span><strong className="font-mono text-brand-700">{fmtMoney(forecast.wAvgNet)}</strong></Card>
             <Card className="!p-3"><span className="text-[10px] text-slate-500 block">انحدار خطي (آخر 6 أشهر)</span><strong className="font-mono text-cyan-700">{fmtMoney(forecast.regressionNext)}</strong></Card>
-            <Card className="!p-3 bg-gradient-to-l from-indigo-50 to-white"><span className="text-[10px] text-slate-500 block">التوقع المدمج للشهر القادم</span><strong className="font-mono text-indigo-800 text-base">{fmtMoney(forecast.blended)}</strong></Card>
+            <Card className="!p-3 bg-gradient-to-l from-brand-50 to-white"><span className="text-[10px] text-slate-500 block">التوقع المدمج للشهر القادم</span><strong className="font-mono text-brand-800 text-base">{fmtMoney(forecast.blended)}</strong></Card>
           </div>
           <div id="ra-forecast" className="px-4 pb-3">
             <ResponsiveContainer width="100%" height={280}>
@@ -690,7 +690,7 @@ export const ReportsAnalyticsView: React.FC = () => {
               {categoryMix.map((c) => (
                 <tr key={c.name} className="border-b border-slate-50 hover:bg-slate-50">
                   <td className="p-2 font-bold text-slate-800">{c.name}</td>
-                  <td className="tnum text-left p-2 text-indigo-700">{fmt(c.الإيراد)}</td>
+                  <td className="tnum text-left p-2 text-brand-700">{fmt(c.الإيراد)}</td>
                   <td className="tnum text-left p-2 text-emerald-700">{fmt(c.الهامش)}</td>
                   <td className={`p-2 font-mono ${c.هامشPct >= 60 ? 'text-emerald-600' : c.هامشPct >= 40 ? 'text-amber-600' : 'text-rose-600 font-bold'}`}>{c.هامشPct}%</td>
                 </tr>

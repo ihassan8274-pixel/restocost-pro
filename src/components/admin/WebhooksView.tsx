@@ -79,7 +79,7 @@ export const WebhooksView: React.FC = () => {
   return (
     <div className="space-y-4">
       <PageHeader
-        icon={<Link2 className="w-5 h-5 text-indigo-600" />}
+        icon={<Link2 className="w-5 h-5 text-brand-600" />}
         title="ويب هوك الأحداث (Webhooks)"
         subtitle="إرسال أحداث النظام (مبيعات/مشتريات/مخزون/…) إلى أنظمة خارجية عبر HTTP — مُدار على الخادم ومحمي"
         actions={<>
@@ -111,7 +111,7 @@ export const WebhooksView: React.FC = () => {
                   </div>
                   <div dir="ltr" className="text-left text-[10px] text-slate-500 font-mono mt-1 break-all">{w.url}</div>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {w.events.map((e) => <span key={e} className="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold">{e}</span>)}
+                    {w.events.map((e) => <span key={e} className="text-[9px] bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-bold">{e}</span>)}
                     {w.secret && <span className="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-mono font-bold" dir="ltr">{w.secret}</span>}
                   </div>
                   {w.status?.lastAt && <div className="text-[9px] text-slate-400 font-bold mt-2">آخر فحص: {new Date(w.status.lastAt).toLocaleString()} · الحالة: <span dir="ltr">{w.status.lastStatus}</span></div>}
@@ -142,7 +142,7 @@ export const WebhooksView: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 {EVENT_OPTIONS.map((o) => (
                   <label key={o.value} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 cursor-pointer select-none">
-                    <input type="checkbox" checked={form.events.includes(o.value)} onChange={() => setForm({ ...form, events: o.value === '*' ? ['*'] : form.events.includes(o.value) ? form.events.filter((x) => x !== o.value) : [...form.events.filter((x) => x !== '*'), o.value] })} className="accent-indigo-600" />
+                    <input type="checkbox" checked={form.events.includes(o.value)} onChange={() => setForm({ ...form, events: o.value === '*' ? ['*'] : form.events.includes(o.value) ? form.events.filter((x) => x !== o.value) : [...form.events.filter((x) => x !== '*'), o.value] })} className="accent-brand-600" />
                     <span className="font-bold">{o.label}</span>
                   </label>
                 ))}

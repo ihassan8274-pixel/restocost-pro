@@ -247,7 +247,7 @@ export const StockTransferView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="تحويل الأصناف بين الفروع" subtitle="تحويل أصناف مخزنية (مواد خام) وأصناف مصنّعة من الوصفات الأساسية بين الفروع والمطبخ المركزي" icon={<ArrowRightLeft className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="تحويل الأصناف بين الفروع" subtitle="تحويل أصناف مخزنية (مواد خام) وأصناف مصنّعة من الوصفات الأساسية بين الفروع والمطبخ المركزي" icon={<ArrowRightLeft className="w-6 h-6 text-brand-600" />}
         actions={
           <>
           <ViewToolbar
@@ -262,7 +262,7 @@ export const StockTransferView: React.FC = () => {
         } />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي التحويلات</span><strong className="text-lg font-extrabold font-mono text-indigo-700 block mt-1">{stockTransfers.length}</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي التحويلات</span><strong className="text-lg font-extrabold font-mono text-brand-700 block mt-1">{stockTransfers.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">قيمة المحوّلة</span><strong className="text-lg font-extrabold font-mono text-slate-900 block mt-1">{fmt(stockTransfers.reduce((s, t) => s + t.items.reduce((a, it) => a + it.quantity * it.unitCost, 0), 0))}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف مخزنية محوّلة</span><strong className="text-lg font-extrabold font-mono text-emerald-700 block mt-1">{stockTransfers.reduce((s, t) => s + t.items.filter((i) => i.itemType !== 'recipe').length, 0)}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">أصناف مصنّعة محوّلة</span><strong className="text-lg font-extrabold font-mono text-amber-700 block mt-1">{stockTransfers.reduce((s, t) => s + t.items.filter((i) => i.itemType === 'recipe').length, 0)}</strong></div>
@@ -270,7 +270,7 @@ export const StockTransferView: React.FC = () => {
 
       {/* Transfer form */}
       <Card className="p-5">
-        <SectionHeader title="تحويل جديد" subtitle="حدد الفرع المرسل والمستقبل ثم أضف الأصناف — مخزنية (مواد خام) أو مصنّعة (وصفات أساسية)" icon={<ArrowRightLeft className="w-5 h-5 text-indigo-600" />} />
+        <SectionHeader title="تحويل جديد" subtitle="حدد الفرع المرسل والمستقبل ثم أضف الأصناف — مخزنية (مواد خام) أو مصنّعة (وصفات أساسية)" icon={<ArrowRightLeft className="w-5 h-5 text-brand-600" />} />
         <form onSubmit={submit} className="mt-4 space-y-3 text-xs">
           {msg && <div className={`rounded-xl p-3 font-bold border ${msg.includes('نجاح') ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>{msg}</div>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -330,7 +330,7 @@ export const StockTransferView: React.FC = () => {
                       : <span className="flex items-center gap-1"><Package className="w-3.5 h-3.5" /> {fmt(stock)} {lineUnit(line)}</span>}
                   </div>
                   <input type="number" min="0" step="any" data-nav value={line.quantity || ''} onChange={(e) => updateLine(idx, { quantity: parseFloat(e.target.value) || 0 })} onKeyDown={navOnEnter} className={inputCls} placeholder="الكمية" />
-                  <div className="font-mono font-bold text-indigo-700">
+                  <div className="font-mono font-bold text-brand-700">
                     {fmt(lineCost(line))}
                     <span className="block text-[9px] font-bold text-slate-400">{lineAvgSource(line)}</span>
                   </div>
@@ -347,8 +347,8 @@ export const StockTransferView: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <Btn onClick={() => setLines([...lines, { itemType: 'raw_material', rawMaterialId: rawMaterials[0]?.id || '', recipeId: '', quantity: 0 }])}><Plus className="w-3.5 h-3.5" /> صنف إضافي</Btn>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-600">القيمة الإجمالية: <span className="font-mono font-extrabold text-indigo-700">{fmt(totalValue)} ر.س</span></span>
-              <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs"><ArrowRightLeft className="w-4 h-4" /> تنفيذ التحويل</button>
+              <span className="text-xs font-bold text-slate-600">القيمة الإجمالية: <span className="font-mono font-extrabold text-brand-700">{fmt(totalValue)} ر.س</span></span>
+              <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-xs"><ArrowRightLeft className="w-4 h-4" /> تنفيذ التحويل</button>
             </div>
           </div>
         </form>
@@ -357,8 +357,8 @@ export const StockTransferView: React.FC = () => {
       {/* History */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b border-slate-100 space-y-3">
-          <SectionHeader title="سجل التحويلات" subtitle="جميع التحويلات بين الفروع (مخزنية ومصنّعة)" icon={<ArrowRightLeft className="w-5 h-5 text-indigo-600" />} extra={
-            filtered.length !== stockTransfers.length ? <span className="text-[11px] font-bold text-indigo-600">{filtered.length} من {stockTransfers.length}</span> : undefined
+          <SectionHeader title="سجل التحويلات" subtitle="جميع التحويلات بين الفروع (مخزنية ومصنّعة)" icon={<ArrowRightLeft className="w-5 h-5 text-brand-600" />} extra={
+            filtered.length !== stockTransfers.length ? <span className="text-[11px] font-bold text-brand-600">{filtered.length} من {stockTransfers.length}</span> : undefined
           } />
           <div className="flex flex-wrap items-center gap-2">
             <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)} className={inputCls + ' !w-48'}>
@@ -377,8 +377,8 @@ export const StockTransferView: React.FC = () => {
             </div>
           </div>
           {selectedIds.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/60 p-2.5">
-              <span className="text-[11px] font-bold text-indigo-700 px-1">محدد: {selectedIds.size} إذن</span>
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50/60 p-2.5">
+              <span className="text-[11px] font-bold text-brand-700 px-1">محدد: {selectedIds.size} إذن</span>
               {filtered.some((t) => selectedIds.has(t.id) && t.status === 'draft') && (
                 <Btn onClick={bulkSubmitForReview}><Send className="w-4 h-4" /> إرسال للمراجعة ({filtered.filter((t) => selectedIds.has(t.id) && t.status === 'draft').length})</Btn>
               )}
@@ -396,15 +396,15 @@ export const StockTransferView: React.FC = () => {
           <table className="w-full text-right text-xs">
             <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
               <tr>
-                <th className="p-3 w-10"><input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(filtered.map((t) => t.id))); else setSelectedIds(new Set()); }} className="w-4 h-4 accent-indigo-600" /></th>
+                <th className="p-3 w-10"><input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={(e) => { if (e.target.checked) setSelectedIds(new Set(filtered.map((t) => t.id))); else setSelectedIds(new Set()); }} className="w-4 h-4 accent-brand-600" /></th>
                 <th className="p-3">الرقم</th><th className="p-3">من</th><th className="p-3">إلى</th><th className="p-3">التاريخ</th><th className="p-3">الأصناف المحوّلة</th><th className="p-3">القيمة</th><th className="p-3">الحالة</th><th className="p-3">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map((t) => (
-                <tr key={t.id} className={`hover:bg-slate-50 align-top ${selectedIds.has(t.id) ? 'bg-indigo-50/50' : ''}`}>
-                  <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(t.id)} onChange={(e) => { const next = new Set(selectedIds); if (e.target.checked) next.add(t.id); else next.delete(t.id); setSelectedIds(next); }} className="w-4 h-4 accent-indigo-600" /></td>
-                  <td className="tnum text-left p-3 font-bold text-indigo-700">{t.transferNumber}</td>
+                <tr key={t.id} className={`hover:bg-slate-50 align-top ${selectedIds.has(t.id) ? 'bg-brand-50/50' : ''}`}>
+                  <td className="p-3 text-center"><input type="checkbox" checked={selectedIds.has(t.id)} onChange={(e) => { const next = new Set(selectedIds); if (e.target.checked) next.add(t.id); else next.delete(t.id); setSelectedIds(next); }} className="w-4 h-4 accent-brand-600" /></td>
+                  <td className="tnum text-left p-3 font-bold text-brand-700">{t.transferNumber}</td>
                   <td className="p-3 font-bold text-slate-800">{t.fromBranchId === 'b-ck' ? 'المطبخ المركزي' : branches.find((b) => b.id === t.fromBranchId)?.nameAr || t.fromBranchId}</td>
                   <td className="p-3 font-bold text-slate-800">{t.toBranchId === 'b-ck' ? 'المطبخ المركزي' : branches.find((b) => b.id === t.toBranchId)?.nameAr || t.toBranchId}</td>
                   <td className="tnum text-left p-3 text-slate-600">{t.date}</td>
@@ -420,11 +420,11 @@ export const StockTransferView: React.FC = () => {
                     {t.approvedBy && <span className="block text-[9px] text-slate-400 font-bold">اعتمد بواسطة: {t.approvedBy}</span>}
                     {t.rejectReason && <span className="block text-[9px] text-rose-500 font-bold">سبب الرفض: {t.rejectReason}</span>}
                   </td>
-                  <td className="tnum text-left p-3 font-bold text-indigo-700">{fmt(t.items.reduce((s, it) => s + it.quantity * it.unitCost, 0))}</td>
+                  <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(t.items.reduce((s, it) => s + it.quantity * it.unitCost, 0))}</td>
                   <td className="p-3"><span className={statusPill(t.status)}>{TRANSFER_STATUS_LABELS[t.status]}</span></td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">
-                      <button onClick={() => printSingle(t)} title="طباعة المستند" className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Printer className="w-4 h-4" /></button>
+                      <button onClick={() => printSingle(t)} title="طباعة المستند" className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><Printer className="w-4 h-4" /></button>
                       {can('approve_grn') && (t.status === 'draft' || t.status === 'rejected') && (
                         <>
                           <button onClick={() => openEdit(t)} title="تعديل" className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
@@ -475,7 +475,7 @@ export const StockTransferView: React.FC = () => {
         </Card>
 
         <Card className="p-5">
-          <SectionHeader title="الوصفات الأساسية القابلة للتصنيع" subtitle="الأصناف التي تدخل في تصنيع أصناف أخرى (sub-prep)" icon={<Package className="w-5 h-5 text-indigo-600" />} />
+          <SectionHeader title="الوصفات الأساسية القابلة للتصنيع" subtitle="الأصناف التي تدخل في تصنيع أصناف أخرى (sub-prep)" icon={<Package className="w-5 h-5 text-brand-600" />} />
           <div className="mt-3 space-y-2">
             {prepRecipes.map((r) => {
               const cost = Number((r.totalCalculatedCost || 0).toFixed(2));
@@ -485,7 +485,7 @@ export const StockTransferView: React.FC = () => {
                     <p className="text-xs font-bold text-slate-800">{r.nameAr}</p>
                     <p className="text-[10px] font-mono text-slate-500">{r.code} · {r.portionSize}</p>
                   </div>
-                  <span className="font-mono font-extrabold text-indigo-700 text-xs">{fmt(cost)} ر.س</span>
+                  <span className="font-mono font-extrabold text-brand-700 text-xs">{fmt(cost)} ر.س</span>
                 </div>
               );
             })}
@@ -577,7 +577,7 @@ export const StockTransferView: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-600">إجمالي القيمة: <span className="font-mono font-extrabold text-indigo-700">{fmt(editLines.reduce((s, l) => s + l.quantity * l.unitCost, 0))} ر.س</span></span>
+            <span className="text-xs font-bold text-slate-600">إجمالي القيمة: <span className="font-mono font-extrabold text-brand-700">{fmt(editLines.reduce((s, l) => s + l.quantity * l.unitCost, 0))} ر.س</span></span>
             <div className="flex gap-2">
               <Btn tone="ghost" onClick={() => setEditTransfer(null)}>إلغاء</Btn>
               <Btn onClick={saveEdit} disabled={editLines.filter((l) => l.quantity > 0).length === 0}>حفظ التعديل</Btn>

@@ -889,7 +889,7 @@ export const RecipesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الوصفات المعيارية (BOM) وتكلفة الأطباق" subtitle="بناء الوصفات، حساب تكلفة الأغذية والهامش، ومتابعة انحرافات Food Cost" icon={<ChefHat className="w-6 h-6 text-indigo-600" />}
+      <PageHeader title="الوصفات المعيارية (BOM) وتكلفة الأطباق" subtitle="بناء الوصفات، حساب تكلفة الأغذية والهامش، ومتابعة انحرافات Food Cost" icon={<ChefHat className="w-6 h-6 text-brand-600" />}
         actions={<>
           <ViewToolbar
             filename="الوصفات_المعيارية"
@@ -934,15 +934,15 @@ export const RecipesView: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">إجمالي الوصفات</span><strong className="text-lg font-extrabold text-slate-900 block mt-1">{recipes.length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">الأطباق المباشرة</span><strong className="text-lg font-extrabold text-slate-900 block mt-1">{recipes.filter((r) => !r.isCentralKitchenPrep).length}</strong></div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">تحضيرات مركزية</span><strong className="text-lg font-extrabold text-slate-900 block mt-1">{recipes.filter((r) => r.isCentralKitchenPrep).length}</strong></div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نسبة Food Cost المستهدفة</span><strong className="text-lg font-extrabold text-indigo-700 block mt-1">{TARGET_FC_PCT}%</strong></div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs"><span className="text-slate-500 text-[11px] block">نسبة Food Cost المستهدفة</span><strong className="text-lg font-extrabold text-brand-700 block mt-1">{TARGET_FC_PCT}%</strong></div>
       </div>
 
       <TabBar tabs={[{ id: 'bom', label: 'قائمة الوصفات' }, { id: 'alerts', label: 'انحرافات الهامش' }, { id: 'where-used', label: 'أين يُستخدم الصنف' }, { id: 'cost-report', label: 'تقرير التكلفة والهامش' }]} active={tab} onChange={(id) => setTab(id as 'bom' | 'alerts' | 'where-used' | 'cost-report')} />
 
       {selectedCount > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-4 flex-wrap">
-            <span className="font-bold text-indigo-800">تم اختيار <span className="text-indigo-600">{selectedCount}</span> وصفة</span>
+            <span className="font-bold text-brand-800">تم اختيار <span className="text-brand-600">{selectedCount}</span> وصفة</span>
             <Btn tone="primary" onClick={printSelected}><Printer className="w-4 h-4" /> طباعة المختارة ({selectedCount})</Btn>
             <Btn tone="success" onClick={exportSelectedToExcel}><FileSpreadsheet className="w-4 h-4" /> تصدير Excel ({selectedCount})</Btn>
           </div>
@@ -967,7 +967,7 @@ export const RecipesView: React.FC = () => {
                       type="checkbox"
                       checked={selectedIds.has(r.id)}
                       onChange={() => handleSelectionToggle(r.id)}
-                      className="w-4 h-4 accent-indigo-600"
+                      className="w-4 h-4 accent-brand-600"
                     />
                     <span className="text-[10px] text-slate-500">تحديد</span>
                   </label>
@@ -976,15 +976,15 @@ export const RecipesView: React.FC = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-bold text-slate-900 text-sm">{r.nameAr}</p>
-                    {r.nameEn && <p className="text-[10px] text-indigo-600 font-mono font-bold">{r.nameEn}</p>}
+                    {r.nameEn && <p className="text-[10px] text-brand-600 font-mono font-bold">{r.nameEn}</p>}
                     {r.section?.trim() ? <span className="inline-block mt-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{r.section.trim()}</span> : null}
                     {r.isActive === false ? <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5"><Clock className="w-3 h-3" /> مسودة — بانتظار الاعتماد</span> : null}
                     <p className="text-[10px] text-slate-500 font-mono">{r.code} • {r.portionSize}{r.yieldPieces ? ` • ${r.yieldPieces} قطعة` : ''}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => printOne(r)} className="p-1.5 text-slate-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg" title="طباعة بطاقة الوصفة"><Printer className="w-4 h-4" /></button>
+                    <button onClick={() => printOne(r)} className="p-1.5 text-slate-500 hover:text-brand-700 hover:bg-brand-50 rounded-lg" title="طباعة بطاقة الوصفة"><Printer className="w-4 h-4" /></button>
                     <button onClick={() => openCopy(r)} className="p-1.5 text-sky-600 hover:bg-sky-50 rounded-lg" title="نسخ الوصفة مع فرق التكلفة والاعتماد"><Copy className="w-4 h-4" /></button>
-                    <button onClick={() => openEdit(r)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => openEdit(r)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => {
                       if (!window.confirm(`حذف الوصفة «${r.nameAr}»؟ سيُحذف السجل نهائياً.`)) return;
                       deleteRecipe(r.id);
@@ -993,12 +993,12 @@ export const RecipesView: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center text-[10px]">
                   <div className="bg-slate-50 rounded-lg p-2 border border-slate-200"><span className="text-slate-500 block">سعر القائمة (شامل ضريبة)</span><strong className="font-mono text-emerald-700">{card.grossPrice ? fmt(card.grossPrice, 2) : '—'}</strong></div>
-                  <div className="bg-slate-50 rounded-lg p-2 border border-slate-200"><span className="text-slate-500 block">الصافي (بدون ضريبة)</span><strong className="font-mono text-indigo-700">{card.netPrice ? fmt(card.netPrice, 2) : '—'}</strong></div>
+                  <div className="bg-slate-50 rounded-lg p-2 border border-slate-200"><span className="text-slate-500 block">الصافي (بدون ضريبة)</span><strong className="font-mono text-brand-700">{card.netPrice ? fmt(card.netPrice, 2) : '—'}</strong></div>
                   <div className="bg-slate-50 rounded-lg p-2 border border-slate-200"><span className="text-slate-500 block">التكلفة الإجمالية</span><strong className="font-mono text-slate-900">{fmt(card.costs.totalCost, 2)}</strong></div>
                   <div className="bg-slate-50 rounded-lg p-2 border border-slate-200"><span className="text-slate-500 block">نسبة التكلفة الإجمالية</span><strong className={`font-mono ${card.netPrice && card.totalCostPctOfNet > TARGET_FC_PCT ? 'text-rose-600' : 'text-amber-700'}`}>{card.netPrice ? card.totalCostPctOfNet.toFixed(1) : '—'}%</strong></div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-center text-[10px] mt-1">
-                  <div className="bg-indigo-50 rounded-lg p-2 border border-indigo-200"><span className="text-indigo-600 block">المقترح لـ{TARGET_FC_PCT}% (صافي)</span><strong className="font-mono text-indigo-700">{card.sugg.net ? fmt(card.sugg.net, 2) : '—'}</strong></div>
+                  <div className="bg-brand-50 rounded-lg p-2 border border-brand-200"><span className="text-brand-600 block">المقترح لـ{TARGET_FC_PCT}% (صافي)</span><strong className="font-mono text-brand-700">{card.sugg.net ? fmt(card.sugg.net, 2) : '—'}</strong></div>
                   <div className="bg-amber-50 rounded-lg p-2 border border-amber-200"><span className="text-amber-600 block">المقترح لـ{TARGET_FC_PCT}% (شامل ضريبة)</span><strong className="font-mono text-amber-700">{card.sugg.gross ? fmt(card.sugg.gross, 0) : '—'}</strong></div>
                 </div>
                 {r.subPrepIngredients?.length ? (
@@ -1026,7 +1026,7 @@ export const RecipesView: React.FC = () => {
               return (
                 <div key={r.id} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3">
                   <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-indigo-500" />
+                    <Target className="w-4 h-4 text-brand-500" />
                     <span className="font-bold text-slate-800 text-xs">{r.nameAr}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1070,16 +1070,16 @@ export const RecipesView: React.FC = () => {
                 <>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-bold text-slate-800">
-                      استخدام <span className="text-indigo-600">{wuMat?.nameAr}</span> في المبيعات
+                      استخدام <span className="text-brand-600">{wuMat?.nameAr}</span> في المبيعات
                       <span className="text-[10px] text-slate-500 font-normal mr-2">({whereUsedResults.length} وصفة — {wuFromDate || wuToDate ? `من ${wuFromDate || '—'} إلى ${wuToDate || '—'}` : 'كل الفترات'})</span>
                     </h3>
                     <Btn tone="ghost" onClick={printWhereUsed}><Printer className="w-4 h-4" /> طباعة</Btn>
                   </div>
                   <div className="grid grid-cols-3 gap-3 mb-4">
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center">
-                      <span className="text-[10px] text-indigo-600 font-bold block">إجمالي المبيعات</span>
-                      <strong className="text-lg font-extrabold text-indigo-800 font-mono">{whereUsedResults.reduce((s, r) => s + r.totalSold, 0)}</strong>
-                      <span className="text-[10px] text-indigo-500 block">حصة</span>
+                    <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 text-center">
+                      <span className="text-[10px] text-brand-600 font-bold block">إجمالي المبيعات</span>
+                      <strong className="text-lg font-extrabold text-brand-800 font-mono">{whereUsedResults.reduce((s, r) => s + r.totalSold, 0)}</strong>
+                      <span className="text-[10px] text-brand-500 block">حصة</span>
                     </div>
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
                       <span className="text-[10px] text-amber-600 font-bold block">الكمية المستهلكة</span>
@@ -1109,16 +1109,16 @@ export const RecipesView: React.FC = () => {
                         {whereUsedResults.map((r) => (
                           <tr key={r.recipe.id + r.type} className="hover:bg-slate-50">
                             <td className="p-2">
-                              <button type="button" onClick={() => openEdit(r.recipe)} className="font-bold text-indigo-700 hover:text-indigo-900 hover:underline underline-offset-2 text-right" title="اضغط لفتح وتعديل الوصفة">{r.recipe.nameAr}</button>
+                              <button type="button" onClick={() => openEdit(r.recipe)} className="font-bold text-brand-700 hover:text-brand-900 hover:underline underline-offset-2 text-right" title="اضغط لفتح وتعديل الوصفة">{r.recipe.nameAr}</button>
                             </td>
                             <td className="p-2 text-slate-500">{categoryLabel(r.recipe.category)}</td>
                             <td className="p-2">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.type === 'direct' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.type === 'direct' ? 'bg-brand-100 text-brand-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {r.type === 'direct' ? 'مباشر' : `عبر: ${r.subPrepName || '—'}`}
                               </span>
                             </td>
                             <td className="tnum text-left p-2 text-slate-700">{fmt(r.quantity, 3)}</td>
-                            <td className="tnum text-left p-2 font-bold text-indigo-700">{r.totalSold}</td>
+                            <td className="tnum text-left p-2 font-bold text-brand-700">{r.totalSold}</td>
                             <td className="tnum text-left p-2 text-amber-700">{fmt(r.consumedQty, 3)} {wuMat?.unit}</td>
                             <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(r.consumedValue, 2)} ر.س</td>
                           </tr>
@@ -1128,7 +1128,7 @@ export const RecipesView: React.FC = () => {
                         <tr className="bg-slate-50 font-extrabold border-t-2 border-slate-200">
                           <td className="p-2" colSpan={3}>الإجمالي</td>
                           <td className="p-2">—</td>
-                          <td className="tnum text-left p-2 text-indigo-800">{whereUsedResults.reduce((s, r) => s + r.totalSold, 0)}</td>
+                          <td className="tnum text-left p-2 text-brand-800">{whereUsedResults.reduce((s, r) => s + r.totalSold, 0)}</td>
                           <td className="tnum text-left p-2 text-amber-800">{fmt(whereUsedResults.reduce((s, r) => s + r.consumedQty, 0), 3)} {wuMat?.unit}</td>
                           <td className="tnum text-left p-2 text-emerald-800">{fmt(whereUsedResults.reduce((s, r) => s + r.consumedValue, 0), 2)} ر.س</td>
                         </tr>
@@ -1162,18 +1162,18 @@ export const RecipesView: React.FC = () => {
               <div className="md:col-span-2 flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-bold text-slate-500">التصنيفات:</span>
                 <label className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 cursor-pointer">
-                  <input type="checkbox" checked={allCatsSelected} onChange={() => setReportCats(allCatsSelected ? new Set() : new Set(CATEGORY_OPTIONS.map((c) => c.id)))} className="w-3.5 h-3.5 accent-indigo-600" />
+                  <input type="checkbox" checked={allCatsSelected} onChange={() => setReportCats(allCatsSelected ? new Set() : new Set(CATEGORY_OPTIONS.map((c) => c.id)))} className="w-3.5 h-3.5 accent-brand-600" />
                   <span className="text-[11px] font-bold text-slate-700">الكل</span>
                 </label>
                 {CATEGORY_OPTIONS.map((c) => (
                   <label key={c.id} className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 cursor-pointer">
-                    <input type="checkbox" checked={reportCats.has(c.id)} onChange={() => toggleCat(c.id)} className="w-3.5 h-3.5 accent-indigo-600" />
+                    <input type="checkbox" checked={reportCats.has(c.id)} onChange={() => toggleCat(c.id)} className="w-3.5 h-3.5 accent-brand-600" />
                     <span className="text-[11px] font-bold text-slate-700">{c.label}</span>
                   </label>
                 ))}
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-2"><span className="text-[10px] text-indigo-600 font-bold block">الأصناف</span><strong className="text-sm font-extrabold text-indigo-800">{reportRows.length}</strong></div>
+                <div className="bg-brand-50 border border-brand-200 rounded-xl p-2"><span className="text-[10px] text-brand-600 font-bold block">الأصناف</span><strong className="text-sm font-extrabold text-brand-800">{reportRows.length}</strong></div>
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-2"><span className="text-[10px] text-amber-600 font-bold block">تكلفة الأغذية</span><strong className="text-sm font-extrabold text-amber-800 font-mono">{fmt(reportTotals.foodCost, 2)}</strong></div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2"><span className="text-[10px] text-emerald-600 font-bold block">إجمالي التكلفة</span><strong className="text-sm font-extrabold text-emerald-800 font-mono">{fmt(reportTotals.totalCost, 2)}</strong></div>
               </div>
@@ -1206,14 +1206,14 @@ export const RecipesView: React.FC = () => {
                           <span className="block text-[10px] text-slate-400 font-mono">{row.r.code}</span>
                         </td>
                         <td className="tnum text-left p-2">{row.gross ? fmt(row.gross, 2) : '—'}</td>
-                        <td className="tnum text-left p-2 text-indigo-700">{row.net ? fmt(row.net, 2) : '—'}</td>
+                        <td className="tnum text-left p-2 text-brand-700">{row.net ? fmt(row.net, 2) : '—'}</td>
                         <td className="tnum text-left p-2">{fmt(row.foodCost, 2)}</td>
                         <td className="tnum text-left p-2">{fmt(row.packaging, 2)}</td>
                         <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(row.totalCost, 2)}</td>
                         <td className={`p-2 font-mono font-bold ${row.net && row.foodCostPct > TARGET_FC_PCT ? 'text-rose-600' : 'text-emerald-700'}`}>{row.net ? `${row.foodCostPct.toFixed(2)}%` : '—'}</td>
                         <td className="tnum text-left p-2 text-amber-700">{row.net ? `${row.totalCostPct.toFixed(2)}%` : '—'}</td>
                         <td className="tnum text-left p-2 font-bold text-rose-600">{row.sugg.gross ? fmt(row.sugg.gross, 0) : '—'}</td>
-                        <td className="tnum text-left p-2 text-indigo-700">{row.sugg.net ? fmt(row.sugg.net, 2) : '—'}</td>
+                        <td className="tnum text-left p-2 text-brand-700">{row.sugg.net ? fmt(row.sugg.net, 2) : '—'}</td>
                         <td className="tnum text-left p-2 text-emerald-700">{row.sugg.net ? `${row.totalCostPctAfter.toFixed(2)}%` : '—'}</td>
                       </tr>
                     ))}
@@ -1222,10 +1222,10 @@ export const RecipesView: React.FC = () => {
                     <tr className="bg-slate-50 font-extrabold border-t-2 border-slate-200">
                       <td className="p-2" colSpan={4}>الإجمالي ({reportRows.length} صنف)</td>
                       <td className="tnum text-left p-2">{reportTotals.gross ? fmt(reportTotals.gross, 2) : '—'}</td>
-                      <td className="tnum text-left p-2 text-indigo-700">{reportTotals.net ? fmt(reportTotals.net, 2) : '—'}</td>
+                      <td className="tnum text-left p-2 text-brand-700">{reportTotals.net ? fmt(reportTotals.net, 2) : '—'}</td>
                       <td className="tnum text-left p-2">{fmt(reportTotals.foodCost, 2)}</td>
                       <td className="tnum text-left p-2">{fmt(reportTotals.packaging, 2)}</td>
-                      <td className="tnum text-left p-2 text-indigo-800">{fmt(reportTotals.totalCost, 2)}</td>
+                      <td className="tnum text-left p-2 text-brand-800">{fmt(reportTotals.totalCost, 2)}</td>
                       <td className="tnum text-left p-2">{reportTotals.foodCostPct !== null ? `${reportTotals.foodCostPct.toFixed(2)}%` : '—'}</td>
                       <td className="tnum text-left p-2">{reportTotals.totalCostPct !== null ? `${reportTotals.totalCostPct.toFixed(2)}%` : '—'}</td>
                       <td className="tnum text-left p-2">{reportTotals.suggGross ? fmt(reportTotals.suggGross, 0) : '—'}</td>
@@ -1340,18 +1340,18 @@ export const RecipesView: React.FC = () => {
             <div><span className="text-slate-500 text-[10px] block">خامات (مكونات + هدر)</span><strong className="font-mono text-xs text-slate-800">{fmt(liveCosts.foodCost - liveCosts.subPrepCost, 2)}</strong></div>
             <div><span className="text-amber-700 text-[10px] block">التحضيرات الأساسية</span><strong className="font-mono text-xs text-amber-800">{fmt(liveCosts.subPrepCost, 2)}</strong></div>
             <div><span className="text-slate-500 text-[10px] block">عمالة + تغليف</span><strong className="font-mono text-xs text-slate-800">{fmt(form.directLaborCost + form.packagingCost, 2)}</strong></div>
-            <div><span className="text-slate-700 text-[10px] block">تكلفة الأغذية</span><strong className="font-mono text-xs text-indigo-700">{fmt(liveCosts.foodCost, 2)}</strong></div>
+            <div><span className="text-slate-700 text-[10px] block">تكلفة الأغذية</span><strong className="font-mono text-xs text-brand-700">{fmt(liveCosts.foodCost, 2)}</strong></div>
             <div><span className="text-slate-500 text-[10px] block">إجمالي التكلفة</span><strong className="font-mono text-xs text-slate-800">{fmt(liveCosts.totalCost, 2)}</strong></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-indigo-50/50 border border-indigo-100 rounded-xl p-3">
-            <div><span className="text-indigo-600 text-[10px] block">سعر البيع المقترح (صافي لهدف {TARGET_FC_PCT}% من الإجمالي)</span><strong className="font-mono text-xs text-indigo-700">{liveSugg.net ? fmt(liveSugg.net, 2) : '—'}</strong></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-brand-50/50 border border-brand-100 rounded-xl p-3">
+            <div><span className="text-brand-600 text-[10px] block">سعر البيع المقترح (صافي لهدف {TARGET_FC_PCT}% من الإجمالي)</span><strong className="font-mono text-xs text-brand-700">{liveSugg.net ? fmt(liveSugg.net, 2) : '—'}</strong></div>
             <div><span className="text-amber-600 text-[10px] block">سعر البيع المقترح (شامل ضريبة)</span><strong className="font-mono text-xs text-amber-700">{liveSugg.gross ? fmt(liveSugg.gross, 0) : '—'}</strong></div>
             <div><span className="text-emerald-600 text-[10px] block">نسبة التكلفة الإجمالية بعد التعديل</span><strong className="font-mono text-xs text-emerald-700">{liveSugg.net && liveCosts.totalCost > 0 ? `${(liveCosts.totalCost / liveSugg.net * 100).toFixed(2)}%` : '—'}</strong></div>
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-medium">إلغاء</button>
-            <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">{editingId ? 'حفظ' : 'إنشاء'}</button>
+            <button type="submit" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium">{editingId ? 'حفظ' : 'إنشاء'}</button>
           </div>
         </form>
       </Modal>
@@ -1370,7 +1370,7 @@ export const RecipesView: React.FC = () => {
               <div><span className="text-slate-500 text-[10px] block">التكلفة قبل النسخ (الأصلية)</span><strong className="font-mono text-xs text-slate-500">{fmt(copyOrigCosts.totalCost, 2)} ر.س</strong></div>
               <div><span className="text-slate-500 text-[10px] block">التكلفة بعد النسخ (الجديدة)</span><strong className="font-mono text-xs text-slate-800">{fmt(copyNewCosts.totalCost, 2)} ر.س</strong></div>
               <div><span className="text-slate-500 text-[10px] block">الفرق</span><strong className={`font-mono text-xs ${copyDelta > 0.005 ? 'text-rose-600' : copyDelta < -0.005 ? 'text-emerald-600' : 'text-slate-500'}`}>{copyDelta > 0.005 ? '▲' : copyDelta < -0.005 ? '▼' : '—'} {fmt(Math.abs(copyDelta), 2)} ر.س</strong></div>
-              <div><span className="text-slate-500 text-[10px] block">السعر المقترح (شامل ضريبة)</span><strong className="font-mono text-xs text-indigo-700">{copyNewCosts.totalCost ? fmt(suggestedForTarget(copyNewCosts.totalCost).gross, 0) : '—'} ر.س</strong></div>
+              <div><span className="text-slate-500 text-[10px] block">السعر المقترح (شامل ضريبة)</span><strong className="font-mono text-xs text-brand-700">{copyNewCosts.totalCost ? fmt(suggestedForTarget(copyNewCosts.totalCost).gross, 0) : '—'} ر.س</strong></div>
             </div>
 
             <div className="rounded-xl border border-violet-200 bg-violet-50/60 p-3 space-y-2">
@@ -1384,7 +1384,7 @@ export const RecipesView: React.FC = () => {
               {copyDraft ? (
                 <button onClick={confirmCopy} className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium gap-2 flex items-center"><Clock className="w-4 h-4" /> حفظ كمسودة</button>
               ) : (
-                <button onClick={confirmCopy} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium gap-2 flex items-center"><CheckCircle2 className="w-4 h-4" /> اعتماد مباشر</button>
+                <button onClick={confirmCopy} className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium gap-2 flex items-center"><CheckCircle2 className="w-4 h-4" /> اعتماد مباشر</button>
               )}
             </div>
           </div>

@@ -19,7 +19,7 @@ const TONE_CHIP: Record<Tone, string> = {
   amber: 'bg-amber-50 text-amber-700 border-amber-200',
   rose: 'bg-rose-50 text-rose-700 border-rose-200',
   primary: 'bg-primary-50 text-primary-700 border-primary-200',
-  indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  indigo: 'bg-brand-50 text-brand-700 border-brand-200',
 };
 
 // ---------------------------------------------------------------- الأزرار
