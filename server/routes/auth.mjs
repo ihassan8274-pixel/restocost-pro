@@ -1,4 +1,4 @@
-// Auth + users + audit routes. All URLs unchanged.
+﻿// Auth + users + audit routes. All URLs unchanged.
 import crypto from 'node:crypto';
 import {
   readToken, sessionUser, publicUser, hasDefaultAdminPassword,
@@ -31,6 +31,13 @@ const {
   writeAudit, getAuditLogs,
 } = store;
 
+
+// hash bcrypt وهمي ثابت الشكل «$2bexport const registerAuth = (app) => {0$…» لـtiming ما عدا.
+// الغرض منه أن تُقارَن كلمة المرور عند عدم وجود المستخدم، فيستغرق الطلبان
+// وقتاً متقارباً فلا يُكشف وجود الحساب من الفارق الزمني.
+// (لن يُطابق أي مفتاح حقيقي — ولا نحتاج أن يُطابق.)
+const DUMMY_HASH = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+
 export const registerAuth = (app) => {
   app.post('/api/auth/login', async (req, res) => {
     const { email, password, totpCode } = req.body || {};
@@ -46,12 +53,34 @@ export const registerAuth = (app) => {
       return res.json({ ok: false, error: `محاولات كثيرة من هذا العنوان — أعد المحاولة بعد ${Math.ceil((ipRec.lockedUntil - Date.now()) / 60000)} دقيقة` });
     }
 
+    // ── منع كشف وجود الحساب (user enumeration) ──
+    //
+    // كان هنا أربعة ردود مختلفة، وكلها تكشف حالة الحساب:
+    //   «غير مسجل» · «في انتظار التفعيل» · «موقوف» · «كلمة المرور غير صحيحة»
+    // فمهاجم يجرّب 100 بريد يخرج بقائمة حساباتك كاملة، ويعرف أيّها موقوف
+    // وأيّها بانتظار تفعيل.
+    //
+    // صار ردٌّ واحد لكل الفشل. والتمييز الفعلي (حساب موقوف) صار في السجل
+    // الداخلي writeAudit لا في ردّ الشبكة — فيبقى للمشرف ما يحتاجه دون أن
+    // يقرأه المهاجم.
+    const GENERIC = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+    const deny = (reason) => {
+      const who = user ? user.email : String(email || '').slice(0, 120);
+      writeAudit(null, 'LOGIN_DENIED', user ? user.id : null, who + ' (' + reason + ')');
+      writeAudit(null, 'LOGIN_DENIED', user ? user.id : null, detail);
+      return res.json({ ok: false, error: GENERIC });
+    };
+
+    // ── تسريب التوقيت (timing side-channel) ──
+    // كان الحرف `if (!user) return` يُرجع فوراً، بينما الحساب الموجود يمرّ على
+    // bcrypt (≈100ms). فحتى لو becameت الرسائل متطابقة، الفارق الزمني وحده
+    // يكشف وجود الحساب. الحل: مقارنة وهمية بـhash وهمي عند عدم وجود المستخدم،
+    // فيستغرق الطلبان وقتاً متقارباً.
     if (!user) {
       rateLimitRegisterFailure(ipKey);
-      return res.json({ ok: false, error: 'البريد الإلكتروني غير مسجل في النظام' });
+      await verifyPassword(password, DUMMY_HASH);
+      return deny('no_such_user');
     }
-    if (user.needsActivation) return res.json({ ok: false, error: 'حسابك في انتظار تفعيل مسؤول النظام — أعد المحاولة لاحقاً' });
-    if (!user.isActive) return res.json({ ok: false, error: 'هذا الحساب موقوف، تواصل مع مدير النظام' });
 
     // Brute-force protection: lock the account after repeated failures (SQLite-backed).
     const rec = rateLimitGet(user.email);
@@ -66,8 +95,13 @@ export const registerAuth = (app) => {
       if (res2.lockedUntil) {
         return res.json({ ok: false, error: `محاولات كثيرة — تم قفل الحساب مؤقتاً. أعد المحاولة بعد ${Math.ceil((res2.lockedUntil - Date.now()) / 60000)} دقيقة` });
       }
-      return res.json({ ok: false, error: 'كلمة المرور غير صحيحة' });
+      return res.json({ ok: false, error: GENERIC });
     }
+
+    // الحساب موجود وكلمة المرور صحيحة، لكن غير قابل للدخول.
+    // يُقال الآن بلا كشف — الرسالة الوحيدة التي تتغيّر هي «مكتشف مسبقاً».
+    if (user.needsActivation) return deny('needs_activation');
+    if (!user.isActive) return deny('suspended');
     rateLimitClear(user.email);
 
     // Two-factor authentication (TOTP) for admin accounts.
