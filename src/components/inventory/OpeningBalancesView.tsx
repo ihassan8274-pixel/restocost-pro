@@ -386,10 +386,10 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                       const isPriceChanged = !Number.isNaN(toNum(price[m.id])) && toNum(price[m.id]) > 0 && toNum(price[m.id]) !== getAverageUnitCost(m.id);
                       return (
                         <tr key={m.id} className={`hover:bg-slate-50 ${isChanged || isPriceChanged ? 'bg-amber-50/40' : ''}`}>
-                          <td className={`${td} font-mono font-bold text-brand-700`}>{m.code}</td>
+                          <td className={`text-left ${td} font-bold text-brand-700 tnum`}>{m.code}</td>
                           <td className={`${td} font-bold text-slate-900`}>{m.nameAr}</td>
                           <td className={td}>{m.unit}</td>
-                          <td className={`${td} font-mono`}>{fmt(cur)}</td>
+                          <td className={`text-left ${td} tnum`}>{fmt(cur)}</td>
                           <td className={td}>
                             <input type="text" inputMode="decimal" data-nav value={qty[m.id] !== undefined ? qty[m.id] : ''}
                               onChange={(e) => setQty({ ...qty, [m.id]: e.target.value })}
@@ -402,7 +402,7 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                               onKeyDown={navOnEnter}
                               className={inputCls + ' !p-1.5 w-24'} />
                           </td>
-                          <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(val)}</td>
+                          <td className={`text-left ${td} font-bold text-brand-700 tnum`}>{fmtMoney(val)}</td>
                         </tr>
                       );
                     })}
@@ -413,9 +413,9 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
             <tfoot>
               <tr className="bg-brand-50 font-extrabold">
                 <td className={td} colSpan={4}>الإجمالي الكلي</td>
-                <td className={`${td} font-mono`}>{fmt(totalQty)}</td>
+                <td className={`text-left ${td} tnum`}>{fmt(totalQty)}</td>
                 <td className={td}>—</td>
-                <td className={`${td} font-mono text-brand-800`}>{fmtMoney(totalVal)}</td>
+                <td className={`text-left ${td} text-brand-800 tnum`}>{fmtMoney(totalVal)}</td>
               </tr>
             </tfoot>
           </table>
@@ -452,10 +452,10 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                     const v = r.items.reduce((s, i) => s + i.quantity * i.unitCost, 0);
                     return (
                       <tr key={r.id} className={`hover:bg-slate-50 ${editId === r.id ? 'bg-brand-50/70' : ''}`}>
-                        <td className={`${td} font-mono font-bold text-slate-800`}>{r.date}</td>
+                        <td className={`text-left ${td} font-bold text-slate-800 tnum`}>{r.date}</td>
                         <td className={`${td}`}>{r.items.length} صنف</td>
-                        <td className={`${td} font-mono`}>{fmt(q)}</td>
-                        <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(v)}</td>
+                        <td className={`text-left ${td} tnum`}>{fmt(q)}</td>
+                        <td className={`text-left ${td} font-bold text-brand-700 tnum`}>{fmtMoney(v)}</td>
                         <td className={td}>
                           <div className="flex items-center gap-1">
                             <button onClick={() => printRecord(r)} className="p-1.5 rounded-lg text-brand-600 hover:bg-brand-50" title="طباعة هذا السجل"><Printer className="w-4 h-4" /></button>
@@ -502,13 +502,13 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                   <tr key={c.branch.id} className={`hover:bg-slate-50 ${!c.has ? 'bg-amber-50/60' : ''}`}>
                     <td className={`${td} font-bold text-slate-900`}>{c.branch.nameAr}</td>
                     <td className={`${td}`}>{c.has ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">موجود</span> : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">لا يوجد سجل — يظهر صفر</span>}</td>
-                    <td className={`${td} font-mono text-slate-600`}>{c.date}</td>
-                    <td className={`${td} font-mono`}>{c.count}</td>
-                    <td className={`${td} font-mono font-bold`}>{fmt(c.openQty)}</td>
-                    <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(c.openVal)}</td>
-                    <td className={`${td} font-mono`}>{fmt(c.curQty)}</td>
-                    <td className={`${td} font-mono`}>{fmtMoney(c.curVal)}</td>
-                    <td className={`${td} font-mono font-extrabold ${c.curQty - c.openQty === 0 ? 'text-slate-400' : 'text-rose-700'}`}>{fmt(c.curQty - c.openQty)}</td>
+                    <td className={`text-left ${td} text-slate-600 tnum`}>{c.date}</td>
+                    <td className={`text-left ${td} tnum`}>{c.count}</td>
+                    <td className={`text-left ${td} font-bold tnum`}>{fmt(c.openQty)}</td>
+                    <td className={`text-left ${td} font-bold text-brand-700 tnum`}>{fmtMoney(c.openVal)}</td>
+                    <td className={`text-left ${td} tnum`}>{fmt(c.curQty)}</td>
+                    <td className={`text-left ${td} tnum`}>{fmtMoney(c.curVal)}</td>
+                    <td className={`text-left ${td} font-extrabold ${c.curQty - c.openQty === 0 ? 'text-slate-400' : 'text-rose-700'} tnum`}>{fmt(c.curQty - c.openQty)}</td>
                   </tr>
                 ))}
                 {branchCompare.length === 0 && <tr><td colSpan={9} className={`${td} text-center text-slate-500 font-bold`}>لا توجد فروع ظاهرة</td></tr>}
@@ -530,12 +530,12 @@ return m ? { code: m.code, name: m.nameAr, cat: categoryLabel(m.category, materi
                   const v = toNum(qty[m.id]); const p = toNum(price[m.id]) > 0 ? toNum(price[m.id]) : getAverageUnitCost(m.id);
                   return (
                   <tr key={m.id} className="hover:bg-slate-50">
-                    <td className={`${td} font-mono font-bold text-brand-700`}>{m.code}</td>
+                    <td className={`text-left ${td} font-bold text-brand-700 tnum`}>{m.code}</td>
                     <td className={`${td} font-bold`}>{m.nameAr}</td>
-                    <td className={`${td} font-mono`}>{fmt(currentOf(m.id))}</td>
-                    <td className={`${td} font-mono font-extrabold text-emerald-700`}>{fmt(v)}</td>
-                    <td className={`${td} font-mono`}>{fmt(p, 2)}</td>
-                    <td className={`${td} font-mono font-bold text-brand-700`}>{fmtMoney(v * p)}</td>
+                    <td className={`text-left ${td} tnum`}>{fmt(currentOf(m.id))}</td>
+                    <td className={`text-left ${td} font-extrabold text-emerald-700 tnum`}>{fmt(v)}</td>
+                    <td className={`text-left ${td} tnum`}>{fmt(p, 2)}</td>
+                    <td className={`text-left ${td} font-bold text-brand-700 tnum`}>{fmtMoney(v * p)}</td>
                   </tr>
                   );
                 })}

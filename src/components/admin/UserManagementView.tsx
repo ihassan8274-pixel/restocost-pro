@@ -152,7 +152,7 @@ export const UserManagementView: React.FC = () => {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-line">
               <tr><th className="p-3">الاسم</th><th className="p-3">البريد</th><th className="p-3">الدور</th><th className="p-3">صلاحية الشاشات</th><th className="p-3">الفرع</th><th className="p-3">الحالة</th><th className="p-3">إجراءات</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

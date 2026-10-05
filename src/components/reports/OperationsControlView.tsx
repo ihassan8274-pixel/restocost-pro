@@ -367,7 +367,7 @@ export const OperationsControlView: React.FC = () => {
   ];
 
   const th = 'text-right py-2 px-2 font-bold whitespace-nowrap';
-  const td = 'py-2 px-2 border-b border-slate-100 font-mono whitespace-nowrap';
+  const td = 'py-2 px-2 border-b border-slate-100 font-mono whitespace-nowrap tnum text-left';
 
   return (
     <div className="space-y-6">
@@ -413,7 +413,7 @@ export const OperationsControlView: React.FC = () => {
             </ResponsiveContainer>
             <div className="overflow-x-auto max-h-60">
               <table className="w-full text-xs">
-                <thead><tr className="text-slate-500 border-b-2 border-slate-200"><th className={th}>الفئة</th><th className={th}>القيمة المطلوبة</th></tr></thead>
+                <thead><tr className="text-slate-500 font-bold text-[10px] bg-slate-50 border-b border-line"><th className={th}>الفئة</th><th className={th}>القيمة المطلوبة</th></tr></thead>
                 <tbody>
                   {reorderPie.map((p) => (
                     <tr key={p.name}><td className={`${td} font-bold`}>{p.name}</td><td className={td}>{fmtMoney(p.value)}</td></tr>
@@ -424,7 +424,7 @@ export const OperationsControlView: React.FC = () => {
           </div>
           <div className="overflow-x-auto max-h-96">
             <table className="w-full text-xs">
-              <thead><tr className="text-slate-500 border-b-2 border-slate-200">
+              <thead><tr className="text-slate-500 font-bold text-[10px] bg-slate-50 border-b border-line">
                 {['الفرع', 'الصنف', 'الرصيد', 'الأدنى', 'الأقصى', 'قيد التوريد', 'المقترح', 'القيمة', 'الأولوية'].map((h) => <th key={h} className={th}>{h}</th>)}
               </tr></thead>
               <tbody>
@@ -476,7 +476,7 @@ export const OperationsControlView: React.FC = () => {
               </ResponsiveContainer>
               <div className="overflow-x-auto max-h-72">
                 <table className="w-full text-xs">
-                  <thead><tr className="text-slate-500 border-b-2 border-slate-200">
+                  <thead><tr className="text-slate-500 font-bold text-[10px] bg-slate-50 border-b border-line">
                     {['الصنف', 'قيمة الاستهلاك', 'الحصة %', 'تراكمي %', 'الفئة', 'دورية الجرد المقترحة'].map((h) => <th key={h} className={th}>{h}</th>)}
                   </tr></thead>
                   <tbody>
@@ -531,7 +531,7 @@ export const OperationsControlView: React.FC = () => {
           </div>
           <div className="overflow-x-auto max-h-96">
             <table className="w-full text-xs">
-              <thead><tr className="text-slate-500 border-b-2 border-slate-200">
+              <thead><tr className="text-slate-500 font-bold text-[10px] bg-slate-50 border-b border-line">
                 {['التاريخ', 'الفرع', 'الصنف', 'الوحدة', 'النظري', 'المعدود', 'الفرق', 'الأثر المالي'].map((h) => <th key={h} className={th}>{h}</th>)}
               </tr></thead>
               <tbody>
@@ -579,7 +579,7 @@ export const OperationsControlView: React.FC = () => {
           )}
           <div className="overflow-x-auto max-h-80">
             <table className="w-full text-xs">
-              <thead><tr className="text-slate-500 border-b-2 border-slate-200">
+              <thead><tr className="text-slate-500 font-bold text-[10px] bg-slate-50 border-b border-line">
                 {['الاستلام', 'التاريخ', 'المورد', 'الصنف', 'الكمية', 'المعياري', 'الفعلي', 'الانحراف %', 'الأثر'].map((h) => <th key={h} className={th}>{h}</th>)}
               </tr></thead>
               <tbody>
@@ -643,7 +643,7 @@ export const OperationsControlView: React.FC = () => {
             <div className="text-[11px] font-extrabold text-amber-700 mb-1">هوالك بانتظار الاعتماد ({wasteData.pending.length})</div>
             <div className="overflow-x-auto max-h-56">
               <table className="w-full text-xs">
-                <thead><tr className="text-slate-500 border-b-2 border-slate-200">
+                <thead><tr className="text-slate-500 font-bold text-[10px] bg-slate-50 border-b border-line">
                   {['التاريخ', 'الصنف', 'الكمية', 'القيمة', 'السبب', 'المسؤول', 'أيام الانتظار'].map((h) => <th key={h} className={th}>{h}</th>)}
                 </tr></thead>
                 <tbody>
