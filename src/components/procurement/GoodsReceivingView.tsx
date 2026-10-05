@@ -1,5 +1,5 @@
 ﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { PackageCheck, Plus, Printer, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, AlertTriangle } from 'lucide-react';
+import { PackageCheck, Plus, Printer, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, AlertTriangle, ScanLine, ArrowLeft } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Card, Btn, Modal, DocumentFingerprint } from '../ui';
 import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi, erpInputCls } from '../ui/erp';
@@ -211,6 +211,13 @@ export const GoodsReceivingView: React.FC = () => {
   };
 
   const updateItem = (idx: number, patch: Partial<GoodsReceiptItem>) => setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+  // إضافة صنف في وضع التعديل. لم تكن موجودة — نافذة التعديل لا يمكن
+  // أن تضيف صنفاً أصلاً، فتصحيح أرقام صنف خاطئ يعني الحذف ثم التعديل.
+  const addEditItem = () => {
+    setEditItems((prev) => [...prev, { rawMaterialId: '', quantityReceived: 0, unitPrice: 0, batchNumber: '', expiryDate: '', qualityPassed: true } as GoodsReceiptItem]);
+    setEditKeys((prev) => [...prev, makeKey()]);
+  };
+
   const updateEditItem = (idx: number, patch: Partial<GoodsReceiptItem>) => setEditItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
 
   // --- Fluid numeric typing: keep the edited field as raw text, derive siblings live ---
@@ -908,23 +915,36 @@ export const GoodsReceivingView: React.FC = () => {
       {/* Edit Modal - Professional Design */}
       <Modal open={editGrn !== null} onClose={() => setEditGrn(null)} title={`تعديل الإشعار ${editGrn?.grnNumber || ''} (${editGrn?.status === 'draft' ? 'مسودة' : 'قيد المراجعة'})`} xl closeOnOverlayClick={false}>
         <div className="space-y-0">
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 bg-surface border-b border-line px-6 py-4 flex items-center justify-between">
+          {/* ترويسة التعديل — نفس نمط نافذة الإدخال (indigo) حتى لا تختلف
+              النافذتان اللتان تُفتحان من الزر نفسه */}
+          <div className="px-6 py-4 border-b border-line flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                <Pencil className="w-5 h-5 text-amber-600" />
-              </div>
+              <span className="w-11 h-11 bg-primary-50 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
+                <Pencil className="w-6 h-6" />
+              </span>
               <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">تعديل إشعار الاستلام</h3>
-                <p className="text-[11px] text-slate-500">
-                  {editGrn?.status === 'draft' ? 'الإشعار مسودة — التعديل مسموح بالكامل' : 'الإشعار قيد المراجعة — يمكن التعديل قبل الاعتماد النهائي'}
-                </p>
+                <h2 className="font-bold text-slate-900 text-lg">تعديل الإشعار {editGrn?.grnNumber}</h2>
+                <p className="text-[11px] text-slate-500 mt-0.5">عدّل الكميات والأسعار ثم احفظ — المسار ثابت عند {editGrn?.status === 'draft' ? 'مسودة' : 'قيد المراجعة'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${editGrn?.status === 'draft' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
-                {editGrn?.status === 'draft' ? 'مسودة' : 'قيد المراجعة'}
-              </span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[11px] font-bold text-slate-500">المسار:</span>
+              {APPROVAL_STEPS.map((st, i) => {
+                const cur = editGrn ? i === APPROVAL_STEPS.findIndex((x) => x.id === editGrn.status) : false;
+                const done = editGrn ? i < APPROVAL_STEPS.findIndex((x) => x.id === editGrn.status) : false;
+                return (
+                  <React.Fragment key={st.id}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      cur ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        : done ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-slate-50 text-slate-500 border-line'
+                    }`}>
+                      {i + 1} · {st.label}
+                    </span>
+                    {i < APPROVAL_STEPS.length - 1 && <ArrowLeft className="w-3 h-3 text-slate-300" />}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
 
@@ -969,8 +989,18 @@ export const GoodsReceivingView: React.FC = () => {
 
             {/* Section 2: Items — جدول واحد مشترك مع نموذج الإدخال */}
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-bold text-slate-800 flex items-center gap-2"><PackageCheck className="w-4 h-4 text-amber-600" /> الأصناف المستلمة</h4>
+              {/* عنوان الأصناف + أدوات — نفس نافذة الإدخال: عدّاد + تحويل وحدة + إضافة */}
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                  <PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة
+                  <span className="tnum text-[11px] font-bold text-slate-500">({editItems.length})</span>
+                </h4>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-500 hidden sm:inline">الكمية بوحدة التخزين</span>
+                  <button type="button" onClick={() => showToast('تحويل الوحدة يُطبَّق من جدول الأصناف أدناه')} className="text-[11px] font-bold text-primary-600 hover:underline">تحويل وحدة ▾</button>
+                  <ErpButton onClick={() => setScannerOpen(true)}><ScanLine className="w-3.5 h-3.5" /> مسح باركود</ErpButton>
+                  <ErpButton onClick={addEditItem}><Plus className="w-3.5 h-3.5" /> سطر جديد</ErpButton>
+                </div>
               </div>
 
               <GrnItemsTable
