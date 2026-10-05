@@ -1,3 +1,4 @@
+// @vitest-environment node
 // server/test/repo/repository.test.mjs — Repository Pattern + Unit of Work
 // تُشغَّل بواسطة Vitest فقط (vitest) على store SQLite داخل الذاكرة معزولاً عن
 // أي قاعدة حقيقية. تختبِر دلالات المزامنة: الدمج بالمعرّف، شواهد الحذف، _mtime.

@@ -1,3 +1,4 @@
+// @vitest-environment node
 // server/test/repo/cdc.test.mjs — Change Data Capture log.
 // يُشغَّل بواسطة Vitest على store SQLite داخل الذاكرة.
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';

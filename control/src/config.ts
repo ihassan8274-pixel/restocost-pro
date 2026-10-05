@@ -5,6 +5,141 @@ import { parse, parseDocument } from 'yaml';
 import type { Document } from 'yaml';
 
 // ═══════════════════════════════════════════════════════
+//  ⭐ توسعة متغيرات البيئة
+// ═══════════════════════════════════════════════════════
+
+/**
+ * ⭐ لماذا `${VAR}` بدل كلمة مرور حرفية في YAML:
+ *    config/companies.yaml يتم commit في git. كلمة مرور حرفية هناك = سر
+ *    داخل المستودع للأبد.
+ *
+ * ⭐ لماذا ترمي استثناءً بدل استبدال فارغ:
+ *    الاستبدال الفارغ ينتج `postgres://restocost_app:@127.0.0.1/db` — شكله
+ *    صحيح، فيتصل بقاعدة غلط أو يفشل بعدين برسالة غامضة.
+ *    نفس فكرة commit d6a9523: القيمة الصامتة أسوأ من قيمة صريحة.
+ *    "مقدرتش أعرف" لازم يبان.
+ *
+ * الصيغة المدعومة:  ${NAME}            → إجباري
+ *                    ${NAME:-القيمة}    → اختياري
+ */
+export const ENV_REF = /\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}/g;
+
+/** ⭐ قواعد legacy — لا يجوز أن يشير entry شركة إليها */
+export const LEGACY_DATABASES = new Set(['restocost', 'restocost2']);
+
+export function interpolateEnv(
+  raw: string,
+  env: Record<string, string | undefined> = process.env,
+): string {
+  const missing: string[] = [];
+
+  const out = raw.replace(ENV_REF, (_all, name: string, def?: string) => {
+    const v = env[name];
+    if (v !== undefined && v !== '') return v;
+    if (def !== undefined) return def;
+    missing.push(name);
+    return '';
+  });
+
+  if (missing.length > 0) {
+    throw new Error(
+      `متغير بيئة غير معرّف: ${[...new Set(missing)].join('، ')}\n` +
+        `   في: ${raw}\n` +
+        `   أضِفه إلى control/.env (غير متتبَّع في git).`,
+    );
+  }
+
+  // ⛔ خطأ إملائي مثل ${DABASE_URL} يعدّي الـ replace أعلاه ويصل للسائق
+  //    كـ نص حرفي، فيفشل وقت الاتصال برسالة غامضة. امسكه هنا بدل هناك.
+  //    ⭐ نفحص ${ فقط وليس } وحدها — كلمة مرور تحتوي } ممكنة، أما ${ فاحتمالها ضئيل.
+  if (out.includes('${')) {
+    const bad = /\$\{[^}]*\}?/.exec(out)?.[0] ?? '${';
+    throw new Error(
+      `مرجع متغير بيئة مش مكتمل: ${bad}\n` +
+        `   الصيغة الصحيحة: \${NAME}  أو  \${NAME:-قيمة-افتراضية}`,
+    );
+  }
+
+  return out;
+}
+
+/** ⭐ هل يحتوي النص على مرجع ${...}؟ (نسخة جديدة من الـ regex كل مرة لتفادي lastIndex) */
+const hasEnvRef = (s: string): boolean => new RegExp(ENV_REF.source).test(s);
+
+/**
+ * ⭐ فحص عنوان قاعدة البيانات — مشترك بين مسار القراءة ومسار الكتابة.
+ *
+ * ⛔⛔ كان الفحص موجوداً في loadConfig() فقط. مسار الكتابة (POST/PATCH على
+ *    /api/config) يمرّ من assertValid() التي لا تحتوي أي فحص لكلمة المرور،
+ *    أي كان يمكن حفظ كلمة مرور حرفية في YAML عبر الـ API ثم تُحفظ في git.
+ *    نفس الفحص، نفس القواعد، في المكانين.
+ */
+function checkDatabaseUrl(
+  label: string,
+  raw: unknown,
+  problems: string[],
+  opts: { resolve: boolean },
+): void {
+  if (typeof raw !== 'string' || raw === '') return;   // REQUIRED يلتقط الفراغ
+
+  // ⭐ CHANGE_ME أولاً: هو placeholder مش سر، ولازم يبقى في رسالة صريحة
+  //    "لسه متملوش" بدل ما يتبلع في رسالة "كلمة مرور حرفية".
+  // ⭐ مفيش return مبكر — problems بتتجمّع كلها عشان المستخدم يشوفها مرة
+  //    واحدة. لو رجعنا عند أول مشكلة، هنخفي الباقي ونخلّيه يصحح واحد واحد.
+  if (raw.includes('CHANGE_ME')) {
+    problems.push(
+      `الشركة "${label}" databaseUrl لسه فيه CHANGE_ME — ` +
+        `استبدله بـ \${COMPANY_DB_PASSWORD}`,
+    );
+  }
+
+  // ⛔ كلمة مرور حرفية في ملف يتم committing → سر في المستودع
+  if (!hasEnvRef(raw) && /:\/\/[^:@/\s]+:[^:@/\s]+@/.test(raw)) {
+    problems.push(
+      `الشركة "${label}" databaseUrl فيه كلمة مرور حرفية — ` +
+        `استخدم \${COMPANY_DB_PASSWORD} بدلاً منها`,
+    );
+  }
+
+  // فحص بناء الـ ${...} حتى بدون متغيرات بيئة (مسار الكتابة)
+  const badRef = raw.match(/\$\{[^}]*\}?/)?.[0];
+  if (badRef && !/^\$\{[A-Za-z_][A-Za-z0-9_]*(?::-[^}]*)?\}$/.test(badRef)) {
+    problems.push(`الشركة "${label}" مرجع متغير بيئة مش صالح: ${badRef}`);
+  }
+
+  if (!opts.resolve) return;
+
+  // ⭐ هنا فقط نفكّ المتغيرات — الفشل يُسجَّل، ومفيش silent pass
+  let resolved: string;
+  try {
+    resolved = interpolateEnv(raw);
+  } catch (e) {
+    problems.push(`الشركة "${label}": ${(e as Error).message.split('\n')[0]}`);
+    return;
+  }
+
+  let u: URL;
+  try {
+    u = new URL(resolved);
+  } catch {
+    problems.push(`الشركة "${label}" databaseUrl ليس URL صالح بعد التوسعة`);
+    return;
+  }
+  if (u.protocol !== 'postgres:' && u.protocol !== 'postgresql:') {
+    problems.push(`الشركة "${label}" databaseUrl بروتوكول غير مدعوم: ${u.protocol}`);
+  }
+  if (!u.hostname) problems.push(`الشركة "${label}" databaseUrl بلا host`);
+
+  const db = u.pathname.replace(/^\//, '');
+  if (LEGACY_DATABASES.has(db)) {
+    problems.push(
+      `الشركة "${label}" يشير إلى قاعدة legacy "${db}" — ` +
+        `كل شركة ليها قاعدة مستقلة، ولا يجوز أن يشير إلى قاعدة الإنتاج`,
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 //  أنواع
 // ═══════════════════════════════════════════════════════
 
@@ -45,22 +180,25 @@ export interface RootConfig {
 const MODULE_DIR = fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = resolve(MODULE_DIR, '..', '..');
 
-const CANDIDATES = [
-  process.env['COMPANIES_CONFIG'],
-  resolve(REPO_ROOT, 'config', 'companies.yaml'),
-  resolve(process.cwd(), 'config', 'companies.yaml'),
-  resolve(process.cwd(), 'companies.yaml'),
-].filter((p): p is string => Boolean(p));
+// ⭐ دالة، مش ثابت — لو كانت ثابتة لالتقطت COMPANIES_CONFIG مرة واحدة وقت
+//    تحميل الموديول، وأي تغيير في البيئة بعد كده (زي الاختبارات) يتجاهل بصمت.
+const candidates = (): string[] =>
+  [
+    process.env['COMPANIES_CONFIG'],
+    resolve(REPO_ROOT, 'config', 'companies.yaml'),
+    resolve(process.cwd(), 'config', 'companies.yaml'),
+    resolve(process.cwd(), 'companies.yaml'),
+  ].filter((p): p is string => Boolean(p));
 
 /** ⭐ أول مسار موجود؛ وإلا الافتراضي (لإنشاء ملف جديد) */
 export function resolveConfigPath(): string {
-  for (const p of CANDIDATES) if (existsSync(p)) return p;
+  for (const p of candidates()) if (existsSync(p)) return p;
   return resolve(REPO_ROOT, 'config', 'companies.yaml');
 }
 
 function readFirstExisting(): { path: string; raw: string } {
   const tried: string[] = [];
-  for (const p of CANDIDATES) {
+  for (const p of candidates()) {
     try {
       return { path: p, raw: readFileSync(p, 'utf8') };
     } catch {
@@ -122,6 +260,9 @@ export function loadConfig(): RootConfig {
   const seenId = new Set<string>();
   const seenPort = new Set<number>();
 
+  // ⭐ الكائنات المعادة — databaseUrl فيها القيم المفسَّرة، لا ${...}
+  const out: CompanyConfig[] = [];
+
   for (const [i, c] of (list ?? []).entries()) {
     const label = c?.id ?? `#${i + 1}`;
     for (const field of REQUIRED) {
@@ -137,15 +278,19 @@ export function loadConfig(): RootConfig {
     seenId.add(c?.id ?? '');
     seenPort.add(c?.port ?? -1);
 
-    // 🔴 كلمة المرور الحقيقية = خطأ، لا accident
-    if (typeof c?.databaseUrl === 'string' && !c.databaseUrl.includes('CHANGE_ME')) {
-      if (/:\/\/[^:@]+:[^:@]+@/.test(c.databaseUrl)) {
-        problems.push(
-          `الشركة "${label}" databaseUrl فيه كلمة مرور حقيقية — ` +
-            `استخدم متغير بيئة: \${process.env['DB_PASSWORD']}`,
-        );
-      }
+    // ⭐ فحص عنوان قاعدة البيانات — توسعة + تحقق (كان inline هنا فقط)
+    checkDatabaseUrl(label, c?.databaseUrl, problems, { resolve: true });
+
+    // ⭐ نضع المفسَّر في الكائن المعاد. الفشل سُجّل في problems فوق بالفعل،
+    //    فالـ catch هنا موجود فقط حتى لا يتسرّب استثناء غير متوقع؛ ولأن
+    //    problems.length > 0 يعني loadConfig سيرمي error تخدمه.
+    let resolvedUrl = typeof c?.databaseUrl === 'string' ? c.databaseUrl : '';
+    try {
+      resolvedUrl = interpolateEnv(resolvedUrl);
+    } catch {
+      /* problems[] امتلأ فوق — نُبقي النص الخام */
     }
+    out.push({ ...(c as CompanyConfig), databaseUrl: resolvedUrl });
   }
 
   if (problems.length > 0) {
@@ -154,7 +299,8 @@ export function loadConfig(): RootConfig {
     );
   }
 
-  cached = cfg as RootConfig;
+  // ⭐ نخزّن النسخة المعادة (المفسَّرة)، لا الـ YAML الخام
+  cached = { control: cfg.control as ControlConfig, companies: out };
   cachedAt = now;
   return cached;
 }
@@ -224,6 +370,11 @@ function assertValid(list: CompanyConfig[]): string[] {
     if (ids.has(c.id)) problems.push(`id مكرر: ${c.id}`);
     if (ports.has(c.port)) problems.push(`port مكرر: ${c.port}`);
     if (hosts.has(c.subdomain)) problems.push(`subdomain مكرر: ${c.subdomain}`);
+    // ⛔⛔ الفحص كان ناقصاً هنا بالكامل. loadConfig() كان يفحص كلمة المرور
+    //    الحرفية، لكن assertValid() — وهو ما يحرس POST/PATCH على /api/config —
+    //    لم يكن يفحصها. النتيجة: ممكن تبعت databaseUrl فيه كلمة مرور عبر
+    //    الـ API، يُحفظ في YAML، ثم يُحفظ في git.
+    checkDatabaseUrl(c.id || `#${i + 1}`, c.databaseUrl, problems, { resolve: false });
     ids.add(c.id); ports.add(c.port); hosts.add(c.subdomain);
   }
   return problems;
@@ -302,9 +453,22 @@ export function removeCompany(id: string): { id: string; dbName: string } {
   return { id, dbName };
 }
 
-/** ⭐ @restocost_massobi ← restocost_massobi */
+/** ⭐ @restocost_massobi ← restocost_massobi
+ *
+ *  ⭐ It expands `${...}` first so a `${DB_NAME}` in the path still works.
+ *    On failure it falls back to the raw string instead of throwing: this runs
+ *    on the DELETE path, where the entry is about to be removed anyway and a
+ *    throw would leave a half-completed delete. It returns `unknown` rather
+ *    than a wrong name so no caller can act on a guess.
+ */
 export function dbNameFrom(url: string): string {
-  const m = /\/([^/?#]+)(?:[?#]|$)/.exec(url);
+  let source = url;
+  try {
+    source = interpolateEnv(url);
+  } catch {
+    /* fall through to the raw string */
+  }
+  const m = /\/([^/?#]+)(?:[?#]|$)/.exec(source);
   return m?.[1] ?? 'unknown';
 }
 

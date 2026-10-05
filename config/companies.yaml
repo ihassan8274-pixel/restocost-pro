@@ -2,8 +2,13 @@
 #  RestoCost — تعريف الشركات
 #  هذا هو المصدر الوحيد للtruth. كل شيء آخر يقرأ منه.
 # ══════════════════════════════════════════════════════════════════
-#  ⚠️ لا تضع كلمات مرور حقيقية هنا.
-#     ضعها في control/.env  (يُستثنى من git تلقائياً)
+#  ⚠️ لا تضع كلمات مرور حقيقية هنا — أبداً.
+#     الكلمة السرية تأتي من control/.env  (يُستثنى من git تلقائياً)
+#     وتُوسَع وقت القراءة:  ${COMPANY_DB_PASSWORD}
+#     ⛔ loadConfig() ترفض كلمة المرور الحرفية، وassertValid() ترفضها كمان،
+#        فمفيش طريق تحطّها هنا — لا باليد ولا عن طريق الـ API.
+#
+#  ⭐ المنفذ 5433 وليس 5432. 5432 هو Docker؛ PostgreSQL الحقيقي 18 على 5433.
 # ══════════════════════════════════════════════════════════════════
 
 control:
@@ -19,7 +24,7 @@ companies:
     nameAr: مسوبي
     subdomain: massobi.restocost.shop
     port: 3011
-    databaseUrl: postgres://restocost:CHANGE_ME@127.0.0.1:5432/restocost_massobi
+    databaseUrl: postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_massobi?connection_limit=5&pool_timeout=10
     timezone: Asia/Riyadh
     active: true
 
@@ -29,7 +34,7 @@ companies:
     nameAr: بخارو
     subdomain: bukharo.restocost.shop
     port: 3012
-    databaseUrl: postgres://restocost:CHANGE_ME@127.0.0.1:5432/restocost_bukharo
+    databaseUrl: postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_bukharo?connection_limit=5&pool_timeout=10
     timezone: Asia/Riyadh
     active: true
 

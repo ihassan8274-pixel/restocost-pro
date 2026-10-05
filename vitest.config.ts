@@ -14,8 +14,19 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
-    exclude: ['node_modules/**', 'dist/**', 'server/**'],
+    // ⛔⛔ server/test/repo/** كان مشمول صح — لكن Vitest بيقرأ أول ملف
+    //    vitest.config.* بالترتيب الأبجدي، فماشي .ts هو اللي بيتقرا،
+    //    والملف .mjs اللي كان فيه اختبارات الخادم (18 اختبار CDC/Repository)
+    //    اتجاهل بصمت تماماً.
+    // ⭐ الملفات دي Node خالص، فكل واحد فيهم عليه
+    //    // @vitest-environment node في أول سطر.
+    include: [
+      'src/**/*.test.{ts,tsx}',
+      'server/test/repo/**/*.test.mjs',
+      'control/src/**/*.test.ts',
+    ],
+    // ⛔ كان 'server/**' — وده كان بيمسح test/repo مع بعض. استثنيناه صريح.
+    exclude: ['node_modules/**', 'dist/**', 'server/data/**', 'server/tests/**'],
     css: false,
   },
 });
