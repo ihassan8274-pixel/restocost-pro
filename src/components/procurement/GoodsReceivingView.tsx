@@ -36,6 +36,8 @@ export const GoodsReceivingView: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [editGrn, setEditGrn] = useState<typeof grnNotes[number] | null>(null);
+  /** إشعار يُعرض للقراءة فقط: معتمد أو مرحَّل — لا حقل قابل للتحرير. */
+  const [readonlyGrn, setReadonlyGrn] = useState<typeof grnNotes[number] | null>(null);
   const [editItems, setEditItems] = useState<GoodsReceiptItem[]>([]);
   const [editInvoice, setEditInvoice] = useState('');
   const [editInvoiceDate, setEditInvoiceDate] = useState('');
@@ -314,7 +316,25 @@ export const GoodsReceivingView: React.FC = () => {
   };
 
 
+  // المستند المعتمد أو المرحَّل لا يُعدَّل مباشرة.
+  //
+  // السبب: الترحيل يكتب الحركة بالمُعرّف والكمية وقت الترحيل. فالتعديل بعده
+  // يغيّر المستند ولا يغيّر الحركة — رصيد 50 والمستند 80، فرق 30 بلا تفسير.
+  // وهو بالضبط نمط «الأرقام غير مطابقة».
+  //
+  // القاعدة المعتمدة في الأنظمة المالية: القيد الدائم. التصحيح عبر فك الترحيل
+  // (يعكس الحركة) ثم التعديل ثم الترحيل من جديد.
+  const LOCKED: ReadonlySet<string> = new Set(['approved', 'posted']);
+
   const openEdit = (g: typeof grnNotes[number]) => {
+    if (LOCKED.has(g.status)) {
+      showToast(
+        g.status === 'posted'
+          ? `${g.grnNumber} مرحَّل للمخزون — لا يُعدَّل. فك الترحيل أوّلاً ثم عدّل ثم أعِد الترحيل.`
+          : `${g.grnNumber} معتمد — يُعدَّل بعد إعادته إلى مسودة.`,
+      );
+      return;
+    }
     setEditGrn(g);
     setEditItems(g.items.map((i) => ({ ...i })));
     setEditKeys(g.items.map(() => makeKey()));
@@ -328,6 +348,14 @@ export const GoodsReceivingView: React.FC = () => {
 
   const saveEdit = () => {
     if (!editGrn) return;
+    // حارس ثانٍ: openEdit يمنع الفتح، لكن الحفظ يُغلق به أي مسار آخر —
+    // مثل نافذة تعديل مفتوحة بينما غيّر مستخدم آخر حالة المستند في هذه
+    // اللحظة على جهاز آخر (المزامنة فورية).
+    if (LOCKED.has(editGrn.status)) {
+      showToast(`${editGrn.grnNumber} صار ${editGrn.status === 'posted' ? 'مرحَّلاً' : 'معتمداً'} — لم يُحفظ التعديل`);
+      setEditGrn(null);
+      return;
+    }
     const subtotal = editItems.reduce((s, i) => s + i.quantityReceived * i.unitPrice, 0);
     // استخدام إعدادات الضريبة المحملة من الإشعار (vatRate, vatIncl state)
     const vatAmt = vatIncl ? (subtotal * vatRate) / (100 + vatRate) : (subtotal * vatRate) / 100;
@@ -808,7 +836,13 @@ export const GoodsReceivingView: React.FC = () => {
                         </button>
                       )}
                       <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline">طباعة</button>
-                      <button onClick={() => openEdit(g)} className="text-[11px] font-bold text-primary-600 hover:underline">تفاصيل</button>
+                      <button
+                        onClick={() => (LOCKED.has(g.status) ? setReadonlyGrn(g) : openEdit(g))}
+                        className="text-[11px] font-bold text-primary-600 hover:underline"
+                        title={LOCKED.has(g.status) ? 'عرض فقط — المستند معتمد أو مرحَّل' : 'تعديل الإشعار'}
+                      >
+                        {LOCKED.has(g.status) ? 'عرض' : 'تفاصيل'}
+                      </button>
                       {g.status === 'approved' && (
                         <button
                           onClick={() => doPostGRN(g)}
@@ -973,6 +1007,117 @@ export const GoodsReceivingView: React.FC = () => {
         onScan={() => setScannerOpen(true)}
         onImportExcel={openPrintModal}
       />
+
+      {/* عرض مستند معتمد/مرحَّل — حقول معطّلة. مسModificationه ممنوع:
+          الحركات كُتبت بالمُعرّف والكمية وقت الترحيل، فأي تغيير بعده يفصل
+          المستند عن المخزون. التصحيح: فك ترحيل ← تعديل ← ترحيل. */}
+      <Modal
+        open={readonlyGrn !== null}
+        onClose={() => setReadonlyGrn(null)}
+        title={`عرض الإشعار ${readonlyGrn?.grnNumber || ''}`}
+        xl
+        closeOnOverlayClick={false}
+      >
+        {readonlyGrn && (
+          <div className="space-y-4 text-xs">
+            <div className="flex items-center gap-2 flex-wrap px-4 py-3 rounded-xl border border-primary-200 bg-primary-50/60">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${GRN_STATUS_COLORS[readonlyGrn.status]}`}>
+                {GRN_STATUS_LABELS[readonlyGrn.status]}
+              </span>
+              <span className="text-[11px] font-bold text-primary-800">
+                {readonlyGrn.status === 'posted'
+                  ? 'مُرحَّل للمخزون — الحركات مكتوبة. للتعديل: فك ترحيل ثم عدّل ثم أعِد الترحيل.'
+                  : 'معتمد ولم يُرحَّل بعد — للتعديل: أعده إلى مسودة أولاً.'}
+              </span>
+              <span className="flex-1" />
+              {readonlyGrn.status === 'posted' && (
+                <ErpButton onClick={() => { const g = readonlyGrn; setReadonlyGrn(null); doUnpostGRN(g); }}>
+                  فك ترحيل
+                </ErpButton>
+              )}
+              {readonlyGrn.status === 'approved' && (
+                <ErpButton onClick={() => { const g = readonlyGrn; setReadonlyGrn(null); updateGRNStatus(g.id, 'draft'); showToast(`أُعيد ${g.grnNumber} إلى مسودة — صار قابلاً للتعديل`); }}>
+                  إعادة إلى مسودة
+                </ErpButton>
+              )}
+            </div>
+
+            <section className="border border-line rounded-xl px-4 py-4">
+              <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <PackageCheck className="w-4 h-4 text-primary-600" /> بيانات الإشعار
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  ['المورد', readonlyGrn.supplierName],
+                  ['الفرع', readonlyGrn.branchId === 'b-ck' ? 'المطبخ المركزي' : getBranchDisplayName(readonlyGrn.branchId)],
+                  ['التاريخ', readonlyGrn.date],
+                  ['الفاتورة', readonlyGrn.invoiceNumber || '—'],
+                  ['تاريخ الفاتورة', readonlyGrn.invoiceDate || '—'],
+                  ['المستلم', readonlyGrn.receivedBy || '—'],
+                  ['العملة', readonlyGrn.currencyCode || 'SAR'],
+                  ['الإجمالي', fmtMoney(readonlyGrn.totalAmount)],
+                ].map(([l, v]) => (
+                  <div key={l}>
+                    <p className="text-[10px] font-bold text-slate-500">{l}</p>
+                    <p className={`text-slate-800 mt-0.5 ${/الإجمالي/.test(l) ? 'tnum font-bold' : ''}`}>{v}</p>
+                  </div>
+                ))}
+              </div>
+              {readonlyGrn.notes && (
+                <p className="mt-3 pt-3 border-t border-line text-slate-600">
+                  <span className="text-[10px] font-bold text-slate-500 block">ملاحظات</span>
+                  {readonlyGrn.notes}
+                </p>
+              )}
+            </section>
+
+            <section>
+              <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <PackageCheck className="w-4 h-4 text-primary-600" /> الأصناف المستلمة
+                <span className="tnum text-[11px] font-bold text-slate-500">({readonlyGrn.items.length})</span>
+              </h4>
+              <div className="border border-line rounded-xl overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      {['#', 'الصنف', 'الوحدة', 'الكمية', 'سعر الوحدة', 'الإجمالي'].map((h, ix) => (
+                        <th key={h} className={`px-3 py-2 text-[10px] font-bold text-slate-500 border-b border-line ${ix >= 3 ? 'text-left' : ix === 0 ? 'text-center' : 'text-right'}`}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {readonlyGrn.items.map((it, ix) => {
+                      const m = rawMaterials.find((x) => x.id === it.rawMaterialId);
+                      return (
+                        <tr key={ix} className="border-b border-line/60">
+                          <td className="px-3 py-2 text-center mono text-slate-400 text-xs">{ix + 1}</td>
+                          <td className="px-3 py-2 text-slate-800">{m?.nameAr || '—'}</td>
+                          <td className="px-3 py-2 text-center text-slate-600 text-xs">{m?.unit || '—'}</td>
+                          <td className="px-3 py-2 text-left tnum">{fmt(it.quantityReceived)}</td>
+                          <td className="px-3 py-2 text-left tnum">{fmt(it.unitPrice)}</td>
+                          <td className="px-3 py-2 text-left tnum font-bold">{fmt(it.quantityReceived * it.unitPrice)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-slate-50 border-t-2 border-line">
+                      <td colSpan={3} className="px-3 py-2.5 text-right font-bold text-slate-700">الإجمالي</td>
+                      <td className="px-3 py-2.5 text-left tnum font-bold text-slate-800">
+                        {fmt(readonlyGrn.items.reduce((s, i) => s + (Number(i.quantityReceived) || 0), 0))}
+                      </td>
+                      <td />
+                      <td className="px-3 py-2.5 text-left tnum font-extrabold text-slate-900">
+                        {fmtMoney(readonlyGrn.totalAmount)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+          </div>
+        )}
+      </Modal>
 
       {/* Edit Modal - Professional Design */}
       <Modal open={editGrn !== null} onClose={() => setEditGrn(null)} title={`تعديل الإشعار ${editGrn?.grnNumber || ''} (${editGrn?.status === 'draft' ? 'مسودة' : 'قيد المراجعة'})`} xl closeOnOverlayClick={false}>
