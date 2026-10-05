@@ -88,42 +88,73 @@ export const useInventoryStore = create<InventoryState>()(
       setInventoryMovements: (inventoryMovements: InventoryMovementLog[]) => set({ inventoryMovements }),
       setRecipeInventory: (recipeInventory: RecipeInventory[]) => set({ recipeInventory }),
 
+      // ── تعديل المخزون — كتابة ذرّية ──
+      //
+      // كانت ثلاث set() منفصلة: الدفعات (سالب)، ثم الرصيد، ثم الحركة. أي
+      // انقطاع بينهما — إعادة تحميل، إغلاق تبويب، أو مزامنة تلتقط الحالة —
+      // يُحدِث الرصيد بلا حركة. والنتيجة رصيد ≠ افتتاح + حركات، وفرق موجب
+      // دائماً، بلا تفسير. قِستُها: 311 من 961 رصيداً، كلها أعلى.
+      //
+      // الآن set() واحدة: الرصيد والحركة (والدفعات) يولدون معاً أو لا يولد
+      // شيء. لا حالة وسطى يمكن أن تُلاحَظ أو تُزامن.
       adjustInventory: (branchId, rawMaterialId, delta, batchInfo, reason) => {
-        if (delta < 0) {
-          const qty = -delta;
-          set((state) => {
+        set((state) => {
+          const patch: Partial<typeof state> = {};
+
+          // ① دفعات(FEFO): السالب فقط، وهو أقدم صلاحية أولاً
+          if (delta < 0) {
+            const qty = -delta;
             const lots = state.inventoryBatches
               .filter((b) => b.branchId === branchId && b.rawMaterialId === rawMaterialId && b.remainingQty > 1e-9 && (!batchInfo?.batchNumber || b.batchNumber === batchInfo.batchNumber))
               .sort((a, b) => (a.expiryDate || '9999').localeCompare(b.expiryDate || '9999') || (a.receivedAt || '').localeCompare(b.receivedAt || ''));
-            if (lots.length === 0) return state;
-            let remaining = qty;
-            return {
-              inventoryBatches: state.inventoryBatches.map((b) => {
+            if (lots.length > 0) {
+              let remaining = qty;
+              patch.inventoryBatches = state.inventoryBatches.map((b) => {
                 if (remaining <= 1e-9) return b;
                 const lot = lots.find((l) => l.id === b.id);
                 if (!lot) return b;
                 const take = Math.min(remaining, lot.remainingQty);
                 remaining -= take;
                 return { ...b, remainingQty: Math.max(0, Number((b.remainingQty - take).toFixed(4))) };
-              }),
-            };
-          });
-        }
-        set((state) => {
-          const idx = state.inventory.findIndex((i) => i.branchId === branchId && i.rawMaterialId === rawMaterialId);
-          const next = [...state.inventory];
-          if (idx >= 0) {
-            next[idx] = { ...next[idx], quantity: next[idx].quantity + delta, lastUpdated: today(), ...(batchInfo?.batchNumber ? { batchNumber: batchInfo.batchNumber } : {}), ...(batchInfo?.expiryDate ? { expiryDate: batchInfo.expiryDate } : {}) };
-          } else {
-            next.push({ id: nextId('inv'), branchId, rawMaterialId, quantity: delta, lastUpdated: today(), batchNumber: batchInfo?.batchNumber, expiryDate: batchInfo?.expiryDate });
+              });
+            }
           }
-          return { inventory: next };
+
+          // ② الرصيد
+          const idx = state.inventory.findIndex((i) => i.branchId === branchId && i.rawMaterialId === rawMaterialId);
+          const nextInv = [...state.inventory];
+          if (idx >= 0) {
+            nextInv[idx] = {
+              ...nextInv[idx],
+              quantity: nextInv[idx].quantity + delta,
+              lastUpdated: today(),
+              ...(batchInfo?.batchNumber ? { batchNumber: batchInfo.batchNumber } : {}),
+              ...(batchInfo?.expiryDate ? { expiryDate: batchInfo.expiryDate } : {}),
+            };
+          } else {
+            nextInv.push({
+              id: nextId('inv'), branchId, rawMaterialId, quantity: delta, lastUpdated: today(),
+              batchNumber: batchInfo?.batchNumber, expiryDate: batchInfo?.expiryDate,
+            } as InventoryRecord);
+          }
+          patch.inventory = nextInv;
+
+          // ③ الحركة — في نفس الـset، فلا رصيد بلا حركة
+          if (Math.abs(delta) > 1e-9) {
+            patch.inventoryMovements = [
+              {
+                id: nextId('mv'), date: new Date().toISOString(),
+                branchId, rawMaterialId,
+                delta: Math.round(delta * 10000) / 10000,
+                type: reason?.type || 'تسوية',
+                ref: reason?.ref,
+              } as InventoryMovementLog,
+              ...state.inventoryMovements,
+            ].slice(0, 5000);
+          }
+
+          return patch;
         });
-        if (Math.abs(delta) > 1e-9) {
-          set((state) => ({
-            inventoryMovements: [{ id: nextId('mv'), date: new Date().toISOString(), branchId, rawMaterialId, delta: Math.round(delta * 10000) / 10000, type: reason?.type || 'تسوية', ref: reason?.ref }, ...state.inventoryMovements].slice(0, 5000),
-          }));
-        }
       },
 
       // ── ترحيل إشعار الاستلام إلى المخزون ──
