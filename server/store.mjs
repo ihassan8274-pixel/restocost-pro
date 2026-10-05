@@ -382,6 +382,32 @@ const createPgStore = async (prisma) => {
   };
   const getAuditLogs = (limit = 200) => Array.from(auditCache).reverse().slice(0, limit);
 
+  // ---- health counters ----
+  // ⛔ These two existed only as a lie. /api/admin/health called
+  //    store.getChangeLogCount(), which was never defined in either engine, so
+  //    the guard clause `store.getChangeLogCount ? ... : 0` silently produced 0
+  //    forever. It also read sessions via getKV('rcerp_sessions'), which is
+  //    never a KV key — sessions live in the sessions Map / the sessions table.
+  //    Measured on production: sessions 34, change_log 8053, both reported 0.
+  //
+  // ⭐ Neither engine may turn a failure into a 0. They differ in HOW they
+  //    signal it, and the health route normalises both:
+  //      postgresql — count() throws on failure (deliberate, so the throw is
+  //                   loud), sessionCount reads a Map so it cannot fail.
+  //      sqlite     — returns null, because a closed/absent table would
+  //                   otherwise read as "counted, and it is empty".
+  //    The route wraps each call in safe(), which turns a throw OR a null into
+  //    a `warnings` entry and status:'degraded'.
+  const sessionCount = () => sessions.size;
+  const changeLogCount = async () => {
+    const n = await prisma.changeLog.count();
+    return Number(n) || 0;
+  };
+  const auditLogCount = async () => {
+    const n = await prisma.auditLog.count();
+    return Number(n) || 0;
+  };
+
   // ---- change_log pruning (bounded retention) ----
   // يحذف الصفوف الأقدم من فترة الاحتفاظ، مع طابق seq (حد أدنى) كي لا تُمسح
   // الأحداث الحديثة حتى لو مرّت فترة الاحتفاظ. يعتمد على فهرس ts القائم.
@@ -411,7 +437,7 @@ const createPgStore = async (prisma) => {
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
-    writeAudit, getAuditLogs,
+    writeAudit, getAuditLogs, sessionCount, changeLogCount, auditLogCount,
     revState: () => ({ rev, boot: bootAt, cdc: cdcNext - 1 }),
     flush: queue.flush,
     _prisma: prisma,
@@ -586,6 +612,44 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
   const writeAudit = (actor, action, targetId = null, detail = '') => { try { db.prepare('INSERT INTO audit_log (ts, actorId, actorEmail, action, targetId, detail) VALUES (?, ?, ?, ?, ?, ?)').run(new Date().toISOString(), actor ? actor.id : null, actor ? actor.email : null, action, targetId || null, detail || null); } catch { /* audit must never break the app */ } };
   const getAuditLogs = (limit = 200) => db.prepare('SELECT * FROM audit_log ORDER BY ts DESC, id DESC LIMIT ?').all(limit);
 
+  // ---- health counters ----
+  // ⛔ Same two lies as the PostgreSQL engine, and the same reason:
+  //    store.getChangeLogCount() was never defined, and rcerp_sessions is not a
+  //    KV key. So /api/admin/health reported sessions: 0 and changeLogCount: 0
+  //    forever, with no error anywhere.
+  // ⭐ Here every count returns null on failure (unlike PostgreSQL, which lets
+  //    the query throw). The health route's safe() accepts a throw OR a null
+  //    and reports 'degraded' for both, so the difference is invisible above.
+  //    What must never happen is a silent 0.
+  // ⛔ Unlike PostgreSQL there is no sessions Map here: SQLite keeps sessions
+  //    only in the table, so this has to query it.
+  const sessionCount = () => {
+    try {
+      const r = db.prepare('SELECT COUNT(*) AS c FROM sessions').get();
+      return Number(r && r.c) || 0;
+    } catch (e) {
+      try { console.error('[store:sqlite] sessionCount error:', e && (e.message || e)); } catch { /* noop */ }
+      return null;
+    }
+  };
+  const changeLogCount = async () => {
+    try {
+      const r = db.prepare('SELECT COUNT(*) AS c FROM change_log').get();
+      return Number(r && r.c) || 0;
+    } catch (e) {
+      try { console.error('[store:sqlite] changeLogCount error:', e && (e.message || e)); } catch { /* noop */ }
+      return null;
+    }
+  };
+  const auditLogCount = async () => {
+    try {
+      const r = db.prepare('SELECT COUNT(*) AS c FROM audit_log').get();
+      return Number(r && r.c) || 0;
+    } catch (e) {
+      try { console.error('[store:sqlite] auditLogCount error:', e && (e.message || e)); } catch { /* noop */ }
+      return null;
+    }
+  };
   const pruneChangeLog = () => {
     try {
       const cutoff = new Date(Date.now() - CHANGELOG_RETENTION_MS).toISOString();
@@ -611,7 +675,7 @@ CREATE INDEX IF NOT EXISTS idx_cdc_ts ON change_log(ts);
     createSession, deleteSession, deleteSessionsByUser, deleteOtherSessions,
     purgeAllSessions, purgeExpiredSessions, sessionRow,
     rateLimitGet, rateLimitRegisterFailure, rateLimitClear, purgeExpiredRateLimits,
-    writeAudit, getAuditLogs,
+    writeAudit, getAuditLogs, sessionCount, changeLogCount, auditLogCount,
     revState: () => ({ rev, boot: bootAt, cdc: cdcNext - 1 }),
     flush: () => Promise.resolve(),
   };
@@ -632,6 +696,10 @@ const M = [
   'purgeAllSessions', 'purgeExpiredSessions', 'sessionRow',
   'rateLimitGet', 'rateLimitRegisterFailure', 'rateLimitClear', 'purgeExpiredRateLimits',
   'writeAudit', 'getAuditLogs', 'revState', 'flush',
+  // ⛔ Do NOT add a method here without adding it to BOTH engine return
+  //    objects. The facade calls engine[name](...args) unguarded, so a method
+  //    missing from one engine throws a TypeError at call time, not at boot.
+  'sessionCount', 'changeLogCount', 'auditLogCount',
 ];
 // Simple synchronous store used until initialization completes (and as the
 // permanent engine when DATABASE_URL is absent). Creating it early also keeps

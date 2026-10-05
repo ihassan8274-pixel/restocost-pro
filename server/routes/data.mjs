@@ -939,17 +939,44 @@ if (key === 'rcerp_recent_docs') {
   });
 
   // ---- نقطة صحة الإدارة (P1.6) ----
-  app.get('/api/admin/health', (req, res) => {
+  app.get('/api/admin/health', async (req, res) => {
     const user = sessionUser(readToken(req));
     if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
     if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'غير مصرح' });
-    const sessions = store.getKV('rcerp_sessions') || [];
-    const changeLogCount = store.getChangeLogCount ? store.getChangeLogCount() : 0;
+
+    // ⛔⛔ Three counters here used to be fiction, with no error anywhere:
+    //    sessions      — getKV('rcerp_sessions') is never a KV key. Sessions live
+    //                    in the sessions table (34 rows on production).
+    //    changeLogCount— store.getChangeLogCount was never defined, so the guard
+    //                    `store.getChangeLogCount ? ... : 0` produced 0 forever.
+    //                    Real count on production: 8053.
+    //    Both now come from store.sessionCount() / store.changeLogCount().
+    //
+    // ⭐ null, not 0, when a count cannot be taken: "could not count" must never
+    //    look like "counted, and it is empty".
+    const warnings = [];
+    const safe = async (label, fn) => {
+      try {
+        const v = await fn();
+        if (v === null || v === undefined) { warnings.push(`${label}: count unavailable`); return null; }
+        return v;
+      } catch (e) {
+        warnings.push(`${label}: ${(e && e.message) || 'failed'}`);
+        return null;
+      }
+    };
+
+    const sessions = await safe('sessions', () => store.sessionCount());
+    const changeLogCount = await safe('changeLogCount', () => store.changeLogCount());
+    const auditLogCount = await safe('auditLogCount', () => store.auditLogCount());
+    // auditCount counts the synced KV collection; auditLogCount counts the
+    // server-side audit_log table. They are separate stores and differ.
     const auditCount = (store.getKV('rcerp_audit') || []).length;
     const users = store.getKV('rcerp_users') || [];
     const branches = store.getKV('rcerp_branches') || [];
     const posOrders = store.getKV('rcerp_pos_orders') || [];
     const inventory = store.getKV('rcerp_inventory') || [];
+    // ⚠️ UTC day, not the Riyadh business day. See RiyadhDayWarning below.
     const today = new Date().toISOString().slice(0, 10);
     const todayOrders = posOrders.filter((o) => {
       const d = o.createdAt || o.date || '';
@@ -961,20 +988,23 @@ if (key === 'rcerp_recent_docs') {
     }).length;
     res.json({
       ok: true,
-      status: 'healthy',
+      // ⛔ A counter we could not read is not "healthy". Report it.
+      status: warnings.length ? 'degraded' : 'healthy',
+      ...(warnings.length ? { warnings } : {}),
       version: PKG_VERSION,
       build: getBuildFingerprint(),
       server: serverStamp,
       uptime: Math.floor(process.uptime()),
       pid: process.pid,
       memory: process.memoryUsage(),
-      sessions: sessions.length,
+      sessions,
       users: users.length,
       branches: branches.length,
       todayOrders,
       lowStockItems,
       changeLogCount,
       auditCount,
+      auditLogCount,
       timestamp: new Date().toISOString(),
     });
   });
