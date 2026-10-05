@@ -2,6 +2,38 @@ import Fastify from 'fastify';
 import helmet from '@fastify/helmet';
 import fastifyStatic from '@fastify/static';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+// ═══════════════════════════════════════════════════════
+//  ⭐ تحميل control/.env قبل أي قراءة للإعدادات
+//  ⛔⛔ هذا كان ناقصاً تماماً. main.ts كان يقرأ PG_ADMIN_URL و
+//    DATABASE_URL_TEMPLATE من process.env مباشرة، وفيهBearer token
+//    ماكانش بيتقرا من أي مكان — يعني التشغيل الحقيقي كان بيضيع السر.
+//    الأسوأ: config.ts بقى الآن يرمي عند غياب متغير بيئة، فبدون هذا
+//    السطر كان Control Plane بيفشل عند الإقلاع ويقول "COMPANY_DB_PASSWORD
+//    غير معرّف" وإنت واقف على 4 أسطر في ملف موجود.
+//
+//  ⭐ process.loadEnvFile موجود في Node 20.12+ / 22+ — مفيش اعتماديات.
+//  ⭐ ESM: الاستيرادات بتتنفّذ قبل أي كود في الملف ده، لكن كل حاجة بتقرا
+//    process.env بتعمله وقت تشغيل الدوال (مش وقت التحميل)، فالسطر ده
+//    بيشتغل قبل أول استدعاء لـ loadConfig().
+//  ⭐ الملف اختياري — لو مش موجود (container/deploy) بنكمل بدونه.
+// ═══════════════════════════════════════════════════════
+for (const rel of ['../control/.env', '../.env', '.env']) {
+  const p = resolve(fileURLToPath(new URL('.', import.meta.url)), rel);
+  if (existsSync(p)) {
+    try {
+      process.loadEnvFile(p);
+      console.log(`[config] loaded ${rel}`);
+    } catch (e) {
+      // ⛔ ما بنرميش هنا: ملف .env ناقص أو فيه سطر مش صالح. نترك
+      //    loadConfig يبلّغ بمشكلة محددة بدل رسالة غامضة عن .env نفسه.
+      console.warn(`[config] ${rel} موجود لكن تعذّر تحميله: ${(e as Error).message}`);
+    }
+    break;
+  }
+}
 
 import {
   controlConfig,
