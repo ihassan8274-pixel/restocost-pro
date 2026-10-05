@@ -1,6 +1,20 @@
 // ==========================================================
-// ReportTypes.ts — الأنواع الموحدة لمحرك التقارير المركزي
-// تُستخدم من كل التقارير حتى تكون الحسابات والواجهة متناسقة.
+// ReportTypes.ts — العقد الموحّد لمحرك التقارير المركزي
+//
+// ملاحظة: هذا الملف يجمع جيلين من العقد.
+//
+// ١) العقد الكامل (ReportFilter / ReportResult / ReportTableData
+//    وinRange وgroupCount وsumField وpct) — تقرأه ٢٣ ملفاً متتبَّعاً
+//    في src/components/reports/ وهو أساس محرك التقارير القائم.
+//
+// ٢) عقد الإعداد الجديد (ReportType / ReportConfig / ReportData)
+//    — تقرأه ملفات التقارير المُعدَّة حديثاً.
+//
+// ambos معاً بلا تعارض أسماء: التصديران منفصلان تماماً.
+// ==========================================================
+
+// ==========================================================
+// (١) العقد الكامل — محرك التقارير
 // ==========================================================
 
 export type TimeRange = 'today' | 'yesterday' | 'week' | 'month' | 'quarter' | 'year' | 'all';
@@ -103,3 +117,32 @@ export const sumField = <T>(rows: T[], pick: (r: T) => number): number =>
 /** نسبة آمنة (مقام صفري → 0) */
 export const pct = (numerator: number, denominator: number): number =>
   denominator ? (numerator / denominator) * 100 : 0;
+
+// ==========================================================
+// (٢) عقد الإعداد الجديد — التقارير المُعدَّة حديثاً
+// ==========================================================
+
+export enum ReportType {
+  PROFIT_LOSS = 'profit_loss',
+  INVENTORY = 'inventory',
+  SALES = 'sales',
+  COST = 'cost',
+  PROCUREMENT = 'procurement',
+  HR = 'hr',
+  OPERATIONS = 'operations',
+  EXECUTIVE = 'executive',
+}
+
+export interface ReportConfig {
+  title: string;
+  type: ReportType;
+  filters: string[]; // ['dateRange', 'branch', 'category']
+  groupBy?: string;
+  columns: string[];
+  onExport: ('pdf' | 'excel')[];
+}
+
+export interface ReportData {
+  [key: string]: any;
+  period?: { start: string; end: string };
+}
