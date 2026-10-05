@@ -1,4 +1,4 @@
-import type { MaterialCategory } from './structure';
+﻿import type { MaterialCategory } from './structure';
 
 export interface Supplier {
   id: string;
@@ -40,7 +40,9 @@ export interface GoodsReceiptNote {
   vatRate?: number;
   vatAmount?: number;
   vatInclusive?: boolean;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status: 'draft' | 'submitted' | 'approved' | 'posted' | 'rejected';
+  postedAt?: string;
+  postedBy?: string;
   receivedBy: string;
   items: GoodsReceiptItem[];
   notes?: string;

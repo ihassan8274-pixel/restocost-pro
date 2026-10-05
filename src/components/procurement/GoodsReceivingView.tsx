@@ -1,6 +1,7 @@
 ﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { PackageCheck, Plus, Printer, Pencil, Search, Send, Shield, RotateCw, RotateCcw, Settings, Copy, AlertTriangle, ScanLine, ArrowLeft } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useInventoryStore } from '../../stores/inventoryStore';
 import { Card, Btn, Modal, DocumentFingerprint } from '../ui';
 import { ErpPanel, ErpPageHeader, ErpQueryBar, ErpField, ErpInput, ErpSelect, ErpButton, ErpKpi, erpInputCls } from '../ui/erp';
 import { BarcodeScannerModal } from '../ui/BarcodeScannerModal';
@@ -488,8 +489,8 @@ export const GoodsReceivingView: React.FC = () => {
     showToast(`تم تعبئة ${list.length} صنف من استلامات المورد السابقة — عدّل الكميات والأسعار`);
   };
 
-  const GRN_STATUS_LABELS: Record<typeof grnNotes[number]['status'], string> = { draft: 'مسودة', submitted: 'قيد المراجعة', approved: 'معتمد', rejected: 'مرفوض' };
-  const GRN_STATUS_COLORS: Record<typeof grnNotes[number]['status'], string> = { draft: 'bg-slate-100 text-slate-700', submitted: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', rejected: 'bg-rose-100 text-rose-700' };
+  const GRN_STATUS_LABELS: Record<typeof grnNotes[number]['status'], string> = { draft: 'مسودة', submitted: 'قيد المراجعة', approved: 'معتمد', posted: 'مرحَّل', rejected: 'مرفوض' };
+  const GRN_STATUS_COLORS: Record<typeof grnNotes[number]['status'], string> = { draft: 'bg-slate-100 text-slate-700', submitted: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', posted: 'bg-primary-100 text-primary-700', rejected: 'bg-rose-100 text-rose-700' };
 
   // Bulk approve selected GRNs (submitted only)
   const bulkApprove = () => {
@@ -499,6 +500,43 @@ export const GoodsReceivingView: React.FC = () => {
     toApprove.forEach((g) => updateGRNStatus(g.id, 'approved'));
     setSelectedIds(new Set());
     showToast(`تم اعتماد ${toApprove.length} إشعار استلام`);
+  };
+
+  // ترحيل إشعار واحد إلى المخزون.
+  // الاعتماد لا يرفع الكميات — updateGRNStatus سطرٌ واحد يغيّر الحالة فقط.
+  // فكان 137 إشعاراً «معتمد» بلا حركات مخزون أصلاً.
+  // ترحيل جماعي: كل إشعار على حدة، فإن فشلت واحد لا يُسقط الباقي،
+  // ونُبلغ بعدد الناجح والمتعثّر.
+  const bulkPost = (list: typeof grnNotes) => {
+    const inv = useInventoryStore.getState();
+    let ok = 0;
+    const fails: string[] = [];
+    for (const g of list) {
+      const r = inv.postGRN(g);
+      if (r.ok) { updateGRNStatus(g.id, 'posted'); ok++; }
+      else fails.push(`${g.grnNumber} (${r.reason})`);
+    }
+    if (ok > 0) showToast(`رحّلنا ${ok} إشعار إلى المخزون`);
+    if (fails.length > 0) showToast(`تعذّر ترحيل ${fails.length}: ${fails.slice(0, 3).join(' · ')}`);
+  };
+
+  const doPostGRN = (g: typeof grnNotes[number]) => {
+    const res = useInventoryStore.getState().postGRN(g);
+    if (!res.ok) {
+      showToast(res.detail || `تعذّر الترحيل: ${res.reason}`);
+      return;
+    }
+    updateGRNStatus(g.id, 'posted');
+    showToast(`رحّلنا ${res.moved} صنف إلى مخزون ${getBranchDisplayName(g.branchId)} بإجمالي ${fmtMoney(res.total || 0)}`);
+  };
+
+  // عكس الترحيل — التصحيح بعد الرحيل: نفس معادلة المخزون معكوسة.
+  const doUnpostGRN = (g: typeof grnNotes[number]) => {
+    if (!confirm(`فك ترحيل ${g.grnNumber}؟ ستُخصم الكميات من مخزون ${getBranchDisplayName(g.branchId)}.`)) return;
+    const res = useInventoryStore.getState().unpostGRN(g);
+    if (!res.ok) { showToast(res.detail || `تعذّر فك الترحيل: ${res.reason}`); return; }
+    updateGRNStatus(g.id, 'approved');
+    showToast(`فُك ترحيل ${res.moved} صنف من مخزون ${getBranchDisplayName(g.branchId)}`);
   };
 
   // مسار الاعتماد — المعتمد: مسودة ثم مراجعة ثم اعتماد ثم ترحيل
@@ -699,6 +737,16 @@ export const GoodsReceivingView: React.FC = () => {
             {filtered.some((g) => selectedIds.has(g.id) && g.status === 'submitted') && can('approve_grn') && (
               <ErpButton variant="primary" onClick={bulkApprove}><Shield className="w-3.5 h-3.5" /> اعتماد</ErpButton>
             )}
+            {/* ترحيل جماعي — 137 إشعاراً معتمداً ينتظر الترحيل */}
+            {(() => {
+              const toPost = filtered.filter((g) => selectedIds.has(g.id) && g.status === 'approved');
+              if (toPost.length === 0) return null;
+              return (
+                <ErpButton onClick={() => bulkPost(toPost)} title={`ترحيل ${toPost.length} إشعار إلى المخزون`}>
+                  <ArrowLeft className="w-3.5 h-3.5" /> ترحيل {toPost.length}
+                </ErpButton>
+              );
+            })()}
             {filtered.some((g) => selectedIds.has(g.id) && (g.status === 'approved' || g.status === 'submitted')) && can('approve_grn') && (
               <ErpButton onClick={bulkReturnSelectedToDraft}><RotateCw className="w-3.5 h-3.5" /> تحويل لمسودة</ErpButton>
             )}
@@ -761,6 +809,20 @@ export const GoodsReceivingView: React.FC = () => {
                       )}
                       <button onClick={() => printSingle(g)} className="text-[11px] font-bold text-primary-600 hover:underline">طباعة</button>
                       <button onClick={() => openEdit(g)} className="text-[11px] font-bold text-primary-600 hover:underline">تفاصيل</button>
+                      {g.status === 'approved' && (
+                        <button
+                          onClick={() => doPostGRN(g)}
+                          className="text-[11px] font-bold text-emerald-600 hover:underline"
+                          title="ترحيل الكميات إلى مخزون الفرع"
+                        >ترحيل</button>
+                      )}
+                      {g.status === 'posted' && (
+                        <button
+                          onClick={() => doUnpostGRN(g)}
+                          className="text-[11px] font-bold text-rose-500 hover:underline"
+                          title="عكس الترحيل وخصم الكميات من المخزون"
+                        >فك ترحيل</button>
+                      )}
                     </span>
                   </td>
                 </tr>

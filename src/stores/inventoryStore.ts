@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { planPosting, planUnposting, type PostLine } from '../business/grnPosting';
+import type { GoodsReceiptNote } from '../types';
 import { persist } from 'zustand/middleware';
 import {
   InventoryRecord, InventoryBatch, InventoryMovementLog, StockTransfer,
@@ -26,6 +28,11 @@ interface InventoryState {
   setInventoryMovements: (movements: InventoryMovementLog[]) => void;
   setRecipeInventory: (inventory: RecipeInventory[]) => void;
   adjustInventory: (branchId: string, rawMaterialId: string, delta: number, batchInfo?: { batchNumber?: string; expiryDate?: string }, reason?: { type: string; ref?: string }) => void;
+  /** ترحيل إشعار استلام معتمد إلى المخزون: يولّد حركات استلام ويضبط 'posted'.
+   *  يرفض إن وُجدت حركات بنفس المرجع — الترحيل مرّة واحدة لا يتكرّر. */
+  postGRN: (grn: GoodsReceiptNote) => { ok: boolean; reason?: string; detail?: string; moved?: number; total?: number };
+  /** عكس الترحيل: حركات سالبة والحالة العودة إلى 'approved'. */
+  unpostGRN: (grn: GoodsReceiptNote) => { ok: boolean; reason?: string; detail?: string; moved?: number };
   adjustRecipeInventory: (branchId: string, recipeId: string, delta: number) => void;
   getRecipeStock: (branchId: string, recipeId: string) => number;
   addInventoryBatches: (grnId: string, branchId: string, items: GoodsReceiptItem[]) => void;
@@ -117,6 +124,59 @@ export const useInventoryStore = create<InventoryState>()(
             inventoryMovements: [{ id: nextId('mv'), date: new Date().toISOString(), branchId, rawMaterialId, delta: Math.round(delta * 10000) / 10000, type: reason?.type || 'تسوية', ref: reason?.ref }, ...state.inventoryMovements].slice(0, 5000),
           }));
         }
+      },
+
+      // ── ترحيل إشعار الاستلام إلى المخزون ──
+      // الاعتماد وحده لا يمسّ الكميات — updateGRNStatus سطرٌ واحد يغيّر الحالة
+      // فقط — فكان 137 إشعاراً «معتمد» بلا حركات. الترحيل هو ما يرفع الرصيد.
+      postGRN: (grn) => {
+        const plan = planPosting(grn.id, {
+          status: grn.status,
+          items: grn.items.map((it) => ({
+            rawMaterialId: it.rawMaterialId,
+            quantityReceived: it.quantityReceived,
+            unitPrice: it.unitPrice,
+            batchNumber: it.batchNumber,
+            expiryDate: it.expiryDate,
+          })),
+          existingMovementRefs: get().inventoryMovements.map((m) => m.ref).filter(Boolean) as string[],
+        });
+        if (!plan.ok) return { ok: false, reason: plan.reason, detail: plan.detail };
+
+        for (const l of plan.lines) {
+          get().adjustInventory(
+            grn.branchId,
+            l.rawMaterialId,
+            l.qty,
+            { batchNumber: l.batchNumber, expiryDate: l.expiryDate },
+            { type: 'استقبال استلام', ref: grn.id },
+          );
+        }
+        return { ok: true, moved: plan.lines.length, total: plan.total };
+      },
+
+      unpostGRN: (grn) => {
+        if (grn.status !== 'posted') return { ok: false, reason: 'not_posted', detail: 'الإشعار غير مرحَّل' };
+        const lines: PostLine[] = grn.items
+          .filter((it) => it.rawMaterialId && (Number(it.quantityReceived) || 0) > 0)
+          .map((it) => ({
+            rawMaterialId: it.rawMaterialId,
+            qty: Number(it.quantityReceived) || 0,
+            unitPrice: Number(it.unitPrice) || 0,
+            batchNumber: it.batchNumber || undefined,
+            expiryDate: it.expiryDate || undefined,
+          }));
+        const rev = planUnposting(lines);
+        for (const d of rev.deltas) {
+          get().adjustInventory(
+            grn.branchId,
+            d.rawMaterialId,
+            d.delta,
+            { batchNumber: d.batchNumber, expiryDate: d.expiryDate },
+            { type: 'تراجع ترحيل استلام', ref: grn.id },
+          );
+        }
+        return { ok: true, moved: rev.deltas.length };
       },
 
       adjustRecipeInventory: (branchId, recipeId, delta) => {
