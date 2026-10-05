@@ -56,3 +56,7 @@ tools/node-portable/
 tools/node-portable.zip
 # AppContext slice backups
 src/context/*.bak-*
+
+# نسخة احتياطية أنشأها المستخدم قبل تغيير رموز التصميم (2026-10-05)
+_backup_src_before_identity/
+
