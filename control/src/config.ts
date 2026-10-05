@@ -139,6 +139,58 @@ function checkDatabaseUrl(
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  ⭐ فحص pos.source — نفس القواعد في مسار القراءة ومسار الكتابة
+//
+//  ⛔ مصدر غير معروف لازم يرفض بصوت عالي.
+//    السبب: لو قبلنا أي string هنا، فإن كتابة "Foodics" (حرف F كبير)
+//    أو "FOODICS" أو فاصلة في الآخر تمر، ثم يبحث الـ adapter عن مصدر
+//    لا يجده فيسقط بصمت. قيمة صامتة أسوأ من رفض —
+//    نفس قاعدة commit d6a9523.
+// ═══════════════════════════════════════════════════════════════
+
+function checkPos(label: string, pos: unknown, problems: string[]): void {
+  if (pos === undefined || pos === null) return;   // اختياري — شركة بلا POS
+
+  if (typeof pos !== 'object' || Array.isArray(pos)) {
+    problems.push(
+      `الشركة "${label}" pos لازم يكون كائن، مش ` +
+        (Array.isArray(pos) ? 'قائمة' : typeof pos),
+    );
+    return;
+  }
+
+  const p = pos as Partial<PosConfig>;
+  // ⛔ unknown لا PosSource: الملف YAML غير موثوق، و TS لو شاف PosSource
+  //    هنا حذف فحص الفراغ والفرعي كلهم لأن النوع يقول إنهم مستحيلون.
+  //    الفحص موجود لأن القيم فعلاً بتوصل غريبة.
+  const src: unknown = p.source;
+
+  if (typeof src !== 'string' || src === '') {
+    problems.push(
+      `الشركة "${label}" pos.source مطلوب — المتاح: ${POS_SOURCES.join(' | ')}`,
+    );
+    return;
+  }
+  if (!POS_SOURCES.includes(src as PosSource)) {
+    problems.push(
+      `الشركة "${label}" pos.source غير معروف: "${src}" — المتاح: ` +
+        `${POS_SOURCES.join(' | ')}. لو ده نظام جديد فعلاً ` +
+        `أضِفه لـ POS_SOURCES في config.ts عمداً.`,
+    );
+  }
+
+  // enabled:true مع source:none تناقض — لا استيراد من مصدر لا يوجد.
+  if (p.enabled === true && src === 'none') {
+    problems.push(
+      `الشركة "${label}" pos.enabled=true مع pos.source=none — تناقض`,
+    );
+  }
+  if (p.enabled !== undefined && typeof p.enabled !== 'boolean') {
+    problems.push(`الشركة "${label}" pos.enabled لازم يكون true أو false`);
+  }
+}
+
 // ═══════════════════════════════════════════════════════
 //  أنواع
 // ═══════════════════════════════════════════════════════
@@ -146,6 +198,28 @@ function checkDatabaseUrl(
 export interface LegacyRef {
   port: number;
   note?: string;
+}
+
+/**
+ *  ⭐ مصدر الـ POS — إعداد وليس ثابتاً في الكود.
+ *
+ *  القياس الذي يجعله إعداداً: الـ Foodics export فيه مفتاح ثابت مستقر
+ *  (`كود تعريف المنتج` = 34 كوداً ثابتاً عبر 62 يوماً و16044 سطراً)
+ *  ومفتاح غير مستقل (`مرجع الفرع` = B02..B18، ثابت أيضاً). لكن Company 3
+ *  نظامها لسه غير محدد، ومكتوب إنها ممكن تغيّره. لو كان العمود اسمه
+ *  foodics_item_id لكان تغيير نظامها = migration + تعديل كل الاستعلامات.
+ *
+ *  لذلك كل جداول الـ data plane مربوطة بـ (pos_source, pos_item_id):
+ *  تغيير مصدر شركة = سطر واحد في companies.yaml، وسجلّها القديم يبقى
+ *  مقروءاً لأن المفتاح القديم ما زال موجوداً.
+ */
+export type PosSource = 'foodics' | 'none';
+
+export const POS_SOURCES: readonly PosSource[] = ['foodics', 'none'] as const;
+
+export interface PosConfig {
+  source: PosSource;
+  enabled?: boolean;
 }
 
 export interface CompanyConfig {
@@ -158,6 +232,7 @@ export interface CompanyConfig {
   timezone?: string;
   active?: boolean;
   legacy?: LegacyRef;
+  pos?: PosConfig;
 }
 
 export interface ControlConfig {
@@ -281,6 +356,10 @@ export function loadConfig(): RootConfig {
     // ⭐ فحص عنوان قاعدة البيانات — توسعة + تحقق (كان inline هنا فقط)
     checkDatabaseUrl(label, c?.databaseUrl, problems, { resolve: true });
 
+    // ⭐ نفس الفحص في مسار القراءة. بدونه كان مصدر غريب بينزل
+    //    صامتاً في data plane لكتابة صفوف لا يقرأها أي adapter.
+    checkPos(label, c?.pos, problems);
+
     // ⭐ نضع المفسَّر في الكائن المعاد. الفشل سُجّل في problems فوق بالفعل،
     //    فالـ catch هنا موجود فقط حتى لا يتسرّب استثناء غير متوقع؛ ولأن
     //    problems.length > 0 يعني loadConfig سيرمي error تخدمه.
@@ -375,6 +454,8 @@ function assertValid(list: CompanyConfig[]): string[] {
     //    لم يكن يفحصها. النتيجة: ممكن تبعت databaseUrl فيه كلمة مرور عبر
     //    الـ API، يُحفظ في YAML، ثم يُحفظ في git.
     checkDatabaseUrl(c.id || `#${i + 1}`, c.databaseUrl, problems, { resolve: false });
+    // ⛔ نفس reason الفحص: assertValid يحرس POST/PATCH على /api/config.
+    checkPos(c.id || `#${i + 1}`, c.pos, problems);
     ids.add(c.id); ports.add(c.port); hosts.add(c.subdomain);
   }
   return problems;

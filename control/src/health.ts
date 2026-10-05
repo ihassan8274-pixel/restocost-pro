@@ -1,4 +1,4 @@
-import type { CompanyConfig } from './config.js';
+import type { CompanyConfig, PosSource } from './config.js';
 
 // ═══════════════════════════════════════════════════════
 //  فحص صحة الشركة
@@ -23,6 +23,8 @@ export interface CompanyStatus {
   subdomain: string;
   port: number;
   legacyPort?: number | undefined;
+  posSource: PosSource;
+  posEnabled: boolean;
   healthy: boolean;
   appVersion?: string | undefined;
   schemaVersion?: string | undefined;
@@ -63,6 +65,10 @@ export async function probe(c: CompanyConfig): Promise<CompanyStatus> {
     subdomain: c.subdomain,
     port: c.port,
     legacyPort: c.legacy?.port,
+    // ⭐ الشركة بلا كتلة pos تظهر "none" لا undefined — اللوحة تعرض
+    //    العمود دائماً، والـ frontend مابيش يحتاج case تاني.
+    posSource: c.pos?.source ?? 'none',
+    posEnabled: c.pos?.enabled === true,
     checkedAt: new Date().toISOString(),
   };
 

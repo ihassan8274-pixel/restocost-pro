@@ -104,6 +104,156 @@ describe('dbNameFrom', () => {
 const LEGACY = [...LEGACY_DATABASES];
 const BUKHARO_DB = LEGACY[1] ?? 'restocost2';
 
+// ── CFG-18..CFG-24  pos.source ────────────────────────────────────────────
+//
+// ⭐ لماذا هذه اختبارات سلوكية على loadConfig() وليس فحص نص:
+//    الخطر ليس "السطر مكتوب خطأ" بل "قيمة غريبة تمرّ وتُخزَّن".
+//    فحص النص لا يستطيع ملاحظة قيمة تمرّ.
+//
+// ⛔ الخطر المقيس: نظام الشركة الثالثة لسه غير محدد. لو كان العمود
+//    اسمه foodics_item_id لكان تغيير نظامها تعديل كود + migration.
+//    لذلك المفتاح (pos_source, pos_item_id) والمصدر إعداد مُتحقَّق منه.
+
+describe('pos.source', () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'cfg-pos-'));
+    process.env['COMPANIES_CONFIG'] = join(dir, 'companies.yaml');
+    process.env['COMPANY_DB_PASSWORD'] = 'pw';
+  });
+
+  afterEach(() => {
+    delete process.env['COMPANIES_CONFIG'];
+    delete process.env['COMPANY_DB_PASSWORD'];
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  const write = (body: string) => writeFileSync(join(dir, 'companies.yaml'), body, 'utf8');
+
+  const yml = (posBlock: string) => `
+control:
+  port: 3010
+  subdomain: control.example.com
+companies:
+  - id: alpha
+    name: Alpha
+    subdomain: alpha.example.com
+    port: 3011
+    databaseUrl: postgres://restocost_app:\${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_alpha
+${posBlock}`;
+
+  it('[CFG-18] ⭐ a KNOWN source loads and survives round-trip', async () => {
+    write(yml('    pos:\n      source: foodics\n      enabled: true\n'));
+    const { resetCache, loadConfig } = await import('./config.js');
+    resetCache();
+    const cfg = loadConfig();
+    expect(cfg.companies[0]!.pos).toEqual({ source: 'foodics', enabled: true });
+  });
+
+  it('[CFG-19] ⭐ an UNKNOWN source is REFUSED, not silently stored', async () => {
+    // ⛔ هذا هو الفحص كله. لو مرّ، لن يجد الـ adapter هذا المصدر
+    //    فيسقط وقت الاستيراد لا وقت الإقلاع.
+    write(yml('    pos:\n      source: sapa\n      enabled: true\n'));
+    const { resetCache, loadConfig } = await import('./config.js');
+    resetCache();
+    expect(() => loadConfig()).toThrow(/غير معروف/);
+    expect(() => loadConfig()).toThrow(/sapa/);
+  });
+
+  it('[CFG-20] ⭐ case variants are refused, not folded', async () => {
+    // ⭐ "Foodics" و"FOODICS" مرّان لو قارنّا case-insensitively. كل
+    //    واحد منهم ينتج صفاً في pos_order_lines بمصدر لا يطابق ما
+    //    يقرؤه الـ adapter.
+    for (const bad of ['Foodics', 'FOODICS', 'foodic', 'foodics2', 'sapa']) {
+      write(yml(`    pos:\n      source: ${bad}\n`));
+      const { resetCache, loadConfig } = await import('./config.js');
+      resetCache();
+      expect(() => loadConfig(), bad).toThrow(/غير معروف/);
+    }
+  });
+
+  it('[CFG-20b] ⭐⛔ measured: YAML trims plain scalars, so "foodics " is NOT a test case', async () => {
+    // ⭐ لماذا نفصل هذا: كتبت أولاً اختباراً يفترض أن `source: foodics `
+    //    يصل كـ "foodics " رابطاً بفراغ، فمرّ. القياس أثبت العكس:
+    //    YAML parser يقصّ الفراغ من طرفَي scalar العادي قبل أن تصل
+    //    القيمة إلى كودنا. أي أنWhitespace غير قابل للوصول من
+    //    ملف YAML إطلاقاً.
+    //    الخطر الحقيقي ينتقل إلى الـ API: PATCH يقبل JSON فيه
+    //    "foodics " كما هو. لهذا يبقى الفحص في assertValue vicinity
+    //    ولا نُزيح الاختبار لتوهم أنه يغطي YAML.
+    const { parse } = await import('yaml');
+    for (const raw of ['foodics ', ' foodics', '\tfoodics']) {
+      expect(parse(`v: ${raw}`).v, raw).toBe('foodics');
+    }
+    // ⭐ ودعها تُرفض لو وصلت فعلاً — هذا هو السلوك المطلوب، مختبَر
+    //    عبر المسار الذي يمرّرها فعلاً.
+    write(yml('    pos:\n      source: foodics\n'));
+    const { resetCache, addCompany } = await import('./config.js');
+    resetCache();
+    expect(() =>
+      addCompany({
+        id: 'bravo', name: 'Bravo', subdomain: 'bravo.example.com', port: 3015,
+        databaseUrl: 'postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_bravo',
+        pos: { source: 'foodics ' as never },
+      }),
+    ).toThrow(/غير معروف/);
+  });
+
+  it('[CFG-21] ⭐ a company with NO pos block is ALLOWED (optional)', async () => {
+    // ⭐ لازم يمرّ. الشركة قد تُضاف قبل ما يُdecided نظام الـ POS،
+    //    و" absence " reason لرفض الإضافة كلها.
+    write(yml(''));
+    const { resetCache, loadConfig } = await import('./config.js');
+    resetCache();
+    expect(loadConfig().companies[0]!.pos).toBeUndefined();
+  });
+
+  it('[CFG-22] ⭐ pos.enabled=true with source=none is REFUSED — a real contradiction', async () => {
+    // ⭐ "فعّل الاستيراد من مصدر لا وجود له" ينتج أرقاماً صفرية في
+    //    كل تقرير بلا أي رسالة خطأ. هذا أسوأ من الرفض.
+    write(yml('    pos:\n      source: none\n      enabled: true\n'));
+    const { resetCache, loadConfig } = await import('./config.js');
+    resetCache();
+    expect(() => loadConfig()).toThrow(/تناقض/);
+  });
+
+  it('[CFG-23] ⭐ a non-object pos is REFUSED, not coerced', async () => {
+    // ⭐ YAML بيفرّق بين `pos: foodics` (نص) وكتلة. الأول خطأ بشري
+    //    شائع لا أحد يلتقطه بالنظر.
+    for (const bad of ['foodics\n', '[1, 2]\n', '42\n']) {
+      write(yml(`    pos: ${bad}`));
+      const { resetCache, loadConfig } = await import('./config.js');
+      resetCache();
+      expect(() => loadConfig(), bad).toThrow(/pos/);
+    }
+  });
+
+  it('[CFG-24] ⭐ the WRITE path refuses an unknown source too', async () => {
+    // ⛔ نفس reason CFG-14/15: assertValid هو ما يحرس POST/PATCH.
+    //    فحص loadConfig وحده يترك طريقاً مفتوحاً.
+    write(yml('    pos:\n      source: foodics\n'));
+    const { resetCache, addCompany } = await import('./config.js');
+    resetCache();
+    expect(() =>
+      addCompany({
+        id: 'bravo', name: 'Bravo', subdomain: 'bravo.example.com', port: 3015,
+        databaseUrl: 'postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_bravo',
+        pos: { source: 'oracle' as never, enabled: true },
+      }),
+    ).toThrow(/غير معروف/);
+    // ⭐Negative control: نفس الطلب بمصدر معروف لازم يمرّ.
+    //    بدونها، اختبار الرفض أعلاه ينجح حتى لو checkPos يرفض كل شيء.
+    addCompany({
+      id: 'bravo', name: 'Bravo', subdomain: 'bravo.example.com', port: 3015,
+      databaseUrl: 'postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_bravo',
+      pos: { source: 'none', enabled: false },
+    });
+    const { readFileSync } = await import('node:fs');
+    expect(readFileSync(join(dir, 'companies.yaml'), 'utf8')).toContain('bravo');
+  });
+});
+
 describe('the real config file', () => {
   let dir: string;
 
@@ -262,9 +412,51 @@ companies:
         'utf8',
       );
     }
+    // ⭐ النظام الثالث لسه غير محدد — لازم يقبل سطر واحد يغيّره
+    expect(text).toMatch(/pos:\s*\n\s*source: foodics/);
+    // ⭐⛔ و company3 لازم يبدأ بـ source: none وليس foodics.
+    //    سبب التسجيل: لو تُرك foodics افتراضياً، أول استيراد لهذه
+    //    الشركة سيُكتب pos_source='foodics' لبيانات ليست من Foodics،
+    //    وجدول الربط سينتج 34 صفاً وهمياً لنفس الأصناف.
+    const c3 = text.slice(text.indexOf('id: company3'));
+    expect(c3).toMatch(/source: none/);
+    expect(c3).not.toMatch(/source: foodics/);
+    // ⭐⚠️ واسمها مؤقت — الاختبار يقول ذلك صراحةً حتى لا يتحول
+    //    إلى اسم دائم بالصدفة.
+    expect(c3).toContain('TODO: rename');
+
     expect(text).not.toContain('CHANGE_ME');
     expect(text).toContain('${COMPANY_DB_PASSWORD}');
     expect(text).not.toMatch(/@127\.0\.0\.1:5432\//);
     expect(text).toMatch(/@127\.0\.0\.1:5433\//);
+
+    // ⭐⛔ ولا منفذ ولا نطاق مكرر — الفحص موجود في assertValid لكن
+    //    هذا الملف يتغير باليد. تكرار المنفذ يعني عمليتين على نفس
+    //    المنفذ: واحدة ما تراه اللوحة.
+    const ports = [...text.matchAll(/^\s+port:\s*(\d+)/gm)].map((m) => m[1]!);
+    expect(new Set(ports).size, `duplicate port in ${JSON.stringify(ports)}`).toBe(ports.length);
+    const subs = [...text.matchAll(/^\s+subdomain:\s*(\S+)/gm)].map((m) => m[1]!);
+    expect(new Set(subs).size, `duplicate subdomain in ${JSON.stringify(subs)}`).toBe(subs.length);
+  });
+
+  it('[CFG-26] ⭐ the SHIPPED file passes loadConfig() with company3 inactive', async () => {
+    // ⭐ لماذا هذا غير CFG-13: CFG-13 يفحص النص. هذا يستدعي
+    //    loadConfig() على الملف الحقيقي، فأي شركة مرفوضة توقف
+    //    Control Plane عن الإقلاع بالكامل — والاثنتان متعاشتان.
+    const { resetCache, loadConfig, listCompanies } = await import('./config.js');
+    process.env['COMPANIES_CONFIG'] = '';
+    delete process.env['COMPANIES_CONFIG'];
+    resetCache();
+    const cfg = loadConfig();
+    expect(cfg.companies.length).toBe(3);
+
+    // ⭐ company3 غير مفعّلة ⇒ لا تظهر في اللوحة ⇒ لا probe على 3013
+    const active = listCompanies().map((c) => c.id);
+    expect(active).toContain('massobi');
+    expect(active).toContain('bukharo');
+    expect(active).not.toContain('company3');
+
+    // ⭐Negative control: لو كانت مفعّلة أو مرفوضة، الاخنان يفشلان.
+    expect(cfg.companies.find((c) => c.id === 'company3')!.active).toBe(false);
   });
 });

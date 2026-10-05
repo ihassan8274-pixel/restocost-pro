@@ -17,6 +17,20 @@ control:
   subdomain: control.restocost.shop
   # 🔐 افتح هذا الرابط خلف Cloudflare Access ببريدك وحدك
 
+# ══════════════════════════════════════════════════════════════════
+#  ⭐ pos.source — مصدر نظام الـ POS
+#
+#  لماذا هو إعداد وليس ثابتاً في الكود:
+#    كل جدول في الـ data plane مربوط بـ (pos_source, pos_item_id)
+#    وليس foodics_item_id. لو غيّرت نظام شركة بتغيّر السطر ده وحده،
+#    والبيانات القديمة بتتقرأ بنفس الجداول، وما بيضيعش ربط قديم.
+#
+#  القيم المعروفة اليوم:
+#    foodics  ← تصدير HTML باسم ‎.xls‎ (مقاس — انظر COMMIT في الملاحظات)
+#    none     ← مفيش POS لسه (استيراد يدوي)
+#    ⛔ أي قيمة تانية مرفوضة وقت التحميل، مش بتتقبل صامتة.
+# ══════════════════════════════════════════════════════════════════
+
 companies:
   # ─────────────────────────────────────────────────────────────
   - id: massobi
@@ -27,6 +41,9 @@ companies:
     databaseUrl: postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_massobi?connection_limit=5&pool_timeout=10
     timezone: Asia/Riyadh
     active: true
+    pos:
+      source: foodics
+      enabled: true
 
   # ─────────────────────────────────────────────────────────────
   - id: bukharo
@@ -37,8 +54,34 @@ companies:
     databaseUrl: postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_bukharo?connection_limit=5&pool_timeout=10
     timezone: Asia/Riyadh
     active: true
+    pos:
+      source: foodics
+      enabled: true
 
     # 🟡 النسخة القديمة — للترحيل فقط. احذف هذا بعد القطع النهائي.
     legacy:
       port: 3002
       note: النسخة الحالية على النظام القديم
+
+  # ═══════════════════════════════════════════════════════════
+  #  ⛔⛔ الشركة الثالثة — الاسم مؤقت، صحّحه قبل التشغيل
+  #
+  #  ⭐ active: false عمداً: سطر في companies.yaml غير مفعّل لا يظهر
+  #    في اللوحة (listCompanies() filters on active !== false) ولا
+  #    يحاول Control Plane يعمل لها probe على منفذ 3013 فارغ.
+  #    خليها true بعد ما تحط الاسم الصح.
+  #
+  #  ⭐ pos.source: none — لأن نظامها لسه غير محدد. لما تقرر، غيّر
+  #    السطر ده وحده. مفيش migration ولا تعديل كود مطلوب.
+  # ═══════════════════════════════════════════════════════════
+  - id: company3
+    name: "Company 3 (TODO: rename)"
+    nameAr: "الشركة الثالثة (TODO)"
+    subdomain: company3.restocost.shop
+    port: 3013
+    databaseUrl: postgres://restocost_app:${COMPANY_DB_PASSWORD}@127.0.0.1:5433/restocost_company3?connection_limit=5&pool_timeout=10
+    timezone: Asia/Riyadh
+    active: false
+    pos:
+      source: none
+      enabled: false

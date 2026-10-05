@@ -45,7 +45,9 @@ import {
   removeCompany,
   dbNameFrom,
   nextPort,
+  POS_SOURCES,
 } from './config.js';
+import type { PosConfig, PosSource } from './config.js';
 import { probe, backupAge } from './health.js';
 import { requireWriteToken, guardStatus } from './auth.js';
 import { ensureDatabase } from './db.js';
@@ -165,6 +167,7 @@ app.post<{
     id?: string; name?: string; nameAr?: string;
     subdomain?: string; port?: number; timezone?: string;
     createDatabase?: boolean;
+    pos?: { source?: string; enabled?: boolean };
   };
 }>('/api/companies', async (req, reply) => {
   requireWriteToken(req, reply);
@@ -182,6 +185,17 @@ app.post<{
   if (problems.length) return reply.code(422).send({ ok: false, problems });
 
   const dbName = `restocost_${id.replace(/-/g, '_')}`;
+
+  // ⭐ pos.source يُرفض هنا قبل إنشاء قاعدة البيانات — خطأ في الإعداد
+  //    لا ينبغي أن يترك قاعدة يتيمة على القرص.
+  const posSource = (b.pos?.source ?? 'foodics').trim().toLowerCase();
+  if (!POS_SOURCES.includes(posSource as PosSource)) {
+    return reply.code(422).send({
+      ok: false,
+      problems: [`pos.source غير معروف: "${posSource}" — المتاح: ${POS_SOURCES.join(' | ')}`],
+    });
+  }
+  const pos: PosConfig = { source: posSource as PosSource, enabled: b.pos?.enabled !== false };
 
   // ⭐ قاعدة البيانات أولاً — لو فشلت، لا نكتب في الملف
   let db: Awaited<ReturnType<typeof ensureDatabase>> | null = null;
@@ -209,6 +223,7 @@ app.post<{
         .replace('PLACEHOLDER', dbName),
       timezone: b.timezone || 'Asia/Riyadh',
       active: true,
+      pos,
     });
     return reply.code(201).send({ ok: true, company: created, database: db });
   } catch (e) {
@@ -219,7 +234,11 @@ app.post<{
 // ── تعديل شركة ──
 app.patch<{
   Params: { id: string };
-  Body: Partial<{ name: string; nameAr: string; subdomain: string; port: number; timezone: string; active: boolean }>;
+  Body: Partial<{
+    name: string; nameAr: string; subdomain: string; port: number;
+    timezone: string; active: boolean;
+    pos: PosConfig;
+  }>;
 }>('/api/companies/:id', async (req, reply) => {
   requireWriteToken(req, reply);
   if (reply.sent) return;
@@ -230,6 +249,20 @@ app.patch<{
   }
   if (typeof req.body?.port === 'number') patch['port'] = req.body.port;
   if (typeof req.body?.active === 'boolean') patch['active'] = req.body.active;
+  // ⭐ تغيير نظام POS للشركة = تعديل إعداد، لا تعديل كود ولا migration.
+  if (req.body?.pos && typeof req.body.pos === 'object') {
+    const s = (req.body.pos as PosConfig).source;
+    if (typeof s !== 'string' || !POS_SOURCES.includes(s as PosSource)) {
+      return reply.code(422).send({
+        ok: false,
+        error: `pos.source غير معروف: "${String(s)}" — المتاح: ${POS_SOURCES.join(' | ')}`,
+      });
+    }
+    patch['pos'] = {
+      source: s as PosSource,
+      enabled: (req.body.pos as PosConfig).enabled !== false,
+    };
+  }
 
   if (Object.keys(patch).length === 0) {
     return reply.code(422).send({ ok: false, error: 'لا حقول للتعديل' });
