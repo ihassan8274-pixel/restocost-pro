@@ -44,7 +44,7 @@ test('حجزان متتاليان لا يعيدان رقماً واحداً (ا�
   assert.notEqual(a[0], b[0]);
 });
 
-test('حجز大批عة كبيرة (50) ثم صغير — لا تداخل', () => {
+test('حجز دفعة كبيرة (50) ثم صغير — لا تداخل', () => {
   const s = fresh();
   const big = s.reserveDocNumbers('GRN', 50, 2026);
   const small = s.reserveDocNumbers('GRN', 1, 2026);

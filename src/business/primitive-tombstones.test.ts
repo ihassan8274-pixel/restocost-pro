@@ -19,7 +19,7 @@ describe('شواهد القيم النصية (customRoles)', () => {
     expect(removedValuesBetween(['مدير', 'شيف', 'كاشير'], ['مدير', 'كاشير'])).toEqual(['شيف']);
   });
 
-  it('لاвидrink شاهد على القيم غير النصية', () => {
+  it('لا شاهد على القيم غير النصية', () => {
     expect(removedValuesBetween([{ id: 'a' }], [])).toEqual([]);
     expect(removedValuesBetween(null, [])).toEqual([]);
   });
@@ -30,7 +30,7 @@ describe('شواهد القيم النصية (customRoles)', () => {
 
   it('الفارغ‑إلى‑الفارغ لا شاهد (لا إفراغ Wider قائمة)', () => {
     expect(removedValuesBetween([], [])).toEqual([]);
-    // تحويل من كائنات إلى نصوص: لاDestructive شواهد
+    // تحويل من كائنات إلى نصوص: لا شواهد
     expect(removedValuesBetween([{ id: 'a' }], ['x'])).toEqual([]);
   });
 

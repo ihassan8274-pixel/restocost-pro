@@ -5,8 +5,8 @@ import path from 'node:path';
 // كان المحرك الواحد (syncEngine) موجوداً بثلاث نسخ:
 //   src/context/syncEngine.ts   ←Consumer (syncStore) + الاختبار
 //   src/utils/syncEngine.ts     ← لا يستورده أحد (نسخة طبق الأصل، ميتة)
-//   والاختبار كان يشير للمcontext فنجحت تعديلات النسخةcontext بينما runtime
-//  使用的是 النسخة الأخرى.
+//   والاختبار كان يشير لنسخة context فنجحت تعديلات نسخة context بينما runtime
+//  يستخدم فعلياً هي النسخة الأخرى.
 // نُقل إلى src/business/syncEngine.ts (مصدر واحد). هذا الاختبار يفشل إن
 // أُنشئت نسخة ثانية في أي مكان.
 

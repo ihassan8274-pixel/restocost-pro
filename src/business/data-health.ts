@@ -1,7 +1,7 @@
-//健康 数据的计算 —— 纯逻辑，从 useAppCompat 抽出（原本在那个 1,2xx 行的 hook 里）。
-// 计算系统完备度的六个维度，并判定等级：
-//   excellent (≥90) · good (≥70) · attention（低于 70）
-// 每个维度都是一个百分比，总分是它们的平均值（无加权、无排序）。
+// حساب صحة البيانات — منطق خالص، مستخرج من useAppCompat (كان داخل hook واحد
+// في سطر واحد من App). يحسب أبعاد اكتمال النظام الستة ويصنّف المستوى:
+//   excellent (≥90) · good (≥70) · attention (أقل من 70)
+// كل بُعد نسبة مئوية، والنسبة النهائية متوسطها (بلا ترجيح ولا ترتيب).
 
 export interface DataHealthInput {
   rawMaterials: { id: string; isActive: boolean }[];

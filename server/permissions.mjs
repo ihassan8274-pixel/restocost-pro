@@ -214,7 +214,7 @@ export const FINANCIAL_READ_KEYS = new Set([
 // مجموعات مرجعية مشتركة: كل دور يحتاجها لعرض القوائم (أسماء المواد والفروع
 // والعملاء)، ولا تكشف أرقاماً مالية — مسموحة للجميع.
 // ملاحظة: rcerp_access_roles ليست هنا عمداً — كشف خريطة الأدوار يتيح معرفة
-// أي دور يملك أي صلاحية، وهو可用于 تصعيد الصلاحيات. للإدارة فقط.
+// أي دور يملك أي صلاحية، وهو مُستخدم في تصعيد الصلاحيات. للإدارة فقط.
 export const SHARED_REFERENCE_KEYS = new Set([
   'rcerp_raw_materials', 'rcerp_material_categories', 'rcerp_material_barcodes',
   'rcerp_categories', 'rcerp_branches', 'rcerp_units', 'rcerp_customers',

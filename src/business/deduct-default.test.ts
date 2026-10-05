@@ -8,17 +8,17 @@ import { useFinancialStore } from '../context/domains/financial';
 // و...legacy كان يكتب فوق financial في useApp، فالواجهة كانت تعرض قيمة لا
 // تساوي ما يُرفع. الافتراضي المطلوب: معطّل — تكلفة المبيعات بالجرد.
 describe('deductSalesFromInventory default', () => {
-  it('legacyCompatStore 默认 معطّل (لا خصم تلقائي)', () => {
+  it('legacyCompatStore معطّل (لا خصم تلقائي)', () => {
     const v = useLegacyCompatStore.getState().deductSalesFromInventory;
     expect(v).toBe(false);
   });
 
-  it('financialStore 默认 معطّل', () => {
+  it('financialStore معطّل', () => {
     const v = useFinancialStore.getState().deductSalesFromInventory;
     expect(v).toBe(false);
   });
 
-  it('الستوران متّفقان على الافتراضي — لا分裂 ولا مصدر واحدTruth', () => {
+  it('الستوران متّفقان على الافتراضي — لا انقسام ولا مصدر واحد للحقيقة', () => {
     expect(useLegacyCompatStore.getState().deductSalesFromInventory)
       .toBe(useFinancialStore.getState().deductSalesFromInventory);
   });

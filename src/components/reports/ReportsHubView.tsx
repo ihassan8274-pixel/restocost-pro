@@ -236,7 +236,7 @@ export const ReportsHubView: React.FC<ReportsHubViewProps> = ({ onNavigate }) =>
       );
     }
 
-    // «المفضلة» و«الأخيرة» مُستبعِدان другَيهما:Intersection بينهما فارغ عادةً
+    // «المفضلة» و«الأخيرة» مُستبعِدان بعضَيهما: التقاطع بينهما فارغ عادةً
     // فيبدو الزر وكأنه لا يعمل.
     if (showFavoritesOnly) list = list.filter((r) => favorites.has(r.id));
     else if (showRecentOnly) list = list.filter((r) => recents.includes(r.id));

@@ -4,7 +4,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { useLegacyCompatStore } from '../stores/legacyCompatStore';
 
 // هذه الدوال كانت stubs في الستور الفعلي (stores/*) الذي تستهلكه الواجهة عبر
-// useProcurement — لا النسخة الميتة في context/domains. 返回：
+// useProcurement — لا النسخة الميتة في context/domains. يعيد:
 //   getQuotePrice => 0  ⇒ أمر الشراء يُثبَّت بسعر صفر (لا يسقط إلى standardPrice)
 //   convertRequestToPOs => ok:true + poIds وهمية ⇒ الواجهة تقول "تم" ولا شيء يُنشأ
 //   deleteUnitOfMeasure => ok:true ⇒ "تم الحذف" والوحدة باقية

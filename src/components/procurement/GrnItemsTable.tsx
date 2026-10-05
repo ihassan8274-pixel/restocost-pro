@@ -105,7 +105,7 @@ export const GrnItemsTable: React.FC<ItemsTableProps> = ({
                   <td className={cell}>
                     {/* يقبل التعبير: «5*48» ⇒ 240. الأسعار بالكرتون لا
                         بالوحدة، فالحساب المتكرر وقت الإدخال. يُقيَّم عند
-                       离开 الحقل لا أثناء الكتابة — لو قيّمنا كل ضغطة لاختفى
+                       مغادرة الحقل لا أثناء الكتابة — لو قيّمنا كل ضغطة لاختفى
                         التعبير قبل كتابته. */}
                     <input
                       type="text" inputMode="decimal" data-nav autoComplete="off"

@@ -369,7 +369,7 @@ const FoodicsIntegrationView: React.FC = () => {
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [foodicsBatchRecords, foodicsDeliveryRecords, fromDate, toDate, recSearch]);
 
-  const periodLabel = fromDate || toDate ? `من ${fromDate || 'البداية'}至 ${toDate || 'اليوم'}` : 'كامل الفترة';
+  const periodLabel = fromDate || toDate ? `من ${fromDate || 'البداية'} إلى ${toDate || 'اليوم'}` : 'كامل الفترة';
 
   const branchTotals = useMemo(() => {
     const m = new Map<string, { name: string; records: number; qty: number; revenue: number; cost: number; fcPct: number }>();

@@ -5,7 +5,7 @@ import { mergeById } from '../mergeCore.mjs';
 test('دمج القيم النصية يحترم الشواهد (حذف دور مخصص لا يعود)', () => {
   const existing = ['مدير', 'شيف', 'كاشير'];
   const incoming = ['مدير', 'كاشير'];
-  // بدون شاهد: يعود三者 كاملين (اتحاد)
+  // بدون شاهد: يعود الثلاثة كاملين (اتحاد)
   assert.deepEqual(mergeById(existing, incoming), ['مدير', 'شيف', 'كاشير']);
   // مع شاهد "شيف": لا يعود
   assert.deepEqual(mergeById(existing, incoming, new Set(['شيف'])), ['مدير', 'كاشير']);

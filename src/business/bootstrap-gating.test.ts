@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 // خادم — سلوك القائمة في /api/bootstrap عند تقييد القراءة.
-// كان أي جلسة مسحوبة (bootstrap) تستقبل كل المجموعات بلا فحص صلاحية، فseeing
-// الدور المحدود (counter) было يسحب القيود المالية وأسعار الشراء.
+// كان أي جلسة مسحوبة (bootstrap) تستقبل كل المجموعات بلا فحص صلاحية، فكان
+// الدور المحدود (counter) يسحب القيود المالية وأسعار الشراء.
 // هذه الاختبارات تحاكي منطق canReadCollection على قائمة COLLECTION_KEYS حقيقي.
 import { canReadCollection, SHARED_REFERENCE_KEYS, OPERATIONAL_READABLE, COUNTING_READ_KEYS } from '../../server/permissions.mjs';
 
