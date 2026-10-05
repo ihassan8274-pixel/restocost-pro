@@ -8,6 +8,9 @@ dist/
 # environment & secrets
 .env
 .env.local
+login.json
+test-login.json
+tools/.srvcred.json
 server/.env
 server/secrets.key
 
@@ -59,4 +62,15 @@ src/context/*.bak-*
 
 # نسخة احتياطية أنشأها المستخدم قبل تغيير رموز التصميم (2026-10-05)
 _backup_src_before_identity/
+
+# ── Foodics ingest harness scratch space ─────────────────────────────────────
+# Synthetic .xls trees written by plan.test.ts. Real exports never live here;
+# if something does, it is a test that wrote into the wrong place.
+api/src/foodics/.test-tmp/
+# Mutation-harness snapshots of api/src/foodics/*.ts. Deleted at the end of a
+# successful run; tracked if a run was killed, which is exactly when you want
+# the diff, but it is never source.
+api/.mut-backup/
+# drizzle-kit generated migrations
+api/drizzle/
 
