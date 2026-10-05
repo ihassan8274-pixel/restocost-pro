@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 import {
   COLLECTION_KEYS, instanceId, readToken, sessionUser,
 } from '../core.mjs';
+import {
+  BACKUP_SETTINGS_KEY, VERIFY_LOG_KEY, BACKUP_EXTRA_KEYS, BACKUP_PREFIXES,
+  NEVER_BACK_UP, VERIFY_EXCLUDE, makeKeyClassifier,
+} from '../backup-keys.mjs';
 import { store } from '../store.mjs';
 
 const { getKV, setKV, deleteKV, setKVMany, purgeAllSessions, createSession } = store;
@@ -28,21 +32,50 @@ try {
     if (!fs.existsSync(dst)) fs.renameSync(src, dst);
   });
 } catch { /* no legacy folder */ }
-const BACKUP_SETTINGS_KEY = 'rcerp_backup_settings';
+// ⭐ This block used to live inline in backup.mjs. It moved to ../backup-keys.mjs
+//    so it can be unit-tested WITHOUT opening the production database —
+//    core.mjs imports store.mjs, so a module importing COLLECTION_KEYS from
+//    core.mjs could only be tested against live data. See backup-keys.mjs.
+const { isKnown: isKnownBackupKey, scrub: scrubBackupData } =
+  makeKeyClassifier(COLLECTION_KEYS);
+
 const DEFAULT_BACKUP_SETTINGS = { enabled: true, intervalHours: 1, retention: 72, lastRunAt: null, nextRunAt: null, verifyAfterBackup: true };
 
 const readBackupSettings = () => ({ ...DEFAULT_BACKUP_SETTINGS, ...(getKV(BACKUP_SETTINGS_KEY) || {}) });
 const writeBackupSettings = (s) => setKV(BACKUP_SETTINGS_KEY, s);
 
-const VERIFY_LOG_KEY = 'rcerp_backup_verify_log';
-
 const snapshotAll = () => {
   const data = {};
   const counts = {};
+
   COLLECTION_KEYS.forEach((key) => {
     const v = getKV(key);
     if (v !== null) { data[key] = v; counts[key] = Array.isArray(v) ? v.length : 1; }
   });
+
+  // ⭐ server-local state (backup schedule, bot cursor, webhooks, aliases)
+  BACKUP_EXTRA_KEYS.forEach((key) => {
+    const v = getKV(key);
+    if (v !== null) { data[key] = v; counts[key] = Array.isArray(v) ? v.length : 1; }
+  });
+
+  // ⭐ one key per entity: rcerp_tg_flow:<chatId> can never be a static list.
+  //    ⛔ kvKeysByPrefix is mandatory, not optional — without it the telegram
+  //    flow sessions silently vanish from every backup. No fallback.
+  for (const prefix of BACKUP_PREFIXES) {
+    const keys = typeof store.kvKeysByPrefix === 'function'
+      ? store.kvKeysByPrefix(prefix)
+      : (() => { throw new Error(`store.kvKeysByPrefix is missing — ${prefix} would be silently dropped from backups`); })();
+    for (const key of keys) {
+      if (!isKnownBackupKey(key)) continue;
+      const v = getKV(key);
+      if (v !== null) { data[key] = v; counts[key] = Array.isArray(v) ? v.length : 1; }
+    }
+  }
+
+  // ⛔ zero leakage: sessions / throttle counters, even if one slipped in
+  scrubBackupData(data, counts);
+
   return { data, counts };
 };
 
@@ -57,7 +90,10 @@ const verifyBackup = (backupData, backupCounts) => {
   let allMatch = true;
   const liveSnap = snapshotAll();
   const allKeys = new Set([...Object.keys(backupData), ...Object.keys(liveSnap.data)]);
+  let skipped = 0;
   for (const key of allKeys) {
+    // ⭐ لا مقارنة — لكن يُحسب ضمن الإجمالي ليظهر في التقرير
+    if (VERIFY_EXCLUDE.has(key)) { skipped += 1; continue; }
     const inBackup = key in backupData;
     const inLive = key in liveSnap.data;
     if (!inBackup && inLive) {
@@ -82,7 +118,7 @@ const verifyBackup = (backupData, backupCounts) => {
       }
     }
   }
-  return { allMatch, results, verifiedAt: new Date().toISOString(), totalKeys: allKeys.size, mismatchedKeys: results.length };
+  return { allMatch, results, verifiedAt: new Date().toISOString(), totalKeys: allKeys.size, comparedKeys: allKeys.size - skipped, skippedKeys: skipped, mismatchedKeys: results.length };
 };
 
 const createBackup = (createdBy, type, label) => {
@@ -170,9 +206,13 @@ const mergeById = (liveArr, backupArr) => {
 // partial/corrupt backup (e.g. a 0-byte or truncated file) can therefore never
 // wipe collections it doesn't contain. Writes are batched atomically via setKVMany.
 const applySnapshot = (data = {}) => {
-  const keys = Object.keys(data).filter((k) => COLLECTION_KEYS.includes(k));
+  // ⭐ isKnownBackupKey لا COLLECTION_KEYS — يجب أن تُستعاد المفاتيح الإضافية والبادئات أيضاً،
+  //    وإلا حُفظت في النسخة ورُفضت عند الاسترجاع ⇒ استرجاع ناقص بلا أي رسالة خطأ.
+  const keys = Object.keys(data).filter((k) => isKnownBackupKey(k));
   const entries = new Map();
   for (const key of keys) {
+    // ⛔ شرط ثانٍ حتى لو تسلّل مفتاح محظور إلى ملف نسخة محرَّر يدوياً
+    if (NEVER_BACK_UP.some((p) => key.startsWith(p))) continue;
     const backupValue = data[key];
     if (Array.isArray(backupValue)) {
       entries.set(key, mergeById(getKV(key) || [], backupValue));
@@ -340,7 +380,7 @@ export const registerBackup = (app) => {
       return res.status(400).json({ ok: false, error: `نسخة غير مدعومة من ملف النسخ الاحتياطي (المتوقع: ${BACKUP_VERSION})` });
     }
     const keys = Object.keys(backup.data);
-    const unknown = keys.filter((k) => !COLLECTION_KEYS.includes(k));
+    const unknown = keys.filter((k) => !isKnownBackupKey(k));
     if (unknown.length) {
       return res.status(400).json({ ok: false, error: `ملف يحتوي مفاتيح غير معروفة: ${unknown.slice(0, 3).join(', ')}` });
     }
