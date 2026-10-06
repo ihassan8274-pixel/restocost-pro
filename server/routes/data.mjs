@@ -12,6 +12,7 @@ import { canWriteCollection, canPurgeTombstone, canReadCollection, BRANCH_SCOPED
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
 import { sanitizeRecords } from '../record-guard.mjs';
 import { summarizeChange, summarizeDelete } from '../collection-audit.mjs';
+import { validateCollectionBody } from '../schemas/collection-schemas.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, getBuildFingerprint, serverStamp } from '../version.mjs';
 import { sendTelegram, sendTelegramDocument, buildNotificationText, testTelegram, getBotChatIds } from '../telegram.mjs';
@@ -215,6 +216,22 @@ export const registerData = (app) => {
       return res.status(403).json({ ok: false, error: writeCheck.message });
     }
 
+    // ---- تحقق Zod للمجموعات المغطاة (الحقول المالية + المعرّفات) ----
+    // لا نغطي كل المجموعات — المجموعات بلا مخطط تمرّ كما هي.
+    // الخطأ 400 هنا يوقف الدفعة قبل الوصول للحراس اللاحقة.
+    const validation = validateCollectionBody(key, req.body);
+    if (!validation.success) {
+      try {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | ZOD-REJECT ${key} | ${JSON.stringify(validation.error)} | ${saveUA}\n`
+        );
+      } catch { /* تجاهل */ }
+      return res.status(400).json({ ok: false, error: 'بيانات غير صالحة', details: validation.error });
+    }
+    // نستخدم البيانات المنظّفة (زائدة الحقول تُسقط، التحويل يتم تلقائياً)
+    let incomingData = validation.data;
+
     // ---- حماية من تلف النصوص العربية ----
     // جهاز يحمل نسخة تالفة محلياً (كاشح بايتات CP437) سيدفعها كل بضعة ثوانٍ
     // فيطمس النسخة النظيفة. التلف غير قابل للإصلاح، فنرفض الدفعات التالفة
@@ -237,7 +254,6 @@ export const registerData = (app) => {
     // تُضاف السجلات الجديدة، وتُحدَّث السجلات الموجودة، ولا يُحذف سجل من جهاز آخر أبداً.
     // الحماية من بيانات العرض: سجل تجريبي صغير لن يحذف شيئاً بل سيُدمَج كما هو؛
     // ولضمان ألا تطمس نسخة تجريبية كاملة بيانات حقيقية، نرفض استبدالاً صارخاً (أصغر بكثير).
-    let incomingData = req.body;
     // شاهد الحذف: قائمة معرّفات محذوفة نهائياً (مصفوفة سلاسل لا سجلات) —
     // تُجمَّع بالاتحاد (union) لا بالاستبدال كي لا يخسر جهازٌ حذفَ جهازٍ آخر،
     // وتُنقَّى منها كل المجموعات فوراً: أي سجل يدخل الشواهد لا يعود أبداً.

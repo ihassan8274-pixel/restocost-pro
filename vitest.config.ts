@@ -23,6 +23,7 @@ export default defineConfig({
     include: [
       'src/**/*.test.{ts,tsx}',
       'server/test/repo/**/*.test.mjs',
+      'server/schemas/**/*.test.{ts,mjs}',
       'control/src/**/*.test.ts',
       'api/src/**/*.test.ts',
     ],
