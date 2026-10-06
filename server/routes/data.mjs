@@ -10,6 +10,7 @@ import {
 } from '../core.mjs';
 import { canWriteCollection, canPurgeTombstone, canReadCollection, BRANCH_SCOPED_KEYS, scopeToBranches } from '../permissions.mjs';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
+import { sanitizeRecords } from '../record-guard.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, getBuildFingerprint, serverStamp } from '../version.mjs';
 import { sendTelegram, sendTelegramDocument, buildNotificationText, testTelegram, getBotChatIds } from '../telegram.mjs';
@@ -487,6 +488,22 @@ if (key === 'rcerp_recent_docs') {
         kind: periodViolation.kind,
       });
     }
+    // --- حارس شكل السجلات عند حدّ الشبكة ---
+    // قبل الدمج مباشرة. ما بعد هنا يصبح في المخزن الدائم، فما لم يُصحَّح هنا
+    // يُصلَّح في ledger ولا يظهر في تقرير.
+    // نُصفّي ولا نرفض: السجل الفاسد وحده يُسقَط ويُبلَّغ، وإلا تجمدت مزامنة
+    // كل المجموعات بسبب معرّف واحد — وهو ما حدث فعلاً قبل شواهد الحذف.
+    const guard = sanitizeRecords(incomingData);
+    if (guard.clean !== incomingData) incomingData = guard.clean;
+    if (guard.rejected.length || guard.coerced) {
+      try {
+        fs.appendFileSync(
+          path.join(dataDir, 'savelog.txt'),
+          `${new Date().toISOString()} | GUARD ${key} | dropped=${guard.rejected.length} reasons=${[...new Set(guard.rejected.map((r) => r.reason))].join(',')} | money-coerced=${guard.coerced} | ${saveUA}\n`
+        );
+      } catch { /* تجاهل */ }
+    }
+
     // --- دمج بالمعرّف بدل الاستبدال الكامل (أساس التزامن الصحيح بين الأجهزة) ---
     // نجمع المعرّفات الموجودة قبل الدمج لمعرفة السجلات "الجديدة" فقط (التنبيهات لا تُرسل للنفس).
     const idsBefore = new Set();
@@ -570,7 +587,9 @@ if (key === 'rcerp_recent_docs') {
       path.join(dataDir, 'savelog.txt'),
       `${new Date().toISOString()} | MERGED ${key} | ${saveBytes}b | ${saveUA}\n`
     );
-    res.json({ ok: true });
+    // نبلّغ العميل بما سقط ليعيد جلب النسخة النظيفة — كما في مسار شواهد الحذف.
+    // به يعرف أن Modification محلي لن يصل، لا أن يرسله إلى الأبد بصمت.
+    res.json(guard.rejected.length ? { ok: true, rejectedIds: guard.rejected.map((r) => r.id) } : { ok: true });
   });
 
   // ---- Instance identity (used by the desktop launcher to find THIS copy's server) ----
