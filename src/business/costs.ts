@@ -1,4 +1,5 @@
 import type { GoodsReceiptNote, OpeningBalanceRecord, StockTransfer } from '../types';
+import { addMoney, divMoney } from './money';
 
 // متوسط التكلفة من الاستلامات المعتمدة فقط — احتياط عند غياب سجل حركة مرجّح
 export const averageUnitCostFromReceipts = (
@@ -9,9 +10,9 @@ export const averageUnitCostFromReceipts = (
   const receipts = grnNotes.filter((g) => g.status === 'approved' && g.items.some((i) => i.rawMaterialId === rawMaterialId));
   let qty = 0, value = 0;
   receipts.forEach((g) => g.items.forEach((i) => {
-    if (i.rawMaterialId === rawMaterialId) { qty += i.quantityReceived; value += i.quantityReceived * i.unitPrice; }
+    if (i.rawMaterialId === rawMaterialId) { qty += i.quantityReceived; value = addMoney(value, i.quantityReceived * i.unitPrice); }
   }));
-  if (qty > 0) return value / qty;
+  if (qty > 0) return divMoney(value, qty);
   return fallbackCost;
 };
 

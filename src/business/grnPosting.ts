@@ -1,4 +1,5 @@
 // ترحيل إشعار الاستلام إلى المخزون — منطق نقي مُختبَر منفصل عن المتجر.
+import { addMoney } from './money';
 //
 // المشكلة التي تحلّها: المسار يعرض «مسودة ← مراجعة ← اعتماد ← ترحيل»، لكن
 // الحالة في النوع 'draft' | 'submitted' | 'approved' | 'rejected' — لا 'posted'.
@@ -73,11 +74,11 @@ export function planPosting(ref: string, input: PostPlanInput): PostPlan {
   }
   if (!lines.length) return { ok: false, reason: 'zero_qty' };
 
-  return { ok: true, lines, total: lines.reduce((s, l) => s + l.qty * l.unitPrice, 0) };
+  return { ok: true, lines, total: addMoney(...lines.map((l) => l.qty * l.unitPrice)) };
 }
 
 /** خطة الترحيل العكسي: نفس البنود لكن سالبة، لعكس أثر رُحِّل. */
 export function planUnposting(lines: PostLine[]): { deltas: { rawMaterialId: string; delta: number; batchNumber?: string; expiryDate?: string }[]; total: number } {
   const deltas = lines.map((l) => ({ rawMaterialId: l.rawMaterialId, delta: -l.qty, batchNumber: l.batchNumber, expiryDate: l.expiryDate }));
-  return { deltas, total: deltas.reduce((s, d) => s + d.delta * (lines.find((l) => l.rawMaterialId === d.rawMaterialId)?.unitPrice || 0), 0) };
+  return { deltas, total: addMoney(...deltas.map((d) => d.delta * (lines.find((l) => l.rawMaterialId === d.rawMaterialId)?.unitPrice || 0))) };
 }

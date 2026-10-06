@@ -1,5 +1,6 @@
 import type { RawMaterial } from '../types';
 import { stockPerPurchase, purchaseUnitName, purchaseUnitPrice } from './units';
+import { mulMoney } from './money';
 
 // إدخال الكمية بعمودين: p = وحدة الشراء (كرتون/صندوق)، s = وحدة المخزون (عدد/كغم)
 export type CountEntry = { p: string; s: string };
@@ -70,7 +71,7 @@ export const buildCountItems = (
         countedStorage,
         consumedQty,
         unitCost,
-        consumedValue: Number((consumedQty * unitCost).toFixed(2)),
+        consumedValue: mulMoney(consumedQty, unitCost),
       };
     });
 

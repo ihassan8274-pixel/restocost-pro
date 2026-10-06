@@ -1,4 +1,5 @@
 ﻿// تسوية إقفال الجرد الشهري — منطق نقي مستخرج من periodStore.
+import { addMoney, mulMoney } from './money';
 // كان closeMonthlyInventory يكتفي بـ status:'closed': لا يمسّ المخزون ولا
 // يقيّد قيداً محاسبياً، رغم أن نص الشاشة يعد بـ"يُحوَّل الفرق إلى المخزون
 // مع قيد محاسبي (acc-inv مقابل acc-cogs)". فالفرق بين الدفتري والفعلي كان
@@ -60,21 +61,21 @@ export const buildMonthlySettlement = (items: {
       countedQty: counted,
       delta,
       unitCost,
-      varianceCost: Number((delta * unitCost).toFixed(2)),
+      varianceCost: mulMoney(delta, unitCost),
       kind: delta < 0 ? 'shortage' : 'surplus',
     });
   }
   const shortages = lines.filter((l) => l.kind === 'shortage');
   const surpluses = lines.filter((l) => l.kind === 'surplus');
-  const totalShortageValue = Number(shortages.reduce((s, l) => s + l.varianceCost, 0).toFixed(2));
-  const totalSurplusValue = Number(surpluses.reduce((s, l) => s + l.varianceCost, 0).toFixed(2));
+  const totalShortageValue = addMoney(...shortages.map((l) => l.varianceCost));
+  const totalSurplusValue = addMoney(...surpluses.map((l) => l.varianceCost));
   return {
     lines,
     shortages,
     surpluses,
     totalShortageValue,
     totalSurplusValue,
-    netVarianceValue: Number((totalSurplusValue + totalShortageValue).toFixed(2)),
+    netVarianceValue: addMoney(totalSurplusValue, totalShortageValue),
     hasVariance: lines.length > 0,
   };
 };

@@ -1,5 +1,6 @@
 import type { RawMaterial, StandardRecipe, SubPrepIngredient } from '../types';
 import { tradeUnitPrice } from './units';
+import { addMoney, mulMoney, divMoney, roundMoney } from './money';
 
 // معرفة ما إذا كانت الوصفة تعتمد على أيٍّ من المواد المحددة — مباشرة (في المكونات)
 // أو بالتتابع عبر تحضيراتها الفرعية/المطبخ المركزي (يُستخدم لتحديد الوصفات المتأثرة
@@ -54,7 +55,7 @@ export const computeRecipeCosts = (
     const unitCost = mat ? tradeUnitPrice(mat, stockPriceFor ? stockPriceFor(mat.id) : undefined) : 0;
     const yieldFactor = mat && mat.yieldPercentage ? mat.yieldPercentage / 100 : 1;
     const wastageFactor = 1 + (ing.wastagePercent || 0) / 100;
-    foodCost += (ing.quantity / yieldFactor) * wastageFactor * unitCost;
+    foodCost = addMoney(foodCost, mulMoney(mulMoney(ing.quantity / yieldFactor, wastageFactor), unitCost));
   });
   if (_depth < 6) {
     (subPrep || []).forEach((sp) => {
@@ -63,17 +64,17 @@ export const computeRecipeCosts = (
       const subTotal = computeRecipeCosts(rawMaterials, recipes, sub.ingredients, sub.directLaborCost, sub.packagingCost, sub.subPrepIngredients, sub.yieldPieces, _depth + 1, stockPriceFor).totalCost;
       // عدد القطع الناتجة من دفعة التحضير: yieldPieces إن حُدّد، وإلا مقاس الحصة إذا كان رقمياً
       const pieces = (Number(sub.yieldPieces) > 0 ? Number(sub.yieldPieces) : (Number(sub.portionSize) > 0 ? Number(sub.portionSize) : 1));
-      subPrepCost += sp.quantity * (subTotal / pieces);
+      subPrepCost = addMoney(subPrepCost, mulMoney(sp.quantity, subTotal / pieces));
     });
   }
-  foodCost += subPrepCost;
-  const totalCost = foodCost + directLabor + packaging;
+  foodCost = addMoney(foodCost, subPrepCost);
+  const totalCost = addMoney(addMoney(foodCost, directLabor), packaging);
   return {
-    foodCost: Number(foodCost.toFixed(2)),
-    subPrepCost: Number(subPrepCost.toFixed(2)),
-    totalCost: Number(totalCost.toFixed(2)),
+    foodCost: roundMoney(foodCost),
+    subPrepCost: roundMoney(subPrepCost),
+    totalCost: roundMoney(totalCost),
     // السعر المقترح لتحقيق نسبة تكلفة الأغذية المستهدفة 28% (سعر صافي = التكلفة / 0.28)
-    suggestedPrice: Number((totalCost / 0.28).toFixed(2)),
-    pieceCost: Number((totalCost / (yieldPieces || 1)).toFixed(2)),
+    suggestedPrice: divMoney(totalCost, 0.28),
+    pieceCost: divMoney(totalCost, yieldPieces || 1),
   };
 };
