@@ -59,7 +59,7 @@ export const buildFingerprint = getBuildFingerprint();
 
 // بصمة السيرفر: تُحسب من كل ملفات الكود (الجذر + المسارات + الاختبارات) وقت
 // الإقلاع. كان يقرأ جذر server/ وحده فلا يشمل server/routes/ — فأي تعديل في
-// مسار (data.mjs مثلاً) كان يترك البصمة ثابتة ويوحيComprehensive بأنه لم يُحمّل
+// مسار (data.mjs مثلاً) كان يترك البصمة ثابتة ويوحي بأنه لم يُحمّل
 // كود جديد. أي مراقبة نشر تعتمد على /health كانت تفشل بصمت.
 export const serverStamp = (() => {
   try {

@@ -18,7 +18,7 @@ import { useProcurementStore } from '@stores/procurementStore';
 import { useSalesStore } from '@stores/salesStore';
 import { useFinancialStore } from '@stores/financialStore';
 // مالك إعداد "خصم المبيعات من المخزون" (context/domains/financial.ts) — ليس
-// stores/financialStore (مخزون وقوالب فقط).settings لاsettings.
+// stores/financialStore (مخزون وقوالب فقط).settings لا settings.
 import { useFinancialStore as useFinancialSettingsStore } from '../../context/domains/financial';
 import { useSettingsStore } from '@stores/settingsStore';
 import { useHRStore } from '@stores/hrStore';

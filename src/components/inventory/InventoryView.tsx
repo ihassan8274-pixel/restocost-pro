@@ -104,7 +104,7 @@ export const InventoryView: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState(emptyItemForm());
 
-  // بarcode form — نفس المنتج قد له أكثر من باركود حسب المورد/التعبئة
+  // باركود form — نفس المنتج قد له أكثر من باركود حسب المورد/التعبئة
   const emptyBcForm = () => ({ barcode: '', supplierId: '', packagingLevel: 'unit' as MaterialBarcode['packagingLevel'], packagingQty: 0, isPrimary: false, barcodeType: 'EAN13' as MaterialBarcode['barcodeType'] });
   const [bcForm, setBcForm] = useState(emptyBcForm());
   const [bcEditId, setBcEditId] = useState<string | null>(null);
@@ -599,7 +599,7 @@ export const InventoryView: React.FC = () => {
             الصنف نشط (متاح للاستخدام في الوصفات والشراء)
           </label>
 
-          {/* بarcode section — باركود متعدد حسب المورد/التعبئة */}
+          {/* باركود section — باركود متعدد حسب المورد/التعبئة */}
           {editingId && (
             <div className="border border-slate-200 rounded-xl p-3 space-y-3">
               <div className="flex items-center gap-2">

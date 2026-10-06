@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   findControlChars,
   findForeignWords,
+  findGluedLatinWords,
   findRawBacktickEscapes,
   findReplacementChars,
   scanSource,
@@ -57,6 +58,40 @@ test('[SCR-05] الإيموجي والأسهم والمحارف الاتجاهي
   // U+0394 / U+03A3 مستعملة فعلاً في شاشات التقارير (فرق/مجموع) — حُذفت من النطاق
   const real = `<th>${delta}%</th><td>${sigma}</td>`;
   assert.deepEqual(scanSource(real), []);
+});
+
+test('[SCR-07] كلمة لاتينية ملتصقة بعربية تُكتشف — التلف الذي تكرر ثلاث مرات', () => {
+  // ⚠️ هذا النمط فات findForeignWords: هو يبحث عن script آخر (صيني/روسي)،
+  //    لكن التلف الحقيقي كان لاتينياً ملتصقاً بعربية بلا فاصل.
+  //    تكرر في يوم واحد: «يُسجَّل» و«صار» و«لأ».
+  // ⚠️ العيّنات التالفة تُبنى بـ code points لا بالحرف الحرفي، وإلا صار ملف
+  //    الاختبار نفسه مخالفاً للحارس الذي يختبره — وهو ما حدث في أول نسخة.
+  const LAT_A = String.fromCodePoint(0x61, 0x74, 0x79, 0x70, 0x65);   // atype
+  const LAT_B = String.fromCodePoint(0x63, 0x69, 0x62, 0x6c, 0x79);   // cibly
+  const LAT_C = String.fromCodePoint(0x43, 0x68, 0x72, 0x6f, 0x6e, 0x6f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x61, 0x6c, 0x6c, 0x79);
+  const glued = [
+    `test('سجل جديد بلا مبلغ يُسجَّل${LAT_A} DATA_WRITE', () => {});`,
+    `// لو حُسب الحذف هنا لأ${LAT_B}ملأ السجل بـ«حذف» كاذب`,
+    `// نسخة نظيفة: ننسخ الحقول الصريحة فقط، فتختفي مفاتيح التسميم${LAT_C}.`,
+  ];
+  for (const line of glued) {
+    const hits = findGluedLatinWords(line);
+    assert.ok(hits.length >= 1, `لم يُكشف: ${line.slice(0, 50)}`);
+  }
+});
+
+test('[SCR-08] مصطلحات تقنية مشروحة في جملة عربية لا تُكشف (ضابط سلبي)', () => {
+  // ⚠️ لازم ضابط سلبي: لولا هذا لصار الحارس يطلق على كل تعليق فيه
+  //    كلمة إنجليزية مشروحة — وهو ما حدث فعلاً في أول نسخة من الكاشف.
+  const clean = [
+    `//  كاشف التسلّل الغريب في المصدر — pure، بلا أي dependency.`,
+    `//  فلا يلتقطه أي type-checker، ولا أي linter بيعرف عربي.`,
+    `// ما لا نُسجّله هنا (الحذف) له مساره: rcerp_deleted_ids، ويُسجَّل هناك.`,
+    `const x = 1; // سليم تماماً`,
+  ];
+  for (const line of clean) {
+    assert.deepEqual(findGluedLatinWords(line), [], `إنذار كاذب: ${line.slice(0, 50)}`);
+  }
 });
 
 test('[SCR-06] سطر كامل بلغة أخرى ليس تسلّلاً (الخلط هو التسلّل)', () => {

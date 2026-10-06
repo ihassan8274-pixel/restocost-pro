@@ -31,3 +31,22 @@ test('الدور admin وحده يفعّل الحساب مباشرة بعد ال
     assert.equal(resolveRegisterMode({ userCount: 5, voterRole }), expected, `voterRole=${voterRole}`);
   }
 });
+
+// ── سباق أول مدير ──────────────────────────────────────────────
+// الفحص (userCount === 0) والكتابة (setKV) كانا يفصلهما bcrypt ≈100ms.
+// طلبان متزامنان على نظام فارغ كانا يريان 0 معاً فيصير كلاهما مديراً،
+// والثاني يطمس الأول لأن setKV تستبدل — فيبقى مدير بجلسة لحساب مفقود.
+// الحل في auth.mjs: بعد bcrypt نعيد القراءة ونعيد الحسم.
+test('بعد سباق لم يعد النظام فارغاً — لا يُنشأ مدير ثانٍ', () => {
+  // محاكاة ما يفعله المسار: أعيد الحسم بعد أن أضاف غيري مستخدماً
+  const afterRace = [{ id: 'other', role: 'admin' }];
+  const retry = resolveRegisterMode({ userCount: afterRace.length, voterRole: undefined });
+  assert.equal(retry, 'pending', 'الطلب المتأخر يجب أن يصير بانتظار تفعيل لا مديراً');
+});
+
+test('الطلب المتأخر بلا جلسة لا يحصل على جلسة أصلاً', () => {
+  // المسار لا ينشئ جلسة إلا في فرع first-admin. إن لم يعد النظام فارغاً
+  // فالطلب يذهب إلى 'pending' الذي لا ينشئ جلسة — فلا رمز ولا دخول.
+  const retry = resolveRegisterMode({ userCount: 1, voterRole: undefined });
+  assert.equal(retry, 'pending');
+});

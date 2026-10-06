@@ -32,7 +32,7 @@ const {
 } = store;
 
 
-// hash bcrypt وهمي ثابت الشكل «$2bexport const registerAuth = (app) => {0$…» لـtiming ما عدا.
+// hash bcrypt وهمي ثابت الشكل «$2bexport const registerAuth = (app) => {0$…» لـ timing ما عدا.
 // الغرض منه أن تُقارَن كلمة المرور عند عدم وجود المستخدم، فيستغرق الطلبان
 // وقتاً متقارباً فلا يُكشف وجود الحساب من الفارق الزمني.
 // (لن يُطابق أي مفتاح حقيقي — ولا نحتاج أن يُطابق.)
@@ -67,14 +67,14 @@ export const registerAuth = (app) => {
     const deny = (reason) => {
       const who = user ? user.email : String(email || '').slice(0, 120);
       writeAudit(null, 'LOGIN_DENIED', user ? user.id : null, who + ' (' + reason + ')');
-      writeAudit(null, 'LOGIN_DENIED', user ? user.id : null, detail);
+      
       return res.json({ ok: false, error: GENERIC });
     };
 
     // ── تسريب التوقيت (timing side-channel) ──
     // كان الحرف `if (!user) return` يُرجع فوراً، بينما الحساب الموجود يمرّ على
-    // bcrypt (≈100ms). فحتى لو becameت الرسائل متطابقة، الفارق الزمني وحده
-    // يكشف وجود الحساب. الحل: مقارنة وهمية بـhash وهمي عند عدم وجود المستخدم،
+    // bcrypt (≈100ms). فحتى لو became الرسائل متطابقة، الفارق الزمني وحده
+    // يكشف وجود الحساب. الحل: مقارنة وهمية بـ hash وهمي عند عدم وجود المستخدم،
     // فيستغرق الطلبان وقتاً متقارباً.
     if (!user) {
       rateLimitRegisterFailure(ipKey);
@@ -154,6 +154,39 @@ export const registerAuth = (app) => {
     // أي جلسة أخرى (زائر أو موظف غير مدير) تسجّل كطلب بانتظار التفعيل بلا أثر،
     // وإلا لأمكن لأي موظف تصعيد الدور المطلوب إلى مدير بمجرد موافقة أي مسؤول.
     const mode = resolveRegisterMode({ userCount: users.length, voterRole: voter?.role });
+    // سباق أول مدير: الفحص أعلاه والكتابة أدناه يفصلهما bcrypt (≈100ms).
+    // طلبان متزامنان على نظام فارغ كانا يريان userCount=0 معاً فيصير كلاهما
+    // 'first-admin'، والثاني يطمس الأول لأن setKV تستبدل لا تدمج — فيبقى مدير
+    // بجلسة صالحة لحساب لم يعد موجوداً.
+    // الحل: بعد bcrypt نعيد القراءة ونعيد الحسم. إن لم يعد النظام فارغاً فالذي
+    // سبقه أنشأ المدير، وهذا الطلب يعامل كطلب عادي (بانتظار تفعيل أو من مدير).
+    if (mode === 'first-admin') {
+      const afterBcrypt = getKV('rcerp_users') || [];
+      if (afterBcrypt.length !== 0) {
+        const retry = resolveRegisterMode({ userCount: afterBcrypt.length, voterRole: voter?.role });
+        if (retry === 'pending') {
+          const pending = {
+            id: `user-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
+            name: String(name).trim(),
+            email: String(email).trim().toLowerCase(),
+            passwordHash: await hashPassword(password),
+            role: 'counter',
+            branchId: 'all',
+            requestedRole: role,
+            requestedBranchId: branchId,
+            isActive: false,
+            needsActivation: true,
+            createdAt: new Date().toISOString(),
+          };
+          afterBcrypt.push(pending);
+          setKV('rcerp_users', afterBcrypt);
+          writeAudit(null, 'SIGNUP_REQUEST', pending.id, pending.email + ' (سباق أول مدير)');
+          return res.json({ ok: true, pending: true });
+        }
+        // retry === 'activate': المدير الذي سبقه موجود الآن ويملك جلسة — أكمل كإنشاء مدير
+        return res.json({ ok: true, user: publicUser(afterBcrypt.find((u) => u.role === 'admin') || null) });
+      }
+    }
     if (mode === 'pending') {
       const pending = {
         id: `user-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,

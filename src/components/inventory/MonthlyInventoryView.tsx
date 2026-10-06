@@ -27,7 +27,7 @@ export const MonthlyInventoryView: React.FC = () => {
   const period = monthlyInventory.find((p) => p.branchId === branch && p.monthKey === month);
   const branchPeriods = monthlyInventory.filter((p) => p.branchId === branch).sort((a, b) => b.monthKey.localeCompare(a.monthKey));
 
-  // خريطة كود الصنف (للترتيب حسب الكود rackو serial)
+  // خريطة كود الصنف (للترتيب حسب الكود rack و serial)
   const matCode = useMemo(() => {
     const m: Record<string, string> = {};
     rawMaterials.forEach((r) => { m[r.id] = r.code; });

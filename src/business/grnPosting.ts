@@ -45,7 +45,7 @@ export type PostPlan =
  *  - not_approved     : لا يُرحَّل إلا المعتمد
  *  - already_posted   : حركات موجودة بنفس المرجع ⇒ ترحيل ثانٍ = مضاعفة
  *  - no_items         : لا أصناف
- *  - missing_material : صنف بلا معرّف ⇒ يتعذّرknow أي فرع/مخزون
+ *  - missing_material : صنف بلا معرّف ⇒ يتعذّر تحديد أي فرع/مخزون
  *  - zero_qty         : كل الكميات صفرية
  */
 export function planPosting(ref: string, input: PostPlanInput): PostPlan {

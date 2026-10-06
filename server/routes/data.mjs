@@ -11,6 +11,7 @@ import {
 import { canWriteCollection, canPurgeTombstone, canReadCollection, BRANCH_SCOPED_KEYS, scopeToBranches } from '../permissions.mjs';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
 import { sanitizeRecords } from '../record-guard.mjs';
+import { summarizeChange, summarizeDelete } from '../collection-audit.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, getBuildFingerprint, serverStamp } from '../version.mjs';
 import { sendTelegram, sendTelegramDocument, buildNotificationText, testTelegram, getBotChatIds } from '../telegram.mjs';
@@ -74,7 +75,7 @@ const LAZY_KEYS = new Set([
 // جهاز في كل مزامنة (قائمة 148 معرّفاً = كل طلب يمرّ على 148 فحصاً)، ومع
 // تراكمها يرتفع احتمال رفض دفعة كاملة. الشاهد الذي تجاوز الحدّ لم يعد لسجله
 // أي أثر (سجله محذوف أصلاً)، فحذفه لا يفقد بيانات.
-// حدّ أعلى لسجلات الحركة على الخادم. العميل يslice محلياً فقط (5000)، والخادم
+// حدّ أعلى لسجلات الحركة على الخادم. العميل يـ slice محلياً فقط (5000)، والخادم
 // يدمج السجلات فيراكم بلا سقف — فبلغ 3MB تُسحب مع كل
 // bootstrap. السقف على الأقليم القديمة لا الجديد: لا يُسقط حركة حديثة أبداً.
 const MOVEMENT_RETENTION = 5000;
@@ -307,6 +308,9 @@ export const registerData = (app) => {
       );
       // نُبلغ العميل بالمرفوض ليُسقطها من قائمته المحلية — وإلا بقيت في
       // pendingSaves تُعاد إلى الأبد (هذه كانت حلقة التجميد).
+      // الحذف النهائي هو أخطر عملية على البيانات — يُسجَّل دائماً بلا استثناء.
+      const del = summarizeDelete({ key, ids: validIncoming });
+      if (del) store.writeAudit(user, del.action, key, del.detail);
       return res.json({ ok: true, rejectedIds });
     }
     if (key !== 'rcerp_users' && key !== 'rcerp_ai_settings' && key !== 'rcerp_telegram_settings' && key !== 'rcerp_intake_inbox' && key !== 'rcerp_recent_docs') {
@@ -515,12 +519,23 @@ if (key === 'rcerp_recent_docs') {
       // (حماية من "تعود الشركة المحذوفة" بعد الحذف — الحذف نهائي عبر معرّف السجل).
       const tomb = new Set(Array.isArray(getKV('rcerp_deleted_ids')) ? getKV('rcerp_deleted_ids') : []);
       const merged = mergeById(existingArr, incomingData, tomb);
-      // retention: سجلات الحركة تنمو بلا حدّ على الخادم (العميل يslice محلياً
+      // retention: سجلات الحركة تنمو بلا حدّ على الخادم (العميل يـ slice محلياً
       // فقط، والخادم يدمج فيراكم). بلا سقف تتحوّل إلى 3MB تُسحب في كل bootstrap.
       // نُبقي الأحدث دائماً: السقف على الأقل قديم، فلا يُسقط حركة حديثة.
-      setKV(key, applyRetention(key, merged));
+      const retained = applyRetention(key, merged);
+      setKV(key, retained);
+
+      // ---- تدقيق الأعمال: سطر واحد لكل تغيير يستحق، لا لكل طلب ----
+      // قبل كان كل هذا يمرّ بلا أثر: تعديل مبلغ على فاتورة لا يترك دليلاً،
+      // والحذف النهائي لا يُسجَّل إلا في ملف الحفظ. الفرق هنا هو الحقيقة:
+      // ما تغيّر في المخزن قبل وبعد الدمج، لا ما وصل في الطلب.
+      const change = summarizeChange({ key, before: existingArr, after: retained });
+      if (change) store.writeAudit(user, change.action, key, change.detail);
     } else {
       setKV(key, incomingData);
+      // مسار الاستبدال الكامل (غير مصفوفة أو أول كتابة): يُسجَّل أيضاً
+      const change = summarizeChange({ key, before: existingArr, after: incomingData });
+      if (change) store.writeAudit(user, change.action, key, change.detail);
     }
     // ---- تحديث قالب تليجرام المرجعي عند أي تغيير في الفروع/الأصناف/الفئات ----
     if (key === 'rcerp_branches' || key === 'rcerp_raw_materials' || key === 'rcerp_material_categories') {

@@ -39,6 +39,15 @@ process.on('unhandledRejection', (reason) => {
 
 const app = express();
 app.disable('x-powered-by');
+
+// ---- CSRF note (P0 follow-up, NOT implemented) ----
+// A naive cookie-token CSRF layer was previously inserted here and had to be
+// removed: it ran before express.json() (so req.body was always undefined),
+// issued the cookie after verification, and the frontend never sent the header
+// — together that made every POST return 403. Real CSRF needs a maintained
+// library plus coordinated frontend changes (double-submit cookie wired into
+// the API client). Until then the API is protected by Bearer JWT auth, which is
+// not attached automatically by browsers, so CSRF risk is low.
 app.use(express.json({ limit: '20mb', strict: false }));
 
 // ---- Response compression (no deps): gzip large JSON payloads ----
@@ -213,8 +222,8 @@ app.all('/invoice-platform*', (req, res, next) => {
 // ---- Static (production build) ----
 const distDir = path.join(__dirname, '..', 'dist');
 if (fs.existsSync(distDir)) {
-  // index.html دائماً بدون تخزين (no-cache) ليتناول المتصفح أحدث الأسماء المhashed؛
-  // بينما ملفات assets (JS/CSS/خطوط/صور) أسماؤها مhashed فتُخزَّن طويلاً (immutable).
+  // index.html دائماً بدون تخزين (no-cache) ليتناول المتصفح أحدث الأسماء المُهاشَمة؛
+  // بينما ملفات assets (JS/CSS/خطوط/صور) أسماؤها مُهاشَمة فتُخزَّن طويلاً (immutable).
   app.use(express.static(distDir, {
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.html')) {
@@ -235,6 +244,48 @@ if (fs.existsSync(distDir)) {
     return res.sendFile(path.join(distDir, 'index.html'));
   });
 }
+
+// ---- Health check (used by Docker HEALTHCHECK + CI; no auth, cheap) ----
+app.get('/api/health', async (req, res) => {
+  const started = Date.now();
+  let db = 'unknown';
+  let backend = 'unknown';
+  let dbError = null;
+  let dbMs = null;
+  try {
+    const t0 = Date.now();
+    // probeStore() issues a real `SELECT 1` against the active driver. Using
+    // store.getKV() here would be WRONG: it is served from the in-memory cache,
+    // so it returns "ok" even when PostgreSQL is unreachable (verified: the
+    // Docker smoke test reported db:"ok" while every write failed).
+    const probe = await probeStore();
+    dbMs = Date.now() - t0;
+    if (probe && probe.ok) {
+      db = 'ok';
+      backend = probe.backend;
+    } else {
+      db = 'unreachable';
+      backend = (probe && probe.backend) || 'unknown';
+      dbError = String((probe && probe.error) || 'unknown');
+    }
+  } catch (err) {
+    db = 'unreachable';
+    dbError = String((err && err.message) || 'unknown');
+  }
+  const healthy = db === 'ok';
+  res.status(healthy ? 200 : 503).json({
+    ok: healthy,
+    version: PKG_VERSION,
+    stamp: serverStamp,
+    uptimeSec: Math.round(process.uptime()),
+    db,
+    backend,
+    ...(dbError ? { dbError } : {}),
+    dbMs,
+    totalMs: Date.now() - started,
+    ts: new Date().toISOString(),
+  });
+});
 
 // ---- API 404 + global error handler (JSON contract instead of HTML) ----
 app.use('/api', (req, res) => {

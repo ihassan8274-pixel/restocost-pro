@@ -221,7 +221,7 @@ export const SHARED_REFERENCE_KEYS = new Set([
   'rcerp_custom_roles', 'rcerp_closed_months', 'rcerp_closed_days',
 ]);
 
-// ما يراه دورRuns بلا صلاحية إدارية: مخزون ومبيعات وتشغيل، بلا دفاتر مالية
+// ما يراه دور Runs بلا صلاحية إدارية: مخزون ومبيعات وتشغيل، بلا دفاتر مالية
 // ولا مستخدمين ولا إعدادات نظام.
 export const OPERATIONAL_READABLE = new Set([
   'rcerp_inventory', 'rcerp_inventory_batches', 'rcerp_inventory_movements',
@@ -235,7 +235,7 @@ export const OPERATIONAL_READABLE = new Set([
   'rcerp_vat_percent', 'rcerp_vat_inclusive', 'rcerp_deduct_sales',
 ]);
 
-// جرد outpost: الجرد اليومي والفيزيائيsettlementRestricted لأدوار المخزون
+// جرد outpost: الجرد اليومي والفيزيائي settlementRestricted لأدوار المخزون
 // فقط (counter/storekeeper) — waiter لا يقرأ سجلات جرد المطبخ ولا habil.
 export const COUNTING_READ_KEYS = new Set(['rcerp_daily_counts']);
 
@@ -287,7 +287,7 @@ export const visibleBranchIdsFor = (user, branches) => {
 };
 
 // المجموعات التي تحمل branchId على مستوى السجل — تُقصَّ على فروع المستخدم.
-// أي مجموعة خارج هذه القائمة إما مرجع مشترك (مواد/فروع/أصناف) أو مستCONCLUSION
+// أي مجموعة خارج هذه القائمة إما مرجع مشترك (مواد/فروع/أصناف) أو مست
 // إداري بلا فرع، فلا يُقصّ.
 export const BRANCH_SCOPED_KEYS = new Set([
   'rcerp_inventory', 'rcerp_inventory_batches', 'rcerp_inventory_movements',

@@ -18,7 +18,7 @@ export interface MonthlyCountSources {
 }
 
 /**
- * أApplicableشنات الجرد الشهري لفرع وشهر. تُرجع فقط الأصناف التي لها حركة أو
+ * الجرد الشهري لفرع وشهر. تُرجع فقط الأصناف التي لها حركة أو
  * رصيد (صفر لا معنى لأرقامه)، مع theoreticalUsage = الرصيد النظري.
  */
 export const buildMonthlyCountItems = (

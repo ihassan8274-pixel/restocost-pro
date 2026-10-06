@@ -115,11 +115,82 @@ export function findRawBacktickEscapes(src) {
   return out;
 }
 
+/**
+ * كلمة لاتينية ملتصقة بحرف عربي داخل جملة — مثل «صار».
+ *
+ * النمط الذي فات findForeignWords: هو يبحث عن script *آخر* (صيني/روسي)،
+ * لكن التلف الذي حدث كان لاتينياً ملتصقاً بعربية بلا فاصل، فلا يلتقطه.
+ * وقد تكرر هذا التلف ثلاث مرات في يوم واحد — وهذا يثبت أن الأداة وحدها
+ * لا تكفي، فصارت قاعدة في المستودع بدل مراجعة يدوية كل مرة.
+ *
+ * نتحقق أن السطر نصّ عربي، ثم نبحث عن حرفين لاتينيين متجاورين يلتصق
+ * أحدهما بحرف عربي. ونستثني السطر إن بدا كوداً لا جملة (استيراد أو مسار)،
+ * فـ«كل type-checker» جملة عربية تحيط بكلمة تقنية مشروحة، وليست تلفاً.
+ */
+// حرف عربي فقط — بلا علامات ترقيم (، ؛ ؟) ولا أرقام عربية-هندية.
+// العلامات تسبب إنذاراً كاذباً: «ids،» تلتصق فيها اللاتينية بالعربية فتنطبق
+// القاعدة على سطر سليم. الحرف وحده هو ما يعني "جملة عربية".
+const ARABIC_LETTER = /[\u0620-\u064A\u066E-\u066F\u0671-\u06D3\u06EE-\u06FF\u064B-\u065F\u0670]/;
+const ARABIC = /[\u0600-\u06FF]/;
+const LATIN = /[A-Za-z]/;
+const GLUED_LATIN = new RegExp(
+  `(?:${ARABIC_LETTER.source}[A-Za-z]{3,}|[A-Za-z]{3,}${ARABIC_LETTER.source})`,
+  'g'
+);
+// سطر فيه علامة كود — نعتبره كوداً لا نثراً، فنُسقطه.
+// لا ندرج => هنا: أسهم الدوال تظهر في أسماء الاختبارات وفي JSX، واستبعادها
+// كان يُسقط سطراً فيه التلف الحقيقي.
+const CODE_LINE = /https?:\/\/|\bfrom ['"]|\bimport\b|\brequire\(/;
+
+// ── قائمة بيضاء للمصطلحات التقنية ────────────────────────────────
+// كلمات لاتينية تلازم العربية في هذا المشروع عن قصد: أسماء منتجات، أو
+// معرّفات تُشرح في مكانها، أو أسماء مجموعات تُعداد. بدون هذه القائمة صار
+// الحارس يطلق على كل تعليق فيه كلمة إنجليزية مشروحة — وهو ما حدث فعلاً
+// في أول نسخة من الكاشف (87 إنذاراً، أكثرها سليم).
+//
+// القاعدة التي بُنيت عليها: المصطلح يُقبل إذا كان اسم منتج/مكتبة، أو معرّفاً
+// برمجياً مذكوراً كما يُكتب في الكود، أو اسم مجموعة من مجموعات البيانات.
+// لا نقبل كلمة إنجليزية عشوائية في وسط جملة عربية — تلك هي التلف.
+const ALLOWED_GLUED = new Set([
+  // منتجات ومكتبات — أسماء علم تُذكر كما تُكتب
+  'PDF', 'Excel', 'Handlebars', 'jsreport', 'API', 'Bearer', 'assertValid',
+  'stopPropagation', 'parser', 'fixtures', 'guard', 'compile', 'meta',
+  // معرّفات برمجية تُشرح في مكانها — تُكتب كما في الكود بلا تغيير
+  'props', 'set', 'date', 'null', 'year', 'tasks', 'waiter', 'storekeeper',
+  'intake', 'haccp', 'monthly', 'inRange', 'groupCount', 'sumField', 'pct',
+  'closedDays', 'eodClosures', 'closedMonths', 'lazy', 'backtick',
+  // اسم متغير مركّب عربي-لاتيني مستعمل في الكود نفسه
+  'Pct',
+]);
+
+/** هل الكلمة اللاتينية الملتصقة مصطلح تقني معروف في هذا المشروع؟ */
+export const isAllowedGluedTerm = (word) => {
+  const latin = word.match(/[A-Za-z]{3,}/g);
+  if (!latin) return false;
+  return latin.every((w) => ALLOWED_GLUED.has(w));
+};
+
+export function findGluedLatinWords(src) {
+  const out = [];
+  src.split('\n').forEach((line, i) => {
+    if (!ARABIC.test(line) || !LATIN.test(line)) return;
+    if (CODE_LINE.test(line)) return;
+    for (const m of line.matchAll(GLUED_LATIN)) {
+      if (isAllowedGluedTerm(m[0])) continue;
+      out.push({ line: i + 1, word: m[0], context: line.trim().slice(0, 100) });
+    }
+  });
+  return out;
+}
+
 /** كل الملاحظات دفعة واحدة — نفسها اللي بيستخدمها اختبار المستودع. */
 export function scanSource(src) {
   const findings = [];
   for (const f of findRawBacktickEscapes(src)) {
     findings.push(`سطر ${f.line}: backtick بديل مكتوب حرفياً داخل الكود — ${f.text}`);
+  }
+  for (const f of findGluedLatinWords(src)) {
+    findings.push(`سطر ${f.line}: كلمة لاتينية ملتصقة بعربية [${f.word}] — ${f.context}`);
   }
   for (const f of findForeignWords(src)) {
     const codes = [...new Set(f.foreign)]

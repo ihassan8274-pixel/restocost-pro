@@ -82,7 +82,7 @@ export const useProcurementStore = create<ProcurementState>()(
       },
       updatePurchaseRequest: (id, data) => set((state) => ({ purchaseRequests: state.purchaseRequests.map((r) => (r.id === id ? { ...r, ...data } : r)) })),
       deletePurchaseRequest: (id) => set((state) => ({ purchaseRequests: state.purchaseRequests.filter((r) => r.id !== id) })),
-      // تحويل طلب شراء إلى أوامر توريد فعلية. كان stubاً يُرجع ok:true مع poIds
+      // تحويل طلب شراء إلى أوامر توريد فعلية. كان stub يُرجع ok:true مع poIds
       // وهمية بلا إنشاء أي أمر — فتبتسم الواجهة "تم إنشاء أمر" ولا شيء يُنشأ.
       // الطلب لا يحمل supplierId، فنشتقّه: آخر مورد اشترينا منه الصنف، وإلا
       // أول عرض سعر صالح له، وإلا أول مورد نشط. ونجمّع حسب المورد.
@@ -191,7 +191,7 @@ export const useProcurementStore = create<ProcurementState>()(
       },
       updateSupplierReturn: (id, data) => set((state) => ({ supplierReturns: state.supplierReturns.map((r) => (r.id === id ? { ...r, ...data } : r)) })),
       approveSupplierReturn: (id) => set((state) => ({ supplierReturns: state.supplierReturns.map((r) => (r.id === id ? { ...r, status: 'approved' as const } : r)) })),
-      // إعادة معالجة مرتجع = إعادة اعتماده بعد تعديل بنوده (كنnoop سابقاً فلم
+      // إعادة معالجة مرتجع = إعادة اعتماده بعد تعديل بنوده (كـ noop سابقاً فلم
       // يكن الزر يفعل شيئاً رغم أنه ظاهر للمستخدم).
       reprocessSupplierReturn: (id) => set((state) => ({ supplierReturns: state.supplierReturns.map((r) => (r.id === id ? { ...r, status: 'approved' as const } : r)) })),
       revertSupplierReturnToDraft: (id) => set((state) => ({ supplierReturns: state.supplierReturns.map((r) => (r.id === id ? { ...r, status: 'draft' as const, approvedBy: undefined } : r)) })),

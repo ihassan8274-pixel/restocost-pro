@@ -72,7 +72,7 @@ export const useSettingsStore = create<SettingsState>()(
 
       addUnitOfMeasure: (u) => set((state) => ({ unitsOfMeasure: [...state.unitsOfMeasure, { ...u, id: `u-${Date.now()}` }] })),
       updateUnitOfMeasure: (id, u) => set((state) => ({ unitsOfMeasure: state.unitsOfMeasure.map((x) => (x.id === id ? { ...x, ...u } : x)) })),
-      // كان stubاً يُرجع {ok:true} بلا حذف — الواجهة تقول "تم" والوحدة باقية.
+      // كان stub يُرجع {ok:true} بلا حذف — الواجهة تقول "تم" والوحدة باقية.
       // الآن يحذف فعلاً، ويرفض إن كانت مرتبطة بأصناف أو باركود (وحدة بلا
       // مرجع آمنة للحذف).
       deleteUnitOfMeasure: (id) => {

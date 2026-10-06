@@ -370,7 +370,7 @@ export const SupplierReturnsView: React.FC = () => {
               {filtered.length === 0 && <tr><td colSpan={11} className="p-8 text-center text-slate-500 font-bold">لا توجد إخطارات إرجاع</td></tr>}
             </tbody>
             {/* صف الإجمالي — كان مفقوداً: عند التصفية على فرع أو حالة يرى
-                المستخدمSubset لا يعرف قيمته الإجمالية إلا عبر التصدير. */}
+                المستخدم لا يعرف قيمته الإجمالية إلا عبر التصدير. */}
             {filtered.length > 0 && (
               <tfoot>
                 <tr className="bg-slate-50 border-t-2 border-line">
