@@ -106,7 +106,7 @@ export function useReport({ reportId, initialFilters, autoRun = true }: UseRepor
       });
       
       setResult(reportResult);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setLoading(false);
@@ -141,7 +141,7 @@ export function useReport({ reportId, initialFilters, autoRun = true }: UseRepor
       const blob = await exportToExcel(reportId, result, { nameAr: definition.nameAr });
       const filename = getExportFilename(reportId, 'excel', filters.period);
       await downloadBlob(blob, filename);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Export Excel failed:', err);
     }
   }, [reportId, result, definition, filters.period]);
@@ -152,7 +152,7 @@ export function useReport({ reportId, initialFilters, autoRun = true }: UseRepor
       const blob = await exportToPDF(reportId, result, { nameAr: definition.nameAr });
       const filename = getExportFilename(reportId, 'pdf', filters.period);
       await downloadBlob(blob, filename);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Export PDF failed:', err);
     }
   }, [reportId, result, definition, filters.period]);

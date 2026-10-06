@@ -109,7 +109,7 @@ export const BackupCenterView: React.FC = () => {
       const vRes = await fetch('/api/backups/verify-log', { headers });
       const vJson = await vRes.json();
       if (vJson.ok) setVerifyLog(vJson.log || []);
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر تحميل النسخ: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setLoading(false);
@@ -131,7 +131,7 @@ export const BackupCenterView: React.FC = () => {
       if (!json.ok) throw new Error(json.error || 'فشل الحفظ');
       setSettings(json.settings);
       notify(settings.enabled ? 'تم حفظ الإعدادات — النسخ التلقائي مفعّل' : 'تم حفظ الإعدادات — النسخ التلقائي متوقف');
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر حفظ الإعدادات: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setBusy(false);
@@ -151,7 +151,7 @@ export const BackupCenterView: React.FC = () => {
       setCreateLabel('');
       notify('تم إنشاء النسخة الاحتياطية بنجاح');
       await loadAll();
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر إنشاء النسخة: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setBusy(false);
@@ -164,7 +164,7 @@ export const BackupCenterView: React.FC = () => {
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'فشل فتح المجلد');
       notify('تم فتح مجلد النسخ الاحتياطي في مستكشف الملفات');
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر فتح المجلد: ${e instanceof Error ? e.message : 'خطأ'}`);
     }
   };
@@ -180,7 +180,7 @@ export const BackupCenterView: React.FC = () => {
       if (json.verification.allMatch) notify('التحقق ناجح — جميع البيانات متطابقة مع النسخة الاحتياطية');
       else notify(`التحقق: تم اكتشاف ${json.verification.mismatchedKeys} عدم تطابق`);
       await loadAll();
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر التحقق: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setVerifyBusy(false);
@@ -202,7 +202,7 @@ export const BackupCenterView: React.FC = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       notify(`تم تنزيل النسخة: ${b.fileName}`);
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر التنزيل: ${e instanceof Error ? e.message : 'خطأ'}`);
     }
   };
@@ -218,7 +218,7 @@ export const BackupCenterView: React.FC = () => {
       setRestoreTarget(null);
       setTypedWord('');
       setTimeout(() => window.location.reload(), 1300);
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذرت الاستعادة: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setBusy(false);
@@ -235,7 +235,7 @@ export const BackupCenterView: React.FC = () => {
       notify('تم حذف النسخة');
       setDeleteTarget(null);
       await loadAll();
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذر الحذف: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setBusy(false);
@@ -284,7 +284,7 @@ export const BackupCenterView: React.FC = () => {
       setFileData(null);
       setTypedWord('');
       setTimeout(() => window.location.reload(), 1300);
-    } catch (e) {
+    } catch (e: unknown) {
       notify(`تعذرت الاستعادة: ${e instanceof Error ? e.message : 'خطأ'}`);
     } finally {
       setBusy(false);

@@ -66,7 +66,7 @@ export const ImportExcelModal: React.FC<ImportExcelModalProps> = ({
         if (found) auto[col.key] = found;
       });
       setMapping(auto);
-    } catch (e) {
+    } catch (e: unknown) {
       setError((e as Error).message || 'تعذر قراءة الملف');
     } finally {
       setBusy(false);

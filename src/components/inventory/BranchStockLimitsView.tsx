@@ -50,7 +50,7 @@ export const BranchStockLimitsView: React.FC = () => {
       showToast(`تم استيراد ${imported} صنف من ملف Excel`);
       setImportModal(false);
       setImportFile(null);
-    } catch (e) {
+    } catch (e: unknown) {
       showToast('خطأ في قراءة الملف: ' + (e instanceof Error ? e.message : 'تنسيق غير صالح'));
     }
   };

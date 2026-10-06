@@ -245,7 +245,7 @@ async function processJobQueue(): Promise<void> {
         // جدولة المهمة القادمة
         scheduleJob(config);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       job.status = 'failed';
       job.result = {
         success: false,
@@ -420,7 +420,7 @@ export async function syncScheduledReportsToServer(): Promise<{ ok: boolean; cou
     
     const json = await response.json();
     return { ok: json.ok === true, count: configs.length };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Scheduler] Sync to server failed:', error);
     return { ok: false, count: 0 };
   }
@@ -441,7 +441,7 @@ export async function loadScheduledReportsFromServer(): Promise<{ ok: boolean; c
       return { ok: true, count: json.data.length };
     }
     return { ok: false, count: 0 };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Scheduler] Load from server failed:', error);
     return { ok: false, count: 0 };
   }

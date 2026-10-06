@@ -510,7 +510,7 @@ export const openPrintWindow = (doc: PrintDoc): void => {
           return (im.complete && im.naturalWidth > 0) ? Promise.resolve() : new Promise(function (r) { im.onload = r; im.onerror = r; });
         });
         Promise.all(waits).then(go, go);
-      } catch (e) { }
+      } catch (e: unknown) { }
       setTimeout(go, 2500);
     });
   </script>

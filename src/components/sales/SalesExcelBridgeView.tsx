@@ -175,7 +175,7 @@ export const SalesExcelBridgeView: React.FC = () => {
         setResults((r) => ({ ...r, batch: { ready: list.length > 0, count: list.length, errors } }));
       }
       showToast('تم قراءة الملف — راجع المعاينة ثم نفّذ الاستيراد');
-    } catch (e) {
+    } catch (e: unknown) {
       setResults((r) => ({ ...r, [kind]: { ready: false, count: 0, errors: [`تعذر قراءة الملف: ${e instanceof Error ? e.message : String(e)}`] } }));
     }
   };

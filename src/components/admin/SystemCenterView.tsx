@@ -331,7 +331,7 @@ export const SystemCenterView: React.FC = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       setBackupMsg(`تم إنشاء نسخة احتياطية: ${Object.keys(backup.data).length} وحدة بيانات (${stamp})`);
-    } catch (e) {
+    } catch (e: unknown) {
       setBackupMsg(`تعذر إنشاء النسخة الاحتياطية: ${e instanceof Error ? e.message : 'خطأ غير معروف'}`);
     } finally {
       setBackupBusy(false);
@@ -385,7 +385,7 @@ export const SystemCenterView: React.FC = () => {
       setTypedWord('');
       setBackupMsg(`تمت استعادة ${json.restored} وحدة بيانات. سيتم إعادة تحميل النظام...`);
       setTimeout(() => window.location.reload(), 1200);
-    } catch (e) {
+    } catch (e: unknown) {
       setBackupMsg(`تعذرت الاستعادة: ${e instanceof Error ? e.message : 'خطأ غير معروف'}`);
     } finally {
       setRestoreBusy(false);

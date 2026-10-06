@@ -62,7 +62,7 @@ async function processBuildQueue(): Promise<void> {
       const job = BUILD_QUEUE.shift()!;
       await buildSummary(job.reportId, job.period, job.branchId || 'all', rev);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('[Cache] Build queue error:', error);
   } finally {
     isBuilding = false;
