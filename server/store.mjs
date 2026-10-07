@@ -58,8 +58,28 @@ const IN_TEST_PROCESS = Boolean(process.env.NODE_TEST_CONTEXT) || process.env.VI
 
 export const __testGuard = { active: IN_TEST_PROCESS, why: process.env.NODE_TEST_CONTEXT || process.env.VITEST || null };
 
+/**
+ * ⭐ جذر مجلد الخادم — مستقل عن مكان هذا الملف (مصدر أم مخرجات بناء).
+ *
+ * 🐞 العطل: كان السطر
+ *      path.dirname(path.dirname(fileURLDir(import.meta.url)))
+ *    يضيف طبقة dirname زائدة، فينتقل أبعدَ من اللازم:
+ *      من server/dist/ ← جذر المشروع        ← <root>/data   ❌ قاعدة فارغة بلا مستخدمين
+ *      من server/       ← فوق المشروع       ← <parent>/data ❌❌
+ *    بينما قاعدة الإنتاج الحقيقية في server/data (14MB، كل الفواتير والمستخدمون).
+ *    النتيجة: الخادم يفتح قاعدة فارغة ⇒ «لا يوجد مستخدم» ⇒ كل تسجيل دخول يفشل،
+ *    والتطبيق يبدو بلا بيانات.
+ *
+ * ✅ الإصلاح: نصعد مستوى واحداً فقط عند وجودنا داخل dist/،فتصير النتيجة
+ *    server/data في التخطيطين معاً (مصدر/ dist).
+ */
+const serverRootDir = () => {
+  const moduleDir = fileURLDir(import.meta.url);
+  return path.basename(moduleDir).toLowerCase() === 'dist' ? path.dirname(moduleDir) : moduleDir;
+};
+
 // ⛔ بيانات الإنتاج — هذا الملف فيه كل الفواتير والأصناف والقيود. لا يُفتح من اختبار.
-const PROD_SQLITE_PATH = () => path.join(fileURLDir(import.meta.url), 'data', 'restocost.db');
+const PROD_SQLITE_PATH = () => path.join(serverRootDir(), 'data', 'restocost.db');
 
 /**
  * ⛔ يمنع أي عملية في بيئة اختبار من فتح قاعدة الإنتاج.
@@ -450,7 +470,9 @@ const createPgStore = async (prisma) => {
 const createSqliteStore = (dbPath) => {
   // ⛔ بيئة الاختبار لا تفتح الإنتاج — يُفحص قبل أي mkdir أو فتح
   assertNotProduction(dbPath);
-  const dataDir = path.join(fileURLDir(import.meta.url), 'data');
+  // ⭐ server/data في التخطيطين معاً — انظر serverRootDir() لشرح العطل.
+  //   dist/store.mjs ⇒ نصعد مستوى ⇒ server/     |     server/store.mjs ⇒ server/
+  const dataDir = path.join(serverRootDir(), 'data');
   if (!dbPath || dbPath !== ':memory:') fs.mkdirSync(dataDir, { recursive: true });
   const db = new DatabaseSync(dbPath || path.join(dataDir, 'restocost.db'));
 
@@ -727,7 +749,7 @@ export const ensureStore = async () => {
   }
   if (!hasPg()) { backend = createSqliteStore(); return backend; }
   try {
-    const { prisma } = await import('./lib/prisma.ts');
+    const { prisma } = await import('./lib/prisma.js');
     const pg = await createPgStore(prisma);
     backend = pg;
     return backend;
