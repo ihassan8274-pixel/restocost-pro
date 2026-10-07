@@ -12,7 +12,7 @@
     {
       "parameters": {
         "operation": "read",
-        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "sheetId": "155vhtFXz-P_Sk7UM4EeWhzl6LgcrvDIj",
         "range": "Sheet1!A:I",
         "options": {}
       },
@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "chatId": "REPLACE_WITH_OWNER_CHAT_ID",
+        "chatId": "6675613192",
         "text": "={{ $json.text }}",
         "additionalFields": {}
       },

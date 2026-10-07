@@ -104,7 +104,7 @@
     {
       "parameters": {
         "operation": "append",
-        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "sheetId": "155vhtFXz-P_Sk7UM4EeWhzl6LgcrvDIj",
         "range": "Sheet1!A:I",
         "options": {},
         "columns": {
@@ -139,7 +139,7 @@
     },
     {
       "parameters": {
-        "chatId": "REPLACE_WITH_OWNER_CHAT_ID",
+        "chatId": "6675613192",
         "text": "🚨 فاتورة ملغية\nالفرع: {{ $('تحليل الإلغاء').item.json.branch }}\nرقم الفاتورة: {{ $('تحليل الإلغاء').item.json.invoiceNo }}\nالسبب: {{ $('تحليل الإلغاء').item.json.reason }}\nالكاشير: {{ $('تحليل الإلغاء').item.json.cashier }}\nالحالة: بانتظار التعويض",
         "additionalFields": {}
       },
@@ -216,7 +216,7 @@
     {
       "parameters": {
         "operation": "read",
-        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "sheetId": "155vhtFXz-P_Sk7UM4EeWhzl6LgcrvDIj",
         "range": "Sheet1!A:I",
         "options": {}
       },
@@ -271,7 +271,7 @@
     {
       "parameters": {
         "operation": "update",
-        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "sheetId": "155vhtFXz-P_Sk7UM4EeWhzl6LgcrvDIj",
         "range": "Sheet1!A:I",
         "options": {},
         "matchColumn": "رقم الفاتورة",
@@ -309,7 +309,7 @@
     },
     {
       "parameters": {
-        "chatId": "REPLACE_WITH_OWNER_CHAT_ID",
+        "chatId": "6675613192",
         "text": "💰 تم تعويض إلغاء فاتورة رقم {{ $('إيجاد الصف').item.json.invoiceNo }}",
         "additionalFields": {}
       },
