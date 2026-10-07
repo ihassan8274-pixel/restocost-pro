@@ -1,8 +1,18 @@
 /**
  * server/store.mjs — data-access layer for the RestoCost ERP server.
  *
- * Architecture (PostgreSQL migration step):
- *  - PostgreSQL is the system of record via Prisma whenever DATABASE_URL is set.
+ * Architecture:
+ *  - ⭐ SQLite is the system of record ON THIS MACHINE. That is a decision, not
+ *    a fallback. PostgreSQL is opt-in (RERC_PG_OPT_IN=1) and currently OFF.
+ *    Measured 2026-10-07: server/data/restocost.db holds the real business,
+ *    while the only PostgreSQL database (`restocost`) holds 57 tables and 0 rows.
+ *
+ *  ⛔ This header previously read "PostgreSQL is the system of record via Prisma
+ *     whenever DATABASE_URL is set", with SQLite as "the legacy fallback". That
+ *     was factually wrong on this machine, and believing it was one config edit
+ *     away from serving an empty system: hasPg() was true on every start (server/
+ *     .env is loaded unconditionally), the Prisma path failed because the URL
+ *     named a dropped database, and the app fell back to SQLite by accident.
  *  - An in-memory cache mirrors the KV/session/rate-limit/audit state so the
  *    existing synchronous callers (routes, telegram, intake, pdf …) keep working
  *    unchanged.
@@ -130,7 +140,43 @@ export const LOGIN_LOCK_MS = num(process.env.LOGIN_LOCK_MS, 10 * 60 * 1000);    
 export const CHANGELOG_RETENTION_MS = num(process.env.CHANGELOG_RETENTION_DAYS, 7) * 24 * 3600 * 1000; // keep change_log rows for this long (configurable)
 const CHANGELOG_FLOOR = 5000; // never prune the most recent rows even if stale
 
-const hasPg = () => Boolean(process.env.DATABASE_URL);
+/**
+ *  ⛔⛔ PostgreSQL requires EXPLICIT OPT-IN. A DATABASE_URL alone is not enough.
+ *
+ *  This was `Boolean(process.env.DATABASE_URL)`, and loadDotEnv() reads
+ *  server/.env UNCONDITIONALLY -- including in production. That file contained:
+ *
+ *      DATABASE_URL=postgresql://...@127.0.0.1:5433/restocost2
+ *
+ *  `restocost2` no longer exists. So hasPg() returned true on every start, the
+ *  Prisma path ran and failed, and the app fell back to SQLite -- logging,
+ *  correctly: "RestoCost ERP Pro: ... SQLite (fallback)".
+ *
+ *  The system therefore ran on the database this file's own header called
+ *  "legacy", by accident, on every start.
+ *
+ *  ⛔ MEASURED 2026-10-07, the hazard was one edit away:
+ *     - server/data/restocost.db held the real business: 18,332 stock movements,
+ *       9,316 Foodics lines, 35 recipes, 17 branches, 744 batches.
+ *     - The only PostgreSQL database, `restocost`, is an EMPTY scaffold:
+ *       57 tables, 0 rows. No business data at all.
+ *     - postgres-x64-18 was RUNNING and listening on 5433, so the store could
+ *       reach it -- it was not merely ignoring Postgres.
+ *
+ *  Restoring a database named `restocost2`, or "fixing" the URL to `restocost`,
+ *  would have made hasPg() true AND the Prisma path succeed. The app would have
+ *  silently begun serving from an empty database: zero recipes, zero branches,
+ *  no sales, and no error anywhere. A silent wrong-backend switch is worse than
+ *  a crash -- it does not stop the work, it makes the work wrong.
+ *
+ *  ⭐ To move to PostgreSQL deliberately, in this order:
+ *       1. migrate the data:  npm run migrate:pg
+ *       2. verify row counts against the checks in migrate-pg.mjs
+ *       3. only then opt in:  RERC_PG_OPT_IN=1 in ecosystem.config.cjs, restart
+ *
+ *  Guarded by server/test/store-backend.test.mjs.
+ */
+const hasPg = () => Boolean(process.env.DATABASE_URL) && process.env.RERC_PG_OPT_IN === '1';
 
 // Serialized async write queue: preserves order of every mutation while never
 // blocking synchronous callers. A failure is logged and the queue keeps going

@@ -71,22 +71,38 @@ app.use((req, res, next) => {
 });
 
 // ---- Security headers ----
+// NOTE: these apply to API responses. The HTML/JS that browsers actually render
+// is served by nginx — see nginx-spa.conf, which carries the same policy plus
+// the headers that protect the SPA itself. Keep the two in sync.
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  // Browsers ignore HSTS on plain http, so this cannot lock anyone out of a
+  // local deployment; it activates automatically behind a TLS terminator.
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval'",
+    // 'unsafe-eval' removed: nothing in src/ uses eval or new Function, and the
+    // bundle does not need it (verified in a browser with the policy enforced).
+    "script-src 'self'",
     "worker-src 'self' blob:",
-    "style-src 'self' 'unsafe-inline' https: http:",
-    "img-src 'self' data: blob: https: http:",
-    "font-src 'self' data: https: http:",
-    "connect-src 'self' http: https:",
+    // Only the font stylesheet origin instead of every https: origin.
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    // Was `'self' http: https:` — i.e. any host at all, which made the policy
+    // meaningless as an exfiltration barrier. All application traffic is
+    // same-origin (`/api/...`, 58 call sites); custom AI endpoints are proxied
+    // server-side by routes/ai.mjs so they never need browser access. These
+    // four are the documented direct fallback used when no session token exists.
+    "connect-src 'self' https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai https://api.openai.com",
     "frame-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
+    "form-action 'self'",
     "frame-ancestors 'none'",
   ].join('; '));
   next();
@@ -220,7 +236,8 @@ app.all('/invoice-platform*', (req, res, next) => {
 }, proxyInvoicePlatform);
 
 // ---- Static (production build) ----
-const distDir = path.join(__dirname, '..', 'dist');
+// __dirname is server/dist; go up two levels to project root, then into dist
+const distDir = path.join(__dirname, '..', '..', 'dist');
 if (fs.existsSync(distDir)) {
   // index.html دائماً بدون تخزين (no-cache) ليتناول المتصفح أحدث الأسماء المُهاشَمة؛
   // بينما ملفات assets (JS/CSS/خطوط/صور) أسماؤها مُهاشَمة فتُخزَّن طويلاً (immutable).
@@ -338,7 +355,16 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
   }
   // --- Database bootstrap: PostgreSQL (Prisma) if configured, else SQLite. ---
   const engine = await ensureStore();
-  console.log(`RestoCost ERP Pro: دعم البيانات عبر ${engine.backend === 'postgresql' ? 'PostgreSQL (Prisma)' : 'SQLite (fallback)'}`);
+  // ⭐ "fallback" was removed from this label on 2026-10-07 because it was
+  //   false. SQLite is the DECLARED system of record on this machine -- see the
+  //   header in store.mjs and server/test/store-backend.test.mjs.
+  //
+  //   Calling it a fallback is exactly what hid the stale DATABASE_URL: the log
+  //   said "fallback" while store.mjs's header claimed PostgreSQL was the real
+  //   system of record, and nobody reconciled the two statements. The app had
+  //   been running on SQLite through an accident, on every start.
+  const engineLabel = engine.backend === 'postgresql' ? 'PostgreSQL (Prisma, opted in)' : 'SQLite';
+  console.log(`RestoCost ERP Pro: ${engineLabel}`);
   try { migrateSecretsAtRest(store); } catch (e) { console.error('[secrets] migrate failed:', e && (e.stack || e.message)); }
   // --- change_log bounded retention: prune on boot, then every 6h. Keeps the
   // CDC table from growing unbounded (49k+ rows / 9 days observed). ---
