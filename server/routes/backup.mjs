@@ -20,10 +20,35 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // ---- Advanced Backup & Restore subsystem ----
 const BACKUP_VERSION = 1;
 // Backups live in a dedicated, easy-to-find folder inside the system files.
-const backupDir = path.join(__dirname, '..', 'backup-archive');
+// ⭐ توحيد 2026-10-07: هذا السطر كان يشير من dist إلى server/dist/backup-archive
+//   ومن المصدر إلى server/backup-archive — فمع كل إعادة بناء كان المسار يهرب
+//   لمجلد جديد وتتعدد طرق النسخ الاحتياطي (وكتب الأدوات المساعدة يدوياً
+//   على server/backup-archive، فلم يرَ ما يحفظه الإنتاج في dist أبداً).
+//   الآن يتسلق خارج dist/ تماماً كـ core.mjs — وجهة واحدة دائماً:
+//   server/backup-archive.
+const rootDir = (() => {
+  // من server/routes أو server/dist/routes — اصعد حتى مجلد server الحقيقي.
+  let dir = __dirname;
+  if (path.basename(dir).toLowerCase() === 'routes') dir = path.dirname(dir); // server أو server/dist
+  if (path.basename(dir).toLowerCase() === 'dist') dir = path.dirname(dir);   // server
+  return dir;
+})();
+const backupDir = path.join(rootDir, 'backup-archive');
 fs.mkdirSync(backupDir, { recursive: true });
+// Migrate backups left behind in the old dist-relative location (before unification).
+const distLegacyDir = path.join(__dirname, '..', 'backup-archive');
+if (distLegacyDir !== backupDir) {
+  try {
+    const stale = fs.readdirSync(distLegacyDir).filter((f) => f.startsWith('backup_') && f.endsWith('.json'));
+    stale.forEach((f) => {
+      const src = path.join(distLegacyDir, f);
+      const dst = path.join(backupDir, f);
+      if (!fs.existsSync(dst)) fs.renameSync(src, dst);
+    });
+  } catch { /* no dist folder */ }
+}
 // Migrate backups from the legacy server/backups location, if present.
-const legacyDir = path.join(__dirname, 'backups');
+const legacyDir = path.join(rootDir, 'backups');
 try {
   const legacy = fs.readdirSync(legacyDir).filter((f) => f.startsWith('backup_') && f.endsWith('.json'));
   legacy.forEach((f) => {

@@ -34,7 +34,7 @@ const EXEMPT_KEYS = new Set([
 const monthOf = (s) => (s || '').slice(0, 7);
 const dayOf = (s) => (s || '').slice(0, 10);
 
-export const findPeriodViolation = (key, incoming, prev, getKV) => {
+export const findPeriodViolation = (key, incoming, prev, getKV, filteredIds) => {
   if (EXEMPT_KEYS.has(key)) return null;
   const dateFields = PERIOD_DATE_FIELDS[key];
   if (!dateFields) return null;
@@ -72,8 +72,13 @@ export const findPeriodViolation = (key, incoming, prev, getKV) => {
   }
 
   const incomingIds = new Set(arr.filter((r) => r && r.id !== undefined).map((r) => r.id));
+  // السجل المصفّي بـ Zod ليس محذوفاً: بقي على الخادم كما هو (الدمج تراكمي
+  // لا يحذف)، وفشل تحققه لا يعني أن الجهاز قام بحذفه. بدون هذا الاستثناء
+  // كانت دفعة GRN كاملة تُرفض بـ409 period-lock بسبب سجلَين تالفين
+  // لم يصفِهما التحقق — 2026-10-07.
+  const filtered = filteredIds instanceof Set ? filteredIds : new Set(Array.isArray(filteredIds) ? filteredIds : []);
   for (const [id, old] of prevById) {
-    if (incomingIds.has(id)) continue;
+    if (incomingIds.has(id) || filtered.has(id)) continue;
     const d = extractDate(old);
     if (d && isClosed(d)) {
       return { date: d, kind: 'delete' };

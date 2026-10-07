@@ -131,16 +131,31 @@ describe('Zod validation for collections', () => {
       expect(result.data[0].totalAmount).toBe(1500);
     });
 
-    it('returns error for invalid GRN', () => {
-      const body = [{
-        grnNumber: 'GRN-001',
+    it('drops the invalid record but keeps the rest of the batch', () => {
+      // القرار: "filter, never reject whole batch" — دفعة فيها سجل فاسد
+      // تنجح بـ200 والسجل الفاسد يُستبعد ويُبلَّغ عنه، لا أن تُرفض كلها
+      // (الرفض الكامل كان سبب حلقة الـ400 اللانهائية).
+      const good = {
+        id: 'grn-a',
+        grnNumber: 'GRN-002',
         supplierId: 'sup-1',
         branchId: 'b1',
         date: '2026-10-06',
-        totalAmount: -100,
-        items: [{ rawMaterialId: 'rm1', quantityReceived: 10, unitPrice: 100, lineTotal: 1000 }],
-      }];
-      const result = validateCollectionBody('rcerp_grn', body);
+        totalAmount: 200,
+        items: [{ rawMaterialId: 'rm1', quantityReceived: 2, unitPrice: 100, lineTotal: 200 }],
+      };
+      const bad = { ...good, id: 'grn-b', grnNumber: 'GRN-003', totalAmount: -100 };
+      const result = validateCollectionBody('rcerp_grn', [good, bad]);
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].grnNumber).toBe('GRN-002');
+      expect(result.dropped ?? []).toHaveLength(1);
+      expect(result.dropped?.[0]?.id).toBe('grn-b');
+    });
+
+    it('rejects only when the body itself is structurally wrong', () => {
+      // ليس مصفوفة أصلاً — خلل في الطلب، لا في البيانات → 400 منطقي.
+      const result = validateCollectionBody('rcerp_grn', { not: 'an array' });
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
