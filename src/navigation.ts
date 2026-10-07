@@ -132,6 +132,11 @@ export const NAV_SECTIONS: NavSection[] = [
       { id: 'cost_reports', label: 'تقارير التكلفة', icon: PieChart, permission: 'view_reports' },
       { id: 'detailed_reports', label: 'التقارير التفصيلية والدمج الموحد', icon: FileDown, permission: 'view_reports', badge: 'جديد' },
       { id: 'food_cost_category', label: 'تكلفة الأصناف حسب المجموعات', icon: BarChart3, permission: 'view_reports', badge: 'جديد' },
+      // ⭐ Food Cost % from the Foodics POS export. Placed next to the existing
+      //   food-cost entry because the two answer different questions: the
+      //   existing ones cost HAND-ENTERED batch sales, this one costs the
+      //   actual POS lines. Same permission, same badge vocabulary.
+      { id: 'foodics_food_cost', label: 'نسبة تكلفة الطعام (فودكس)', icon: Utensils, permission: 'view_reports', badge: 'جديد' },
       { id: 'cost_centers', label: 'مراكز التكلفة (الفروع)', icon: Boxes, permission: 'view_reports', badge: 'جديد' },
       { id: 'cost_analysis', label: 'تحليل التكلفة المتقدم', icon: Activity, permission: 'view_reports', badge: 'جديد' },
       { id: 'profit_heatmap', label: 'خريطة الربحية الحرارية (فئة×فرع×فترة)', icon: BarChart3, permission: 'view_reports', badge: 'جديد' },

@@ -41,6 +41,8 @@ const InventoryMovementView = lazyNamed(() => import('./components/reports/Inven
 const InventoryValuationView = lazyNamed(() => import('./components/reports/InventoryValuationView'), 'InventoryValuationView');
 const ManagementRatiosView = lazyNamed(() => import('./components/reports/ManagementRatiosView'), 'ManagementRatiosView');
 const CostCenterComparisonView = lazyNamed(() => import('./components/reports/CostCenterComparisonView'), 'CostCenterComparisonView');
+// Food Cost % built on the Foodics POS export, priced from recipes.
+const FoodicsFoodCostView = lazyNamed(() => import('./components/reports/FoodicsFoodCostView'), 'FoodicsFoodCostView');
 const StockCoverView = lazyNamed(() => import('./components/inventory/StockCoverView'), 'StockCoverView');
 const MenuPlanningView = lazyNamed(() => import('./components/menus/MenuPlanningView'), 'MenuPlanningView');
 const ProductionPlanningView = lazyNamed(() => import('./components/production/ProductionPlanningView'), 'ProductionPlanningView');
@@ -326,6 +328,7 @@ const Shell: React.FC = () => {
       case 'cash_flow': return <CashFlowView />;
       case 'inventory_movement': return <InventoryMovementView />;
       case 'inventory_valuation': return <InventoryValuationView />;
+      case 'foodics_food_cost': return <FoodicsFoodCostView />;
       case 'stock_cover': return <StockCoverView />;
       case 'sales_ledger': return <SalesLedgerView />;
       case 'advanced_analytics': return <ReportsAnalyticsView />;
