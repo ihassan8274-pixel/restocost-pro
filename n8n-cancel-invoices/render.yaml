@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: cancelled-invoices-dashboard
+    runtime: docker
+    rootDir: n8n-cancel-invoices/dashboard
+    plan: free
+    envVars:
+      - key: SHEET_CSV_URL
+        sync: false
+      - key: PORT
+        value: 4100
+
+  - type: web
+    name: n8n-restocost
+    runtime: docker
+    dockerfilePath: ./n8n-cancel-invoices/Dockerfile.n8n
+    plan: free
+    envVars:
+      - key: N8N_HOST
+        value: n8n-restocost.onrender.com
+      - key: N8N_PROTOCOL
+        value: https
+      - key: GENERIC_TIMEZONE
+        value: Africa/Cairo

@@ -1,0 +1,55 @@
+{
+  "name": "03 - التقرير اليومي للفواتير الملغية",
+  "nodes": [
+    {
+      "parameters": {"rule": { "interval": [{ "field": "cronExpression", "expression": "0 23 * * *" }] }},
+      "id": "cron",
+      "name": "كل يوم 11 مساءً",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "range": "Sheet1!A:I",
+        "options": {}
+      },
+      "id": "gs-read",
+      "name": "قراءة السجل",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [420, 300],
+      "credentials": { "googleSheetsOAuth2Api": { "id": "REPLACE_WITH_GS_CRED_ID", "name": "Google Sheets" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst today = new Date().toISOString().slice(0, 10);\nconst todays = rows.filter(r => (r['التاريخ'] || '').startsWith(today));\nconst byBranch = {};\nlet compensated = 0;\nfor (const r of todays) {\n  const b = r['الفرع'] || 'غير محدد';\n  byBranch[b] = (byBranch[b] || 0) + 1;\n  if (r['حالة التعويض'] === 'تم التعويض') compensated++;\n}\nlet text = `📊 تقرير الفواتير الملغية — ${today}\\n`;\ntext += `الإجمالي: ${todays.length} | تم تعويضها: ${compensated} | في انتظار التعويض: ${todays.length - compensated}\\n`;\nfor (const [b, c] of Object.entries(byBranch)) text += `• ${b}: ${c}\\n`;\nif (todays.length === 0) text += 'لا توجد فواتير ملغية اليوم ✅';\nreturn [{ json: { text } }];"
+      },
+      "id": "aggregate",
+      "name": "تجميع التقرير",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_OWNER_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "tg-owner",
+      "name": "إرسال التقرير",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [860, 300],
+      "credentials": { "telegramApi": { "id": "REPLACE_WITH_TELEGRAM_CRED_ID", "name": "Telegram account" } }
+    }
+  ],
+  "connections": {
+    "كل يوم 11 مساءً": { "main": [[{ "node": "قراءة السجل", "type": "main", "index": 0 }]] },
+    "قراءة السجل": { "main": [[{ "node": "تجميع التقرير", "type": "main", "index": 0 }]] },
+    "تجميع التقرير": { "main": [[{ "node": "إرسال التقرير", "type": "main", "index": 0 }]] }
+  }
+}

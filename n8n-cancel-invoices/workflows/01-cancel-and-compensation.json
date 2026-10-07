@@ -1,0 +1,676 @@
+{
+  "name": "الإلغاءات والتعويضات",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "tg-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ ($json.message.caption || '') + ($json.message.text || '') }}",
+                    "operation": "contains",
+                    "value2": "تعويض"
+                  }
+                ]
+              },
+              "operation": "equals",
+              "value2": true
+            },
+            {
+              "conditions": {
+                "string": [
+                  {
+                    "value1": "={{ ($json.message.caption || '') + ($json.message.text || '') }}",
+                    "operation": "contains",
+                    "value2": "الغاء"
+                  }
+                ]
+              },
+              "operation": "equals",
+              "value2": true
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "switch",
+      "name": "نوع الرسالة",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $input.first().json.message;\nconst caption = msg.caption || msg.text || '';\nconst invoiceMatch = caption.match(/رقم الفاتورة[:\\s]*([\\w-]+)/) || caption.match(/رقم[:\\s]*([\\w-]+)/);\nconst branchMatch = caption.match(/الفرع[:\\s]*(.+)/);\nconst reasonMatch = caption.match(/السبب[:\\s]*(.+)/);\nconst photo = Array.isArray(msg.photo) && msg.photo.length ? msg.photo[msg.photo.length-1].file_id : null;\nreturn [{ json: { ok: !!invoiceMatch, invoiceNo: invoiceMatch ? invoiceMatch[1].trim() : '', branch: branchMatch ? branchMatch[1].trim().split('\\n')[0] : 'غير محدد', reason: reasonMatch ? reasonMatch[1].trim().split('\\n')[0] : 'غير محدد', cashier: msg.from ? ((msg.from.first_name || '') + ' ' + (msg.from.last_name || '')).trim() : 'غير معروف', chatId: msg.chat.id, photoFileId: photo, date: new Date().toISOString() } }];"
+      },
+      "id": "parse-cancel",
+      "name": "تحليل الإلغاء",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.ok }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-valid",
+      "name": "البيانات مكتملة؟",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "range": "Sheet1!A:I",
+        "options": {},
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "التاريخ": "={{ $json.date }}",
+            "الفرع": "={{ $json.branch }}",
+            "رقم الفاتورة": "={{ $json.invoiceNo }}",
+            "السبب": "={{ $json.reason }}",
+            "الكاشير": "={{ $json.cashier }}",
+            "ملف الفاتورة": "={{ $json.photoFileId }}",
+            "حالة التعويض": "بانتظار التعويض",
+            "ملف التعويض": "",
+            "وقت التعويض": ""
+          }
+        }
+      },
+      "id": "gs-append",
+      "name": "تسجيل الإلغاء",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1140,
+        140
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_GS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_OWNER_CHAT_ID",
+        "text": "🚨 فاتورة ملغية\nالفرع: {{ $('تحليل الإلغاء').item.json.branch }}\nرقم الفاتورة: {{ $('تحليل الإلغاء').item.json.invoiceNo }}\nالسبب: {{ $('تحليل الإلغاء').item.json.reason }}\nالكاشير: {{ $('تحليل الإلغاء').item.json.cashier }}\nالحالة: بانتظار التعويض",
+        "additionalFields": {}
+      },
+      "id": "tg-owner-cancel",
+      "name": "تنبيه المالك بالإلغاء",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        140
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('تحليل الإلغاء').item.json.chatId }}",
+        "text": "✅ تم تسجيل الإلغاء رقم {{ $('تحليل الإلغاء').item.json.invoiceNo }}. لما تعوّض العميل ابعت صورة التعويض وكابشن: تعويض + رقم الفاتورة.",
+        "additionalFields": {}
+      },
+      "id": "tg-ack-cancel",
+      "name": "تأكيد للكاشير",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        140
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "⚠️ الصيغة غير مكتملة. ابعت صورة الفاتورة وكابشن بالشكل:\nالغاء\nالفرع: ...\nرقم الفاتورة: ...\nالسبب: ...",
+        "additionalFields": {}
+      },
+      "id": "tg-format-err",
+      "name": "تنبيه بالصيغة",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $input.first().json.message;\nconst caption = msg.caption || msg.text || '';\nconst invoiceMatch = caption.match(/رقم الفاتورة[:\\s]*([\\w-]+)/) || caption.match(/رقم[:\\s]*([\\w-]+)/);\nconst photo = Array.isArray(msg.photo) && msg.photo.length ? msg.photo[msg.photo.length-1].file_id : null;\nreturn [{ json: { invoiceNo: invoiceMatch ? invoiceMatch[1].trim() : '', chatId: msg.chat.id, photoFileId: photo, date: new Date().toISOString() } }];"
+      },
+      "id": "parse-comp",
+      "name": "تحليل التعويض",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "range": "Sheet1!A:I",
+        "options": {}
+      },
+      "id": "gs-read",
+      "name": "قراءة السجل",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        900,
+        440
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_GS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const target = $('تحليل التعويض').item.json.invoiceNo;\nconst rows = $input.all().map(i => i.json);\nconst found = rows.find(r => String(r['رقم الفاتورة']) === String(target));\nreturn [{ json: { found: !!found, row: found || {}, invoiceNo: target, photoFileId: $('تحليل التعويض').item.json.photoFileId, date: $('تحليل التعويض').item.json.date, chatId: $('تحليل التعويض').item.json.chatId } }];"
+      },
+      "id": "find-row",
+      "name": "إيجاد الصف",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.found }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "if-found",
+      "name": "الفاتورة موجودة؟",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "sheetId": "REPLACE_WITH_SHEET_ID",
+        "range": "Sheet1!A:I",
+        "options": {},
+        "matchColumn": "رقم الفاتورة",
+        "fields": {
+          "values": [
+            {
+              "fieldId": "حالة التعويض",
+              "fieldValue": "تم التعويض"
+            },
+            {
+              "fieldId": "ملف التعويض",
+              "fieldValue": "={{ $('إيجاد الصف').item.json.photoFileId }}"
+            },
+            {
+              "fieldId": "وقت التعويض",
+              "fieldValue": "={{ $('إيجاد الصف').item.json.date }}"
+            }
+          ]
+        }
+      },
+      "id": "gs-update",
+      "name": "تحديث السجل",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1560,
+        380
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_GS_CRED_ID",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_OWNER_CHAT_ID",
+        "text": "💰 تم تعويض إلغاء فاتورة رقم {{ $('إيجاد الصف').item.json.invoiceNo }}",
+        "additionalFields": {}
+      },
+      "id": "tg-owner-comp",
+      "name": "تنبيه المالك بالتعويض",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        380
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('إيجاد الصف').item.json.chatId }}",
+        "text": "✅ تم تسجيل التعويض للفاتورة رقم {{ $('إيجاد الصف').item.json.invoiceNo }}.",
+        "additionalFields": {}
+      },
+      "id": "tg-ack-comp",
+      "name": "تأكيد التعويض",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        380
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('إيجاد الصف').item.json.chatId }}",
+        "text": "⚠️ رقم الفاتورة ده مش موجود في السجل، راجعه.",
+        "additionalFields": {}
+      },
+      "id": "tg-notfound",
+      "name": "غير موجود",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        500
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_TELEGRAM_CRED_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.telegram.org/botREPLACE_BOT_TOKEN/getFile?file_id={{ $json.photoFileId }}",
+        "options": {}
+      },
+      "id": "gc1",
+      "name": "getFile-cancel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1380,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.telegram.org/file/botREPLACE_BOT_TOKEN/{{ $json.result.file_path }}",
+        "options": {},
+        "responseFormat": "file"
+      },
+      "id": "dl1",
+      "name": "download-cancel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1620,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "data",
+        "fileName": "=/data/photos/cancel-{{ $('تحليل الإلغاء').item.json.invoiceNo }}.jpg",
+        "options": {}
+      },
+      "id": "wr1",
+      "name": "save-cancel",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1860,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.telegram.org/botREPLACE_BOT_TOKEN/getFile?file_id={{ $json.photoFileId }}",
+        "options": {}
+      },
+      "id": "gc2",
+      "name": "getFile-comp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1380,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.telegram.org/file/botREPLACE_BOT_TOKEN/{{ $json.result.file_path }}",
+        "options": {},
+        "responseFormat": "file"
+      },
+      "id": "dl2",
+      "name": "download-comp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1620,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "data",
+        "fileName": "=/data/photos/comp-{{ $('تحليل التعويض').item.json.invoiceNo }}.jpg",
+        "options": {}
+      },
+      "id": "wr2",
+      "name": "save-comp",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1860,
+        620
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "نوع الرسالة",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "نوع الرسالة": {
+      "main": [
+        [
+          {
+            "node": "تحليل التعويض",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "تحليل الإلغاء",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "تحليل الإلغاء": {
+      "main": [
+        [
+          {
+            "node": "البيانات مكتملة؟",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "getFile-cancel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "البيانات مكتملة؟": {
+      "main": [
+        [
+          {
+            "node": "تسجيل الإلغاء",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "تنبيه بالصيغة",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تسجيل الإلغاء": {
+      "main": [
+        [
+          {
+            "node": "تنبيه المالك بالإلغاء",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تنبيه المالك بالإلغاء": {
+      "main": [
+        [
+          {
+            "node": "تأكيد للكاشير",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تحليل التعويض": {
+      "main": [
+        [
+          {
+            "node": "قراءة السجل",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "getFile-comp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "قراءة السجل": {
+      "main": [
+        [
+          {
+            "node": "إيجاد الصف",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "إيجاد الصف": {
+      "main": [
+        [
+          {
+            "node": "الفاتورة موجودة؟",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "الفاتورة موجودة؟": {
+      "main": [
+        [
+          {
+            "node": "تحديث السجل",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "غير موجود",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تحديث السجل": {
+      "main": [
+        [
+          {
+            "node": "تنبيه المالك بالتعويض",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "تنبيه المالك بالتعويض": {
+      "main": [
+        [
+          {
+            "node": "تأكيد التعويض",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getFile-cancel": {
+      "main": [
+        [
+          {
+            "node": "download-cancel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download-cancel": {
+      "main": [
+        [
+          {
+            "node": "save-cancel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getFile-comp": {
+      "main": [
+        [
+          {
+            "node": "download-comp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "download-comp": {
+      "main": [
+        [
+          {
+            "node": "save-comp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
