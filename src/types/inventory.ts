@@ -150,6 +150,8 @@ export interface OpeningBalanceItem {
   rawMaterialId: string;
   quantity: number;
   unitCost: number;
+  /** تكلفة الوحدة بالهللات (عدد صحيح) — حقل مزدوج اختياري من ترحيل العملة. */
+  unitCostCents?: number;
 }
 
 export interface OpeningBalanceRecord {
@@ -192,6 +194,11 @@ export interface MonthlyInventoryPeriod {
   settlementShortages?: number;
   settlementSurpluses?: number;
   settlementNetVariance?: number;
+  /**
+   * سطور التسوية المطبَّقة فعلاً على المخزون وقت الإقفال.
+   * بدونها لا يمكن عكسها: المخزون يعدّ مرتين عند كل فتح/إقفال.
+   */
+  settlementLines?: { rawMaterialId: string; delta: number }[];
   originalItems?: MonthlyInventoryItem[];
   totalSystemCost?: number;
   totalCountedCost?: number;
@@ -232,6 +239,8 @@ export interface StockTransferItem {
   quantity: number;
   unit: string;
   unitCost: number;
+  /** تكلفة الوحدة بالهللات (عدد صحيح) — حقل مزدوج اختياري من ترحيل العملة. */
+  unitCostCents?: number;
   purchaseUnit?: string;    // وحدة الشراء (للتوزيعات الواردة من البوت)
   purchaseUnitQty?: number; // الكمية بوحدة الشراء كما وردت
 }

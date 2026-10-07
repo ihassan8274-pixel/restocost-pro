@@ -18,7 +18,10 @@ export interface GoodsReceiptItem {
   rawMaterialId: string;
   quantityReceived: number;
   unitPrice: number;
+  /** سعر الوحدة بالهللات (عدد صحيح) — حقل مزدوج اختياري من ترحيل العملة. */
+  unitPriceCents?: number;
   lineTotal?: number;
+  lineTotalCents?: number;
   batchNumber: string;
   expiryDate: string;
   qualityPassed: boolean;
@@ -37,8 +40,12 @@ export interface GoodsReceiptNote {
   invoiceNumber: string;
   invoiceDate?: string;
   totalAmount: number;
+  totalAmountCents?: number;
   vatRate?: number;
+  /** معدل الضريبة بنقاط أساس (1500 = 15%) — حقل مزدوج اختياري. */
+  vatRateBps?: number;
   vatAmount?: number;
+  vatAmountCents?: number;
   vatInclusive?: boolean;
   status: 'draft' | 'submitted' | 'approved' | 'posted' | 'rejected';
   postedAt?: string;
