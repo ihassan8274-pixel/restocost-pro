@@ -369,98 +369,6 @@
           "name": "Telegram account"
         }
       }
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=https://api.telegram.org/botREPLACE_BOT_TOKEN/getFile?file_id={{ $json.photoFileId }}",
-        "options": {}
-      },
-      "id": "gc1",
-      "name": "getFile-cancel",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1380,
-        -40
-      ]
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=https://api.telegram.org/file/botREPLACE_BOT_TOKEN/{{ $json.result.file_path }}",
-        "options": {},
-        "responseFormat": "file"
-      },
-      "id": "dl1",
-      "name": "download-cancel",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1620,
-        -40
-      ]
-    },
-    {
-      "parameters": {
-        "dataPropertyName": "data",
-        "fileName": "=/data/photos/cancel-{{ $('تحليل الإلغاء').item.json.invoiceNo }}.jpg",
-        "options": {}
-      },
-      "id": "wr1",
-      "name": "save-cancel",
-      "type": "n8n-nodes-base.writeBinaryFile",
-      "typeVersion": 1,
-      "position": [
-        1860,
-        -40
-      ]
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=https://api.telegram.org/botREPLACE_BOT_TOKEN/getFile?file_id={{ $json.photoFileId }}",
-        "options": {}
-      },
-      "id": "gc2",
-      "name": "getFile-comp",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1380,
-        620
-      ]
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=https://api.telegram.org/file/botREPLACE_BOT_TOKEN/{{ $json.result.file_path }}",
-        "options": {},
-        "responseFormat": "file"
-      },
-      "id": "dl2",
-      "name": "download-comp",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        1620,
-        620
-      ]
-    },
-    {
-      "parameters": {
-        "dataPropertyName": "data",
-        "fileName": "=/data/photos/comp-{{ $('تحليل التعويض').item.json.invoiceNo }}.jpg",
-        "options": {}
-      },
-      "id": "wr2",
-      "name": "save-comp",
-      "type": "n8n-nodes-base.writeBinaryFile",
-      "typeVersion": 1,
-      "position": [
-        1860,
-        620
-      ]
     }
   ],
   "connections": {
@@ -499,11 +407,6 @@
         [
           {
             "node": "البيانات مكتملة؟",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "getFile-cancel",
             "type": "main",
             "index": 0
           }
@@ -555,11 +458,6 @@
         [
           {
             "node": "قراءة السجل",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "getFile-comp",
             "type": "main",
             "index": 0
           }
@@ -622,50 +520,6 @@
         [
           {
             "node": "تأكيد التعويض",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "getFile-cancel": {
-      "main": [
-        [
-          {
-            "node": "download-cancel",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "download-cancel": {
-      "main": [
-        [
-          {
-            "node": "save-cancel",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "getFile-comp": {
-      "main": [
-        [
-          {
-            "node": "download-comp",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "download-comp": {
-      "main": [
-        [
-          {
-            "node": "save-comp",
             "type": "main",
             "index": 0
           }
