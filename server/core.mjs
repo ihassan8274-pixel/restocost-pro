@@ -11,7 +11,13 @@ import { store, SESSION_TTL_MS } from './store.mjs';
 const { getKV, sessionRow, deleteSession } = store;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const dataDir = path.join(__dirname, 'data');
+// data/ تابعة لجذر server في التخطيطين معاً — نفس منطق serverRootDir() في store.mjs:
+// عند تشغيل الكود المبني (server/dist/) كان __dirname/data يشير إلى server/dist/data
+// غير الموجودة، فيسقط كل تسجيل savelog بخطأ ENOENT بعد نجاح الحفظ (500 يُجبر العميل
+// على إعادة المحاولة كل 6 ثوانٍ إلى الأبد). نصعد مستوى واحداً فقط من dist/.
+const rootDir = path.basename(__dirname).toLowerCase() === 'dist' ? path.dirname(__dirname) : __dirname;
+export const dataDir = path.join(rootDir, 'data');
+try { fs.mkdirSync(dataDir, { recursive: true }); } catch { /* تجاهل */ }
 
 // Per-copy identity: every independent company copy has a unique id written to
 // server/instance.txt so the launcher can tell its own server apart from other copies.
@@ -51,6 +57,17 @@ export const COLLECTION_KEYS = [
   'rcerp_intake_inbox',
   'rcerp_documents',
   'rcerp_deleted_ids',
+  // ⭐ Foodics import, added 2026-10-07.
+  //   rcerp_pos_lines   one row per branch x item x business day, deduplicated
+  //                     at import time. Revenue and cost are PRE-COMPUTED from
+  //                     the recipe at import time and stored on the row, so the
+  //                     report never re-derives them and cannot drift from what
+  //                     was imported.
+  //   rcerp_pos_batches one row per FILE read, including the 312 duplicates,
+  //                     each pointing at the canonical batch it duplicated.
+  //                     Without this there is no way to answer "were these
+  //                     totals double-counted?".
+  'rcerp_pos_lines', 'rcerp_pos_batches',
   'rcerp_units',
   'rcerp_inventory_batches', 'rcerp_temp_logs', 'rcerp_haccp_inspections', 'rcerp_tasks', 'rcerp_custom_reports',
   'rcerp_eod_closures',

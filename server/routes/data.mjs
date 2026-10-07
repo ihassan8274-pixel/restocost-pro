@@ -10,8 +10,8 @@ import {
 } from '../core.mjs';
 import { canWriteCollection, canPurgeTombstone, canReadCollection, BRANCH_SCOPED_KEYS, scopeToBranches } from '../permissions.mjs';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
-import { sanitizeRecords } from '../record-guard.mjs';
-import { summarizeChange, summarizeDelete } from '../collection-audit.mjs';
+import { sanitizeRecords } from '../src/modules/utils/record-guard.js';
+import { summarizeChange, summarizeDelete } from '../src/modules/utils/collection-audit.js';
 import { validateCollectionBody } from '../schemas/collection-schemas.mjs';
 import { store } from '../store.mjs';
 import { PKG_VERSION, getBuildFingerprint, serverStamp } from '../version.mjs';
@@ -76,29 +76,68 @@ const LAZY_KEYS = new Set([
 // جهاز في كل مزامنة (قائمة 148 معرّفاً = كل طلب يمرّ على 148 فحصاً)، ومع
 // تراكمها يرتفع احتمال رفض دفعة كاملة. الشاهد الذي تجاوز الحدّ لم يعد لسجله
 // أي أثر (سجله محذوف أصلاً)، فحذفه لا يفقد بيانات.
-// حدّ أعلى لسجلات الحركة على الخادم. العميل يـ slice محلياً فقط (5000)، والخادم
-// يدمج السجلات فيراكم بلا سقف — فبلغ 3MB تُسحب مع كل
-// bootstrap. السقف على الأقليم القديمة لا الجديد: لا يُسقط حركة حديثة أبداً.
-const MOVEMENT_RETENTION = 5000;
-const MOVEMENT_KEYS = new Set(['rcerp_inventory_movements', 'rcerp_audit']);
+//
+// ⛔⛔ MOVEMENT_RETENTION WAS 5000, AND THAT DELETED INVENTORY HISTORY.
+//
+//   Measured on the live database on 2026-10-07:
+//       rcerp_inventory_movements   18,331 rows  ->  5,000 rows
+//       earliest surviving movement  2026-09-16 (21 days of history gone)
+//
+//   13,331 stock movements were deleted, silently, with no backup taken before
+//   the deletion and no warning to anyone. The backup system saves the key
+//   AFTER this runs, so every hourly backup since then has recorded the
+//   truncated list as the truth.
+//
+//   The comment above it claimed "the cap is on old regions, never on recent
+//   movements". That is true of WHICH rows are dropped and irrelevant to
+//   WHETHER dropping them is acceptable: a stock ledger that keeps three weeks
+//   cannot answer "what did this item cost on the 3rd of September", which is
+//   precisely the question a food-cost report exists to answer.
+//
+//   ⭐ 90 DAYS, configurable. MOVEMENT_RETENTION_DAYS=0 disables the cap
+//    entirely, which is the setting to use when the ledger must be complete.
+//    500 movements a day is the measured ceiling across 12 branches, so 90 days
+//    is roughly 45,000 rows -- about 2.5x the live ledger today.
+const RETENTION_DAYS = Number(process.env.MOVEMENT_RETENTION_DAYS ?? 90);
+const MOVEMENT_RETENTION = RETENTION_DAYS > 0 ? RETENTION_DAYS * 500 : Infinity;
+// ⭐ rcerp_audit is a DEBUG list. Measured: it also had 18,331 rows and was
+//   being cut at the same 5,000. Nothing reads it for reporting, so it is
+//   capped hard and on purpose. rcerp_inventory_movements is the stock ledger
+//   and is NOT in this set -- conflating the two is what made the ledger
+//   disposable by accident.
+const MOVEMENT_KEYS = new Set(['rcerp_audit']);
+const AUDIT_RETENTION = 5000;
 
 const applyRetention = (key, value) => {
-  if (!MOVEMENT_KEYS.has(key) || !Array.isArray(value) || value.length <= MOVEMENT_RETENTION) return value;
+  // ⛔ rcerp_inventory_movements is NOT in MOVEMENT_KEYS, so it is no longer
+  //    touched here at all. The stock ledger grows. That is correct: it is the
+  //    record of what happened to the stock, and a record that deletes itself
+  //    is not a record.
+  if (!MOVEMENT_KEYS.has(key) || !Array.isArray(value)) return value;
+  const cap = key === 'rcerp_audit' ? AUDIT_RETENTION : MOVEMENT_RETENTION;
+  if (value.length <= cap) return value;
   // الأحدث أولاً بـdate (الحركة تحمله)، ولا نُسقط ما لا يحمل تاريخاً كاملاً
   // إلا إذا كان الأقدم — نُبقي الأصناف بلا تاريخ في النهاية بأمان.
   const dated = value.filter((r) => r && typeof r.date === 'string' && r.date.length >= 10);
   const undated = value.filter((r) => !(r && typeof r.date === 'string' && r.date.length >= 10));
-  if (dated.length <= MOVEMENT_RETENTION) return value;
+  if (dated.length <= cap) return value;
   dated.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-  const kept = dated.slice(0, MOVEMENT_RETENTION);
+  const kept = dated.slice(0, cap);
   const dropped = value.length - kept.length - undated.length;
   try {
-    fs.appendFileSync(
-      path.join(dataDir, 'savelog.txt'),
+    appendSavelog(
       `${new Date().toISOString()} | RETENTION ${key} | ${value.length}->${kept.length + undated.length} (dropped ${dropped} oldest)\n`
     );
   } catch { /* تجاهل */ }
   return [...kept, ...undated];
+};
+
+
+// كل تسجيل savelog استباقي: فشله (قرص ممتلئ/مسار مرفوض) لا يُسقط عملية حفظ
+// ناجحة. كان سطر MERGED بلا حماية فتسقط بخطأ ENOENT بعد الدمج فترد 500، فيعيد
+// العميل المحاولة كل 6 ثوانٍ إلى الأبد (حلقة الحفظ المتكرر).
+const appendSavelog = (line) => {
+  try { fs.appendFileSync(path.join(dataDir, 'savelog.txt'), line); } catch { /* تجاهل */ }
 };
 
 const MAX_TOMBSTONES = 2000;
@@ -198,8 +237,7 @@ export const registerData = (app) => {
     const saveBytes = req.headers['content-length'] || '?';
     res.on('finish', () => {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | ${req.params.key} | ${res.statusCode} | ${saveBytes}b | ${Date.now() - saveStarted}ms | ${saveUA}\n`
         );
       } catch { /* تجاهل */ }
@@ -222,8 +260,7 @@ export const registerData = (app) => {
     const validation = validateCollectionBody(key, req.body);
     if (!validation.success) {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | ZOD-REJECT ${key} | ${JSON.stringify(validation.error)} | ${saveUA}\n`
         );
       } catch { /* تجاهل */ }
@@ -232,6 +269,18 @@ export const registerData = (app) => {
     // نستخدم البيانات المنظّفة (زائدة الحقول تُسقط، التحويل يتم تلقائياً)
     let incomingData = validation.data;
 
+    // ---- السجلات المصفّاة: تسجيل + إبلاغ العميل ----
+    // القرار: "filter, never reject whole batch" — السجل الفاسد يسقط وحده
+    // ويُسجَّل هنا، والدفعة كلها تنجح (200) فلا تدور في حلقة إعادة محاولة.
+    const zodDropped = validation.dropped || [];
+    if (zodDropped.length > 0) {
+      try {
+        appendSavelog(
+          `${new Date().toISOString()} | ZOD-FILTER ${key} | dropped=${zodDropped.length}/${Array.isArray(req.body) ? req.body.length : '?'} | ${JSON.stringify(zodDropped.slice(0, 3))} | ${saveUA}\n`
+        );
+      } catch { /* تجاهل */ }
+    }
+
     // ---- حماية من تلف النصوص العربية ----
     // جهاز يحمل نسخة تالفة محلياً (كاشح بايتات CP437) سيدفعها كل بضعة ثوانٍ
     // فيطمس النسخة النظيفة. التلف غير قابل للإصلاح، فنرفض الدفعات التالفة
@@ -239,8 +288,7 @@ export const registerData = (app) => {
     // ويجلب النسخة النظيفة بدل إعادة المحاولة بلا نهاية.
     if (looksCorrupted(req.body)) {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | REJECTED-CORRUPT ${key} | ${saveBytes}b | ${saveUA}\n`
         );
       } catch { /* تجاهل */ }
@@ -283,8 +331,7 @@ export const registerData = (app) => {
         else validIncoming.push(id);
       }
       if (rejectedIds.length) {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | TOMBSTONE-REJECTED ${key} | ${rejectedIds.length}/${incoming.length} ids | ${saveUA}\n`
         );
       }
@@ -296,8 +343,7 @@ export const registerData = (app) => {
         ? tomb.slice(tomb.length - MAX_TOMBSTONES)
         : tomb;
       if (capped.length !== tomb.length) {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | TOMBSTONE-CAP ${key} | ${tomb.length}->${capped.length} | ${saveUA}\n`
         );
       }
@@ -318,8 +364,7 @@ export const registerData = (app) => {
           }
         }
       }
-      fs.appendFileSync(
-        path.join(dataDir, 'savelog.txt'),
+      appendSavelog(
         `${new Date().toISOString()} | MERGED ${key} | ${saveBytes}b | ${saveUA}\n`
       );
       // نُبلغ العميل بالمرفوض ليُسقطها من قائمته المحلية — وإلا بقيت في
@@ -332,8 +377,7 @@ export const registerData = (app) => {
     if (key !== 'rcerp_users' && key !== 'rcerp_ai_settings' && key !== 'rcerp_telegram_settings' && key !== 'rcerp_intake_inbox' && key !== 'rcerp_recent_docs') {
       const reject = shouldRejectShrink(getKV(key), incomingData);
       if (reject) {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | REJECTED ${key} | ${saveBytes}b(in=${reject.inLen}B ex=${reject.exLen}B) | ${saveUA}\n`
         );
         return res.status(409).json({
@@ -354,8 +398,7 @@ export const registerData = (app) => {
           (() => {
             try { return JSON.stringify(exArr).length > 50000; } catch { return false; }
           })()) {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | REJECTED-EMPTY ${key} | ${saveBytes}b(ex=${exArr.length} مفتاح) | ${saveUA} | استخدم rcerp_deleted_ids للحذف النهائي\n`
         );
         return res.status(409).json({
@@ -425,8 +468,7 @@ export const registerData = (app) => {
         incomingData = normalize;
       } catch (e) {
         try {
-          fs.appendFileSync(
-            path.join(dataDir, 'savelog.txt'),
+          appendSavelog(
             `${new Date().toISOString()} | AI_SETTINGS_NORMALIZE_ERROR | ${e && (e.stack || e.message)}\n`
           );
         } catch { /* تجاهل */ }
@@ -456,8 +498,7 @@ export const registerData = (app) => {
         incomingData = normalize;
       } catch (e) {
         try {
-          fs.appendFileSync(
-            path.join(dataDir, 'savelog.txt'),
+          appendSavelog(
             `${new Date().toISOString()} | TELEGRAM_SETTINGS_NORMALIZE_ERROR | ${e && (e.stack || e.message)}\n`
           );
         } catch { /* تجاهل */ }
@@ -466,8 +507,7 @@ export const registerData = (app) => {
     }
 if (key === 'rcerp_recent_docs') {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | RECENT_DOCS_INCOMING | ${JSON.stringify(incomingData).slice(0, 500)}\n`
         );
         const normalize = Array.isArray(incomingData) ? incomingData : [];
@@ -484,19 +524,20 @@ if (key === 'rcerp_recent_docs') {
         }).filter(Boolean);
         incomingData = normalized.slice(0, 20);
       } catch (e) {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | RECENT_DOCS_NORMALIZE_ERROR | ${e && (e.stack || e.message)}\n`
         );
         return res.status(400).json({ ok: false, error: 'بيانات المستندات الأخيرة غير صالحة — سيتم إعادة تحميلها من الخادم.' });
       }
     }
     // --- فرض إغلاق الفترات خادمياً: رفض أي كتابة لشهر/يوم مقفل ---
-    const periodViolation = findPeriodViolation(key, incomingData, getKV(key), getKV);
+    // المصفوفات المرفوضة بـ Zod تمرّ هنا أيضاً كي لا تُحسب حذفاً لفترة مقفلة
+    // (الدمج التراكمي يبقيها على الخادم — ليست حذفاً).
+    const zodDroppedIds = zodDropped.map((d) => d.id).filter((v) => v !== undefined);
+    const periodViolation = findPeriodViolation(key, incomingData, getKV(key), getKV, zodDroppedIds);
     if (periodViolation) {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | REJECTED-PERIOD ${key} | ${periodViolation.kind} | ${periodViolation.date} | ${saveUA}\n`
         );
       } catch { /* تجاهل */ }
@@ -517,8 +558,7 @@ if (key === 'rcerp_recent_docs') {
     if (guard.clean !== incomingData) incomingData = guard.clean;
     if (guard.rejected.length || guard.coerced) {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | GUARD ${key} | dropped=${guard.rejected.length} reasons=${[...new Set(guard.rejected.map((r) => r.reason))].join(',')} | money-coerced=${guard.coerced} | ${saveUA}\n`
         );
       } catch { /* تجاهل */ }
@@ -614,13 +654,18 @@ if (key === 'rcerp_recent_docs') {
     }
     // شاهد الحذف محفوظ في الكتلة المبكّرة أعلاه (اتحاد + تنقية فورية)؛
     // وهنا نطبّق الشواهد أيضاً على أي دمج قادم كي لا تُبعث سجلات محذوفة من أجهزة قديمة.
-    fs.appendFileSync(
-      path.join(dataDir, 'savelog.txt'),
+    appendSavelog(
       `${new Date().toISOString()} | MERGED ${key} | ${saveBytes}b | ${saveUA}\n`
     );
     // نبلّغ العميل بما سقط ليعيد جلب النسخة النظيفة — كما في مسار شواهد الحذف.
     // به يعرف أن Modification محلي لن يصل، لا أن يرسله إلى الأبد بصمت.
-    res.json(guard.rejected.length ? { ok: true, rejectedIds: guard.rejected.map((r) => r.id) } : { ok: true });
+    // ملاحظة: هذا الرد ليس حلقة إعادة محاولة — 200 يعني نجاح الدفعة؛ المصفوف
+    // الإضافي من ZOD-FILTER فقط يُظهر ما لم يصل من السجلات.
+    const finalRejectedIds = [
+      ...guard.rejected.map((r) => r.id),
+      ...zodDropped.map((d) => d.id).filter(Boolean),
+    ];
+    res.json(finalRejectedIds.length ? { ok: true, rejectedIds: finalRejectedIds } : { ok: true });
   });
 
   // ---- Instance identity (used by the desktop launcher to find THIS copy's server) ----
@@ -741,8 +786,7 @@ if (key === 'rcerp_recent_docs') {
       sendPdf: typeof body.sendPdf === 'boolean' ? body.sendPdf : (current.sendPdf ?? true),
     };
     store.setKV('rcerp_telegram_settings', next);
-    fs.appendFileSync(
-      path.join(dataDir, 'savelog.txt'),
+    appendSavelog(
       `${new Date().toISOString()} | TG-SETTINGS saved | enabled=${next.enabled} | chats=${next.chatIds.length} | purchase_bot=${next.purchaseEnabled ? 'on' : 'off'} | purchase_chats=${next.purchaseChatIds.length} | files=${next.sendPdf} | UA=${(req.headers['user-agent'] || '').slice(0, 50)}\n`
     );
     res.json({ ok: true, enabled: next.enabled, chatCount: next.chatIds.length, hasToken: !!next.botToken });
@@ -777,8 +821,7 @@ if (key === 'rcerp_recent_docs') {
     if (!text) return res.status(400).json({ ok: false, error: 'نص الرسالة فارغ' });
     const channel = body.channel === 'purchase' ? 'purchase' : 'main';
     const result = await sendTelegram(store, text, { channel });
-    fs.appendFileSync(
-      path.join(dataDir, 'savelog.txt'),
+    appendSavelog(
       `${new Date().toISOString()} | TG-SEND channel=${channel} | sent=${result.sent} | errors=${result.errors.length ? result.errors.join('; ') : 'none'} | by=${user.name} | UA=${(req.headers['user-agent'] || '').slice(0, 50)}\n`
     );
     res.json(result.ok ? { ok: true, sent: result.sent } : { ok: false, error: result.errors.join('; ') });
@@ -836,8 +879,7 @@ if (key === 'rcerp_recent_docs') {
     // تنظيف اسم الملف من الأحرف الخطرة
     const safeName = filename.replace(/[^a-zA-Z0-9\u0600-\u06FF._-]/g, '_').slice(0, 80);
     const result = await sendTelegramDocument(store, buffer, safeName, caption, channel);
-    fs.appendFileSync(
-      path.join(dataDir, 'savelog.txt'),
+    appendSavelog(
       `${new Date().toISOString()} | TG-SEND-DOC channel=${channel} | doc=${safeName} | sent=${result.sent} | errors=${result.errors.length ? result.errors.join('; ') : 'none'} | by=${user.name}\n`
     );
     res.json(result.ok ? { ok: true, sent: result.sent } : { ok: false, error: result.errors.join('; ') });
@@ -869,8 +911,7 @@ if (key === 'rcerp_recent_docs') {
     // استجابة الخادم مهلة العميل (30 ثانية) فيظهر «انتهت مهلة الاتصال بالخادم».
     sendTelegramDocument(store, pdf, safeName, caption, 'purchase').then((result) => {
       try {
-        fs.appendFileSync(
-          path.join(dataDir, 'savelog.txt'),
+        appendSavelog(
           `${new Date().toISOString()} | TG-SEND-REPORT | doc=${safeName} | bytes=${pdf.length} | sent=${result.sent} | errors=${result.errors.length ? result.errors.join('; ') : 'none'} | by=${user.name}\n`
         );
       } catch { /* تجاهل */ }
@@ -1108,6 +1149,168 @@ if (key === 'rcerp_recent_docs') {
     });
   });
 
+  // ==========================================================================
+  //  Food cost report -- cost comes from the RECIPE, never from the POS export.
+  //
+  //  ⛔ WHY THIS EXISTS SEPARATELY FROM /api/live
+  //     /api/live answers "what happened today" and is scoped to the user's
+  //     branch. This answers "what did the item cost" and is company-wide,
+  //     because a food-cost percentage is meaningless for one branch: the same
+  //     recipe is sold at all twelve, so a single branch's ratio only tells you
+  //     about that branch's discounting, not about cost control.
+  //
+  //  ⛔ THE ONE RULE THIS ENFORCES
+  //     revenue and cost are BOTH Foodics quantity x a recipe field. The
+  //     export's own cost column is never used. It is returned separately as
+  //     `foodicsCost` so the two can be compared, and the operator has confirmed
+  //     the export column is wrong. Reading it here would be a silent
+  //     regression the day someone trusted it.
+  //
+  //  ⛔ WHY THE COMPARISON COLUMN EXISTS
+  //     Foodics prices are not uniform. Each delivery app carries its own price
+  //     and its own discounts, so the charged price sits above or below the
+  //     recipe price depending on volume and promotions. The variance is
+  //     information, not a defect, and it is reported per branch rather than
+  //     averaged away.
+  //
+  //  ⛔ READ-ONLY. No writes on this route, by construction.
+  // ==========================================================================
+  app.get('/api/report/food-cost', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصادق' });
+    if (user.role !== 'admin' && user.role !== 'executive' && user.role !== 'branch_manager' && user.role !== 'cost_controller') {
+      return res.status(403).json({ ok: false, error: 'غير مصرح' });
+    }
+
+    const from = typeof req.query.from === 'string' ? req.query.from : null;
+    const to = typeof req.query.to === 'string' ? req.query.to : null;
+    const branchFilter = typeof req.query.branch === 'string' && req.query.branch ? req.query.branch : null;
+
+    const lines = Array.isArray(getKV('rcerp_pos_lines')) ? getKV('rcerp_pos_lines') : [];
+    const recipes = Array.isArray(getKV('rcerp_recipes')) ? getKV('rcerp_recipes') : [];
+    const batches = Array.isArray(getKV('rcerp_pos_batches')) ? getKV('rcerp_pos_batches') : [];
+    const branches = Array.isArray(getKV('rcerp_branches')) ? getKV('rcerp_branches') : [];
+
+    if (!lines.length) {
+      return res.json({
+        ok: true,
+        empty: true,
+        reason: 'لم يتم استيراد مبيعات Foodics بعد — لا توجد أسطر في rcerp_pos_lines',
+        batches: batches.length,
+      });
+    }
+
+    const branchName = new Map();
+    for (const b of branches) if (b.ref) branchName.set(String(b.ref), b.nameAr || b.nameEn || '');
+
+    // ---- accumulate both sides ----
+    const blank = () => ({ qty: 0, revenue: 0, cost: 0, foodicsRevenue: 0, foodicsCost: 0 });
+    const grand = blank();
+    const byBranch = new Map();
+    const byDay = new Map();
+    const byItem = new Map();
+    let daysCovered = new Set();
+    let unpricedRows = 0;
+    let unpricedQty = 0;
+    const unpricedNames = new Map();
+
+    const acc = (map, key, name, price) => {
+      let e = map.get(key);
+      if (!e) { e = { ...blank(), name: name ?? '', price: price ?? 0 }; map.set(key, e); }
+      return e;
+    };
+
+    for (const l of lines) {
+      const day = String(l.businessDate || '').slice(0, 10);
+      if (!day) { unpricedRows++; continue; }
+      if (from && day < from) continue;
+      if (to && day > to) continue;
+      if (branchFilter && l.branchRef !== branchFilter) continue;
+      daysCovered.add(day);
+
+      const qty = Number(l.quantitySold) || 0;
+      const revenue = Number(l.systemRevenue) || 0;   // already qty x recipe price
+      const cost = Number(l.systemCost) || 0;        // already qty x recipe cost
+      const fxRevenue = Number(l.foodicsRevenue) || 0;
+      const fxCost = Number(l.foodicsCost) || 0;
+      if (!l.recipeId) {
+        unpricedRows++;
+        unpricedQty += qty;
+        unpricedNames.set(l.nameAr || l.posItemId, (unpricedNames.get(l.nameAr || l.posItemId) || 0) + qty);
+      }
+
+      for (const t of [grand, acc(byBranch, l.branchRef), acc(byDay, day)]) {
+        t.qty += qty; t.revenue += revenue; t.cost += cost;
+        t.foodicsRevenue += fxRevenue; t.foodicsCost += fxCost;
+      }
+      const e = acc(byItem, l.posItemId, l.nameAr || l.nameEn || l.posItemId, Number(l.recipePrice) || 0);
+      e.qty += qty; e.revenue += revenue; e.cost += cost;
+      e.foodicsRevenue += fxRevenue; e.foodicsCost += fxCost;
+    }
+
+    const pct = (c, r) => (r > 0 ? c / r : 0);
+    const round = (v) => Math.round(v * 100) / 100;
+
+    const shape = (t) => ({
+      qty: round(t.qty),
+      revenue: round(t.revenue),
+      cost: round(t.cost),
+      grossProfit: round(t.revenue - t.cost),
+      foodCostPct: round(pct(t.cost, t.revenue) * 100),
+      grossMarginPct: round((1 - pct(t.cost, t.revenue)) * 100),
+      foodicsRevenue: round(t.foodicsRevenue),
+      foodicsCost: round(t.foodicsCost),
+      varianceVsFoodics: round(t.revenue - t.foodicsRevenue),
+      variancePct: round((t.foodicsRevenue > 0 ? (t.revenue - t.foodicsRevenue) / t.foodicsRevenue : 0) * 100),
+    });
+
+    // Branch rows, worst food-cost rate first: an average hides the branch
+    // that is bleeding money.
+    const branchRows = [...byBranch].map(([ref, t]) => ({
+      ref, name: branchName.get(ref) || '', ...shape(t),
+    })).sort((a, b) => b.foodCostPct - a.foodCostPct);
+
+    // What closing the gap to the best branch is worth, in money.
+    let savingIfBestRate = 0;
+    if (branchRows.length > 1) {
+      const bestRate = pct(branchRows[branchRows.length - 1].cost, branchRows[branchRows.length - 1].revenue);
+      for (const r of branchRows) {
+        const costAtBest = r.revenue * bestRate;
+        if (r.cost > costAtBest) savingIfBestRate += r.cost - costAtBest;
+      }
+    }
+
+    res.json({
+      ok: true,
+      empty: false,
+      generatedAt: new Date().toISOString(),
+      window: { from, to, days: daysCovered.size, branch: branchFilter },
+      source: {
+        sales: 'Foodics (branch, item, quantity, date)',
+        price: 'recipe actualMenuPrice',
+        cost: 'recipe totalCalculatedCost',
+        note: 'The Foodics cost column is reported for comparison only and is never used for cost.',
+      },
+      totals: shape(grand),
+      branchSpread: branchRows.length > 1 ? {
+        best: branchRows[branchRows.length - 1].ref,
+        worst: branchRows[0].ref,
+        bestRate: branchRows[branchRows.length - 1].foodCostPct,
+        worstRate: branchRows[0].foodCostPct,
+        points: round(branchRows[0].foodCostPct - branchRows[branchRows.length - 1].foodCostPct),
+        savingIfBestRate: round(savingIfBestRate),
+      } : null,
+      byBranch: branchRows,
+      byDay: [...byDay].map(([day, t]) => ({ day, ...shape(t) })).sort((a, b) => a.day.localeCompare(b.day)),
+      byItem: [...byItem].map(([code, t]) => ({ code, ...t, ...shape(t) }))
+        .sort((a, b) => b.revenue - a.revenue),
+      unpriced: {
+        rows: unpricedRows, quantity: round(unpricedQty),
+        names: [...unpricedNames].map(([name, qty]) => ({ name, quantity: round(qty) })),
+      },
+    });
+  });
+
   // ---- مزامنة يدوية شاملة (Admin فقط) ----
   // يجبر جميع الأجهزة المتصلة على سحب أحدث البيانات عبر bootstrap كامل
   // ---- سحب المستندات الأخيرة من الخادم وتطبيقها محلياً (PULL) ----
@@ -1143,8 +1346,7 @@ if (key === 'rcerp_recent_docs') {
       // (الأجهزة ستحصل عليها في استدعاء /api/bootstrap التالي)
 
       // 3) تسجيل العملية
-      fs.appendFileSync(
-        path.join(dataDir, 'savelog.txt'),
+      appendSavelog(
         `${new Date().toISOString()} | FORCE-SYNC by ${user.name} (${user.id})\n`
       );
 
@@ -1172,8 +1374,7 @@ if (key === 'rcerp_recent_docs') {
       // إجبار مزامنة فورية لهذه المجموعة
       const synced = await useSyncStore.getState().syncNow(key);
 
-      fs.appendFileSync(
-        path.join(dataDir, 'savelog.txt'),
+      appendSavelog(
         `${new Date().toISOString()} | SYNC-COLLECTION ${key} by ${user.name} | ${synced ? 'ok' : 'partial'}\n`
       );
 
@@ -1196,8 +1397,7 @@ if (key === 'rcerp_recent_docs') {
         if (v !== null) data[key] = sanitizeCollectionForBroadcast(key, v);
       });
 
-      fs.appendFileSync(
-        path.join(dataDir, 'savelog.txt'),
+      appendSavelog(
         `${new Date().toISOString()} | BOOTSTRAP-FULL by ${user.name}\n`
       );
 
