@@ -70,7 +70,27 @@ interface Shape {
 }
 interface BranchRow extends Shape { ref: string; name: string }
 interface DayRow extends Shape { day: string }
-interface ItemRow extends Shape { code: string; name: string; price: number }
+// ⭐ role is 'volume' or 'margin'. See the note at the top of the file and the
+//   split below: a volume item's food cost is a deliberate traffic cost, not a
+//   pricing failure, so it is never coloured as one.
+interface ItemRow extends Shape {
+  code: string; name: string; price: number;
+  role: 'volume' | 'margin';
+  recipeId: string;
+  category: string;
+}
+interface Split {
+  margin: Shape & { products: number };
+  volume: Shape & { products: number };
+  explain: {
+    volumeQtySharePct: number;
+    volumeRevenueSharePct: number;
+    marginRevenueSharePct: number;
+    blendedFoodCostPct: number;
+    marginRateGapPts: number;
+    note: string;
+  };
+}
 interface FoodCostResponse {
   ok: boolean;
   empty?: boolean;
@@ -88,6 +108,7 @@ interface FoodCostResponse {
   byBranch?: BranchRow[];
   byDay?: DayRow[];
   byItem?: ItemRow[];
+  split?: Split;
   unpriced?: { rows: number; quantity: number; names: { name: string; quantity: number }[] };
 }
 
@@ -97,15 +118,28 @@ const money = (n: number) =>
 const pct = (n: number) => `${(n ?? 0).toFixed(2)}%`;
 const qtyFmt = (n: number) => Math.round(n ?? 0).toLocaleString('en-US');
 
-// ⭐ Food cost at or above this is flagged. 30% is a common restaurant target;
-// 50% is where an item is usually priced to be sold as a loss leader.
+type SortKey = 'revenue' | 'cost' | 'foodCostPct' | 'qty' | 'name';
+
+// ⭐ Food cost at or above this is flagged, FOR MARGIN ITEMS ONLY.
+//
+//   The first version applied these thresholds to every item, which told the
+//   operator their spring juice at 71.50% was a pricing failure. It is not. The
+//   operator confirmed on 2026-10-07 that drinks like عصير ربيع, كولا and ديو
+//   are deliberate traffic drivers -- necessary to sell, not sold for margin.
+//
+//   The measured numbers agree: beverages are 21.6% of the units sold but only
+//   5.1% of revenue, at 46.06% food cost. Flagging them would be flagging the
+//   cost of winning the customer as if it were a mistake.
+//
+//   So a volume item is never red or amber here. Its cost is shown, plainly,
+//   under its own heading, where it is information rather than an accusation.
 const HIGH_FOOD_COST = 50;
 const WARN_FOOD_COST = 30;
 
 const toneForCost = (p: number) =>
   p >= HIGH_FOOD_COST ? 'rose' : p >= WARN_FOOD_COST ? 'amber' : 'emerald';
 
-type SortKey = 'revenue' | 'cost' | 'foodCostPct' | 'qty' | 'name';
+type Tab = 'items' | 'volume' | 'branches' | 'days';
 
 export const FoodicsFoodCostView: React.FC = () => {
   const [data, setData] = useState<FoodCostResponse | null>(null);
@@ -116,7 +150,7 @@ export const FoodicsFoodCostView: React.FC = () => {
   const [to, setTo] = useState('');
   const [branch, setBranch] = useState('');
 
-  const [tab, setTab] = useState<'items' | 'branches' | 'days'>('items');
+  const [tab, setTab] = useState<Tab>('items');
   const [sortKey, setSortKey] = useState<SortKey>('revenue');
   const [asc, setAsc] = useState(false);
   const [onlyProblem, setOnlyProblem] = useState(false);
@@ -154,11 +188,11 @@ export const FoodicsFoodCostView: React.FC = () => {
 
   useEffect(() => { void load(); }, [load]);
 
-  // ── item table: sortable, and optionally filtered to the problem rows ─────
+  // ── item table: sortable, role-aware, optionally only the actionable rows ──
   const items = useMemo(() => {
     const rows = data?.byItem ?? [];
     const filtered = onlyProblem
-      ? rows.filter((r) => r.foodCostPct >= WARN_FOOD_COST || r.variancePct <= -5)
+      ? rows.filter((r) => r.role === 'margin' && (r.foodCostPct >= WARN_FOOD_COST || r.variancePct <= -5))
       : rows;
     const dir = asc ? 1 : -1;
     return [...filtered].sort((a, b) => {
@@ -166,6 +200,37 @@ export const FoodicsFoodCostView: React.FC = () => {
       return dir * ((a[sortKey] as number) - (b[sortKey] as number));
     });
   }, [data, sortKey, asc, onlyProblem]);
+
+  // ⭐ Volume items are listed separately. Merging them into one sorted list
+  //   would put عصير ربيع at the top of the page in red, which is the exact
+  //   reading the operator rejected: a deliberate drink presented as a defect.
+  const volumeItems = useMemo(
+    () => (data?.byItem ?? []).filter((r) => r.role === 'volume')
+      .sort((a, b) => b.qty - a.qty),
+    [data],
+  );
+
+  const setRole = useCallback(async (recipeId: string, role: 'volume' | 'margin' | null) => {
+    if (!recipeId) return;
+    const token = localStorage.getItem('rcerp_token');
+    const res = await fetch('/api/report/food-cost/role', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ recipeId, role }),
+    });
+    // ⛔ Only reload on success. Reloading after a 403 would discard the
+    //   operator's click and leave the toggle looking broken with no message.
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));
+      setError(j?.error || `Could not save (${res.status})`);
+      return;
+    }
+    void load();
+  }, [load]);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) { setAsc((v) => !v); return; }
@@ -227,6 +292,7 @@ export const FoodicsFoodCostView: React.FC = () => {
   }
 
   const t = data?.totals;
+  const split = data?.split;
   const spread = data?.branchSpread;
   const unpriced = data?.unpriced;
 
@@ -310,18 +376,26 @@ export const FoodicsFoodCostView: React.FC = () => {
         </div>
       )}
 
-      {/* ── the headline numbers ── */}
+      {/* ── the headline: the MARGIN rate, not the blended one ── */}
       {t && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           <StatCard
-            label="Food Cost %"
-            value={pct(t.foodCostPct)}
-            sub={`margin ${pct(t.grossMarginPct)}`}
-            tone={toneForCost(t.foodCostPct) as 'emerald' | 'amber' | 'rose'}
+            label="Food Cost % (margin items)"
+            value={pct(split?.margin.foodCostPct ?? t.foodCostPct)}
+            sub={`margin ${pct(split?.margin.grossMarginPct ?? t.grossMarginPct)} · ${split?.margin.products ?? 0} products`}
+            tone={toneForCost(split?.margin.foodCostPct ?? t.foodCostPct) as 'emerald' | 'amber' | 'rose'}
             icon={<UtensilsCrossed className="h-4 w-4" />}
+          />
+          <StatCard
+            label="Food Cost % (volume items)"
+            value={pct(split?.volume.foodCostPct ?? 0)}
+            sub={`${split?.volume.products ?? 0} products · traffic drivers`}
+            tone="indigo"
           />
           <StatCard label="Revenue (recipe price)" value={money(t.revenue)} sub="× quantity sold" />
           <StatCard label="Cost (recipe)" value={money(t.cost)} sub="ingredients only" />
+          {/* ⭐ Kept from the first version. Splitting the headline into two
+              rates must not cost the operator a figure they had before. */}
           <StatCard label="Gross profit" value={money(t.grossProfit)} sub={`${qtyFmt(t.qty)} units`} />
           <StatCard
             label="vs Foodics revenue"
@@ -330,6 +404,31 @@ export const FoodicsFoodCostView: React.FC = () => {
             tone="indigo"
           />
         </div>
+      )}
+
+      {/* ⛔ Never present the blended rate as the headline. It mixes two
+          different businesses and hides both. It is shown once, here, with the
+          measured reason the two rates differ. */}
+      {split && (
+        <Card className="p-3">
+          <p className="text-sm">
+            <span className="font-semibold">Why two rates</span>
+            <span className="text-slate-600">
+              {' '}
+              · all items blended: <span className="font-mono">{pct(split.explain.blendedFoodCostPct)}</span>,
+              {' '}which is {split.explain.marginRateGapPts.toFixed(2)} points worse than the margin rate
+              purely because the drinks are in it.
+            </span>
+          </p>
+          <p className="text-sm mt-1 text-slate-600">
+            Volume items are{' '}
+            <span className="font-semibold">{pct(split.explain.volumeQtySharePct)} of all units sold</span>
+            {' '}but only{' '}
+            <span className="font-semibold">{pct(split.explain.volumeRevenueSharePct)} of revenue</span>
+            {', '}because a drink is priced to bring the customer in, not to make money on the cup.
+            {' '}{split.explain.note}
+          </p>
+        </Card>
       )}
 
       {/* ── the actionable number ── */}
@@ -353,20 +452,22 @@ export const FoodicsFoodCostView: React.FC = () => {
       {/* ── tables ── */}
       <Card className="p-0 overflow-hidden">
         <div className="flex items-center gap-2 border-b border-line px-3 py-2">
-          {([['items', 'By item'], ['branches', 'By branch'], ['days', 'By day']] as const).map(([id, label]) => (
+          {([['items', 'Margin items'], ['volume', 'Volume items'], ['branches', 'By branch'], ['days', 'By day']] as const).map(([id, label]) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               className={`px-3 py-1 text-xs font-semibold rounded ${tab === id ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
             >
               {label}
+              {id === 'volume' && volumeItems.length > 0 ? ` (${volumeItems.length})` : ''}
+              {id === 'items' && split ? ` (${split.margin.products})` : ''}
             </button>
           ))}
           <div className="flex-1" />
           {tab === 'items' && (
             <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
               <input type="checkbox" checked={onlyProblem} onChange={(e) => setOnlyProblem(e.target.checked)} />
-              Show only items at {WARN_FOOD_COST}% or above
+              Show only margin items at {WARN_FOOD_COST}% or above
             </label>
           )}
         </div>
@@ -377,6 +478,7 @@ export const FoodicsFoodCostView: React.FC = () => {
               <thead className="border-b border-line">
                 <tr>
                   <SortHead k="name" label="Item" align="left" />
+                  <th className="py-2 px-2 text-left text-xs font-semibold text-slate-500">Role</th>
                   <SortHead k="qty" label="Qty" />
                   <SortHead k="revenue" label="Revenue" />
                   <SortHead k="cost" label="Cost" />
@@ -390,11 +492,32 @@ export const FoodicsFoodCostView: React.FC = () => {
                 {items.map((r) => (
                   <tr key={r.code} className="border-b border-line/50 hover:bg-slate-50">
                     <td className="py-1.5 px-2 text-sm" dir="auto">{r.name}</td>
+                    <td className="py-1.5 px-2">
+                      {/* ⭐ The operator's decision, editable. A drink defaults
+                          to volume because its recipe category is beverage; a
+                          food item deliberately sold to pull customers in can be
+                          switched the other way, and "default" clears the
+                          override so the category decides again. */}
+                      <select
+                        value={r.role}
+                        onChange={(e) => void setRole(r.recipeId, e.target.value as 'volume' | 'margin')}
+                        disabled={!r.recipeId}
+                        className="text-xs border border-line-strong rounded px-1 py-0.5 bg-white text-slate-700 disabled:opacity-40"
+                      >
+                        <option value="margin">Margin</option>
+                        <option value="volume">Volume</option>
+                      </select>
+                    </td>
                     <td className="py-1.5 px-2 text-right text-sm tabular-nums">{qtyFmt(r.qty)}</td>
                     <td className="py-1.5 px-2 text-right text-sm tabular-nums">{money(r.revenue)}</td>
                     <td className="py-1.5 px-2 text-right text-sm tabular-nums">{money(r.cost)}</td>
+                    {/* ⛔ A volume item is NEVER red or amber. Its food cost is
+                        the price of winning the customer, and colouring it as a
+                        failure is the misreading this whole change exists to
+                        remove. */}
                     <td className={`py-1.5 px-2 text-right text-sm font-semibold tabular-nums ${
-                      r.foodCostPct >= HIGH_FOOD_COST ? 'text-rose-600'
+                      r.role === 'volume' ? 'text-slate-500'
+                      : r.foodCostPct >= HIGH_FOOD_COST ? 'text-rose-600'
                       : r.foodCostPct >= WARN_FOOD_COST ? 'text-amber-600'
                       : 'text-slate-700'}`}
                     >
@@ -410,10 +533,67 @@ export const FoodicsFoodCostView: React.FC = () => {
                   </tr>
                 ))}
                 {!items.length && (
-                  <tr><td colSpan={8} className="py-6 text-center text-sm text-slate-400">No items in this window</td></tr>
+                  <tr><td colSpan={9} className="py-6 text-center text-sm text-slate-400">No items in this window</td></tr>
                 )}
               </tbody>
             </table>
+          )}
+
+          {tab === 'volume' && (
+            <div>
+              {/* ⭐ The drinks get their own table, not a footnote. Their food
+                  cost is high by design -- they are what brings the customer in
+                  -- so listing them beside the food and colouring them red
+                  implied a defect where there is a decision. */}
+              <div className="px-3 py-2 bg-indigo-50/60 border-b border-line text-xs text-slate-700">
+                <span className="font-semibold">Volume items.</span>{' '}
+                Deliberate traffic drivers, not pricing problems. They account for{' '}
+                <span className="font-semibold">{pct(split?.explain.volumeQtySharePct ?? 0)} of all units sold</span>
+                {' '}and{' '}
+                <span className="font-semibold">{pct(split?.explain.volumeRevenueSharePct ?? 0)} of revenue</span>
+                {'. '}Their food cost is the price of winning the customer, so no threshold is applied here.
+              </div>
+              <table className="w-full">
+                <thead className="border-b border-line">
+                  <tr>
+                    <th className="py-2 px-2 text-left text-xs font-semibold text-slate-500">Item</th>
+                    <SortHead k="qty" label="Qty" />
+                    <SortHead k="revenue" label="Revenue" />
+                    <SortHead k="cost" label="Cost" />
+                    <SortHead k="foodCostPct" label="Food Cost %" />
+                    <th className="py-2 px-2 text-right text-xs font-semibold text-slate-500">Margin %</th>
+                    <th className="py-2 px-2 text-left text-xs font-semibold text-slate-500">Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {volumeItems.map((r) => (
+                    <tr key={r.code} className="border-b border-line/50 hover:bg-slate-50">
+                      <td className="py-1.5 px-2 text-sm" dir="auto">{r.name}</td>
+                      <td className="py-1.5 px-2 text-right text-sm tabular-nums">{qtyFmt(r.qty)}</td>
+                      <td className="py-1.5 px-2 text-right text-sm tabular-nums">{money(r.revenue)}</td>
+                      <td className="py-1.5 px-2 text-right text-sm tabular-nums">{money(r.cost)}</td>
+                      {/* ⛔ deliberately slate, never rose or amber */}
+                      <td className="py-1.5 px-2 text-right text-sm font-semibold tabular-nums text-slate-500">{pct(r.foodCostPct)}</td>
+                      <td className="py-1.5 px-2 text-right text-sm tabular-nums text-slate-600">{pct(r.grossMarginPct)}</td>
+                      <td className="py-1.5 px-2">
+                        <select
+                          value={r.role}
+                          onChange={(e) => void setRole(r.recipeId, e.target.value as 'volume' | 'margin')}
+                          disabled={!r.recipeId}
+                          className="text-xs border border-line-strong rounded px-1 py-0.5 bg-white text-slate-700 disabled:opacity-40"
+                        >
+                          <option value="volume">Volume</option>
+                          <option value="margin">Margin</option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                  {!volumeItems.length && (
+                    <tr><td colSpan={7} className="py-6 text-center text-sm text-slate-400">No volume items in this window</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
 
           {tab === 'branches' && (

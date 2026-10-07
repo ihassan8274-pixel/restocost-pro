@@ -41,6 +41,13 @@ export const COLLECTION_KEYS = [
   'rcerp_pos_returns', 'rcerp_fixed_assets', 'rcerp_scheduled_reports', 'rcerp_automation_rules',
   'rcerp_daily_counts', 'rcerp_employee_meals', 'rcerp_production_runs',
   'rcerp_target_margin', 'rcerp_ack_alerts',
+  // ⭐ Per-recipe food-cost role: 'volume' (a deliberate traffic driver, its
+  //   food cost is the price of winning the customer) or 'margin' (a profit
+  //   target). A small map keyed by recipe id, written only by
+  //   /api/report/food-cost/role. Registered so it is backed up and synced like
+  //   any other collection: a role the operator set is a decision, and losing it
+  //   silently would re-flag their drinks as pricing failures.
+  'rcerp_food_cost_roles',
   'rcerp_custom_roles', 'rcerp_opening_balances', 'rcerp_supplier_quotes', 'rcerp_supplier_returns',
   'rcerp_monthly_inventory', 'rcerp_closed_months', 'rcerp_vat_percent', 'rcerp_vat_inclusive',
   'rcerp_currencies', 'rcerp_companies', 'rcerp_requisitions',

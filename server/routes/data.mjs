@@ -1208,7 +1208,44 @@ if (key === 'rcerp_recent_docs') {
     const grand = blank();
     const byBranch = new Map();
     const byDay = new Map();
-    const byItem = new Map();
+    // ⭐ Keyed by recipeId, not posItemId. Measured 2026-10-07: seven products
+      //   each appeared TWICE in this table because Foodics carries them under
+      //   two POS codes that both resolve to one recipe -- عصير ربيع as sk-0075
+      //   and product-20, بيبسي as sk-0079 and product-15, and five more. Same
+      //   recipe, same price, same cost ratio, split across two rows.
+      //
+      //   The totals were never wrong, because they sum lines rather than rows.
+      //   The TABLE was wrong: it showed a duplicate product, which reads as
+      //   either a data error or a second product, and it split that product's
+      //   quantity so no single row could be trusted.
+      //
+      //   Fall back to the POS code only when no recipe resolved, so an
+      //   unpriced line is still counted somewhere rather than vanishing.
+      const byItem = new Map();
+      // ⭐ volume vs margin. A beverage at 71.50% food cost is not a pricing
+      //   failure -- it is a deliberate traffic driver that brings people in.
+      //   The operator confirmed this on 2026-10-07, and the measured numbers
+      //   back it up: beverages are 21.6% of the units sold but only 5.1% of
+      //   revenue, at 46.06% food cost, while the food itself runs 26.54% on
+      //   94.9% of revenue.
+      //
+      //   So the report must not average the two together and must not flag a
+      //   drink as needing repricing. The default comes from the recipe's own
+      //   `category` field, which is real data rather than a guess from the
+      //   name; an operator override wins over it, stored per recipe.
+      const ROLE_KEY = 'rcerp_food_cost_roles';
+      const roleOverride = getKV(ROLE_KEY);
+      const roleByRecipe = (roleOverride && typeof roleOverride === 'object' && !Array.isArray(roleOverride)) ? roleOverride : {};
+      const recipeById = new Map(recipes.map((r) => [r.id, r]));
+      const roleOf = (recipeId, posItemId) => {
+        const override = roleByRecipe[recipeId];
+        if (override === 'volume' || override === 'margin') return override;
+        const cat = recipeById.get(recipeId)?.category;
+        // ⛔ only `beverage` is treated as volume by default. Anything else --
+        //   including an unknown category -- stays a margin item, so a product
+        //   with a high food cost is never silently excused.
+        return cat === 'beverage' ? 'volume' : 'margin';
+      };
     let daysCovered = new Set();
     let unpricedRows = 0;
     let unpricedQty = 0;
@@ -1243,7 +1280,13 @@ if (key === 'rcerp_recent_docs') {
         t.qty += qty; t.revenue += revenue; t.cost += cost;
         t.foodicsRevenue += fxRevenue; t.foodicsCost += fxCost;
       }
-      const e = acc(byItem, l.posItemId, l.nameAr || l.nameEn || l.posItemId, Number(l.recipePrice) || 0);
+      const e = acc(byItem, l.recipeId || ('code:' + l.posItemId), l.nameAr || l.nameEn || l.posItemId, Number(l.recipePrice) || 0);
+      // ⭐ role is a property of the product, not of the POS code, so it is set
+      //   once here rather than per line. rec() would otherwise keep whichever
+      //   the first line happened to carry.
+      e.role = roleOf(l.recipeId, l.posItemId);
+      e.recipeId = l.recipeId || '';
+      e.category = recipeById.get(l.recipeId)?.category || '';
       e.qty += qty; e.revenue += revenue; e.cost += cost;
       e.foodicsRevenue += fxRevenue; e.foodicsCost += fxCost;
     }
@@ -1304,11 +1347,96 @@ if (key === 'rcerp_recent_docs') {
       byDay: [...byDay].map(([day, t]) => ({ day, ...shape(t) })).sort((a, b) => a.day.localeCompare(b.day)),
       byItem: [...byItem].map(([code, t]) => ({ code, ...t, ...shape(t) }))
         .sort((a, b) => b.revenue - a.revenue),
+
+        // ⭐⭐ THE SPLIT, and why the blended rate is no longer the headline.
+        //
+        //   A blended food-cost rate mixes two businesses. Measured on the live
+        //   data across 36 days:
+        //
+        //       volume (beverages)   46.06%   21.6% of units   5.1% of revenue
+        //       margin (food)        26.54%   78.4% of units  94.9% of revenue
+        //       blended              27.53%
+        //
+        //   The 1.01-point difference between blended and margin is entirely
+        //   the drinks. Blending hides two facts at once: it makes the drink
+        //   rates look like failures, and it makes the food margin look worse
+        //   than it is.
+        //
+        //   So the screen shows the margin rate as the headline -- that is the
+        //   number a pricing decision should act on -- and the volume rate as
+        //   information about a deliberate trade. `explain` carries the measured
+        //   shares so the screen can say why the two differ instead of just
+        //   asserting it.
+        split: (() => {
+          const mk = (role) => {
+            const g = [...byItem.values()].filter((t) => t.role === role);
+            const acc2 = blank();
+            for (const t of g) {
+              acc2.qty += t.qty; acc2.revenue += t.revenue; acc2.cost += t.cost;
+              acc2.foodicsRevenue += t.foodicsRevenue; acc2.foodicsCost += t.foodicsCost;
+            }
+            return { products: g.length, ...shape(acc2) };
+          };
+          const margin = mk('margin');
+          const volume = mk('volume');
+          return {
+            margin, volume,
+            explain: {
+              volumeQtySharePct: round(grand.qty > 0 ? volume.qty / grand.qty * 100 : 0),
+              volumeRevenueSharePct: round(grand.revenue > 0 ? volume.revenue / grand.revenue * 100 : 0),
+              marginRevenueSharePct: round(grand.revenue > 0 ? margin.revenue / grand.revenue * 100 : 0),
+              blendedFoodCostPct: shape(grand).foodCostPct,
+              marginRateGapPts: round(shape(grand).foodCostPct - margin.foodCostPct),
+              note: 'Volume items are deliberate traffic drivers, not pricing failures. '
+                + 'Their food cost is a cost of winning the customer; the margin rate is the number to act on.',
+            },
+          };
+        })(),
       unpriced: {
         rows: unpricedRows, quantity: round(unpricedQty),
         names: [...unpricedNames].map(([name, qty]) => ({ name, quantity: round(qty) })),
       },
     });
+  });
+
+  // ---- food-cost role override ----
+  // ⭐ The default role comes from the recipe's own `category`, so no seeding is
+  //   needed and it follows the data. This endpoint exists for the cases the
+  //   category cannot express: a drink that really is a margin item, or a food
+  //   item deliberately sold as a loss leader to pull customers in.
+  //
+  // ⛔ It writes ONE key, not the whole collection, and it validates the recipe
+  //   id against the live recipes. A typo would otherwise create a role for a
+  //   product that does not exist, which reads as a silent no-op forever.
+  app.post('/api/report/food-cost/role', (req, res) => {
+    const user = sessionUser(readToken(req));
+    if (!user) return res.status(401).json({ ok: false, error: 'غير مصرح' });
+    if (user.role !== 'admin' && user.role !== 'executive' && user.role !== 'cost_controller') {
+      return res.status(403).json({ ok: false, error: 'غير مسموح' });
+    }
+    const recipeId = typeof req.body?.recipeId === 'string' ? req.body.recipeId : '';
+    const role = req.body?.role;
+    if (!recipeId) return res.status(400).json({ ok: false, error: 'recipeId مطلوب' });
+    if (role !== 'volume' && role !== 'margin' && role !== null) {
+      return res.status(400).json({ ok: false, error: 'role يجب أن يكون volume أو margin أو null' });
+    }
+    const recipes = Array.isArray(getKV('rcerp_recipes')) ? getKV('rcerp_recipes') : [];
+    if (!recipes.some((r) => r && r.id === recipeId)) {
+      return res.status(400).json({ ok: false, error: 'الوصف غير موجود: ' + recipeId });
+    }
+    // ⭐ read, mutate, write -- and audit who decided, so a later reader can
+    //   tell a deliberate choice from the category default.
+    const prev = getKV(ROLE_KEY);
+    const map = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? { ...prev } : {};
+    if (role === null) delete map[recipeId];
+    else map[recipeId] = role;
+    try {
+      setKV(ROLE_KEY, map);
+      try { store.writeAudit(user, 'update', ROLE_KEY, { recipeId, role }); } catch { /* audit is best effort */ }
+    } catch {
+      return res.status(500).json({ ok: false, error: 'فشل الحفظ' });
+    }
+    res.json({ ok: true, recipeId, role, overrides: Object.keys(map).length });
   });
 
   // ---- مزامنة يدوية شاملة (Admin فقط) ----
