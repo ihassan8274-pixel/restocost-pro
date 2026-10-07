@@ -8,6 +8,20 @@ dist/
 # environment & secrets
 .env
 .env.local
+# ⛔⛔ ecosystem.config.cjs holds the LIVE secrets encryption key.
+#
+#   It is ignored deliberately and this is not an oversight. The pm2 config
+#   carries SECRETS_KEY in plaintext because the key must not depend on a file
+#   the build can overwrite -- that dependency is what broke secret decryption
+#   on 2026-10-07 and logged one failure per minute indefinitely.
+#
+#   Committing it would put the live AES key into git history permanently, where
+#   removing it later does not remove it. That is a strictly worse outcome than
+#   the config not being version-controlled on a single-operator machine.
+#
+#   If this file needs to be tracked for someone else, generate it from a
+#   template with the key read from the environment instead of hardcoded.
+ecosystem.config.cjs
 login.json
 test-login.json
 tools/.srvcred.json
