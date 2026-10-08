@@ -16,6 +16,7 @@ interface PeriodState {
   saveMonthlyInventoryCounts: (id: string, counted: Record<string, number>) => void;
   closeMonthlyInventory: (id: string, settlement?: {
     appliedAt?: string; shortages?: number; surplus?: number; netVariance?: number;
+    lines?: { rawMaterialId: string; delta: number }[];
   }) => void;
   deleteMonthlyInventory: (id: string) => void;
   reopenMonthlyInventory: (id: string) => void;
@@ -75,9 +76,13 @@ export const usePeriodStore = create<PeriodState>()(
 
 // إقفال الشهر: يطبّق تسوية الجرد على المخزون (فرق الدفتري عن الفعلي)،
 // ثم يقفل الشهر. كان يقفل فقط بلا تعديل للمخزون ولا قيد — فالفرق كان يختفي.
-// التطبيق يتم في MonthlyInventoryView (startMonthlyInventoryClose) لأنه يحتاج
-// الوصول إلى متجر المخزون+dفتر القيود؛ هنا نُبقي الفترة ونقفلها فقط.
-closeMonthlyInventory: (id, settlement?: { appliedAt?: string; shortages?: number; surplus?: number; netVariance?: number }) => {
+// التطبيق يتم في MonthlyInventoryView (closeWithSettlement) لأنه يحتاج
+// الوصول إلى متجر المخزون؛ هنا نُبقي الفترة ونقفلها فقط.
+//
+// ⭐ نحفظ سطور التسوية (settlementLines) لا مجاميعها فقط: العكس عند إعادة
+// الفتح يحتاج الأرقام لكل صنف. بالمجاميع وحدها كان يتكرر تطبيق نفس الفروق
+// على المخزون عند كل فتح/إقفال، فيتراكم العجز حتى يصير الرصيد سالباً.
+closeMonthlyInventory: (id, settlement?: { appliedAt?: string; shortages?: number; surplus?: number; netVariance?: number; lines?: { rawMaterialId: string; delta: number }[] }) => {
   const p = get().monthlyInventory.find((x) => x.id === id);
   if (!p) return;
   set((state) => ({
@@ -92,6 +97,7 @@ closeMonthlyInventory: (id, settlement?: { appliedAt?: string; shortages?: numbe
           settlementShortages: settlement.shortages ?? 0,
           settlementSurpluses: settlement.surplus ?? 0,
           settlementNetVariance: settlement.netVariance ?? 0,
+          settlementLines: settlement.lines || [],
         } : {}),
       }
       : x)),
@@ -107,13 +113,25 @@ closeMonthlyInventory: (id, settlement?: { appliedAt?: string; shortages?: numbe
       // كان set للمخزون الشهري ثم set لـclosedMonths. انقطاع بينهما =
       // الشهر ما زال «مفتوحاً» في سجل الإغلاق وبانتظار عدّ في شاشة الجرد —
       // فيُعدّ مرتين أو لا يُعدّ أصلاً. الآن set واحدة.
+      //
+      // ⭐ يُصفّر بصمة التسوية لأن الفترة عادت "قيد الجرد": أي تسوية
+      // مطبَّقة على المخزون يجب أن يعكسها MonthlyInventoryView قبل هذا النداء
+      // (reopenWithReversal) — هنا لا وصول لمتجر المخزون.
       reopenMonthlyInventory: (id) => {
         const p = get().monthlyInventory.find((x) => x.id === id);
         if (!p) return;
         if (p.status === 'counting') return;
         set((state) => ({
           monthlyInventory: state.monthlyInventory.map((x) =>
-            x.id === id ? { ...x, status: 'counting' as const } : x,
+            x.id === id ? {
+              ...x,
+              status: 'counting' as const,
+              settlementAppliedAt: undefined,
+              settlementShortages: undefined,
+              settlementSurpluses: undefined,
+              settlementNetVariance: undefined,
+              settlementLines: undefined,
+            } : x,
           ),
           closedMonths: state.closedMonths.filter((m) => m !== p.monthKey),
         }));

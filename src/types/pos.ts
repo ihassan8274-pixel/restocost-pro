@@ -35,6 +35,12 @@ export interface DeliverySale {
   payoutAmount: number; // الصافي المستلم فعلياً
   enteredBy?: string;
   createdAt?: string;
+  /**
+   * هل خُصمت مواد هذا السجل من المخزون فعلاً؟
+   * العكس عند الحذف يجب أن يُشترط بهذه البصمة لا بالإعداد الحالي: لو عُطّل
+   * الإعداد بعد الخصم وبقي السجل، لظل الخصم معلّقاً في المخزون بلا رجعة.
+   */
+  rawMaterialsDeducted?: boolean;
 }
 
 export interface CustomerOrderItem {

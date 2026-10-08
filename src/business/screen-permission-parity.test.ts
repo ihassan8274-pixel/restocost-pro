@@ -63,7 +63,7 @@ describe('تطابق صلاحية الشاشة مع صلاحية قراءة بي
     expect(canReadCollection({ role: 'waiter' }, 'rcerp_wastage', []).ok).toBe(false);
   });
 
-  it('counter لا يرى شNONE (mobile_count فقط — بلا شاشة في القائمة)', () => {
+  it('counter لا يرى ش NONE (mobile_count فقط — بلا شاشة في القائمة)', () => {
     expect(readableKeysFor('counter').has('rcerp_tasks')).toBe(false);
     expect(readableKeysFor('counter').has('rcerp_wastage')).toBe(false);
     // لكن مخزونه وجرده متاح

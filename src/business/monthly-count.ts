@@ -1,7 +1,14 @@
 // بناء سطور الجرد الشهري — منطق نقي مستخرج من useAppCompat (كان 1,277 سطراً
 // يجمع getters و getters وأفعال حالة في مكان واحد).
-// المعادلة: الرصيد النظري = افتتاحي + مشتريات معتمدة + تحويلات واردة
-//                          − تحويلات صادرة.
+//
+// ⭐ المعادلة (2026-10): الرصيد الدفتري = **دفتر الحركات**، لا افتتاحي + مشتريات.
+// السبب: الاستهلاك (المبيعات) غير مُسجَّل حركة في المخزون لأن إعداد "خصم
+// المبيعات" غير مُنفَّذ. فمعادلة "افتتاحي + مشتريات" رصيدٌ لا ينزل أبداً:
+// يرتفع مع كل استلام ويبقى معلّقاً رغم أن المخزون الحقيقي ينزف بالبيع. عند
+// الإقفال كان الفرق = استهلاك الشهر كله يُكتب حركة واحدة سالبة ضخمة باسم
+// "تسوية جرد"، فيصير الرصيد سالباً بلا حركة يدوية من المستخدم.
+// دفتر الحركات هو المرجع الوحيد: إن كان منه رصيد نستخدمه، وإلا نرجع
+// للمعادلة القديمة (سلوك ما قبل هذا الإصلاح، للمختبرات وللمستدعين القدامى).
 // الطرف المستهلِك يمرّر البيانات ويعيد MonthlyInventoryItem[]؛ لا حالة هنا.
 
 import type {
@@ -13,6 +20,12 @@ export interface MonthlyCountSources {
   grnNotes: Pick<GoodsReceiptNote, 'status' | 'branchId' | 'date' | 'items'>[];
   stockTransfers: Pick<StockTransfer, 'status' | 'fromBranchId' | 'toBranchId' | 'date' | 'items'>[];
   openingBalances: Pick<OpeningBalanceRecord, 'branchId' | 'date' | 'items'>[];
+  /**
+   * الرصيد الدفتري الفعلي من دفتر حركات المخزون.
+   * `undefined` ⇒ لا يوجد صف دفتر للصنف ⇒ ترجع الدالة للمعادلة القديمة.
+   * الصفر الصادق (دفتر يقول صفر) يُحترم ولا يُعامل كغياب.
+   */
+  ledgerBalanceOf?: (branchId: string, rawMaterialId: string) => number | undefined;
   /** متوسط تكلفة الفرع للصنف عند بداية الشهر. */
   unitCostOf: (branchId: string, rawMaterialId: string) => number;
 }
@@ -60,8 +73,16 @@ export const buildMonthlyCountItems = (
         .filter((i) => i.rawMaterialId === mid)
         .reduce((s, i) => s + (Number(i.quantity) || 0), 0), 0);
 
-    const rawTheoretical = openingQty + purchasedQty + transferredIn - transferredOut;
-    const theoreticalUsage = Math.max(0, rawTheoretical);
+    // الدفتر أولاً: إن كان له صف رصيد فهو المرجع (يشمل الاستهلاك المسجَّل
+    // كحركة: هدر، تصنيع، تحويلات). وإلا فالمعادلة القديمة احتياطاً.
+    const ledger = src.ledgerBalanceOf?.(branchId, mid);
+    const hasLedger = typeof ledger === 'number' && Number.isFinite(ledger);
+    const rawTheoretical = hasLedger
+      ? (ledger as number)
+      : openingQty + purchasedQty + transferredIn - transferredOut;
+    // بلا Math.max(0): كان يقصّ السالب ويخفي أن الدفتر عليه رصيد سالب.
+    // الصادق أن يظهر سالباً ويُراجَع، لا أن يُعرض صفراً.
+    const theoreticalUsage = rawTheoretical;
 
     // بلا حركة وبلا رصيد: لا صفّ يُدخله المستخدم ويضخّم الجدول بلا فائدة.
     if (rawTheoretical === 0 && openingQty === 0 && purchasedQty === 0 && transferredIn === 0 && transferredOut === 0) continue;

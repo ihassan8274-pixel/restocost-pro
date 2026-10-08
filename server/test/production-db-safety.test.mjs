@@ -1,6 +1,6 @@
 // server/test/production-db-safety.test.mjs
 //
-// ⛔⛔⛔ حارس دائم — يمنع تكرارincident 2026-10-05
+// ⛔⛔⛔ حارس دائم — يمنع تكرار incident 2026-10-05
 //
 //Incident: server/test/delta-bootstrap.test.mjs استدعى ensureStore().
 // store.mjs يحمّل server/.env تلقائياً ⇒ DATABASE_URL موجود ⇒

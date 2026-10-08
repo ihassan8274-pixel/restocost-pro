@@ -10,7 +10,7 @@ import {
   findRawBacktickEscapes,
   findReplacementChars,
   scanSource,
-} from '../source-script.mjs';
+} from '../src/modules/utils/source-script.ts';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 

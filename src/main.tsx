@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { applyTheme } from './context/domains/ui';
+import { applyTheme } from './utils/theme';
 
 // Apply the persisted theme before the first paint. React state is not ready
 // this early, so read the same localStorage key the store persists to and set

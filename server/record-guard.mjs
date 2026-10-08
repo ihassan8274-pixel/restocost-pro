@@ -72,7 +72,7 @@ export const sanitizeRecords = (records) => {
       continue;
     }
 
-    // نسخة نظيفة: ننسخ الحقول الصريحة فقط، فتختفي مفاتيح التسميمChronologically.
+    // نسخة نظيفة: ننسخ الحقول الصريحة فقط، فتختفي مفاتيح التسميم السامّة.
     const out = {};
     for (const [k, v] of Object.entries(rec)) {
       if (POISON.has(k)) continue;

@@ -1,15 +1,24 @@
-version: '3.8'
+# ============================================================
+# docker-compose.yml — full local/production-like stack
+# ============================================================
+# Secrets are NOT defaulted. `${VAR:?message}` makes compose fail loudly at
+# parse time instead of silently booting with a well-known dev secret (the
+# previous `${JWT_SECRET:-dev-secret-change-in-production}` fallback is exactly
+# the kind of default that ships to production unnoticed).
+# Put real values in the repo-root .env (compose reads it automatically).
 
 services:
   postgres:
     image: postgres:16-alpine
     container_name: restocost-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: restocost
       POSTGRES_USER: restocost
-      POSTGRES_PASSWORD: restocost123
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required - add it to .env}
     ports:
-      - "5432:5432"
+      # Host port 5438: 5432/5433/15432 are already taken on this machine.
+      - "5438:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -17,26 +26,76 @@ services:
       test: ["CMD-SHELL", "pg_isready -U restocost -d restocost"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
+    networks:
+      - restocost-net
 
-  app:
-    build: .
-    container_name: restocost-app
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: restocost-server
+    restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://restocost:restocost123@postgres:5432/restocost
-      JWT_SECRET: dev-secret-change-in-production
-      CORS_ORIGIN: http://localhost:5173
-      NODE_ENV: development
-      PORT: 3032
+      DATABASE_URL: postgresql://restocost:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/restocost
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required - add it to .env}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required - add it to .env}
+      # server/.env is excluded from the build context (see .dockerignore), so
+      # SECRETS_KEY must be injected here or auth falls back to a default.
+      SECRETS_KEY: ${SECRETS_KEY:?SECRETS_KEY is required - add it to .env}
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3033
+      # CORS_ORIGIN removed (P1-4): it was declared here and in both .env files
+      # but NO file in server/ src/ or api/ ever read it — a config knob that
+      # silently did nothing. CORS is not needed anywhere in this system:
+      #   dev        -> vite.config.ts proxies /api to the backend (same origin)
+      #   docker     -> nginx-spa.conf proxies /api (same origin)
+      #   production -> same nginx proxy
+      # and auth is Bearer-header only, so there is no cookie to protect either.
     ports:
-      - "3032:3032"
+      - "3033:3033"
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev
+    networks:
+      - restocost-net
+    healthcheck:
+      # /api/health returns 503 when PostgreSQL is unreachable, so this also
+      # proves the DB link is live — not just that the process is up.
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3033/api/health',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: restocost-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      server:
+        condition: service_started
+    networks:
+      - restocost-net
+    healthcheck:
+      # 127.0.0.1, not localhost: in the alpine image `localhost` resolves to ::1
+      # first, which was refused while nginx only bound 0.0.0.0 — the container
+      # was flagged unhealthy while serving traffic correctly.
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 volumes:
   postgres_data:
+
+networks:
+  restocost-net:
+    driver: bridge

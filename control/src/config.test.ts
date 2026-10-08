@@ -177,7 +177,7 @@ ${posBlock}`;
     // ⭐ لماذا نفصل هذا: كتبت أولاً اختباراً يفترض أن `source: foodics `
     //    يصل كـ "foodics " رابطاً بفراغ، فمرّ. القياس أثبت العكس:
     //    YAML parser يقصّ الفراغ من طرفَي scalar العادي قبل أن تصل
-    //    القيمة إلى كودنا. أي أنWhitespace غير قابل للوصول من
+    //    القيمة إلى كودنا. أي أن الـ whitespace غير قابل للوصول من
     //    ملف YAML إطلاقاً.
     //    الخطر الحقيقي ينتقل إلى الـ API: PATCH يقبل JSON فيه
     //    "foodics " كما هو. لهذا يبقى الفحص في assertValue vicinity
@@ -201,7 +201,7 @@ ${posBlock}`;
   });
 
   it('[CFG-21] ⭐ a company with NO pos block is ALLOWED (optional)', async () => {
-    // ⭐ لازم يمرّ. الشركة قد تُضاف قبل ما يُdecided نظام الـ POS،
+    // ⭐ لازم يمرّ. الشركة قد تُضاف قبل ما يُقرَّر نظام الـ POS،
     //    و" absence " reason لرفض الإضافة كلها.
     write(yml(''));
     const { resetCache, loadConfig } = await import('./config.js');

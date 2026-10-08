@@ -25,7 +25,13 @@ interface LegacyCompatState {
   globalTargetMarginPercent: number;
   vatPercent: number;
   vatInclusive: boolean;
-  deductSalesFromInventory: boolean;
+  // ⭐ أُزيل deductSalesFromInventory من هنا. كان يقرأه ولا يكتبه شيء —
+  // ظلّ ميت كان يجعل شارة الضبط تعرض قيمة لا تساوي ما يُضغط عليه:
+  //   - writes : legacy.setDeductSalesFromInventory  (بلا markPending ⇒ لا تُرفع)
+  //   - reads  : financialStore.deductSalesFromInventory (صاحب المزامنة)
+  //   - server : collectionSources ⇒ legacy
+  // ⇒ زرّ "مفعّل" لم يكن يُغيّر شيئاً مرئياً ولا مُفعِّل الخصم.
+  // المالك الوحيد الآن: src/context/domains/financial (له markPending + Hydrate).
 
   setRawMaterials: (v: RawMaterial[]) => void;
   setWastageLogs: (v: WastageLog[]) => void;
@@ -39,7 +45,7 @@ interface LegacyCompatState {
   setGlobalTargetMarginPercent: (v: number) => void;
   setVatPercent: (v: number) => void;
   setVatInclusive: (v: boolean) => void;
-  setDeductSalesFromInventory: (v: boolean) => void;
+  // setDeductSalesFromInventory انتقل إلى src/context/domains/financial (المالك).
 
   tombstoneIds: (ids: string[]) => void;
   dropTombstoneIds: (ids: string[]) => void;
@@ -65,10 +71,6 @@ export const useLegacyCompatStore = create<LegacyCompatState>()(
       globalTargetMarginPercent: 30,
       vatPercent: 0,
       vatInclusive: true,
-      // الافتراضي: لا خصم. تكلفة المبيعات تُحسب بالجرد (الجرد الأول + المشتريات
-      // − الجرد الأخير). الخصم التلقائي يجعل الرصيد سالباً عند نقص استلام
-      // مقابل كثرة البيع، وهو ما حدث في بيانات 9–16 سبتمبر (14,491 وحدة سالبة).
-      deductSalesFromInventory: false,
 
       setRawMaterials: (rawMaterials) => set({ rawMaterials }),
       setWastageLogs: (wastageLogs) => set({ wastageLogs }),
@@ -82,7 +84,6 @@ export const useLegacyCompatStore = create<LegacyCompatState>()(
       setGlobalTargetMarginPercent: (globalTargetMarginPercent) => set({ globalTargetMarginPercent }),
       setVatPercent: (vatPercent) => set({ vatPercent }),
       setVatInclusive: (vatInclusive) => set({ vatInclusive }),
-      setDeductSalesFromInventory: (deductSalesFromInventory) => set({ deductSalesFromInventory }),
 
       tombstoneIds: (ids) => set((state) => ({ deletedIds: Array.from(new Set([...state.deletedIds, ...ids])) })),
 

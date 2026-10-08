@@ -3,6 +3,7 @@
 // closes the /api/bootstrap key-leak and makes AI work from any logged-in device.
 import { readToken, sessionUser } from '../core.mjs';
 import { store } from '../store.mjs';
+import rateLimit from 'express-rate-limit';
 import { decryptSecret } from '../secrets.mjs';
 
 const VALID_PROVIDERS = ['openai', 'gemini', 'groq', 'openrouter', 'local', 'custom'];
@@ -146,10 +147,18 @@ const testModel = async (cfg) => {
   }
 };
 
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { ok: false, error: 'طلبات كثيرة — أعد المحاولة بعد دقيقة' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export const registerAI = (app) => {
   // Any authenticated user can ask the server to call the configured model â€”
   // the server answers using its stored key; the key never leaves the server.
-  app.post('/api/ai/chat', async (req, res) => {
+  app.post('/api/ai/chat', aiLimiter, async (req, res) => {
     const user = sessionUser(readToken(req));
     if (!user) return res.status(401).json({ ok: false, error: 'ط؛ظٹط± ظ…طµط§ط¯ظ‚' });
     const body = req.body || {};
@@ -164,7 +173,7 @@ export const registerAI = (app) => {
   });
 
   // Admin-only: test a saved model (by id) or a freshly typed key (by provider).
-  app.post('/api/ai/test', async (req, res) => {
+  app.post('/api/ai/test', aiLimiter, async (req, res) => {
     const user = sessionUser(readToken(req));
     if (!user) return res.status(401).json({ ok: false, error: 'ط؛ظٹط± ظ…طµط§ط¯ظ‚' });
     if (user.role !== 'admin') return res.status(403).json({ ok: false, error: 'ط؛ظٹط± ظ…طµط±ط­' });

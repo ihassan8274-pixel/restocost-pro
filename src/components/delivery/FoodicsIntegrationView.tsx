@@ -44,7 +44,7 @@ const FoodicsIntegrationView: React.FC = () => {
     recipes, branches, visibleBranchIds,
     batchSalesRecords, addBatchSalesRecord, deleteBatchSalesRecord,
     deliverySales, addDeliverySale, deleteDeliverySale,
-    calculateRecipeCosts, showToast, vatPercent,
+    calculateRecipeCosts, showToast, vatPercent, deductSalesFromInventory,
   } = useApp();
 
   const [tab, setTab] = useState<TabId>('import');
@@ -239,6 +239,9 @@ const FoodicsIntegrationView: React.FC = () => {
 
     const dateStr = dateOverride || new Date().toISOString().slice(0, 10);
     const vatRate = vatPercent / 100;
+    // ⭐ الاستيراد كان يقول "مخصوم المخزون" في شارة كل سجل بلا ما يخصم شيئاً.
+    // الآن الرسالة تقول ما حدث فعلاً حسب الإعداد.
+    const stockNote = deductSalesFromInventory ? ' — وخُصمت المواد من المخزون' : ' — ولم يُخصم المخزون (الإعداد معطّل)';
 
     const grouped = new Map<string, MappedRow[]>();
     matchedRows.forEach((r) => {
@@ -287,7 +290,7 @@ const FoodicsIntegrationView: React.FC = () => {
         addDeliverySale(sale);
         deliveryCount++;
       });
-      showToast(`تم استيراد ${deliveryCount} سجل طلبات توصيل — يظهر في تطبيقات التوصيل`);
+      showToast(`تم استيراد ${deliveryCount} سجل طلبات توصيل — يظهر في تطبيقات التوصيل${stockNote}`);
     } else {
       let batchCount = 0;
       grouped.forEach((items, branchName) => {
@@ -327,7 +330,7 @@ const FoodicsIntegrationView: React.FC = () => {
         });
         batchCount++;
       });
-      showToast(`تم استيراد ${batchCount} سجل مبيعات مجمعة — يظهر في شاشة المبيعات`);
+      showToast(`تم استيراد ${batchCount} سجل مبيعات مجمعة — يظهر في شاشة المبيعات${stockNote}`);
     }
 
     setRawRows([]);

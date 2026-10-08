@@ -30,10 +30,14 @@ export const DailyInventoryView: React.FC = () => {
   const visibleBranches = branches.filter((b) => visibleBranchIds.includes(b.id));
   const branchItems = rawMaterials.filter((m) => m.isActive);
 
-  // Previous balance: latest daily count for branch+item before selected date, else current inventory
+  // Previous balance: latest daily count for branch+item STRICTLY BEFORE the
+  // selected date, else current inventory.
+  // ⭐ كان `<= date`: فيحسب جرد اليوم نفسه مرتين — الافتتاحي = عدد اليوم،
+  // ثم تُضاف مشتريات اليوم ثانية. النتيجة: متاح نظري مضاعف، والمستهلك
+  // يظهر سالباً بلا حركة حقيقية.
   const openingOf = (rmId: string) => {
     const prior = dailyCounts
-      .filter((d) => d.branchId === branch && d.date <= date)
+      .filter((d) => d.branchId === branch && d.date < date)
       .sort((a, b) => b.date.localeCompare(a.date))[0];
     const priorItem = prior?.items.find((i) => i.rawMaterialId === rmId);
     if (priorItem) return priorItem.countedQty;
@@ -61,7 +65,10 @@ export const DailyInventoryView: React.FC = () => {
     const openingQty = openingOf(m.id);
     const purchasedQty = purchasedOf(m.id);
     const theoreticalQty = openingQty + purchasedQty;
-    const countedQty = counts[m.id] !== undefined && counts[m.id] !== '' ? toNum(counts[m.id]) : theoreticalQty;
+    // خانة حرة (inputMode decimal): أي نص غير رقمي كان يُنتج NaN يتسرّب إلى
+    // المستهلك والقيمة ويُحفظ في السجل. نُسقطه إلى النظري بدل نشر NaN.
+    const parsed = counts[m.id] !== undefined && counts[m.id] !== '' ? toNum(counts[m.id]) : NaN;
+    const countedQty = Number.isFinite(parsed) ? parsed : theoreticalQty;
     const consumedQty = theoreticalQty - countedQty;
     const unitCost = getAverageUnitCost(m.id);
     return {

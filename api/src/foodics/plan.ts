@@ -454,3 +454,62 @@ export function exportPlanStats(dir: string, plan: IngestPlan): string {
   writeFileSync(file, body, 'utf8');
   return file;
 }
+
+/**
+ *  Machine-readable ingest plan -- the counterpart to `exportPlanStats`.
+ *
+ *  This was documented in README.md as part of the `plan.ts` surface
+ *  (`buildIngestPlan() + exportPlanJSON/CSV`) but was never implemented; the
+ *  only exporters that existed were `exportCanonicalCSV` (the rows) and
+ *  `exportPlanStats` (a human-readable eyeball report). A consumer that wants
+ *  the plan -- stats, rejections, dedupe conflicts AND the rows -- had to reach
+ *  into `plan.deduped` and re-derive everything itself.
+ *
+ *  Contract matches its siblings: takes `(dir, plan)`, creates `dir` if it is
+ *  missing, writes the file, and returns its path. The row objects use exactly
+ *  the same field names as `CANONICAL_CSV_HEADER`, so the JSON and CSV exports
+ *  are interchangeable column-for-column.
+ */
+export function exportPlanJSON(dir: string, plan: IngestPlan): string {
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, 'ingest-plan.json');
+
+  const rows: Record<string, unknown>[] = [];
+  for (const d of plan.deduped) {
+    const grouped = d.canonical.groupBy === GROUP_BY_PRODUCT;
+    for (const line of d.canonical.lines) {
+      if (line.isTotal) continue;
+      rows.push({
+        sourceFile: line.sourceFile,
+        branchRef: line.branchRef,
+        branchNameAr: line.branchName,
+        itemCode: line.itemCode,
+        productNameAr: line.productName,
+        sales: line.sales,
+        cost: line.cost,
+        qty: line.qty,
+        profit: line.profit,
+        dateFrom: line.dateFrom,
+        dateTo: line.dateTo,
+        isGroupedByProduct: grouped,
+      });
+    }
+  }
+
+  const body = {
+    generatedAt: new Date().toISOString(),
+    root: plan.root,
+    stats: plan.stats,
+    rejected: plan.rejected,
+    // Conflicts are flattened out of the per-report groupings: a consumer
+    // usually wants "every key that disagrees", not a nested walk.
+    dedupeConflicts: plan.deduped
+      .filter((d) => d.conflicts.length)
+      .flatMap((d) => d.conflicts.map((c) => ({ ...c, rowCount: c.rows.length }))),
+    rowCount: rows.length,
+    rows,
+  };
+
+  writeFileSync(file, JSON.stringify(body, null, 2) + '\n', 'utf8');
+  return file;
+}

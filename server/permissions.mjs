@@ -114,6 +114,11 @@ const KEY_PERMISSION = {
   rcerp_reservations: 'manage_reservations',
   rcerp_invoices: 'manage_invoices',
   rcerp_batch_sales: 'manage_batch_sales',
+  // ⭐ Foodics import. Writing either one is the import; reading them feeds the
+  //   food-cost report. Same permission as manual batch sales, because they are
+  //   the same business fact arriving by a different route.
+  rcerp_pos_lines: 'manage_batch_sales',
+  rcerp_pos_batches: 'manage_batch_sales',
   // ---- المالية ----
   rcerp_accounts: 'manage_accounting',
   rcerp_journal: 'manage_accounting',
@@ -301,6 +306,13 @@ export const BRANCH_SCOPED_KEYS = new Set([
   'rcerp_attendance', 'rcerp_payroll', 'rcerp_employee_meals', 'rcerp_wastage',
   'rcerp_production_runs', 'rcerp_work_orders', 'rcerp_butcher_tests',
   'rcerp_monthly_inventory', 'rcerp_eod_closures', 'rcerp_intake_inbox',
+  // ⭐ rcerp_pos_lines carries `branchRef` (B02, B08...), NOT the `branchId`
+  //   (b-1786...) that scopeToBranches filters on. Leaving it out of this set
+  //   would send every branch's sales to every branch manager; adding it as-is
+  //   would silently filter everything out, because no record has a `branchId`.
+  //   It is therefore scoped inside the food-cost route instead, which
+  //   understands the ref. Measured: 12 refs, all stable across 744 files.
+  //   rcerp_pos_batches is per-file provenance, company-wide by nature.
 ]);
 
 /**

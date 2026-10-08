@@ -1,0 +1,47 @@
+{
+  // =========================================================================
+  //  server/tsconfig.json — طبقة الأنواع لخادم RestoCost
+  //
+  //  الهدف: بناء server/ إلى server/dist/ مع الحفاظ على ESM (NodeNext).
+  //
+  //  allowJs : true  — ملفات .mjs/.js تدخل البرنامج
+  //  checkJs : false — لا تُفحص، فلا ينهار شيء
+  //  strict  : true  — يطبّق على ملفات .ts وحدها
+  //  outDir  : "./dist"  — المخرجات هنا
+  //  rootDir : "."       — الجذر هو server/ نفسه
+  //
+  //  قُنعت على api/tsconfig.json — إعداد مُثبت أنه ينجح في هذا المستودع.
+  //  module/moduleResolution = NodeNext مطلوب: كود الخادم ESM يستورد بامتداد
+  //  صريح ('./core.mjs')، وهذا ما يتطلّبه NodeNext تماماً.
+  // =========================================================================
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["**/*"],
+  "exclude": [
+    "node_modules",
+    "dist/**/*",
+    "data",
+    "logs",
+    "backups",
+    "backup-archive",
+    "test/**/*",
+    "tests/**/*"
+  ]
+}

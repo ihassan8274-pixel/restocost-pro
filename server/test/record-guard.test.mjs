@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { sanitizeRecords, moneyKeyCount } from '../record-guard.mjs';
+import { sanitizeRecords, moneyKeyCount } from '../src/modules/utils/record-guard.js';
 
 // ── هل الحارس موصول فعلاً؟ ──
 // دالة ممتازة لا تفيد شيئاً إن لم تُستدعَ. هذا الاختبار يمنع أن becomes
@@ -9,7 +9,7 @@ import { sanitizeRecords, moneyKeyCount } from '../record-guard.mjs';
 test('الحارس موصول بنقطة الكتابة، وقبل الدمج لا بعده', () => {
   const src = fs.readFileSync(new URL('../routes/data.mjs', import.meta.url), 'utf8');
   assert.ok(
-    /import\s*\{[^}]*\bsanitizeRecords\b[^}]*\}\s*from\s*'\.\.\/record-guard\.mjs'/.test(src),
+    /import\s*\{[^}]*\bsanitizeRecords\b[^}]*\}\s*from\s*'\.\.\/src\/modules\/utils\/record-guard\.js'/.test(src),
     'data.mjs لا يستورد sanitizeRecords — الحارس غير موصول',
   );
   const callIdx = src.indexOf('sanitizeRecords(incomingData)');

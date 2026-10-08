@@ -60,7 +60,7 @@ export const META = {
 
 /**
  *  ⭐ الأعمدة التي نحتاجها فعلاً.
- *  Ba는وnstجب كل الـ19: كل عمود مش مطروح في السطر ده لا يُقرأ ولا
+ *  Ba يجب كل الـ19: كل عمود مش مطروح في السطر ده لا يُقرأ ولا
  *  يُخزَّن — لا "احتياطياً للمستقبل" ولا بأسماء أعمدة في الـDB.
  */
 export const REQUIRED_COLUMNS = [
@@ -93,7 +93,7 @@ export type ReportLayout = 'by_branch' | 'by_product';
 export interface ResolvedColumns {
   layout: ReportLayout;
   headerRow: number;
-  /** ⭐ التسمية ⇒ موضعها. كل قراءة بتROCي من هنا، لا بموضع مكتوب. */
+  /** ⭐ التسمية ⇒ موضعها. كل قراءة بـ ROC من هنا، لا بموضع مكتوب. */
   index: ReadonlyMap<string, number>;
 }
 

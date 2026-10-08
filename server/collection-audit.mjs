@@ -11,7 +11,7 @@
 //
 // الدوال هنا خالصة بلا I/O، تُختبر وحدها.
 
-import { isMoneyKey } from './record-guard.mjs';
+import { isMoneyKey } from '../src/modules/utils/record-guard.ts';
 
 // عدد التغييرات المُدرجة في سطر واحد. تجاوزها يُختصر بالعدد لا تُقطع قائمة.
 const MAX_LISTED = 12;

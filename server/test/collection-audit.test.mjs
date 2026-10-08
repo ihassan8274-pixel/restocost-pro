@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { summarizeChange, summarizeDelete } from '../collection-audit.mjs';
+import { summarizeChange, summarizeDelete } from '../src/modules/utils/collection-audit.js';
 
 // ── لماذا diff لا تسجيل_كل_طلب ──
 // نقطة الكتابة تُستدعى عند كل مزامنة. لو سجّلنا كل طلب، امتلأ السجل بضجيج
@@ -133,7 +133,7 @@ test('حذف بلا معرّفات → null', () => {
 test('التدقيق موصول بنقطة الكتابة، وعلى مسارَي الدمج والاستبدال', () => {
   const src = fs.readFileSync(new URL('../routes/data.mjs', import.meta.url), 'utf8');
   assert.ok(
-    /import\s*\{[^}]*\bsummarizeChange\b[^}]*\}\s*from\s*'\.\.\/collection-audit\.mjs'/.test(src),
+    /import\s*\{[^}]*\bsummarizeChange\b[^}]*\}\s*from\s*'\.\.\/src\/modules\/utils\/collection-audit\.js'/.test(src),
     'data.mjs لا يستورد summarizeChange — التدقيق غير موصول',
   );
   // يجب أن يُستدعى على مسار الدمج (after: retained) وعلى مسار الاستبدال

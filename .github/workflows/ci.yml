@@ -1,0 +1,277 @@
+name: CI — RestoCost ERP Pro
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install (incl. dev deps — tsc + vitest need them)
+        run: npm ci
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Type check api/ (separate tsconfig — the root one only includes src/)
+        run: npx tsc --noEmit -p api/tsconfig.json
+
+      - name: Unit + integration tests (node:test)
+        run: npm test
+
+      - name: Vitest (everything)
+        # `vitest run src/` does NOT scope to src/ — vitest treats the arg as a
+        # name filter, and every root in vitest.config.ts include[] contains
+        # "src" (src/, server/test/repo/, control/src/, api/src/).
+        #
+        # api/ used to be excluded here with the justification that
+        # plan.test.ts called `exportPlanJSON` (never implemented) and read
+        # real files off disk (non-deterministic). Both reasons are now void:
+        #   * exportPlanJSON exists (api/src/foodics/plan.ts) and is covered by
+        #     [PX-19], which pins it to the CSV export row-for-row.
+        #   * the disk-dependent suites are `describe.skipIf(!realTreePresent)`
+        #     — on a clean runner the tree is absent, they skip, and the rest
+        #     builds a synthetic tree in a temp dir.
+        # Verified locally: 75/75 on three consecutive runs, identical counts.
+        # Do NOT re-exclude api/, and do NOT paper over a failure with `|| true`.
+        run: npx vitest run --exclude "**/node_modules/**"
+
+      - name: Production build
+        run: npx vite build
+
+      - name: Upload dist
+        if: matrix.node == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.server
+          push: false
+          load: true
+          tags: restocost-server:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: false
+          load: true
+          tags: restocost-web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ─────────────────────────────────────────────────────────────────────
+      # The stack is brought up by hand rather than with `docker compose` or a
+      # GH `services:` block, for two deliberate reasons:
+      #
+      #   1. nginx-spa.conf does `proxy_pass http://server:3033`. That name is
+      #      only resolvable on a shared USER-DEFINED network (Docker's embedded
+      #      DNS, 127.0.0.11). GH service containers live on the runner's
+      #      default bridge, which the web container cannot join — so a
+      #      `services:` setup would silently change the topology being tested.
+      #   2. The container must be named exactly `server`, matching compose.
+      #
+      # Getting this topology wrong is how the original bug shipped: every
+      # container reported healthy while `fetch('/api/health')` inside the page
+      # returned `index.html`.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Stack up — postgres + server + web on one network
+        run: |
+          set -euo pipefail
+          docker network create e2e
+
+          docker run -d --name postgres --network e2e \
+            -e POSTGRES_USER=restocost \
+            -e POSTGRES_PASSWORD=ci-smoke-password-ci-smoke \
+            -e POSTGRES_DB=restocost \
+            postgres:16-alpine
+
+          docker run -d --name server --network e2e \
+            -e JWT_SECRET=ci-smoke-jwt-secret-ci-smoke-jwt-secret-0123456789abcdef \
+            -e SESSION_SECRET=ci-smoke-session-secret-0123456789abcdef0123456789 \
+            -e SECRETS_KEY=ci-smoke-secrets-key-0123456789abcdef0123456789abcdef \
+            -e NODE_ENV=production \
+            -e PORT=3033 \
+            -e DATABASE_URL="postgresql://restocost:ci-smoke-password-ci-smoke@postgres:5432/restocost" \
+            restocost-server:ci
+
+          docker run -d --name web --network e2e -p 8080:80 restocost-web:ci
+
+          # The entrypoint runs `npx prisma migrate deploy` before the server
+          # listens, so this gate proves the image boots AND migrates AND comes
+          # out the other side serving — not merely that a container started.
+          # Probed through nginx, i.e. through the same proxy the browser uses.
+          healthy=0
+          for i in $(seq 1 45); do
+            code=$(curl -s -o /tmp/rc-health.json -w '%{http_code}' http://127.0.0.1:8080/api/health || true)
+            if [ "$code" = "200" ]; then
+              healthy=1
+              echo "healthy after ${i} attempt(s)"
+              break
+            fi
+            echo "attempt ${i}: HTTP ${code:-none}"
+            sleep 2
+          done
+
+          echo "--- /api/health through nginx ---"
+          cat /tmp/rc-health.json 2>/dev/null || echo "(no body)"
+          echo
+
+          if [ "$healthy" != "1" ]; then
+            echo "::error::stack never became healthy"
+            docker logs server 2>&1 | tail -60 || true
+            docker logs web 2>&1 | tail -40 || true
+            exit 1
+          fi
+          # A silent backend swap is exactly the failure this gate exists to
+          # catch: `SELECT 1` succeeded against a database with ZERO tables.
+          if ! grep -q '"backend":"postgresql"' /tmp/rc-health.json; then
+            echo "::error::expected backend postgresql (silent fallback?)"
+            exit 1
+          fi
+          if ! grep -q '"db":"ok"' /tmp/rc-health.json; then
+            echo "::error::expected db ok"
+            exit 1
+          fi
+
+      - name: Schema — migrations really created the tables
+        # Health answering 200 proves nothing on its own; the original probe
+        # was `SELECT 1`, which is happy against an empty database. The check
+        # lives in a committed file rather than an inline `node -e "..."`,
+        # because that would survive two layers of quoting in a step that has
+        # never run anywhere — one missing backslash and the assertion becomes
+        # a syntax error that still exits non-zero, but for the wrong reason.
+        # Copied to /app so `@prisma/client` resolves against the image's
+        # node_modules (a file run from /tmp would not find it).
+        run: |
+          set -euo pipefail
+          docker cp scripts/ci-schema-check.cjs server:/app/chk.cjs
+          docker exec server node /app/chk.cjs
+
+      # ─────────────────────────────────────────────────────────────────────
+      # E2E — the critical path, driven against the PUBLIC origin exactly as a
+      # user experiences it: register → bootstrap → logout → login → wrong
+      # password. Every step asserts the response is JSON, so the "nginx
+      # swallowed /api and returned index.html" bug cannot come back green.
+      # No dependencies to install: global fetch on the runner's Node.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: E2E — critical path through nginx
+        run: E2E_BASE_URL=http://127.0.0.1:8080 node scripts/e2e-api.mjs
+
+      - name: Security headers on the SPA (nginx is what serves the HTML)
+        # server/index.js also sets these, but it only ever answers /api/*.
+        # The page itself comes from nginx, which originally had none at all.
+        run: |
+          set -euo pipefail
+          curl -s -D /tmp/rc-h.txt -o /tmp/rc-index.html http://127.0.0.1:8080/
+          head -c 60 /tmp/rc-index.html; echo
+          for h in content-security-policy strict-transport-security \
+                   x-content-type-options x-frame-options referrer-policy; do
+            if grep -qi "$h" /tmp/rc-h.txt; then
+              echo "  OK   $h"
+            else
+              echo "::error::missing $h on the SPA"
+              cat /tmp/rc-h.txt
+              exit 1
+            fi
+          done
+
+          # An app route must still fall back to index.html (SPA routing works).
+          curl -s -D - -o /tmp/rc-route.html http://127.0.0.1:8080/reports | head -1
+          grep -qi '<!doctype html>' /tmp/rc-route.html || {
+            echo "::error::SPA fallback broken on /reports"
+            exit 1
+          }
+
+      # ─────────────────────────────────────────────────────────────────────
+      # Fail-fast (P0-2). With DATABASE_URL unreachable, production must REFUSE
+      # to start rather than swap in an empty SQLite file and keep accepting
+      # writes that PostgreSQL never sees. This is the regression guard for
+      # silent data loss.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Fail-fast — an unreachable DB must refuse to start
+        run: |
+          set -euo pipefail
+          docker run -d --name rc-dark \
+            -e JWT_SECRET=ci-smoke-jwt-secret-ci-smoke-jwt-secret-0123456789abcdef \
+            -e SESSION_SECRET=ci-smoke-session-secret-0123456789abcdef0123456789 \
+            -e SECRETS_KEY=ci-smoke-secrets-key-0123456789abcdef0123456789abcdef \
+            -e NODE_ENV=production \
+            -e DATABASE_URL="postgresql://u:p@10.255.255.1:5432/none" \
+            restocost-server:ci
+
+          # The entrypoint retries 6 times (connect timeout + 3s backoff each),
+          # so allow up to 120s before declaring it wrongly kept running.
+          status="running"
+          for i in $(seq 1 40); do
+            status=$(docker inspect -f '{{.State.Status}}' rc-dark 2>/dev/null || echo unknown)
+            if [ "$status" = "exited" ]; then
+              break
+            fi
+            sleep 3
+          done
+          code=$(docker inspect -f '{{.State.ExitCode}}' rc-dark 2>/dev/null || echo -1)
+
+          echo "--- rc-dark log (tail) ---"
+          docker logs rc-dark 2>&1 | tail -40
+          docker rm -f rc-dark || true
+
+          echo "final status=${status} exit=${code}"
+          if [ "$status" != "exited" ]; then
+            echo "::error::container kept running against an unreachable database — silent data loss is back"
+            exit 1
+          fi
+          if [ "$code" = "0" ]; then
+            echo "::error::container exited 0 — expected a non-zero refusal"
+            exit 1
+          fi
+
+      - name: Logs on failure
+        if: failure()
+        run: |
+          echo "--- docker ps -a ---"
+          docker ps -a || true
+          for c in postgres server web; do
+            echo "--- $c ---"
+            docker logs "$c" 2>&1 | tail -80 || true
+          done
+
+      - name: Teardown
+        if: always()
+        run: docker rm -f postgres server web >/dev/null 2>&1 || true

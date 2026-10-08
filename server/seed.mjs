@@ -10,16 +10,17 @@ import bcrypt from 'bcrypt';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEMO_USERS = [
-  { email: 'admin@restocost.com', password: 'admin123', name: 'مدير النظام', role: 'admin', branchId: 'all' },
-  { email: 'ceo@restocost.com', password: 'ceo123', name: 'أحمد السفير', role: 'executive', branchId: 'all' },
-  { email: 'cost@restocost.com', password: 'cost123', name: 'طارق عبدالمقصود', role: 'cost_controller', branchId: 'all' },
-  { email: 'saud@restocost.com', password: 'saud123', name: 'سعود المطيري', role: 'branch_manager', branchId: 'b-01' },
-  { email: 'chef@restocost.com', password: 'chef123', name: 'إبراهيم العلي', role: 'chef', branchId: 'b-ck' },
-  { email: 'store@restocost.com', password: 'store123', name: 'علي الشمري', role: 'storekeeper', branchId: 'b-ck' },
+  { email: 'admin@restocost.com', password: process.env.ADMIN_PASSWORD || crypto.randomBytes(12).toString('hex'), name: 'مدير النظام', role: 'admin', branchId: 'all' },
+  { email: 'ceo@restocost.com', password: process.env.CEO_PASSWORD || crypto.randomBytes(12).toString('hex'), name: 'أحمد السفير', role: 'executive', branchId: 'all' },
+  { email: 'cost@restocost.com', password: process.env.COST_PASSWORD || crypto.randomBytes(12).toString('hex'), name: 'طارق عبدالمقصود', role: 'cost_controller', branchId: 'all' },
+  { email: 'saud@restocost.com', password: process.env.SAUD_PASSWORD || crypto.randomBytes(12).toString('hex'), name: 'سعود المطيري', role: 'branch_manager', branchId: 'b-01' },
+  { email: 'chef@restocost.com', password: process.env.CHEF_PASSWORD || crypto.randomBytes(12).toString('hex'), name: 'إبراهيم العلي', role: 'chef', branchId: 'b-ck' },
+  { email: 'store@restocost.com', password: process.env.STORE_PASSWORD || crypto.randomBytes(12).toString('hex'), name: 'علي الشمري', role: 'storekeeper', branchId: 'b-ck' },
 ];
 
 const dataDir = path.join(__dirname, 'data');

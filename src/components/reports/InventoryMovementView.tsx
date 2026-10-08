@@ -5,17 +5,7 @@ import { Card, PageHeader, Btn, Field, inputCls, TabBar, AutocompleteSelect } fr
 import { ViewToolbar } from '../ui/ViewToolbar';
 import { fmt, fmtMoney, downloadCSV, allCategoryLabels, categoryLabel } from '../../utils/helpers';
 import { openPrintWindow } from '../../utils/print';
-
-interface LedgerEntry {
-  date: string;
-  type: string;
-  reference: string;
-  branchName: string;
-  qty: number;
-  cost: number;
-  value: number;
-  running: number;
-}
+import { summariseMovement, buildItemLedger, buildOpeningMap, type MovementSummaryInput, type MovementSource } from '../../business/inventory-movement-report';
 
 export const InventoryMovementView: React.FC = () => {
   const { rawMaterials, branches, inventory, grnNotes, stockTransfers, wastageLogs, productionRuns, physicalCounts, openingBalances, inventoryMovements, supplierReturns, getBranchName, getAverageUnitCost, getBranchAverageUnitCost, materialCategories } = useApp();
@@ -34,7 +24,10 @@ export const InventoryMovementView: React.FC = () => {
   const inBranch = (b: string) => branchFilter === 'all' || b === branchFilter;
 
   // Latest opening balance per branch, keyed by `branchId|rawMaterialId`
-  const openingMap = useMemo(() => {
+  // Kept for potential future use; currently not referenced directly
+  // Latest opening balance per branch, keyed by `branchId|rawMaterialId`
+  // Kept for potential future use; currently not referenced directly
+  const _openingMap = useMemo(() => {
     const latest = new Map<string, typeof openingBalances[number]>();
     openingBalances.forEach((r) => {
       const cur = latest.get(r.branchId);
@@ -47,144 +40,121 @@ export const InventoryMovementView: React.FC = () => {
     }));
     return map;
   }, [openingBalances]);
-
-  const openingOf = (branchId: string, itemId: string) => {
-    if (branchId === 'all') return branches.reduce((s, b) => s + (openingMap[b.id + '|' + itemId] || 0), 0);
-    return openingMap[branchId + '|' + itemId] || 0;
-  };
-
-  // قيمة الرصيد الافتتاحي (كمية × سعر الوحدة المسجَّل) في نفس أحدث سجل افتتاحي
-  const openingValueMap = useMemo(() => {
-    const latest = new Map<string, typeof openingBalances[number]>();
-    openingBalances.forEach((r) => {
-      const cur = latest.get(r.branchId);
-      if (!cur || r.date > cur.date) latest.set(r.branchId, r);
-    });
-    const v: Record<string, number> = {};
-    latest.forEach((r) => r.items.forEach((i) => {
-      const k = r.branchId + '|' + i.rawMaterialId;
-      v[k] = (v[k] || 0) + (i.quantity || 0) * (i.unitCost || 0);
-    }));
-    return v;
-  }, [openingBalances]);
-
-  const openingUnitCost = (branchId: string, itemId: string) => {
-    if (branchId === 'all') {
-      let qty = 0, value = 0;
-      branches.forEach((b) => {
-        const q = openingMap[b.id + '|' + itemId] || 0;
-        if (q > 0) { qty += q; value += openingValueMap[b.id + '|' + itemId] || 0; }
-      });
-      return qty > 0 ? value / qty : 0;
-    }
-    const q = openingMap[branchId + '|' + itemId] || 0;
-    return q > 0 ? (openingValueMap[branchId + '|' + itemId] || 0) / q : 0;
-  };
+  // Suppress unused variable warning
+  void _openingMap;
 
   const filteredMaterials = useMemo(() => rawMaterials.filter((m) =>
     (categoryFilter === 'all' || m.category === categoryFilter) &&
     (!search || m.nameAr.includes(search) || m.code.toLowerCase().includes(search.toLowerCase()))
   ), [rawMaterials, categoryFilter, search]);
 
+  // ── استخراج البيانات الخام للنموذج النقي ───────────────────────────────
+  const inputData: MovementSummaryInput = useMemo(() => ({
+    rawMaterialId: '', // سيتم تعيينها داخل الخريطة
+    branches,
+    inventory,
+    movements: inventoryMovements.map(m => ({ ...m, rawMaterialId: m.rawMaterialId, branchId: m.branchId, delta: m.delta, type: m.type, date: m.date, ref: m.ref })) as MovementSource[],
+    openingBalances: openingBalances.map(ob => ({ branchId: ob.branchId, date: ob.date, items: ob.items.map(i => ({ rawMaterialId: i.rawMaterialId, quantity: i.quantity, unitCost: i.unitCost })) })),
+    grnNotes: grnNotes.map(g => ({ ...g, items: g.items.map(i => ({ rawMaterialId: i.rawMaterialId, quantityReceived: i.quantityReceived })) })),
+    stockTransfers: stockTransfers.map(t => ({ status: t.status, fromBranchId: t.fromBranchId, toBranchId: t.toBranchId, date: t.date, items: t.items.map(i => ({ rawMaterialId: i.rawMaterialId ?? '', quantity: i.quantity })) })),
+    productionRuns: productionRuns.map(r => ({ ...r, items: r.items.map(i => ({ rawMaterialId: i.rawMaterialId, requiredQty: i.requiredQty })) })),
+    wastageLogs: wastageLogs.map(w => ({ rawMaterialId: w.rawMaterialId ?? '', branchId: w.branchId, date: w.date, quantity: w.quantity })),
+
+    physicalCounts: physicalCounts.map(p => ({ ...p, items: p.items.map(i => ({ rawMaterialId: i.rawMaterialId, varianceQty: i.varianceQty })) })),
+    supplierReturns: supplierReturns.map(r => ({ ...r, items: r.items.map(i => ({ rawMaterialId: i.rawMaterialId, quantity: i.quantity })) })),
+    branchFilter,
+    fromDate,
+    toDate,
+  }), [grnNotes, stockTransfers, wastageLogs, productionRuns, physicalCounts, supplierReturns, openingBalances, inventoryMovements, branchFilter, fromDate, toDate]);
+
+  // ── حساب الملخص باستخدام الموديول النقي ─────────────────────────────────
   const summary = useMemo(() => filteredMaterials.map((m) => {
-    let opening = openingOf(branchFilter, m.id);
-    let purchases = 0, transIn = 0, transOut = 0, production = 0, wastage = 0, adjustment = 0, supplierReturnsQty = 0, current = 0;
-    grnNotes.forEach((g) => {
-      if (!inBranch(g.branchId) || !inDate(g.date) || g.status === 'rejected') return;
-      g.items.forEach((i) => { if (i.rawMaterialId === m.id) purchases += i.quantityReceived; });
-    });
-    stockTransfers.forEach((t) => {
-      if (t.status !== 'approved' || !inDate(t.date)) return;
-      t.items.forEach((i) => {
-        if (i.rawMaterialId !== m.id) return;
-        if (inBranch(t.toBranchId)) transIn += i.quantity;
-        if (inBranch(t.fromBranchId)) transOut += i.quantity;
-      });
-    });
-    productionRuns.forEach((r) => {
-      if (r.status !== 'completed' || !inBranch(r.branchId) || !inDate(r.date)) return;
-      r.items.forEach((i) => { if (i.rawMaterialId === m.id) production += i.requiredQty; });
-    });
-    wastageLogs.forEach((w) => {
-      if (w.rawMaterialId !== m.id || !inBranch(w.branchId) || !inDate(w.date)) return;
-      wastage += w.quantity;
-    });
-    physicalCounts.forEach((p) => {
-      if (!inBranch(p.branchId) || !inDate(p.date)) return;
-      p.items.forEach((i) => { if (i.rawMaterialId === m.id) adjustment += i.varianceQty; });
-    });
-    supplierReturns.forEach((r) => {
-      if (r.status !== 'approved' || !inBranch(r.branchId) || !inDate(r.date)) return;
-      r.items.forEach((i) => { if (i.rawMaterialId === m.id) supplierReturnsQty += i.quantity; });
-    });
-    inventory.forEach((rec) => {
-      if (rec.rawMaterialId !== m.id || !inBranch(rec.branchId)) return;
-      current += rec.quantity;
-    });
-    const calculated = opening + purchases + transIn - transOut - production - wastage + adjustment - supplierReturnsQty;
-    return { m, opening, purchases, transIn, transOut, production, wastage, adjustment, supplierReturnsQty, calculated, current, diff: current - calculated, currentValue: current * getAverageUnitCost(m.id) };
-  }), [filteredMaterials, branches, inventory, grnNotes, stockTransfers, wastageLogs, productionRuns, physicalCounts, supplierReturns, openingMap, branchFilter, fromDate, toDate, getAverageUnitCost]);
+    const input = { ...inputData, rawMaterialId: m.id };
+    const row = summariseMovement(input);
+    return {
+      m,
+      opening: row.opening,
+      purchases: row.docPurchases,
+      transIn: row.docTransIn,
+      transOut: row.docTransOut,
+      production: row.docProduction,
+      wastage: row.docWastage,
+      adjustment: row.docAdjustment,
+      supplierReturnsQty: row.docSupplierReturns,
+      calculated: row.docCalculated,
+      current: row.current,
+      diff: row.current - row.docCalculated, // يبقى كما كان للعرض التاريخي
+      // حقول جديدة تكشف الحقيقة
+      ledgerCalculated: row.ledgerCalculated,
+      ledgerNet: row.ledgerNet,
+      ledgerGap: row.ledgerGap,
+      docGap: row.docGap,
+      movementCount: row.movementCount,
+      currentValue: row.current * getAverageUnitCost(m.id),
+    };
+  }), [filteredMaterials, inputData, getAverageUnitCost]);
 
   const ledger = useMemo(() => {
-    const entries: Omit<LedgerEntry, 'value' | 'running'>[] = [];
-    const add = (date: string, type: string, ref: string, branchId: string, qty: number, cost: number) => entries.push({ date, type, reference: ref, branchName: branchId === 'all' ? 'كل الفروع' : getBranchName(branchId), qty, cost });
-    grnNotes.forEach((g) => {
-      if (g.status === 'rejected') return;
-      if (ledgerBranch !== 'all' && g.branchId !== ledgerBranch) return;
-      if (!inDate(g.date)) return;
-      g.items.forEach((i) => { if (i.rawMaterialId === ledgerItem) add(g.date, 'استلام مشتريات (GRN)', g.grnNumber, g.branchId, i.quantityReceived, i.unitPrice); });
-    });
-    stockTransfers.forEach((t) => {
-      if (t.status !== 'approved' || !inDate(t.date)) return;
-      t.items.forEach((i) => {
-        if (i.rawMaterialId !== ledgerItem) return;
-        // سعر انتقال الصادر = متوسط الرصيد الجاري المسجَّل وقت التحويل (الحدث المُخزَّن)
-        const outCost = getBranchAverageUnitCost(t.fromBranchId, ledgerItem, t.date);
-        const cost = outCost > 0 ? outCost : (i.unitCost || 0);
-        if (ledgerBranch === 'all' || t.toBranchId === ledgerBranch) add(t.date, 'تحويل وارد', t.transferNumber, t.toBranchId, i.quantity, cost);
-        if (ledgerBranch === 'all' || t.fromBranchId === ledgerBranch) add(t.date, 'تحويل صادر', t.transferNumber, t.fromBranchId, -i.quantity, cost);
-      });
-    });
-    productionRuns.forEach((r) => {
-      if (r.status !== 'completed' || !inDate(r.date)) return;
-      if (ledgerBranch !== 'all' && r.branchId !== ledgerBranch) return;
-      r.items.forEach((i) => { if (i.rawMaterialId === ledgerItem) add(r.date, 'استهلاك إنتاج', r.recipeName, r.branchId, -i.requiredQty, i.unitCost); });
-    });
-    wastageLogs.forEach((w) => {
-      if (w.rawMaterialId !== ledgerItem || !inDate(w.date)) return;
-      if (ledgerBranch !== 'all' && w.branchId !== ledgerBranch) return;
-      add(w.date, 'هالك', w.reason || 'هالك', w.branchId, -w.quantity, w.costPerUnit);
-    });
-    physicalCounts.forEach((p) => {
-      if (!inDate(p.date)) return;
-      if (ledgerBranch !== 'all' && p.branchId !== ledgerBranch) return;
-      p.items.forEach((i) => { if (i.rawMaterialId === ledgerItem && i.varianceQty !== 0) add(p.date, 'تسوية جرد', p.countedBy, p.branchId, i.varianceQty, i.unitCost); });
-    });
-    supplierReturns.forEach((r) => {
-      if (r.status !== 'approved' || !inDate(r.date)) return;
-      if (ledgerBranch !== 'all' && r.branchId !== ledgerBranch) return;
-      r.items.forEach((i) => { if (i.rawMaterialId === ledgerItem) add(r.date, 'إرجاع مورد', r.returnNumber, r.branchId, -i.quantity, i.unitPrice); });
-    });
-    const opening = openingOf(ledgerBranch, ledgerItem);
-    entries.sort((a, b) => a.date.localeCompare(b.date) || a.type.localeCompare(b.type));
-    let running = opening;
-    // سعر وحدة الرصيد الافتتاحي: من سجل الرصيد الافتتاحي الحامل للسعر، أو متوسط
-    // الفرع/العام احتياطاً عند غياب القيمة المسجّلة.
-    const openingCost = openingUnitCost(ledgerBranch, ledgerItem)
-      || (ledgerBranch === 'all' ? getAverageUnitCost(ledgerItem) : getBranchAverageUnitCost(ledgerBranch, ledgerItem));
-    const rows: LedgerEntry[] = [{ date: fromDate || 'بداية الفترة', type: 'رصيد افتتاحي', reference: 'الرصيد الافتتاحي', branchName: ledgerBranch === 'all' ? 'كل الفروع' : getBranchName(ledgerBranch), qty: opening, cost: openingCost, value: opening * openingCost, running }];
-    entries.forEach((e) => { running += e.qty; rows.push({ ...e, value: e.qty * e.cost, running }); });
-    const inTotal = rows.reduce((s, r) => s + Math.max(0, r.qty), 0);
-    const outTotal = rows.reduce((s, r) => s + Math.max(0, -r.qty), 0);
-    return { rows, opening, inTotal, outTotal, final: running };
-  }, [ledgerItem, ledgerBranch, grnNotes, stockTransfers, wastageLogs, productionRuns, physicalCounts, supplierReturns, openingBalances, openingMap, openingValueMap, branches, fromDate, toDate, getBranchName]);
+    if (!ledgerItem) return { rows: [], opening: 0, inTotal: 0, outTotal: 0, final: 0 };
+    
+    // ── حساب الافتتاحي لهذا الصنف والفرع ──────────────────────────────────
+    // تحويل أرصدة الافتتاح إلى التنسيق المتوقع من buildOpeningMap
+    // خريطة الافتتاحيات — المفتاح مركّب من (الصنف + الفرع + التاريخ)،
+    // فيجد كل سطر حركةٍ رصيده الافتتاحي الصحيح قبل أوّل حركة ضمن فترته
+    const obForMap = openingBalances.map(ob => ({
+      branchId: ob.branchId,
+      date: ob.date,
+      items: (ob.items || []).map(i => ({ rawMaterialId: i.rawMaterialId, quantity: i.quantity, unitCost: i.unitCost }))
+    }));
+    const openingMap = buildOpeningMap(obForMap);
+    
+    let opening = 0;
+    if (ledgerBranch === 'all') {
+      opening = branches.reduce((sum, b) => {
+        return sum + (openingMap.get(`${b.id}|${ledgerItem}`) || 0);
+      }, 0);
+    } else {
+      opening = openingMap.get(`${ledgerBranch}|${ledgerItem}`) || 0;
+    }
+    
+    const costFor = () => getBranchAverageUnitCost(ledgerBranch, ledgerItem) || getAverageUnitCost(ledgerItem);
+    
+    const movementsForLedger = inventoryMovements.map(m => ({
+      id: m.id,
+      rawMaterialId: m.rawMaterialId,
+      branchId: m.branchId,
+      delta: m.delta,
+      type: m.type,
+      date: m.date,
+      ref: m.ref,
+      reference: m.ref,
+      branchName: getBranchName(m.branchId),
+      qty: m.delta,
+      cost: 0,
+      value: 0,
+      running: 0,
+    }));
+    
+    return buildItemLedger(
+      movementsForLedger,
+      {
+        rawMaterialId: ledgerItem,
+        branchFilter: ledgerBranch,
+        fromDate,
+        toDate,
+        opening,
+        costFor,
+        getBranchName,
+      },
+    );
+  }, [ledgerItem, ledgerBranch, inventoryMovements, openingBalances, branches, fromDate, toDate, getAverageUnitCost, getBranchAverageUnitCost]);
 
   const totalPurchases = summary.reduce((s, r) => s + r.purchases, 0);
   const totalOut = summary.reduce((s, r) => s + r.transOut + r.production + r.wastage, 0);
   const totalCurrentValue = summary.reduce((s, r) => s + r.currentValue, 0);
 
   const exportSheets = [
-    { name: 'ملخص حركة المخزون', header: ['الكود', 'الصنف', 'التصنيف', 'افتتاحي', 'مشتريات', 'وارد تحويلات', 'صادر تحويلات', 'استهلاك إنتاج', 'هالك', 'تسويات جرد', 'إرجاع موردين', 'المحسوب', 'الحالي', 'الفرق'], rows: summary.map((r) => [r.m.code, r.m.nameAr, categoryLabel(r.m.category, materialCategories), r.opening, r.purchases, r.transIn, r.transOut, r.production, r.wastage, r.adjustment, r.supplierReturnsQty, r.calculated, r.current, r.diff]) },
+    { name: 'ملخص حركة المخزون', header: ['الكود', 'الصنف', 'التصنيف', 'افتتاحي', 'مشتريات', 'وارد تحويلات', 'صادر تحويلات', 'استهلاك إنتاج', 'هالك', 'تسويات جرد', 'إرجاع موردين', 'المحسوب (مستندات)', 'المحسوب (دفتر)', 'الرصيد الحالي', 'فجوة الدفتر', 'فجوة المستندات', 'الفرق (قديم)'], rows: summary.map((r) => [r.m.code, r.m.nameAr, categoryLabel(r.m.category, materialCategories), r.opening, r.purchases, r.transIn, r.transOut, r.production, r.wastage, r.adjustment, r.supplierReturnsQty, r.calculated, r.ledgerCalculated, r.current, r.ledgerGap, r.docGap, r.diff]) },
     { name: 'دفتر حركة صنف', header: ['التاريخ', 'الحركة', 'المرجع', 'الفرع', 'الكمية', 'التكلفة/الوحدة', 'القيمة', 'الرصيد الجاري'], rows: ledger.rows.map((r) => [r.date, r.type, r.reference, r.branchName, r.qty, r.cost, r.value, r.running]) },
   ];
 
@@ -318,9 +288,12 @@ export const InventoryMovementView: React.FC = () => {
                     <th className="text-right p-2 font-bold text-rose-600">− هالك</th>
                     <th className="text-right p-2 font-bold text-amber-700">± تسويات جرد</th>
                     <th className="text-right p-2 font-bold text-rose-600">− إرجاع موردين</th>
-                    <th className="text-right p-2 font-bold">الرصيد المحسوب</th>
+                    <th className="text-right p-2 font-bold text-brand-700">المحسوب (مستندات)</th>
+                    <th className="text-right p-2 font-bold text-brand-700">المحسوب (دفتر)</th>
                     <th className="text-right p-2 font-bold">الرصيد الحالي</th>
-                    <th className="text-right p-2 font-bold">الفرق</th>
+                    <th className="text-right p-2 font-bold text-amber-700">فجوة الدفتر</th>
+                    <th className="text-right p-2 font-bold text-amber-700">فجوة المستندات</th>
+                    <th className="text-right p-2 font-bold">الفرق (قديم)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -337,8 +310,11 @@ export const InventoryMovementView: React.FC = () => {
                       <td className="tnum text-left p-2 text-rose-600">{fmt(r.wastage, 2)}</td>
                       <td className={`p-2 font-mono ${r.adjustment < 0 ? 'text-rose-600' : r.adjustment > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.adjustment, 2)}</td>
                       <td className="tnum text-left p-2 text-rose-600">{fmt(r.supplierReturnsQty, 2)}</td>
-                      <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(r.calculated, 2)}</td>
+                      <td className="tnum text-left p-2 font-bold text-emerald-700">{fmt(r.calculated, 2)}</td>
+                      <td className="tnum text-left p-2 font-bold text-brand-700">{fmt(r.ledgerCalculated, 2)}</td>
                       <td className="tnum text-left p-2 font-bold text-slate-800">{fmt(r.current, 2)}</td>
+                      <td className={`p-2 font-mono font-bold ${r.ledgerGap < -0.001 ? 'text-rose-600' : r.ledgerGap > 0.001 ? 'text-amber-600' : 'text-slate-400'}`}>{fmt(r.ledgerGap, 2)}</td>
+                      <td className={`p-2 font-mono ${r.docGap < -0.001 ? 'text-rose-600' : r.docGap > 0.001 ? 'text-emerald-700' : 'text-slate-400'}`}>{fmt(r.docGap, 2)}</td>
                       <td className={`p-2 font-mono font-bold ${r.diff < -0.001 ? 'text-rose-600' : r.diff > 0.001 ? 'text-amber-600' : 'text-slate-400'}`}>{fmt(r.diff, 2)}</td>
                     </tr>
                   ))}
@@ -346,10 +322,12 @@ export const InventoryMovementView: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            <div className="mt-3 flex items-center gap-2 text-[10px] text-slate-500 font-bold">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] text-slate-500 font-bold">
               <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" /> الوارد (مشتريات + تحويلات وارد)
               <ArrowDownRight className="w-3.5 h-3.5 text-rose-500 mr-2" /> الصادر (تحويلات + إنتاج + هالك)
-              <Activity className="w-3.5 h-3.5 text-amber-500 mr-2" /> الفرق = الحالي − المحسوب (يشير لحاجة تسوية جرد)
+              <Activity className="w-3.5 h-3.5 text-amber-500 mr-2" /> فجوة الدفتر = الحالي − محسوب(دفتر) <span className="text-rose-600">⚠</span>
+              <Activity className="w-3.5 h-3.5 text-emerald-500 mr-2" /> فجوة المستندات = محسوب(مستندات) − محسوب(دفتر)
+              <Activity className="w-3.5 h-3.5 text-amber-500 mr-2" /> الفرق القديم = الحالي − محسوب(مستندات)
             </div>
           </Card>
         </div>

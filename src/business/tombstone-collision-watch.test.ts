@@ -15,7 +15,7 @@ describe('تصادم معرّفات الشواهد (مراقبة فقط — لا
     ];
     const CAPPED = new Set(['rcerp_recent_docs', 'rcerp_audit', 'rcerp_inventory_movements']);
     const dangerous = collisions.filter((c) => c.in.filter((k) => !CAPPED.has(k)).length > 1);
-    // كل تصادمUTSمحمي ⇒ صفر خطورة فعلية
+    // كل تصادم UTS محمي ⇒ صفر خطورة فعلية
     expect(dangerous).toHaveLength(0);
   });
 

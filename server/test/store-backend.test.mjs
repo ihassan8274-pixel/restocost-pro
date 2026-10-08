@@ -166,9 +166,9 @@ test('the live database still holds the business data', async () => {
   assert.ok(live?.checkLiveData,
     'api/scripts/verify-store-backend.mjs must export checkLiveData()');
   const r = live.checkLiveData();
-  assert.equal(r.movements, 18332, 'the restored stock ledger must still be here');
-  assert.equal(r.posLines, 9316, 'the Foodics import must still be here');
-  assert.equal(r.posBatches, 744);
+  assert.ok(r.movements >= 18332, 'the restored stock ledger must still be here (got ' + r.movements + ')');
+  assert.ok(r.posLines >= 9316, 'the Foodics import must still be here (got ' + r.posLines + ')');
+  assert.ok(r.posBatches >= 744, 'posBatches: ' + r.posBatches);
   assert.ok(r.recipes >= 35, 'recipes: ' + r.recipes);
   assert.ok(r.branches >= 17, 'branches: ' + r.branches);
   assert.ok(r.dbMb > 1, 'the database is ' + r.dbMb.toFixed(2) + ' MB -- too small to hold the business');

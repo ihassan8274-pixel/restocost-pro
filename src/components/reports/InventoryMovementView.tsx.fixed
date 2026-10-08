@@ -1,0 +1,42 @@
+// ── حساب الافتتاحي لهذا الصنف والفرع ──────────────────────────────────
+    // تحويل أرصدة الافتتاح إلى التنسيق المتوقع من buildOpeningMap
+    const obForMap = openingBalances.map(ob => ({
+      branchId: ob.branchId,
+      date: ob.date,
+      items: (ob.items || []).map(i => ({
+        rawMaterialId: i.rawMaterialId,
+        quantity: i.quantity,
+        unitCost: i.unitCost,
+      })),
+    });
+    const openingMap = buildOpeningMap(obForMap);
+
+    let opening = 0;
+    if (ledgerBranch === 'all') {
+      opening = branches.reduce((sum, b) => {
+        return sum + (buildOpeningMap(obForMap).get(`${b.id}|${ledgerItem}`) || 0);
+      }, 0);
+    } else {
+      opening = buildOpeningMap(obForMap).get(`${ledgerBranch}|${ledgerItem}`) || 0;
+    }
+
+    const costFor = () => getBranchAverageUnitCost(ledgerBranch, ledgerItem) || getAverageUnitCost(ledgerItem);
+
+    const movementsForLedger = inventoryMovements.map(m => ({
+      rawMaterialId: m.rawMaterialId,
+      branchId: m.branchId,
+      delta: m.delta,
+      type: m.type,
+      date: m.date,
+      ref: m.ref,
+    }));
+
+    return buildItemLedger(movementsForLedger, {
+      rawMaterialId: ledgerItem,
+      branchFilter: ledgerBranch,
+      fromDate,
+      toDate,
+      opening,
+      costFor,
+    });
+  }, [ledgerItem, ledgerBranch, inventoryMovements, openingBalances, branches, fromDate, toDate, getAverageUnitCost, getBranchAverageUnitCost]);

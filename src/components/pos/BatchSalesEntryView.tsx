@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
-  const { recipes, visibleBranchIds, branches, batchSalesRecords, addBatchSalesRecord, updateBatchSalesRecord, calculateRecipeCosts, showToast, vatPercent } = useApp();
+  const { recipes, visibleBranchIds, branches, batchSalesRecords, addBatchSalesRecord, updateBatchSalesRecord, calculateRecipeCosts, showToast, vatPercent, deductSalesFromInventory } = useApp();
   const isEditing = !!editId;
 
   const vatRate = vatPercent / 100;
@@ -111,16 +111,26 @@ export const BatchSalesEntryView: React.FC<Props> = ({ editId, onDone }) => {
     const netRevenue = netOfGross(totalRevenue, vatRate);
     const vatAmount = vatOfGross(totalRevenue, vatRate);
     const branch = branches.find((b) => b.id === branchId);
+    // ⭐ الرسالة تتبع الإعداد. كانت "خُصم المخزون تلقائياً" تُقال دائماً حتى
+    // مع الإعداد معطّل — وعدٌ كاذب يجعل المستخدم يظن أن المخزون نزل.
+    const stockMsg = deductSalesFromInventory
+      ? ' — خُصم المخزون تلقائياً'
+      : ' — لم يُخصم المخزون (الإعداد معطّل)';
     if (isEditing && editId) {
+      const before = batchSalesRecords.find((b) => b.id === editId);
       updateBatchSalesRecord(editId, { branchId, date, items });
-      showToast('تم حفظ تعديل المبيعات — عُدّل المخزون والقيود تلقائياً');
+      if (before?.rawMaterialsDeducted) {
+        showToast(`تم حفظ تعديل المبيعات — عُكست تسوية المخزون السابقة ثم خُصم الفرق${stockMsg}`);
+      } else {
+        showToast('تم حفظ تعديل المبيعات');
+      }
     } else {
       addBatchSalesRecord({
         branchId, branchName: branch?.nameAr || branchId, date,
         items, totalRevenue, totalFoodCost, vatRate: vatRate, netRevenue, vatAmount,
         foodCostPercent: netRevenue ? round2((totalFoodCost / netRevenue) * 100) : 0, enteredBy: 'المستخدم',
       });
-      showToast('تم إدخال مبيعات اليوم — خُصم المخزون تلقائياً');
+      showToast(`تم إدخال مبيعات اليوم${stockMsg}`);
     }
     onDone();
   };

@@ -24,11 +24,22 @@ model Kv {
 // SYSTEM MODULE
 // ============================================================
 
+// userId هنا عمود نصّي بحت — بلا علاقة relation وبلا foreign key.
+//
+// السبب: هذا التطبيق لا يخزّن المستخدمين في جدول `users` إطلاقاً، بل في
+// `kv` تحت المفتاح `rcerp_users` (انظر store.mjs getKV/setKV). وجود FK على
+// جدول فارغ كان يجعل كل `prisma.session.upsert()` يرتدّ بـ
+// `sessions_userId_fkey` مخالفاً، والخطأ يبتلعه طابور التخزين فيصمت.
+// النتيجة العملية: جدول `sessions` يبقى صفراً، و`store.mjs` الذي يعيد تحميل
+// الجلسات عند الإقلاع يقرأ شيئاً لا وجود له — فكل إعادة تشغيل تسقط كل
+// الجلسات بلا أي رسالة.
+//
+// العلاقة لم تكن مستعملة أصلاً: لا استعلام في الكود يقرأ `include: { user }`.
+// أُزيلت إذن بدل التمويه بمزامنة ثنائية بين kv و users.
 model Session {
   token     String   @id
   userId    String
   createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -91,7 +102,6 @@ model User {
   lastLogin    DateTime?
   passwordHash String
   totpEnabled  Boolean  @default(false)
-  sessions     Session[]
 
   @@map("users")
 }

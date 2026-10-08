@@ -57,7 +57,11 @@ export const buildCountItems = (
       const countedQty = factor > 0 ? Number((countedStorage / factor).toFixed(3)) : countedStorage;
       const theoreticalStorage = Number((theoStorage[m.id] || 0).toFixed(3));
       const theoreticalQty = factor > 0 ? theoreticalStorage / factor : theoreticalStorage;
-      const consumedQty = Math.max(0, theoreticalQty - countedQty);
+      // ⭐ بلا Math.max(0): كان يقصّ الفائض. المعدود أكبر من النظري يعني فائضاً
+// (زيادة، إرجاع، خطأ عدّ) — معلومة تهمّ المدقق. إخفاؤها يجعل الجرد يبدو
+// مطابقاً للدفتري وهو ليس كذلك. السالب الآن = فائض، والموجب = استهلاك.
+// نفس المعالجة في monthly-count.ts و DailyInventoryView (بلا قصّ).
+const consumedQty = theoreticalQty - countedQty;
       const unitCost = purchaseUnitPrice(m);
       return {
         rawMaterialId: m.id,

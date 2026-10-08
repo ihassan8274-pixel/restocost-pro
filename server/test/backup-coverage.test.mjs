@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url';
 import {
   BACKUP_EXTRA_KEYS, BACKUP_PREFIXES, NEVER_BACK_UP, VERIFY_EXCLUDE,
   makeKeyClassifier,
-} from '../backup-keys.mjs';
+} from '../src/modules/backup/backup-keys.ts';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = (rel) => fs.readFileSync(path.join(REPO, rel), 'utf8');

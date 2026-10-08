@@ -8,6 +8,10 @@ import { useHRStore } from './hrStore';
 import { usePeriodStore } from './periodStore';
 import { useAuthStore } from './authStore';
 import { useLegacyCompatStore } from './legacyCompatStore';
+// مالك إعداد "خصم المبيعات من المخزون" — هو الوحيد الذي يملك markPending، فلا
+// سجل خادم آخر لـ rcerp_deduct_sales. (متجر financial المحلي أعلاه ليس هو —
+// ذاك بلا markPending وغير مُدرج في useSyncBridge.)
+import { useFinancialStore as useFinancialSettingsStore } from '../context/domains/financial';
 import { useSyncStore } from './syncStore';
 import { registerCollection, getCollectionValue, isApplying } from './collectionRegistry';
 
@@ -123,7 +127,12 @@ const pairs: [string, Pair][] = [
   ['rcerp_target_margin', { store: useLegacyCompatStore, field: 'globalTargetMarginPercent', filterTombstones: true }],
   ['rcerp_vat_percent', { store: useLegacyCompatStore, field: 'vatPercent', filterTombstones: true }],
   ['rcerp_vat_inclusive', { store: useLegacyCompatStore, field: 'vatInclusive', filterTombstones: true }],
-  ['rcerp_deduct_sales', { store: useLegacyCompatStore, field: 'deductSalesFromInventory', filterTombstones: true }],
+  // ⭐ rcerp_deduct_sales كان يُغذّي legacyCompatStore بينما القراءة من
+// financialStore ⇒ زرّ الضبط يكتب في متجر ويقرأ من آخر، فلا يتغيّر مرئياً.
+// صار المالك الوحيد financialStore (له markPending ⇒ ترفع للخادم).
+// filterTombstones false: قيمة منطقية — ترقيمُ false كـ«شاهد محذوف» لـ true
+// يحذف الإعداد على الخادم. (نفس الخطر الكامن في rcerp_vat_percent أعلاه.)
+['rcerp_deduct_sales', { store: useFinancialSettingsStore as never, field: 'deductSalesFromInventory', filterTombstones: false }],
 ];
 
 export const ensureCollectionSources = (): void => {

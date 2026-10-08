@@ -38,7 +38,13 @@ export interface FoodicsRow {
   readonly profit: number;          // الربح
 
   // العناصر الأخرى التي نتجاهلها (ما زالت متاحة للتشخيص)
-  readonly totalExVat: Num;         // إجمالي المبيعات من غير ضريبة
+  // ⭐ netWithVat: صافي المبيعات مع الضريبة.
+  //   الحقل ده كان ناقصاً من الحقل ده من الأساس، فكانFoodicsRow
+  //   بيطلع undefined والinterface بيقول "متاح للتشخيص" بينما هو
+  //   مش متاح خالص. النتيجة: أي تقرير بيحاول يقارن صافي مبيعات
+  //   النظام بإجمالي مبيعات Foodics طلع 0.00 —ono opraxia هرounding.
+  readonly netWithVat: Num;        // صافي المبيعات مع الضريبة
+  readonly totalExVat: Num;        // إجمالي المبيعات من غير ضريبة
   readonly netSales: Num;          // صافي المبيعات
   readonly vat: Num;                // الضرائب
   readonly discount: Num;          // الخصم
@@ -176,6 +182,7 @@ export function parseReport(buffer: unknown[][], sourceFile: string): ParsedRepo
     const profit = num(row, cols, '\u0627\u0644\u0631\u0628\u062D', { required: true })!; // الربح
 
     // الأعمدة الإضافية (نحتفظ بها للتشخيص)
+    const netWithVat = cellNumber(row, cols, '\u0635\u0627\u0641\u064A\u0020\u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A\u0020\u0645\u0639\u0020\u0627\u0644\u0636\u0631\u064A\u0628\u0629');
     const totalExVat = cellNumber(row, cols, '\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A \u0645\u0646 \u063A\u064A\u0631 \u0636\u0631\u064A\u0628\u0629'); // إجمالي المبيعات من غير ضريبة
     const netSales = cellNumber(row, cols, '\u0635\u0627\u0641\u064A \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A'); // صافي المبيعات
     const vat = cellNumber(row, cols, '\u0627\u0644\u0636\u0631\u0627\u0626\u0628'); // الضرائب
@@ -201,6 +208,7 @@ export function parseReport(buffer: unknown[][], sourceFile: string): ParsedRepo
       qty,
       profit,
       totalExVat,
+      netWithVat,
       netSales,
       vat,
       discount,
@@ -275,6 +283,7 @@ export function dedupeKey(lines: readonly FoodicsRow[]): string {
       //   "this is literally the same transaction set".
       l.productName,
       fmtMoney(l.profit),
+      fmtInt(l.netWithVat ?? 0),
       fmtInt(l.totalExVat ?? 0),
       fmtInt(l.netSales ?? 0),
       fmtInt(l.vat ?? 0),

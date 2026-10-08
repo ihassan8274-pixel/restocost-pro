@@ -32,6 +32,7 @@ import { stockPerPurchase, tradeToStock } from '../../business/units';
 import { lowestPrice30Days, lastSupplierIdFor } from '../../business/purchaseRequests';
 import { nextDocSequence } from '../../business/docNumbers';
 import { buildMonthlyCountItems } from '../../business/monthly-count';
+import { applySaleDeduction, type SaleItemLike } from '../../business/sales-deduction';
 import { computeDataHealth } from '../../business/data-health';
 import { parseNum } from '../../utils/excel';
 import { fmtMoney, today } from '../../utils/helpers';
@@ -51,7 +52,8 @@ import type {
   RawMaterial, Supplier, Customer, WastageLog, DepartmentRequisition,
   SystemNotification, ProductionRun, ProductionRunItem, StandardRecipe, RecipeCostHistoryEntry,
   InventoryRecord, GoodsReceiptNote, FoodCostAlert, User, SubPrepIngredient,
-  MaterialCategory, PurchaseOrder, POSOrder, StockTransfer, FoodMenu,
+  MaterialCategory, PurchaseOrder, POSOrder, POSOrderItem, StockTransfer, FoodMenu,
+  BatchSalesRecord, DeliverySale,
 } from '../../types';
 import { ROLE_PERMISSIONS } from '../../types';
 
@@ -1244,11 +1246,14 @@ const dataHealth = useMemo<DataHealthScore>(() => computeDataHealth({
   // هنا نقرأ من الستورات ونمرّرها.
   const startMonthlyInventoryWithItems = useCallback((branchId: string, monthKey: string) => {
     if (usePeriodStore.getState().isMonthClosed(monthKey)) return;
+    const invRows = useInventoryStore.getState().inventory;
     const items = buildMonthlyCountItems(branchId, monthKey, {
       rawMaterials: useLegacyCompatStore.getState().rawMaterials,
       grnNotes: useProcurementStore.getState().grnNotes,
       stockTransfers: useInventoryStore.getState().stockTransfers,
       openingBalances: useInventoryStore.getState().openingBalances,
+      // الرصيد الدفتري من دفتر الحركات — لا افتتاحي+مشتريات (انظر monthly-count.ts)
+      ledgerBalanceOf: (bid, mid) => invRows.find((i) => i.branchId === bid && i.rawMaterialId === mid)?.quantity,
       unitCostOf: (bid, mid) => getBranchAverageUnitCost(bid, mid, `${monthKey}-01`),
     });
     usePeriodStore.getState().startMonthlyInventory(branchId, monthKey, items);
@@ -1264,6 +1269,137 @@ const dataHealth = useMemo<DataHealthScore>(() => computeDataHealth({
   const undo = useCallback(() => {}, []);
   const redo = useCallback(() => {}, []);
 
+  // ── خصم المبيعات من المخزون — التنفيذ الفعلي ───────────────────────────
+  // salesStore لا يعرف المخزون (كبسولة منفصلة)، فالخصم يتم هنا: نقطة واحدة
+  // تمرّ بها كل عمليات البيع. عند تعطيل الإعداد لا يحدث شيء إطلاقاً.
+  //
+  // ⭐ لماذا كان الإعداد ميّتاً: salesStore.addBatchSalesRecord / addPOSOrder
+  // / addDeliverySale تكتب السجل فقط، ولا يوجد أي نداء adjustInventory في
+  // أي مسار بيع — بينما الواجهة تعرض شارة "مخصوم المخزون" مكتوبة بالكود.
+  const deductionEnabled = (): boolean =>
+    useFinancialSettingsStore.getState().deductSalesFromInventory;
+
+  // `force` للعكس فقط: العكس يُشترط ببصمة السجل (هل خُصم فعلاً؟) لا
+  // بالإعداد الحالي. لولا ذلك لعطّل المستخدم الإعداد بعد خصمِ فواتير،
+  // ثم حذفها، فبقي خصمها معلّقاً في المخزون بلا أي طريق للرجوع عنه.
+  const deductFor = useCallback((
+    branchId: string, items: SaleItemLike[], ref: string, sign: -1 | 1 = -1, force = false,
+  ) => {
+    const inv = useInventoryStore.getState();
+    const ctx = {
+      recipes: useProductionStore.getState().recipes,
+      rawMaterials: useLegacyCompatStore.getState().rawMaterials,
+    };
+    const balancesBefore = new Map(
+      inv.inventory.filter((i) => i.branchId === branchId).map((i) => [i.rawMaterialId, i.quantity]),
+    );
+    // ⭐ البوابة (السؤال: هل الإعداد مفعّل؟) صارت داخل المحرّك نفسه في
+    // business/sales-deduction.ts — هنا نمرّر الحالة فقط. كان الفحص هنا
+    // فلم يكن العقد "لا خصم إلا بالتفعيل" قابلاً للإثبات بالاختبار.
+    const { plan, negativeCount } = applySaleDeduction(branchId, items, ctx, inv.adjustInventory, {
+      ref,
+      enabled: deductionEnabled(),
+      sign,
+      type: sign === -1 ? 'خصم مبيعات' : 'عكس خصم مبيعات',
+      balancesBefore,
+      force,
+    });
+    if (plan.unmappedRecipes.length) {
+      showToast(`⚠️ ${plan.unmappedRecipes.length} صنف بيع بلا وصفة — لم يُخصم منه مخزون`, { level: 'warning', duration: 7000 });
+    }
+    if (sign === -1 && negativeCount > 0) {
+      showToast(`⚠️ ${negativeCount} مادة وصل رصيدها سالباً بعد الخصم — راجع حد الطلب`, { level: 'error', duration: 8000 });
+    }
+  }, [showToast]);
+
+  const posItems = (items: POSOrderItem[]): SaleItemLike[] =>
+    items.map((i) => ({ recipeId: i.recipeId, quantitySold: i.quantity }));
+
+  /**
+   * يحدّد السجل المُضاف بمقارنة المعرّفات قبل/بعد.
+   *
+   * ⭐ كان `[0]` — أي افتراض أن المتجر يضع الجديد في المقدّمة. صحيح اليوم
+   * لأن salesStore يفعل `[new, ...old]`، لكن إعادة هيكلة طفيفة (أو تخصيص معرّف
+   * خارجي) تجعله يخصم مواد **السجل الخطأ** بصمت: الخصم يذهب لمادة لمنتج
+   * آخر، ويبقى الرصيد خاطئاً دون أي رسالة.
+   */
+  const idSetOf = <T extends { id: string }>(list: T[]): Set<string> => new Set(list.map((r) => r.id));
+  const addedSince = <T extends { id: string }>(before: Set<string>, list: T[]): T | undefined =>
+    list.find((r) => !before.has(r.id));
+
+  const addBatchSalesRecordDeducting = useCallback((
+    data: Omit<BatchSalesRecord, 'id' | 'batchNumber' | 'createdAt'>,
+  ) => {
+    const willDeduct = deductionEnabled() && !!data.branchId;
+    const before = idSetOf(useSalesStore.getState().batchSalesRecords);
+    sales.addBatchSalesRecord({ ...data, rawMaterialsDeducted: willDeduct });
+    const rec = addedSince(before, useSalesStore.getState().batchSalesRecords);
+    if (rec && willDeduct) deductFor(rec.branchId, rec.items, rec.batchNumber, -1);
+  }, [sales.addBatchSalesRecord, deductFor]);
+
+  const updateBatchSalesRecordDeducting = useCallback((id: string, data: Partial<BatchSalesRecord>) => {
+    // نقرأ السجل قبل التعديل: العكس يحتاج الأصناف القديمة لا الجديدة.
+    const before = useSalesStore.getState().batchSalesRecords.find((b) => b.id === id);
+    sales.updateBatchSalesRecord(id, data);
+    if (!before) return;
+    const wasDeducted = before.rawMaterialsDeducted === true;
+    if (wasDeducted) deductFor(before.branchId, before.items, before.batchNumber, 1, true);
+    const after = useSalesStore.getState().batchSalesRecords.find((b) => b.id === id);
+    if (!after) return;
+    const nowDeducted = deductionEnabled() && !!after.branchId;
+    if (nowDeducted) {
+      deductFor(after.branchId, after.items, after.batchNumber, -1);
+      useSalesStore.setState((s) => ({
+        batchSalesRecords: s.batchSalesRecords.map((b) => (b.id === id ? { ...b, rawMaterialsDeducted: true } : b)),
+      }));
+    }
+  }, [sales.updateBatchSalesRecord, deductFor]);
+
+  const deleteBatchSalesRecordDeducting = useCallback((id: string) => {
+    const before = useSalesStore.getState().batchSalesRecords.find((b) => b.id === id);
+    sales.deleteBatchSalesRecord(id);
+    if (before?.rawMaterialsDeducted) deductFor(before.branchId, before.items, before.batchNumber, 1, true);
+  }, [sales.deleteBatchSalesRecord, deductFor]);
+
+  const addDeliverySaleDeducting = useCallback((data: Omit<DeliverySale, 'id'>) => {
+    const willDeduct = deductionEnabled() && !!data.branchId;
+    const before = idSetOf(useSalesStore.getState().deliverySales);
+    sales.addDeliverySale({ ...data, rawMaterialsDeducted: willDeduct });
+    const rec = addedSince(before, useSalesStore.getState().deliverySales);
+    if (rec && willDeduct) deductFor(rec.branchId, rec.items, `توصيل ${rec.id}`, -1);
+  }, [sales.addDeliverySale, deductFor]);
+
+  const deleteDeliverySaleDeducting = useCallback((id: string) => {
+    const before = useSalesStore.getState().deliverySales.find((s) => s.id === id);
+    sales.deleteDeliverySale(id);
+    if (before?.rawMaterialsDeducted) deductFor(before.branchId, before.items, `توصيل ${before.id}`, 1, true);
+  }, [sales.deleteDeliverySale, deductFor]);
+
+  const addPOSOrderDeducting = useCallback((
+    ...args: Parameters<typeof sales.addPOSOrder>
+  ) => {
+    const idsBefore = idSetOf(useSalesStore.getState().posOrders);
+    const res = sales.addPOSOrder(...args);
+    const order = addedSince(idsBefore, useSalesStore.getState().posOrders);
+    // POSOrderItem يسمّي الكمية `quantity` لا `quantitySold` — نوحّد الاسم هنا
+    // بدل تعريض محرك الخصم على أسماء حقول ثلاثة أنواع مختلفة.
+    if (!order) return res;
+    const willDeduct = deductionEnabled() && !!order.branchId;
+    if (willDeduct) {
+      deductFor(order.branchId, posItems(order.items), order.orderNumber, -1);
+      useSalesStore.setState((s) => ({
+        posOrders: s.posOrders.map((o) => (o.id === order.id ? { ...o, rawMaterialsDeducted: true } : o)),
+      }));
+    }
+    return res;
+  }, [sales.addPOSOrder, deductFor]);
+
+  const deletePOSOrderDeducting = useCallback((id: string) => {
+    const before = useSalesStore.getState().posOrders.find((o) => o.id === id);
+    sales.deletePOSOrder(id);
+    if (before?.rawMaterialsDeducted) deductFor(before.branchId, posItems(before.items), before.orderNumber, 1, true);
+  }, [sales.deletePOSOrder, deductFor]);
+
   return {
     ...auth,
     visibleBranchIds,
@@ -1272,6 +1408,14 @@ const dataHealth = useMemo<DataHealthScore>(() => computeDataHealth({
     ...production,
     ...financial,
     ...sales,
+    // بعد ...sales لتكون هذه هي المعروضة على كل المكوّنات
+    addBatchSalesRecord: addBatchSalesRecordDeducting,
+    updateBatchSalesRecord: updateBatchSalesRecordDeducting,
+    deleteBatchSalesRecord: deleteBatchSalesRecordDeducting,
+    addDeliverySale: addDeliverySaleDeducting,
+    deleteDeliverySale: deleteDeliverySaleDeducting,
+    addPOSOrder: addPOSOrderDeducting,
+    deletePOSOrder: deletePOSOrderDeducting,
     ...settings,
     ...hr,
     ...period,
@@ -1287,6 +1431,10 @@ const dataHealth = useMemo<DataHealthScore>(() => computeDataHealth({
     // markPending). كان ...legacy يكتب فوقه فيتحكم به الستور غير المتزامن،
     // فالإعداد المعروض في الواجهة لم يكن يساوي ما يُرفع للخادم.
     deductSalesFromInventory,
+    // ⭐ كان ...legacy يصدّر setDeductSalesFromInventory فيغطّي هذا المالك:
+    // الشاشة تكتب في متجر وتقرأ من آخر، فالزرّ لا يغيّر مرئياً ولا يُفعّل
+    // الخصم. نصدّره من المالك نفسه (بعد كل الـ spreads) فيتطابق الطرفان.
+    setDeductSalesFromInventory: useFinancialSettingsStore((s) => s.setDeductSalesFromInventory),
     acknowledgeAlert,
     unacknowledgeAlert,
     getRawMaterialName,

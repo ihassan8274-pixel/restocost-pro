@@ -133,6 +133,16 @@ const closeWithSettlement = (id: string) => {
   const p = usePeriodStore.getState().monthlyInventory.find((x) => x.id === id);
   if (!p) return;
   const plan = buildMonthlySettlement(p.items);
+
+  // ⚠️ لقطة الأرصدة قبل التسوية. يجب أن تُقرأ قبل التطبيق لا بعده: بعد
+  // التطبيق يكون qIncludesDelta فالجمع مع delta يطبّقه مرتين ويُنتج
+  // تحذيراً كاذباً. نلتقطها الآن ونقارن لاحقاً.
+  const before = new Map(
+    useInventoryStore.getState().inventory
+      .filter((i) => i.branchId === p.branchId)
+      .map((i) => [i.rawMaterialId, i.quantity]),
+  );
+
   if (plan.hasVariance) {
     for (const line of plan.lines) {
       useInventoryStore.getState().adjustInventory(
@@ -146,12 +156,49 @@ const closeWithSettlement = (id: string) => {
     shortages: plan.shortages.length,
     surplus: plan.surpluses.length,
     netVariance: plan.netVarianceValue,
+    // نحفظ السطور لا المجاميع: reopenWithReversal يحتاجها لعكس ما طُبِّق.
+    lines: plan.lines.map((l) => ({ rawMaterialId: l.rawMaterialId, delta: l.delta })),
   });
   const note = describeSettlementEntry(plan, monthLabelFor(p.monthKey));
   if (note) showToast(note);
   else showToast(`أُقفل ${monthLabelFor(p.monthKey)} — لا يوجد فرق (الأعداد مطابقة للدفتري)`);
+
+  // ⚠️ الرصيد السالب ليس رقماً يُقبل صامتاً. لا نعدّله (المحاسب يراجع) لكن
+  // نقوله فوراً بدل أن يكتشفه في التقرير.
+  const negatives = plan.lines.filter((l) => {
+    const q = before.get(l.rawMaterialId);
+    return typeof q === 'number' && q + l.delta < -1e-9;
+  });
+  if (negatives.length) {
+    showToast(
+      `⚠️ ${negatives.length} صنف يصبح برصيد سالب بعد التسوية (${getBranchName(p.branchId)}) — راجع الجرد`,
+      { level: 'error', duration: 9000 },
+    );
+  }
+
   addRecentDoc({ type: 'inventory_count', title: `إقفال جرد ${monthLabelFor(p.monthKey)} — ${getBranchName(p.branchId)}`, tab: 'monthly_inventory' });
   setConfirmClose(null);
+};
+
+  // ── إعادة فتح الفترة: تعكس تسوية المخزون قبل فتح الشهر ──
+// بدون العكس: يُعدّ ثم يُقفل مرة أخرى فتُطبَّق التسوية ثانية على نفس
+// الأصناف. البصمة وحدها (settlementNetVariance) لا تكفي للعكس — لزمت
+// سطور التسوية نفسها، ولهذا نحفظها الآن.
+const reopenWithReversal = (id: string) => {
+  const p = usePeriodStore.getState().monthlyInventory.find((x) => x.id === id);
+  if (!p) return;
+  const lines = p.settlementLines || [];
+  let reversed = 0;
+  for (const l of lines) {
+    if (!l.rawMaterialId || !Number.isFinite(l.delta) || l.delta === 0) continue;
+    useInventoryStore.getState().adjustInventory(
+      p.branchId, l.rawMaterialId, -l.delta, undefined,
+      { type: 'عكس تسوية جرد', ref: `جرد ${monthLabelFor(p.monthKey)}` },
+    );
+    reversed++;
+  }
+  reopenMonthlyInventory(id);
+  showToast(reversed ? `فُتحت الفترة وعُكست ${reversed} تسوية على المخزون` : 'فُتحت الفترة — لا توجد تسويات مطبَّقة لعكسها');
 };
 
   const requestDeleteCount = (p: MonthlyInventoryPeriod) => {
@@ -161,7 +208,7 @@ const closeWithSettlement = (id: string) => {
 
   const requestReopen = (p: MonthlyInventoryPeriod) => {
     setConfirmKind('reopen');
-    adminDelete.requestDelete(() => { reopenMonthlyInventory(p.id); setConfirmKind(null); });
+    adminDelete.requestDelete(() => { reopenWithReversal(p.id); setConfirmKind(null); });
   };
 
   return (

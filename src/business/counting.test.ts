@@ -76,6 +76,24 @@ describe('counting — عمودا كمية جرد الموبايل', () => {
     expect(items[0].consumedValue).toBeCloseTo(((30 - 24) / 12) * 96, 2);
   });
 
+  // ⭐ الفائض كان يُقصّ عند الصفر فيظهر الجرد مطابقاً للدفتري وهو ليس كذلك.
+  // السالب الآن = فائض حقيقي (زيادة/إرجاع/خطأ عدّ) يبقى مرئياً.
+  it('الفائض يظهر سالباً ولا يُقصّ عند الصفر', () => {
+    const theo = { 'm-carton': 30 };            // 30 زجاجة نظامية
+    const items = buildCountItems([carton()], { 'm-carton': { p: '3', s: '0' } }, theo);
+    // معدود = 36 ⇒ فائض 6 زجاجات = سالب 0.5 كرتون
+    expect(items[0].countedQty).toBeCloseTo(36 / 12, 3);
+    expect(items[0].consumedQty).toBeCloseTo((30 - 36) / 12, 3);
+    expect(items[0].consumedQty).toBeLessThan(0);
+  });
+
+  it('المطابق تماماً = صفر لا سالب', () => {
+    const theo = { 'm-carton': 30 };
+    const items = buildCountItems([carton()], { 'm-carton': { p: '2', s: '6' } }, theo);
+    // p=2×12=24 + s=6 ⇒ 30 زجاجة = النظري تماماً
+    expect(items[0].consumedQty).toBeCloseTo(0, 3);
+  });
+
   it('تثبيت الأخطاء العشرية في كميات المخزون (3 خانات)', () => {
     const items = buildCountItems([{ ...carton(), purchaseUnitConversion: 0.7 }], { 'm-carton': { p: '3', s: '' } });
     expect(items[0].countedStorage).toBe(Number((2.1).toFixed(3)));

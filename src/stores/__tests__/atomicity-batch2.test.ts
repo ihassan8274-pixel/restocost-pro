@@ -129,4 +129,44 @@ describe('الذرّية — periodStore', () => {
     usePeriodStore.getState().reopenMonthlyInventory('mi-2');
     expect(usePeriodStore.getState().closedMonths).toContain('2026-11');
   });
+
+  // ── بصمة التسوية: تُحفظ السطور وتُصفَّر عند إعادة الفتح ──────────────────
+  // بالإجماليات وحدها (settlementNetVariance) كان العكس مستحيلاً، فتُطبَّق
+  // التسوية مرة ثانية عند كل فتح/إقفال ويتاكم العجز حتى يصير الرصيد سالباً.
+  it('الإقفال يحفظ سطور التسوية لا مجاميعها فقط', () => {
+    usePeriodStore.setState({
+      monthlyInventory: [{ id: 'mi-3', branchId: B, monthKey: '2026-12', status: 'counting', items: [] }],
+      closedMonths: [],
+    } as never);
+    usePeriodStore.getState().closeMonthlyInventory('mi-3', {
+      appliedAt: '2026-12-31T00:00:00.000Z',
+      shortages: 2, surplus: 1, netVariance: -500,
+      lines: [{ rawMaterialId: 'rm-1', delta: -300 }, { rawMaterialId: 'rm-2', delta: -200 }],
+    });
+    const p = usePeriodStore.getState().monthlyInventory[0];
+    expect(p.status).toBe('closed');
+    expect(p.settlementLines).toHaveLength(2);
+    // الأرقام لكل صنف — هذا ما يجعل العكس ممكناً
+    expect(p.settlementLines!.find((l) => l.rawMaterialId === 'rm-1')?.delta).toBe(-300);
+  });
+
+  it('إعادة الفتح تُصفّر بصمة التسوية (تُعكَس في الشاشة قبل النداء)', () => {
+    usePeriodStore.setState({
+      monthlyInventory: [{
+        id: 'mi-4', branchId: B, monthKey: '2027-01', status: 'closed', items: [],
+        settlementAppliedAt: 'x', settlementShortages: 2, settlementNetVariance: -500,
+        settlementLines: [{ rawMaterialId: 'rm-1', delta: -300 }],
+      }],
+      closedMonths: ['2027-01'],
+    } as never);
+    usePeriodStore.getState().reopenMonthlyInventory('mi-4');
+    const p = usePeriodStore.getState().monthlyInventory[0];
+    expect(p.status).toBe('counting');
+    // البصمة صُفِّرت: الفترة عادت قيد الجرد، وأي تسوية متبقية كانت ستُقفل
+    // مرتين بلا سجل لما طُبِّق.
+    expect(p.settlementLines).toBeUndefined();
+    expect(p.settlementNetVariance).toBeUndefined();
+    expect(p.settlementAppliedAt).toBeUndefined();
+    expect(usePeriodStore.getState().closedMonths).not.toContain('2027-01');
+  });
 });

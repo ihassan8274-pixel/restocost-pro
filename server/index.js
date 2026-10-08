@@ -214,8 +214,13 @@ async function proxyInvoicePlatform(req, res) {
     });
     const buf = Buffer.from(await r.arrayBuffer());
     res.status(r.status);
+    const ALLOWED_CT = new Set(['application/pdf', 'application/json', 'text/plain', 'image/png', 'image/jpeg']);
     const ct = r.headers.get('content-type');
-    if (ct) res.set('content-type', ct);
+    if (ct && ALLOWED_CT.has(ct.split(';')[0].trim().toLowerCase())) {
+      res.set('content-type', ct);
+    } else {
+      res.set('content-type', 'application/octet-stream');
+    }
     const cd = r.headers.get('content-disposition');
     if (cd) res.set('content-disposition', cd);
     // منع Cloudflare من خزن الإصدارات القديمة (الوكيل لا يمّرر Cache-Control افتراضياً،

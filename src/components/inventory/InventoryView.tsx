@@ -227,17 +227,24 @@ export const InventoryView: React.FC = () => {
                 {filteredInv.map((i) => {
                   const mat = rawMaterials.find((m) => m.id === i.rawMaterialId);
                   const isLow = mat && i.quantity <= mat.minStockLevel;
+                  // الرصيد السالب ليس "منخفض" — دفتر في عجز. يُلوَّن ويوسم
+                  // وحده، فالرصيد المنخفض صفر والمخالف هو ما تحت الصفر.
+                  const isNegative = i.quantity < 0;
                   return (
-                    <tr key={i.id} className="hover:bg-slate-50">
+                    <tr key={i.id} className={isNegative ? 'bg-rose-50/60 hover:bg-rose-50' : 'hover:bg-slate-50'}>
                       <td className="p-3 font-bold text-slate-900">{getRawMaterialName(i.rawMaterialId)}</td>
                       <td className="p-3">{mat ? categoryLabel(mat.category, materialCategories) : ''}</td>
                       <td className="p-3 text-slate-600">{i.branchId === 'b-ck' ? 'المطبخ المركزي' : i.branchId}</td>
-                      <td className="tnum text-left p-3 font-extrabold text-slate-900">{fmt(i.quantity)}</td>
+                      <td className={`tnum text-left p-3 font-extrabold ${isNegative ? 'text-rose-700' : 'text-slate-900'}`}>{fmt(i.quantity)}</td>
                       <td className="p-3 text-slate-500">{mat?.unit}</td>
                       <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(getBranchAverageUnitCost(i.branchId, i.rawMaterialId))}</td>
                       <td className="tnum text-left p-3 text-slate-500">{fmt(mat?.standardPrice || 0)}</td>
                       <td className="tnum text-left p-3 font-bold text-brand-700">{fmt(i.quantity * getBranchAverageUnitCost(i.branchId, i.rawMaterialId))} ر.س</td>
-                      <td className="p-3">{isLow ? <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">منخفض</span> : <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>}</td>
+                      <td className="p-3">{isNegative
+                        ? <span className="text-[10px] font-bold bg-rose-600 text-white px-2 py-0.5 rounded-full">رصيد سالب</span>
+                        : isLow
+                          ? <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">منخفض</span>
+                          : <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">آمن</span>}</td>
                     </tr>
                   );
                 })}

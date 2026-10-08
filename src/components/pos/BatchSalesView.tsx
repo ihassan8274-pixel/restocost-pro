@@ -14,7 +14,7 @@ const fmtPct = (n: number) => `${fmtNum(n)}%`;
 
 interface BatchSalesViewProps { onNavigate?: (tab: string) => void; onStartEdit?: (id: string) => void; }
 export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onStartEdit }) => {
-  const { batchSalesRecords, deleteBatchSalesRecord, branches, companies, vatPercent, closedDays, closeDay, reopenDay, currentUser } = useApp();
+  const { batchSalesRecords, deleteBatchSalesRecord, branches, companies, vatPercent, closedDays, closeDay, reopenDay, currentUser, deductSalesFromInventory } = useApp();
   const vatRate = vatPercent / 100;
   const [listSearch, setListSearch] = useState('');
   const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -22,6 +22,18 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
   const netOf = (b: BatchSalesRecord) => b.netRevenue ?? netOfGross(b.totalRevenue, b.vatRate ?? vatRate);
   const vatOf = (b: BatchSalesRecord) => b.vatAmount ?? (b.totalRevenue - netOf(b));
   const fcNet = (b: BatchSalesRecord) => { const n = netOf(b); return n ? (b.totalFoodCost / n) * 100 : 0; };
+
+  // ⭐ الشارة كانت نصاً ثابتاً "مخصوم المخزون" يُعرض على كل سجل بصرف النظر
+  // عن الواقع. الآن تقرأ البصمة على السجل: خُصم فعلاً ⇒ أخضر، لم يُخصم ⇒
+  // رمادي. سجلات قديمة بلا بصمة تُعامَل كغير مخصومة (المخلوط الصحيح).
+  const stockCell = (b: BatchSalesRecord) => (
+    b.rawMaterialsDeducted
+      ? <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">مخصوم المخزون</span>
+      : <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full"
+          title={deductSalesFromInventory ? 'هذا السجل لم يُخصم منه مخزون' : 'إعداد خصم المبيعات معطّل'}>
+          لم يُخصم المخزون
+        </span>
+  );
 
   const openAdd = () => {
     onNavigate?.('batch_sales_entry');
@@ -32,7 +44,12 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
   };
 
   const confirmDelete = (b: BatchSalesRecord) => {
-    if (confirm(`حذف سجل المبيعات ${b.batchNumber}؟ سيُرجع المخزون المستهلك تلقائياً.`)) deleteBatchSalesRecord(b.id);
+    // ⭐ لا نَعِد بالرجوع إن لم يُخصم أصلاً. البصمة على السجل هي الحقيقة
+    // (هل خُصم عند الحفظ؟) لا الإعداد الحالي.
+    const msg = b.rawMaterialsDeducted
+      ? `حذف سجل المبيعات ${b.batchNumber}؟ سيُرجع المخزون المستهلك تلقائياً.`
+      : `حذف سجل المبيعات ${b.batchNumber}؟ (لم يُخصم منه مخزون أصلاً)`;
+    if (confirm(msg)) deleteBatchSalesRecord(b.id);
   };
 
   const printRecord = async (b: BatchSalesRecord) => {
@@ -311,7 +328,7 @@ export const BatchSalesView: React.FC<BatchSalesViewProps> = ({ onNavigate, onSt
                   <td className="tnum text-left p-3 text-amber-700">{fmt(vatOf(b), 2)}</td>
                   <td className="tnum text-left p-3">{fmt(b.totalFoodCost, 2)}</td>
                   <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${fcNet(b) > 35 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{fcNet(b).toFixed(2)}%</span></td>
-                  <td className="p-3"><span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">مخصوم المخزون</span></td>
+                  <td className="p-3">{stockCell(b)}</td>
                   <td className="p-3">
                     <div className="flex gap-1">
                       <button onClick={() => printRecord(b)} className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg" title="طباعة التقرير"><Printer className="w-4 h-4" /></button>

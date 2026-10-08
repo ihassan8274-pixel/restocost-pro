@@ -81,10 +81,10 @@ M0  شبكة الأمان ──────────────────
 
 | # | الفعل | الأوامر | الخطر | التحقق | التراجع |
 |---:|---|---|---|---|---|
-| **A1** | تدوير كلمة مرور `admin@restocost.com` | من شاشة إعدادات النظام، أو: احذف السطر `0553696633` وغيّر عبر `/api/auth/change-password` | ⚠️ يعطّل أي جلسة河西ئة تستخدمها | `POST /api/auth/login` بالكلمة الجديدة ينجح، بالقديمة يفشل | لا رجعة — لا تعِد الكلمة القديمة أبداً |
+| **A1** | تدوير كلمة مرور `admin@restocost.com` | من شاشة إعدادات النظام، أو: احذف السطر `<REDACTED>` وغيّر عبر `/api/auth/change-password` | ⚠️ يعطّل أي جلسة河西ئة تستخدمها | `POST /api/auth/login` بالكلمة الجديدة ينجح، بالقديمة يفشل | لا رجعة — لا تعِد الكلمة القديمة أبداً |
 | **A2** | تدوير **كل** كلمات المرور + كل بذور TOTP | لكل مستخدم (15 مستخدماً تقريباً) | ⚠️ يعطّل كل المستخدمين | دخول كل حساب | لا رجعة |
 | **A3** | `git rm --cached` للملفات المُسرَّبة | `git rm --cached backup-archive-legacy-before-pg.zip login.json test-login.json tools/.srvcred.json lint-output.txt lint-output2.txt server/prod.pid server/server.err` | آمن (يبقى الملف على القرص) | `git ls-files \| Select-String "zip\|login.json\|srvcred\|lint-output"` ⇒ **فارغ** | `git reset HEAD <file>` |
-| **A4** | حذف القيم الصريحة من النصوص | `AUDIT_REPAIR_PLAN.md:8` · `server/verify.mjs:8` · `server/verify-clean.mjs:6` · `server/test-guard.mjs:8` · `server/test-login-detailed.mjs:33-35` · `REPAIR_PLAN.md:147` | آمن | `Select-String -Path "*.md","server/*.mjs" -Pattern "0553696633|JWT_SECRET\s*="` ⇒ **فارغ** | `git checkout` |
+| **A4** | حذف القيم الصريحة من النصوص | `AUDIT_REPAIR_PLAN.md:8` · `server/verify.mjs:8` · `server/verify-clean.mjs:6` · `server/test-guard.mjs:8` · `server/test-login-detailed.mjs:33-35` · `REPAIR_PLAN.md:147` | آمن | `Select-String -Path "*.md","server/*.mjs" -Pattern "<REDACTED>|JWT_SECRET\s*="` ⇒ **فارغ** | `git checkout` |
 | **A5** | **تطهير التاريخ** (اختياري — انظر §11.1) | `git filter-repo --path backup-archive-legacy-before-pg.zip --invert-paths` | 🔴 **إعادة كتابة التاريخ** — تُبطل كل الـ SHAs | `git log --all --oneline -- backup-archive-legacy-before-pg.zip` ⇒ **فارغ** | غير قابل للتراجع ⇒ نسخة من `.git` قبلها |
 | **A6** | تدوير أسرار `.env` | `JWT_SECRET` · `SESSION_SECRET` · `DATABASE_URL` كلمة المرور | ⚠️ كسر الاتصال | `npm start` يعمل، `/ready` = 200 | لا رجعة |
 | **A7** | **حذف `JWT_SECRET` و`SESSION_SECRET` من `.env` و`.env.example`** | أضف سطراً `# ازالة: النظام يستخدم جلسات معمّاة لا JWT` | **⚠️ كسر `docker-compose.yml`** (يستخدمه) — يُحدَّث في B4 | — | `git checkout` |
@@ -166,7 +166,7 @@ M0  شبكة الأمان ──────────────────
 - [ ] `npm run build` — نجاح ✅
 - [ ] `docker build` + `docker run` ⇒ `curl /health` = 200
 - [ ] دخول حقيقي بـ 5 أدوار مختلفة (admin / branch_manager / cost_controller / storekeeper / waiter) والتحقق من 403 الصحيح على كل مجموعة
-- [ ] `Select-String "0553696633"` في كل الملفات ⇒ **فارغ**
+- [ ] `Select-String "<REDACTED>"` في كل الملفات ⇒ **فارغ**
 - [ ] `git ls-files` ⇒ لا `*.zip` ولا `login.json` ولا `srvcred`
 - [ ] **4 commits منفصلة** (أسرار / نشر / مصادقة / صلاحيات)
 

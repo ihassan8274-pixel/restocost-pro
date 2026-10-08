@@ -1,0 +1,80 @@
+# ===========================================================
+#  .dockerignore — keeps the build context small and secret-free
+# ===========================================================
+# TWO patterns here are load-bearing and were previously wrong:
+#
+#  1. `node_modules` alone only matches the context ROOT. The repo also has
+#     server/node_modules (~600MB, Windows-installed). `COPY server/ ./server/`
+#     therefore baked 612 host-installed packages into the image, shadowing the
+#     locked Alpine deps from `npm ci`. Non-reproducible builds + wrong native
+#     binaries. -> `**/node_modules`
+#
+#  2. `.env` alone also only matches the ROOT, so `server/.env` was copied into
+#     the image with live JWT_SECRET / SESSION_SECRET / SECRETS_KEY /
+#     DATABASE_URL. -> `**/.env*`
+#
+# (git's .gitignore has no such anchoring, which is why only Docker was affected.)
+
+# ---- dependencies (installed fresh inside the image) ----
+**/node_modules
+**/.npm
+**/.yarn
+npm-debug.log*
+
+# ---- secrets: never enter a layer ----
+**/.env
+**/.env.*
+**/login.json
+**/test-login.json
+**/.srvcred.json
+**/*.pem
+**/*.key
+
+# ---- VCS / OS ----
+.git
+.gitignore
+.gitmodules
+.github
+.DS_Store
+Thumbs.db
+
+# ---- local runtime state / generated data (NESTED too) ----
+# Same anchoring trap as node_modules and .env above: `logs/` and
+# `backup-archive/` only match the repo root, so `server/logs/` and
+# `server/backup-archive/` were still copied in — 410MB of real JSON database
+# backups (customers/sales) plus a 20MB access log ended up inside the
+# production image, alongside a 13.5MB developer SQLite DB. Business data must
+# never ship in an image layer. store.mjs and routes/backup.mjs both call
+# mkdirSync(recursive), so these directories are recreated at runtime.
+server/data/
+server/logs/
+server/backup-archive/
+server/backup7/
+**/logs/
+**/*.log
+**/backup-archive/
+**/backups/
+**/backup*.json
+coverage/
+out/
+dist/
+build/
+.cache/
+
+# ---- large dirs not needed to build or run the app ----
+deploy_pkg/
+tools/
+android/
+api/
+control/
+_backup_src_before_identity/
+.backup_src_before_identity/
+_backup_src_before_identity/
+docs/
+
+# ---- docs/archives ----
+*.md
+!README.md
+*.tar
+*.zip
+*.7z

@@ -5,6 +5,7 @@
 // إذا لم تُثبَّت الحزمة يرجع 501 برسالة عربية، ولا يكسر الخادم أبداً.
 import { existsSync } from 'node:fs';
 import { readToken, sessionUser } from '../core.mjs';
+import DOMPurify from 'dompurify';
 
 const escapeHtml = (s) => String(s ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -115,7 +116,7 @@ export const registerReports = (app, { sessionUser: sessionUserFn = sessionUser,
     try {
       instance = await getInstance();
       const content = custom
-        ? html
+        ? DOMPurify.sanitize(html, { ALLOWED_TAGS: ['b','i','u','strong','em','p','br','table','thead','tbody','tr','td','th','span','div','h1','h2','h3','h4','ul','ol','li'], ALLOWED_ATTR: ['style','class','colspan','rowspan'] })
         : buildHtml({
             title: String(title ?? 'تقرير'),
             header: header.map(String),
