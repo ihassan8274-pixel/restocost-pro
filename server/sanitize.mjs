@@ -31,10 +31,17 @@ export const sanitizeAISettingsForBroadcast = (v) => {
 };
 
 // لا يُبث توكن تليجرام: مؤشرات hasBotToken + نسخة مقنّعة (أول 6 وآخر 4).
+//
+// ⛔ `mask` MUST receive the same context the value was encrypted with. Passing
+//   '' makes the AAD mismatch (the anti-blob-swapping guard), the decrypt returns
+//   '', and the admin sees an EMPTY masked token -- plus a
+//   "[secrets] decrypt failed: v1 blob undecryptable" line in the server log on
+//   every broadcast. The context must match the one used in encryptSecret().
+//   (Compare routes/data.mjs, which masks with the correct contexts.)
 export const sanitizeTelegramSettingsForBroadcast = (v) => {
   if (!v || typeof v !== 'object') return v;
-  const mask = (enc) => {
-    const m = String(decryptSecret(enc, ''));
+  const mask = (enc, context) => {
+    const m = String(decryptSecret(enc, context));
     return m ? `${m.slice(0, 6)}…${m.slice(-4)}` : '';
   };
   return {
@@ -45,8 +52,8 @@ export const sanitizeTelegramSettingsForBroadcast = (v) => {
     purchaseEnabled: !!v.purchaseEnabled,
     purchaseChatIds: Array.isArray(v.purchaseChatIds) ? v.purchaseChatIds : [],
     purchaseHasToken: !!decryptSecret(v.purchaseBotToken ?? '', 'tg:purchaseBotToken'),
-    maskedBotToken: v.botToken ? mask(v.botToken) : '',
-    maskedPurchaseBotToken: v.purchaseBotToken ? mask(v.purchaseBotToken) : '',
+    maskedBotToken: v.botToken ? mask(v.botToken, 'tg:botToken') : '',
+    maskedPurchaseBotToken: v.purchaseBotToken ? mask(v.purchaseBotToken, 'tg:purchaseBotToken') : '',
   };
 };
 

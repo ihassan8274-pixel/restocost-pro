@@ -5,6 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sanitizeCollectionForBroadcast } from '../sanitize.mjs';
+import { encryptSecret } from '../secrets.mjs';
 
 const userRow = (over = {}) => ({
   id: 'u1',
@@ -67,4 +68,27 @@ test('توكن تليجرام يُبث مقنّعاً فقط بلا قيمة ك�
   assert.deepEqual(out.chatIds, [-100123]);
   assert.equal('hasBotToken' in out, true);
   assert.equal('maskedBotToken' in out, true);
+});
+
+// ⛔ REGRESSION (2026-10-08) — the masked preview used to be built with an EMPTY
+//   context while the stored token is encrypted with 'tg:botToken'. The AAD guard
+//   then rejected it, the preview came back EMPTY and the server logged
+//   "[secrets] decrypt failed: v1 blob undecryptable" on every broadcast.
+//   A plaintext token passes through untouched, which is why the test above
+//   stayed green the whole time the bug was live.
+test('توكن تليجرام المشفّر يُقنَّع بنسخة صحيحة وبسياقه', () => {
+  const token = '1234567890:AAHsupersecrettoken';
+  const purchase = '9876543210:BBHotherpurchasetoken';
+  const out = sanitizeCollectionForBroadcast('rcerp_telegram_settings', {
+    enabled: true,
+    botToken: encryptSecret(token, 'tg:botToken'),
+    purchaseBotToken: encryptSecret(purchase, 'tg:purchaseBotToken'),
+  });
+  assert.equal(out.hasBotToken, true);
+  assert.equal(out.maskedBotToken.length > 0, true);
+  assert.equal(out.maskedBotToken, `${token.slice(0, 6)}…${token.slice(-4)}`);
+  assert.equal(out.purchaseHasToken, true);
+  assert.equal(out.maskedPurchaseBotToken, `${purchase.slice(0, 6)}…${purchase.slice(-4)}`);
+  // the ciphertext/plain value itself must never reach the browser
+  assert.equal(JSON.stringify(out).includes('supersecret'), false);
 });

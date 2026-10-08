@@ -1,5 +1,8 @@
 # =============================================================================
-#  scripts/setup-pm2-startup.ps1 -- bring the stack back after a reboot.
+#  scripts/setup-pm2-startup.ps1 -- bring the stack back after a reboot/logon.
+#
+#  Registered as the scheduled task "RestoCost PM2 Startup" (logon trigger).
+#  This script is the ONLY thing that should be starting the 3001 server.
 #
 #  ⛔ WHY NOT pm2-windows-startup
 #     It registers a scheduled task that commonly runs as SYSTEM. That changes
@@ -22,13 +25,48 @@
 #     Without a wait the operator opens the site, sees 502, and blames the
 #     restart. The loop below is what makes "log on and it works" true.
 #
-#  Idempotent: running it twice replaces the task rather than adding a second.
+#  ⛔ WHY `pm2 jlist` IS PARSED WITH node AND NOT ConvertFrom-Json
+#     PowerShell 5.1 refuses pm2's JSON outright:
+#       "Cannot convert the JSON string because a dictionary that was converted
+#        from the string contains the duplicated keys 'username' and 'USERNAME'"
+#     The old version called ConvertFrom-Json and swallowed the error, so the
+#     status map came back EMPTY on every run -- the script therefore always
+#     concluded both apps were "not online" and always ran `pm2 start`.
+#     node's JSON.parse has no case-insensitive-key problem, so it is what
+#     parses now.
+#
+#  ⛔ WHY EVERY pm2 CALL GOES THROUGH Invoke-Pm2
+#     `& pm2 start x 2>&1 | Out-Null` under $ErrorActionPreference='Stop' is a
+#     TERMINATING error the instant pm2 writes anything to stderr -- a [WARN]
+#     is enough. Measured 2026-10-08 09:33: the task logged
+#     "not online: restocost, cloudflared-restocost -> pm2 start", died on that
+#     very call, never reached the port check, and the task ended with result 1
+#     -- which is how the site came back as 502 after logon.
+#     Invoke-Pm2 lowers $ErrorActionPreference for the call and returns text and
+#     exit code instead of throwing, so a pm2 warning can never kill the boot.
+#
+#  ⛔ WHY `pm2 start` AND NEVER `pm2 resurrect`
+#     resurrect restores the SAVED state, and the saved state after
+#     `pm2 stop all` is `stopped`. It "succeeds" while bringing nothing up.
+#
+#  ⛔ WHY IT PRUNES DUPLICATE TUNNEL CONNECTORS
+#     C:\RestoCost-Autostart\start-all.cmd and docker-watchdog.ps1 both launch
+#     run-tunnel.cmd, and each launch adds another connector for the SAME
+#     tunnel (erp.restocost.shop). Four were running on 2026-10-08. The PM2
+#     process is kept and the extras are killed -- and only extras that really
+#     serve this tunnel, matched on `run restocost`, so another session's
+#     tunnel on the same machine is never touched.
+#
+#  Idempotent: a second run with both apps online changes nothing.
+#  Exit code: 0 = server listening on 3001, 1 = still not listening.
 # =============================================================================
 
 $ErrorActionPreference = 'Stop'
 $taskName = 'RestoCost PM2 Startup'
 $repoRoot = 'E:\MASSOBI APP\NEW APP'
-$logFile = Join-Path $repoRoot 'server\logs\pm2-startup.log'
+$logDir = Join-Path $repoRoot 'server\logs'
+$logFile = Join-Path $logDir 'pm2-startup.log'
+$wanted = @('restocost', 'cloudflared-restocost')
 
 function Write-Log([string]$Message) {
     $line = '{0}  {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message
@@ -36,6 +74,53 @@ function Write-Log([string]$Message) {
 }
 
 Write-Log '--- startup script running ---'
+
+# ------------------------------------------------------------- pm2 wrappers --
+# Neither of these may throw. A native command's stderr becomes a terminating
+# error when $ErrorActionPreference is 'Stop', which is the bug this replaced.
+function Invoke-Pm2 {
+    param([string[]]$Pm2Args)
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $text = (& pm2 @Pm2Args 2>&1 | Out-String)
+        $code = $LASTEXITCODE
+    } catch {
+        $text = $_.Exception.Message
+        $code = 1
+    } finally {
+        $ErrorActionPreference = $previous
+    }
+    return [pscustomobject]@{ Code = $code; Text = $text }
+}
+
+# name -> @{ Status; Pid }. Never throws; returns @{} if pm2 cannot be read.
+function Get-Pm2AppState {
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $json = (& pm2 jlist 2>$null | Out-String)
+    } catch {
+        $json = ''
+    } finally {
+        $ErrorActionPreference = $previous
+    }
+    if ([string]::IsNullOrWhiteSpace($json)) { return @{} }
+
+    $parsed = $json | & node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{const a=JSON.parse(s);for(const x of a){console.log([x.name,(x.pm2_env&&x.pm2_env.status)||'?',String(x.pid||0)].join('|'))}}catch(e){console.error(e.message);process.exit(3)}})"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Log "!! could not parse pm2 jlist (node exit $LASTEXITCODE)"
+        return @{}
+    }
+
+    $map = @{}
+    foreach ($line in $parsed) {
+        if ($line -match '^([^|]+)\|([^|]+)\|(\d+)$') {
+            $map[$matches[1]] = @{ Status = $matches[2]; Pid = [int]$matches[3] }
+        }
+    }
+    return $map
+}
 
 # ---------------------------------------------------------------- port check --
 function Test-Port([int]$Port) {
@@ -47,53 +132,59 @@ function Test-Port([int]$Port) {
     }
 }
 
-# --------------------------------------------------------- is pm2 running? --
-# ⛔⛔ `Get-Process -Name 'PM2*'` DOES NOT FIND THE DAEMON ON WINDOWS.
-#
-#   The pm2 daemon is a plain `node.exe` with pm2's God-daemon script in its
-#   command line. There is no process named PM2. So the original check here
-#   always answered "no daemon", took the wrong branch, and called
-#   `pm2 resurrect` while the daemon was in fact alive.
-#
-#   Worse, resurrect restored the SAVED state -- which was `stopped`, because
-#   `pm2 stop all` writes the stopped state to the dump. So the script reported
-#   "server did NOT come up within 60s" and, correctly, refused to claim
-#   success. Measured on 2026-10-07: the daemon was running the whole time.
-#
-#   The daemon is asked, not guessed: `pm2 ping` succeeds only when it answers.
-$daemonAlive = $false
-& pm2 ping 2>&1 | Out-Null
-if ($LASTEXITCODE -eq 0) { $daemonAlive = $true }
+# -------------------------------------------------------------- ensure stack --
+$ping = Invoke-Pm2 @('ping')
+$daemonAlive = ($ping.Code -eq 0)
+Write-Log ("pm2 daemon answering: {0}" -f $daemonAlive)
 
 if (-not $daemonAlive) {
-    Write-Log 'pm2 daemon not answering; pm2 ping failed -- starting from the ecosystem file'
-    & pm2 start (Join-Path $repoRoot 'ecosystem.config.cjs') 2>&1 | Out-Null
+    Write-Log 'daemon not answering -- starting from the ecosystem file'
+    $null = Invoke-Pm2 @('start', (Join-Path $repoRoot 'ecosystem.config.cjs'))
     Start-Sleep -Seconds 6
-} else {
-    # ⛔⛔ `resurrect` is the WRONG verb when an app is merely STOPPED.
-    #   It restores the saved state, and the saved state after a `pm2 stop all`
-    #   is `stopped`. Use `pm2 start` for anything not online.
-    $apps = @()
-    try { $apps = & pm2 jlist 2>$null | ConvertFrom-Json } catch { $apps = @() }
+}
 
-    $wanted = @('restocost', 'cloudflared-restocost')
+$state = Get-Pm2AppState
+if ($state.Count -eq 0) {
+    Write-Log '!! pm2 returned no readable app state -- assuming apps are down'
+    $notOnline = $wanted
+} else {
     $notOnline = @()
     foreach ($name in $wanted) {
-        $app = $apps | Where-Object { $_.name -eq $name } | Select-Object -First 1
-        if (-not $app) { $notOnline += $name; continue }
-        $status = $app.pm2_env.status
-        if ($status -ne 'online' -and $status -ne 'launching') { $notOnline += $name }
+        if (-not $state.ContainsKey($name)) { $notOnline += $name; continue }
+        $s = $state[$name].Status
+        if ($s -ne 'online' -and $s -ne 'launching') { $notOnline += $name }
     }
+}
 
-    if ($notOnline.Count -gt 0) {
-        Write-Log ("daemon alive; not online: {0} -> pm2 start (NOT resurrect)" -f ($notOnline -join ', '))
-        foreach ($name in $notOnline) {
-            & pm2 start $name 2>&1 | Out-Null
+if ($notOnline.Count -gt 0) {
+    Write-Log ('not online: {0} -> pm2 start (NOT resurrect)' -f ($notOnline -join ', '))
+    foreach ($name in $notOnline) { $null = Invoke-Pm2 @('start', $name) }
+    Start-Sleep -Seconds 6
+    $state = Get-Pm2AppState
+} else {
+    Write-Log 'both apps already online; nothing to start'
+}
+
+# --------------------------------------------------------- prune duplicates --
+# Keep the connector PM2 supervises; drop the extras this machine accumulated
+# from start-all.cmd / docker-watchdog.ps1 launching the same tunnel again.
+$managedTunnelPid = 0
+if ($state.ContainsKey('cloudflared-restocost')) { $managedTunnelPid = $state['cloudflared-restocost'].Pid }
+
+if ($managedTunnelPid -gt 0) {
+    $extras = @(Get-CimInstance Win32_Process -Filter "Name='cloudflared.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.ProcessId -ne $managedTunnelPid -and $_.CommandLine -match 'run\s+restocost' })
+    foreach ($e in $extras) {
+        try {
+            Stop-Process -Id $e.ProcessId -Force -ErrorAction Stop
+            Write-Log ("killed duplicate tunnel connector pid {0}" -f $e.ProcessId)
+        } catch {
+            Write-Log ("could not kill duplicate connector {0}: {1}" -f $e.ProcessId, $_.Exception.Message)
         }
-        Start-Sleep -Seconds 6
-    } else {
-        Write-Log 'daemon alive and both apps already online; nothing to do'
     }
+    if ($extras.Count -eq 0) { Write-Log 'no duplicate tunnel connectors' }
+} else {
+    Write-Log 'tunnel connector not running under pm2; leaving connectors alone'
 }
 
 # ------------------------------------------------------------- wait for 3001 --
@@ -112,20 +203,22 @@ if ($serverUp) {
 
 # The tunnel needs the server, so only assert it once 3001 answers.
 Start-Sleep -Seconds 3
-$tunnelProcs = Get-Process -Name 'cloudflared' -ErrorAction SilentlyContinue
-if ($tunnelProcs) {
-    Write-Log ("tunnel running, {0} process(es)" -f @($tunnelProcs).Count)
+$tunnelProcs = @(Get-Process -Name 'cloudflared' -ErrorAction SilentlyContinue)
+if ($tunnelProcs.Count -gt 0) {
+    Write-Log ("tunnel running, {0} process(es)" -f $tunnelProcs.Count)
 } else {
     Write-Log '!! cloudflared is not running'
 }
 
 if ($serverUp) {
     try {
-        $r = Invoke-WebRequest -Uri 'http://127.0.0.1:3001' -UseBasicParsing -TimeoutSec 15
-        Write-Log ("GET / -> {0}" -f $r.StatusCode)
+        $r = Invoke-WebRequest -Uri 'http://127.0.0.1:3001/health' -UseBasicParsing -TimeoutSec 15
+        Write-Log ("GET /health -> {0}" -f $r.StatusCode)
     } catch {
-        Write-Log ("GET / failed: {0}" -f $_.Exception.Message)
+        Write-Log ("GET /health failed: {0}" -f $_.Exception.Message)
     }
 }
 
 Write-Log '--- startup script done ---'
+
+if ($serverUp) { exit 0 } else { exit 1 }
